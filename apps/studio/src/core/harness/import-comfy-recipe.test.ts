@@ -64,6 +64,18 @@ test('imported recipe obeys registry size limits before publication', () => {
   const g: any = graph(); g['1'].inputs.unexposed = 'x'.repeat(128_000);
   assert.throws(() => importComfyRecipe(g, definition()), /128 KB/);
 });
+test('asset parameters become upload dependencies without inheriting a server filename as an asset default', () => {
+  const d: any = definition();
+  d.parameters = [{ parameter: { id: 'reference', type: 'asset', kind: 'image', label: 'Reference image' }, targets: [{ nodeId: '1', input: 'prompt' }, { nodeId: '2', input: 'prompt' }] }];
+  const recipe = importComfyRecipe(graph(), d);
+  assert.equal(recipe.parameters[0].default, undefined);
+  assert.throws(() => compileRecipe(recipe, {}, 'p'), /Invalid recipe parameter/);
+  const plan = compileRecipe(recipe, { reference: 'chosen-asset' }, 'p');
+  assert.equal(plan.nodes[0].operation, 'comfy.upload'); assert.deepEqual(plan.nodes[0].input, { assetId: 'chosen-asset' });
+  assert.deepEqual(plan.nodes[1].dependsOn, ['input-0']);
+  assert.deepEqual(plan.nodes[1].bindings?.map(b => b.pointer), ['/image', '/image', '/connection']);
+  plan.nodes.forEach(node => runtimeNodeSchema.parse(node));
+});
 test('CLI installs a discoverable recipe offline, refuses overwrite, and leaves no file after invalid input', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'vh-comfy-import-'));
   try {

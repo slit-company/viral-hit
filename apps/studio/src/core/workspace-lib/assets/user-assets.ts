@@ -182,6 +182,7 @@ export const listProjectAssets = async ({
   return db
     .select({
       id: userAsset.id,
+      storageProvider: userAsset.storageProvider,
       type: userAsset.type,
       source: userAsset.source,
       assetClass: userAsset.assetClass,

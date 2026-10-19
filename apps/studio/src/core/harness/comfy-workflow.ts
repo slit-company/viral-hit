@@ -6,6 +6,7 @@ import { fingerprint, RejectedSubmission, type Adapter, type Json } from './dura
 
 const nodeId = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/);
 export const workflowInput = z.object({
+  connection: z.string().regex(/^[a-f0-9]{64}$/).nullable().optional(),
   workflow: z.record(nodeId, z.object({ class_type: z.string().min(1).max(200), inputs: z.record(z.string(), z.json()), _meta: z.object({ title: z.string().max(500) }).optional() }).strict()).refine(graph => Object.keys(graph).length > 0 && Object.keys(graph).length <= 256, 'A workflow requires 1–256 nodes'),
   output: z.object({ nodeId, field: z.enum(['images', 'audio', 'gifs', 'videos']), index: z.number().int().min(0).max(255).default(0) }).strict(),
 }).strict().refine(input => Object.hasOwn(input.workflow, input.output.nodeId), 'Output node is missing');
@@ -17,7 +18,7 @@ export function comfyWorkflowUrl(value = process.env.VIRAL_HIT_COMFYUI_URL): URL
   if (!url.pathname.endsWith('/')) url.pathname += '/';
   return url;
 }
-const connectionHash = (url: URL) => createHash('sha256').update(url.href).digest('hex');
+export const connectionHash = (url: URL) => createHash('sha256').update(url.href).digest('hex');
 const providerId = z.object({ promptId: z.string().uuid(), connection: z.string().regex(/^[a-f0-9]{64}$/), key: z.string().uuid() }).strict();
 class WorkflowHttpError extends Error { constructor(readonly status: number) { super(`ComfyUI returned HTTP ${status}`); } }
 async function boundedBody(response: Response, limit: number, signal: AbortSignal) {
@@ -68,6 +69,7 @@ export function createComfyWorkflowAdapter(configuredUrl = () => comfyWorkflowUr
       const parsed = workflowInput.safeParse(raw);
       if (!parsed.success) throw new RejectedSubmission('Invalid ComfyUI API-format workflow or output selection');
       const input = parsed.data, base = connection();
+      if (input.connection && input.connection !== connectionHash(base)) throw new RejectedSubmission('Workflow inputs belong to a different ComfyUI connection');
       try {
         const result = await json(base, 'prompt', context.signal, { prompt: input.workflow, prompt_id: context.key, client_id: context.key, extra_data: { viral_hit: { key: context.key, fingerprint: fingerprint(raw) } } });
         const promptId = z.string().uuid().parse(result.prompt_id);

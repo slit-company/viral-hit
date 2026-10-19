@@ -4,6 +4,7 @@ import { type Plan } from '../src/core/harness/durable';
 import { createRuntimeAdapters } from '../src/core/harness/adapters';
 import { assertRuntimeConfigured, unavailableOperations, reconciliableOperations } from '../src/core/harness/capabilities';
 import { runtimeNodeSchema } from '../src/core/harness/requests';
+import { pinProjectInputs } from '../src/core/harness/comfy-upload';
 
 
 const [command, first, second] = process.argv.slice(2);
@@ -15,7 +16,7 @@ try {
     const plan = JSON.parse(readFileSync(first, 'utf8')) as Plan;
     plan.nodes = plan.nodes.map(node => runtimeNodeSchema.parse(node));
     assertRuntimeConfigured(plan.nodes);
-    console.log(JSON.stringify({ runId: h.enqueue(plan, second) }));
+    console.log(JSON.stringify({ runId: h.enqueue(await pinProjectInputs(plan), second) }));
   } else if (command === 'inspect' && first) {
     console.log(JSON.stringify({ jobs: h.jobs(first), events: h.events(first) }, null, 2));
   } else if (command === 'list' && first) {

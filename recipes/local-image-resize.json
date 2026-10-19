@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "id": "local-image-resize",
+  "version": "1.0.0",
+  "title": "Resize a project image",
+  "description": "Send a selected project image to your ComfyUI server and resize it using Lanczos with its transparency. No model weights or AI generation. The original image stays in Assets.",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "category": "self-hosted",
+  "tags": [
+    "image",
+    "comfyui",
+    "transform"
+  ],
+  "parameters": [
+    {
+      "id": "source",
+      "label": "Source image",
+      "type": "asset",
+      "kind": "image"
+    },
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "number",
+      "default": 768,
+      "min": 64,
+      "max": 4096,
+      "integer": true
+    },
+    {
+      "id": "height",
+      "label": "Height",
+      "type": "number",
+      "default": 768,
+      "min": 64,
+      "max": 4096,
+      "integer": true
+    }
+  ],
+  "nodes": [
+    {
+      "id": "input-0",
+      "operation": "comfy.upload",
+      "version": "1",
+      "input": {
+        "assetId": ""
+      },
+      "cache": false,
+      "parameters": [
+        {
+          "parameter": "source",
+          "target": "/assetId"
+        }
+      ]
+    },
+    {
+      "id": "workflow",
+      "operation": "comfy.workflow",
+      "version": "1",
+      "input": {
+        "workflow": {
+          "1": {
+            "class_type": "LoadImage",
+            "inputs": {
+              "image": "choose-an-image.png"
+            }
+          },
+          "2": {
+            "class_type": "ImageScale",
+            "inputs": {
+              "image": [
+                "1",
+                0
+              ],
+              "upscale_method": "lanczos",
+              "width": 768,
+              "height": 768,
+              "crop": "disabled"
+            }
+          },
+          "3": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "images": [
+                "4",
+                0
+              ],
+              "filename_prefix": "Viral Hit/resized"
+            }
+          },
+          "4": {
+            "class_type": "JoinImageWithAlpha",
+            "inputs": {
+              "image": [
+                "2",
+                0
+              ],
+              "alpha": [
+                "1",
+                1
+              ]
+            }
+          }
+        },
+        "output": {
+          "nodeId": "3",
+          "field": "images",
+          "index": 0
+        },
+        "connection": null
+      },
+      "dependsOn": [
+        "input-0"
+      ],
+      "cache": false,
+      "parameters": [
+        {
+          "parameter": "width",
+          "target": "/workflow/2/inputs/width"
+        },
+        {
+          "parameter": "height",
+          "target": "/workflow/2/inputs/height"
+        }
+      ],
+      "bindings": [
+        {
+          "target": "/workflow/1/inputs/image",
+          "node": "input-0",
+          "pointer": "/image"
+        },
+        {
+          "target": "/connection",
+          "node": "input-0",
+          "pointer": "/connection"
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "operation": "asset.materialize",
+      "version": "1",
+      "input": {
+        "receipt": null,
+        "kind": "image",
+        "label": "Resize a project image"
+      },
+      "dependsOn": [
+        "workflow"
+      ],
+      "cache": false,
+      "bindings": [
+        {
+          "target": "/receipt",
+          "node": "workflow",
+          "pointer": "/binaryReceipt"
+        }
+      ]
+    }
+  ]
+}

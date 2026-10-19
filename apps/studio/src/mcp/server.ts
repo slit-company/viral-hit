@@ -76,6 +76,7 @@ import { runRequest } from '@/core/harness/requests';
 import { runtimeCapabilities, assertRuntimeConfigured, reconciliableOperations } from '@/core/harness/capabilities';
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan } from '@/core/harness/recipe-plan';
+import { pinProjectInputs } from '@/core/harness/comfy-upload';
 import { attachMaterializedJob } from '@/core/harness/attach-asset';
 import { loadRecipes } from '@/core/harness/recipe-registry';
 
@@ -1327,7 +1328,7 @@ export function createViralHitMcpServer() {
   server.registerTool(
     'viral_hit_runs_change',
     {
-      description: 'Enqueue an explicitly requested plan or recipe, request cancellation, retry a definitive failure, or attach a successfully imported asset to the timeline with expectedRevision. Comfy Router generation steps spend provider credits; ComfyUI workflows use the configured server and installed nodes; asset.materialize steps only download and store media. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Action reconcile queues read-only lookup for ambiguous ComfyUI workflow submissions without resubmitting. Native provider receipts stay separate from local asset records. Attach rejects stale timeline revisions and preserves prior edits.',
+      description: 'Enqueue an explicitly requested plan or recipe, request cancellation, retry a definitive failure, or attach a successfully imported asset to the timeline with expectedRevision. Comfy Router generation steps spend provider credits; ComfyUI workflows use the configured server and installed nodes; comfy.upload transfers a selected local project image to that server after membership/hash checks; asset.materialize steps only download and store media. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Action reconcile queues read-only lookup for ambiguous ComfyUI workflow submissions without resubmitting. Native provider receipts stay separate from local asset records. Attach rejects stale timeline revisions and preserves prior edits.',
       inputSchema: z.object({ projectId: idSchema.optional(), request: runRequest }),
       annotations: { destructiveHint: false, idempotentHint: false },
     },
@@ -1338,7 +1339,7 @@ export function createViralHitMcpServer() {
         if (request.action === 'enqueue' || request.action === 'recipe') {
           const plan = request.action === 'recipe' ? await prepareRecipePlan(request.recipeId, request.values, project.id) : { projectId: project.id, nodes: request.nodes };
           assertRuntimeConfigured(plan.nodes);
-          return { runId: h.enqueue(plan, request.requestKey) };
+          return { runId: h.enqueue(await pinProjectInputs(plan), request.requestKey) };
         }
         if (!h.runs(project.id).some(run => run.id === request.runId)) throw new Error('Run not found in this project');
         if (request.action === 'attach') {

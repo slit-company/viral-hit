@@ -4,6 +4,29 @@ import { execFileSync } from 'node:child_process';
 import { createDemoMedia } from '../../scripts/demo-media.mjs';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
+test('recipe image inputs list this project only and preview the selected local asset', async ({ page, request }) => {
+  const id = await project(request, 'Recipe input scope'), other = await project(request, 'Other input scope');
+  const buffer = await readFile('public/logo.png');
+  const upload = async (projectId: string, name: string) => {
+    const response = await request.post(`/api/app/projects/${projectId}/assets`, { headers, multipart: { file: { name, mimeType: 'image/png', buffer } } });
+    expect(response.ok()).toBe(true); return (await response.json()).asset;
+  };
+  const mine = await upload(id, 'my-reference.png'); await upload(other, 'other-reference.png');
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('local-image-resize');
+  const selection = page.getByLabel('Source image', { exact: true });
+  await expect(selection.locator('option', { hasText: 'my-reference.png' })).toHaveCount(1);
+  await expect(selection.locator('option', { hasText: 'other-reference.png' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeDisabled();
+  await selection.selectOption(mine.id);
+  await expect(page.getByRole('img', { name: 'Selected Source image', exact: true })).toBeVisible();
+  await expect(page.getByText('This image will be sent to your configured ComfyUI server.', { exact: false })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(selection).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeVisible();
+  expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+});
 let rpcId = 0;
 async function mcp(request: APIRequestContext, name: string, args: Record<string, unknown>) {
   const response = await request.post('http://127.0.0.1:3043/mcp', {

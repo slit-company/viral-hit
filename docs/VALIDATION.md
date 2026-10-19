@@ -7,8 +7,8 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Production build | Passed | Local build; not public deployment |
 | Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 467 passed | Includes six workflow-import tests and seven native ComfyUI integration tests; SDK tests use fixtures |
-| Browser E2E | 9 passed across two runs (8 existing + 1 theme/focus) | Local Chromium; provider credentials deliberately removed |
+| Unit/integration tests | 473 passed | Includes seven workflow-import tests, five input-upload integration tests and seven native ComfyUI integration tests; SDK tests use fixtures |
+| Browser E2E | 10 passed | One sequential run, local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
 | Captions | Passed | Remote edit visible without reload, local text edit persisted; desktop/mobile captures |
@@ -28,6 +28,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Multimodal form/editor visual feedback | Passed, 4.28/5 | Fixed identifier textareas and clipped desktop controls; motion/speech forms and mixed editor reviewed at 1440×1000; existing mobile form checked at 390×844 |
 | Native ComfyUI workflow | Passed | Real model-free native server run; see [local ComfyUI](LOCAL-COMFYUI.md). No diffusion quality claim |
 | User graph → portable recipe → native execution → editor | Passed | Offline CLI import, external recipe directory, UI parameter edits, real ComfyUI 720×480 PNG, durable import and timeline reload; model-free graph |
+| Project image input → ComfyUI → editor | Passed | Real 640×640 RGBA output, original retained, input upload recovery fixture tests; visual review 4.335/5 |
 | Light UI and generated branding | Passed, visual review 4.325/5 | Actual desktop 1440×1000 and mobile 390×844 captures; self-review is not user design acceptance |
 | Actual paid Comfy Router generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
 | Higgsfield comparative benchmark | Not run | Full feature/performance parity is not established |
@@ -45,6 +46,14 @@ Visual evidence is under `research/evidence/redesign/`. Round 1 found a dialog o
 ## Imported workflow evidence
 
 Workflow importer evidence: `research/evidence/comfy-import/` contains CLI inspection, the generated manifest, 467-test log, desktop captures and the actual run receipt. The source graph and definition are committed examples under `examples/comfy-*`. A separate server and database discovered only the imported recipe through `VIRAL_HIT_RECIPES_DIR`. Browser edits changed width/height from 512×512 to 720×480; the native ComfyUI 0.42.0 server returned a 2,409-byte PNG with SHA-256 `f8b98ac2dc429c516bce2a4423504630f4b0ea00be9a5e6c3bc9c14fc986d546`. Both execution and materialization succeeded. The browser added one three-second image clip and verified persistence after hydration on reload. No provider key, paid call or model weights were used. The importer does not validate arbitrary custom-node semantics or install their dependencies.
+
+## Project image inputs
+
+`research/evidence/comfy-inputs/` retains the selected project asset, generated recipe, native upload/workflow/materialization receipts, screenshots and test logs. The transparent Viral Hit symbol was selected through Runs, sent to the configured native ComfyUI server and resized to 640×640. The first resize graph dropped alpha; the corrected graph rejoins the native loader's mask using JoinImageWithAlpha. Its 148,139-byte RGBA PNG has SHA-256 `122f247ab73fc6e39c8527c22f4312b979677af4d57518a1e86808f972bdae4a` and alpha range 0–254 after interpolation. The unchanged original and new output remain distinct assets; the output persisted as one three-second timeline clip after reload. No model weights or paid provider were used. This proves the image-input bridge and the example transform, not arbitrary custom-node quality.
+
+All 473 source tests, TypeScript, production build and 10 browser tests passed. New fixture tests cover project isolation, modified source bytes, server changes, lost upload response/restart, deterministic filenames, redirect refusal and output-name rejection. Browser checks cover project-scoped selection, preview and mobile action visibility. The first full browser run overlapped a build and dev startup, causing generated Paraglide files to disappear/change during requests; seven tests failed. Running build and E2E sequentially passed all ten. Both logs are retained. Development React state-update warnings remain; the final production UI smoke recorded no page errors.
+
+The actual production selector was reviewed at 1440×1000 and 390×844. A large full-width preview hid dimension fields on mobile; compacting the preview beside selection improved the fixed rubric from 3.94 to 4.335/5. The queue action remains visible and the Height control is reachable by scrolling. The first controller attempt stopped on an artifact/source metadata mismatch; it is retained under `review/`. The corrected evidence-source run is under `visual-review/`. This review is not user design acceptance.
 
 ## Quality and speed protocol
 

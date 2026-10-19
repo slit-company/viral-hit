@@ -36,25 +36,36 @@ export function importComfyRecipe(rawGraph: unknown, rawDefinition: unknown): Re
   const { kind, ...selection } = output;
   const input = workflowInput.parse({ workflow: parseGraph(rawGraph), output: selection });
   const bindings: { parameter: string; target: string }[] = [];
-  const parameters = exposures.map(({ parameter, targets }) => {
+  const uploads: Recipe['nodes'] = [];
+  const outputBindings: NonNullable<Recipe['nodes'][number]['bindings']> = [];
+  const parameters = exposures.map(({ parameter, targets }, index) => {
+    const uploadId = `input-${index}`;
     const values = targets.map(target => {
       const path = pointer(target.nodeId, target.input);
       const value = readPointer(input as Json, path);
-      const expectedType = parameter.type === 'enum' ? 'string' : parameter.type;
+      const expectedType = parameter.type === 'enum' || parameter.type === 'asset' ? 'string' : parameter.type;
       if (typeof value !== expectedType) throw new Error(`Parameter ${parameter.id} must bind a ${expectedType} scalar input; node links and structured inputs cannot be replaced`);
-      bindings.push({ parameter: parameter.id, target: path });
+      if (parameter.type === 'asset') outputBindings.push({ node: uploadId, pointer: '/image', target: path });
+      else bindings.push({ parameter: parameter.id, target: path });
       return value;
     });
+    if (parameter.type === 'asset') {
+      uploads.push({ id: uploadId, operation: 'comfy.upload', version: '1', cache: false, input: { assetId: '' }, parameters: [{ parameter: parameter.id, target: '/assetId' }] });
+      return parameter; // A ComfyUI filename is never a project asset ID or an inferred default.
+    }
     return { ...parameter, default: parameter.default ?? values[0] };
   });
+  if (uploads.length) { input.connection = null; outputBindings.push({ node: uploads[0].id, pointer: '/connection', target: '/connection' }); }
   const recipe = recipeSchema.parse({ ...metadata, parameters, nodes: [
-    { id: 'workflow', operation: 'comfy.workflow', version: '1', cache: false, input, parameters: bindings },
+    ...uploads,
+    { id: 'workflow', operation: 'comfy.workflow', version: '1', cache: false, input, parameters: bindings, ...(uploads.length ? { dependsOn: uploads.map(node => node.id), bindings: outputBindings } : {}) },
     { id: 'media', operation: 'asset.materialize', version: '1', cache: false,
       input: { receipt: null, kind, label: metadata.title }, dependsOn: ['workflow'],
       bindings: [{ node: 'workflow', pointer: '/binaryReceipt', target: '/receipt' }] },
   ] });
   // Check defaults, duplicates, target overlap and execution graph before writing a discoverable manifest.
-  compileRecipe(recipe, {}, 'offline-import-validation', new Set(['comfy.workflow', 'asset.materialize']));
+  const validationValues = Object.fromEntries(parameters.filter(p => p.type === 'asset' && p.default === undefined).map(p => [p.id, 'offline-input']));
+  compileRecipe(recipe, validationValues, 'offline-import-validation', new Set(['comfy.workflow', 'comfy.upload', 'asset.materialize']));
   if (Buffer.byteLength(JSON.stringify(recipe, null, 2) + '\n') > 128_000) throw new Error('Imported recipe exceeds the registry limit of 128 KB');
   return recipe;
 }

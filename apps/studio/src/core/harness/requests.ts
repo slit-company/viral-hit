@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { workflowInput } from './comfy-workflow';
 import { routerInput } from './comfy-router';
 import { materializeInput } from './materialize';
+import { uploadInput } from './comfy-upload';
 
 const nodeBase = {
   id: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/), version: z.string().min(1).max(200),
@@ -11,6 +12,7 @@ const nodeBase = {
   cache: z.literal(false).optional(),
 };
 export const runtimeNodeSchema = z.discriminatedUnion('operation', [
+  z.object({ ...nodeBase, operation: z.literal('comfy.upload'), input: uploadInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.router'), input: routerInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.workflow'), input: workflowInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('asset.materialize'), input: materializeInput }).strict(),

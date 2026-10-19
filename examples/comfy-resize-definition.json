@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "id": "local-image-resize",
+  "version": "1.0.0",
+  "title": "Resize a project image",
+  "description": "Send a selected project image to your ComfyUI server and resize it using Lanczos with its transparency. No model weights or AI generation. The original image stays in Assets.",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "category": "self-hosted",
+  "tags": [
+    "image",
+    "comfyui",
+    "transform"
+  ],
+  "output": {
+    "nodeId": "3",
+    "field": "images",
+    "index": 0,
+    "kind": "image"
+  },
+  "parameters": [
+    {
+      "parameter": {
+        "id": "source",
+        "label": "Source image",
+        "type": "asset",
+        "kind": "image"
+      },
+      "targets": [
+        {
+          "nodeId": "1",
+          "input": "image"
+        }
+      ]
+    },
+    {
+      "parameter": {
+        "id": "width",
+        "label": "Width",
+        "type": "number",
+        "integer": true,
+        "min": 64,
+        "max": 4096
+      },
+      "targets": [
+        {
+          "nodeId": "2",
+          "input": "width"
+        }
+      ]
+    },
+    {
+      "parameter": {
+        "id": "height",
+        "label": "Height",
+        "type": "number",
+        "integer": true,
+        "min": 64,
+        "max": 4096
+      },
+      "targets": [
+        {
+          "nodeId": "2",
+          "input": "height"
+        }
+      ]
+    }
+  ]
+}

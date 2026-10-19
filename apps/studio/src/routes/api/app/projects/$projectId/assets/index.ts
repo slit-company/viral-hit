@@ -20,6 +20,7 @@ import {
   deleteUserAssetById,
   linkProjectAsset,
   recordUserAsset,
+  listProjectAssets,
 } from '@/core/workspace-lib/assets/user-assets';
 import {
   readRequestFormDataWithLimit,
@@ -29,6 +30,12 @@ import { isSupportedRasterImage } from '@/lib/image-upload-validation';
 import { validateTrustedWorkspaceMutation } from '@/lib/trusted-local-request';
 
 const MAX_MULTIPART_OVERHEAD_BYTES = 1024 * 1024;
+
+async function GET({ params }: { params: { projectId: string } }) {
+  const project = await getProject({ projectId: params.projectId });
+  if (!project || project.status !== 'active') return Response.json({ error: 'Project not found' }, { status: 404 });
+  return Response.json({ assets: await listProjectAssets({ projectId: params.projectId, limit: 500 }), limit: 500 }, { headers: { 'Cache-Control': 'no-store' } });
+}
 
 async function POST({
   request,
@@ -203,5 +210,5 @@ async function POST({
 export const Route = createFileRoute(
   '/api/app/projects/$projectId/assets/'
 )({
-  server: { handlers: { POST } },
+  server: { handlers: { GET, POST } },
 });
