@@ -1,4 +1,4 @@
-import { PublicationAssetError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
+import { PublicationInspectionPaused, PublicationAssetError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
 import type { PublicationStore } from './store.server';
 
 export type PublicationRuntime = {
@@ -81,7 +81,8 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
       transferred(await connector.transfer(claim.spec, claim.checkpoint, read, signal));
     } else finish(claim, 'uncertain', { issue: 'upload-unknown' });
   } catch (error) {
-    if (publishing) {
+    if (error instanceof PublicationInspectionPaused && !publishing && !starting) finish(claim, 'uncertain', { issue: 'processing-timeout', receipt: error.receipt });
+    else if (publishing) {
       if (error instanceof PublicationPublishError) finish(claim, error.outcome === 'rejected' ? 'failed' : 'staged', {
         issue: error.outcome === 'rejected' ? 'remote-rejected' : 'runtime-unavailable', delayMs: error.retryAfterMs,
       });

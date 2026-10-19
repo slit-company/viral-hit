@@ -29,6 +29,11 @@ export function openProjectPublicationMedia(root = resolve(getViralHitDataRoot()
       if (!current || current.sha256 !== asset.sha256 || current.sizeBytes !== asset.sizeBytes || current.mimeType !== asset.contentType) throw new Error('Project media identity changed during preparation');
       return pinned;
     },
+    async inspectVideo(spec: PublicationSpec, signal: AbortSignal) {
+      await active(spec.projectId, signal);
+      if (spec.assets.length !== 1) throw new Error('Select one video for inspection');
+      return store.inspectVideo(spec.projectId, spec.assets[0], signal);
+    },
     async validateAssets(spec: PublicationSpec, signal: AbortSignal) {
       await active(spec.projectId, signal);
       for (const asset of spec.assets) await store.check(spec.projectId, asset, signal);

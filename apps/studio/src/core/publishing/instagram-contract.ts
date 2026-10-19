@@ -8,7 +8,7 @@ export const instagramMetadataSchema = z.discriminatedUnion('kind', [
 export type InstagramMetadata = z.infer<typeof instagramMetadataSchema>;
 export const instagramReceiptSchema = z.object({
   containerId: instagramIdSchema, instagramId: instagramIdSchema, pageId: instagramIdSchema,
-  mediaId: instagramIdSchema.optional(),
+  mediaId: instagramIdSchema.optional(), processingPolls: z.number().int().min(0).max(5).optional(),
   status: z.enum(['IN_PROGRESS', 'FINISHED', 'PUBLISHED', 'ERROR', 'EXPIRED']),
 }).strict();
 export type InstagramReceipt = z.infer<typeof instagramReceiptSchema>;

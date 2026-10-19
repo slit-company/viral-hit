@@ -17,7 +17,7 @@ export const publicationSpecSchema = z.object({
 }).strict();
 export type PublicationSpec = z.infer<typeof publicationSpecSchema>;
 export type PublicationState = 'draft' | 'approved' | 'starting' | 'uploading' | 'accepted' | 'processing' | 'staged' | 'publishing' | 'ready' | 'scheduled' | 'published' | 'reconciling' | 'uncertain' | 'failed' | 'canceled';
-export type PublicationIssue = 'start-unknown' | 'upload-unknown' | 'publish-unknown' | 'session-expired' | 'remote-rejected' | 'runtime-unavailable' | 'asset-unavailable' | 'upload-incomplete' | 'stopped' | null;
+export type PublicationIssue = 'start-unknown' | 'upload-unknown' | 'publish-unknown' | 'session-expired' | 'remote-rejected' | 'runtime-unavailable' | 'asset-unavailable' | 'upload-incomplete' | 'stopped' | 'processing-timeout' | null;
 export type PublicationApproval = { digest: string; revision: number; actor: string; at: number };
 export type PublicationRecord = {
   id: string; spec: PublicationSpec; digest: string; revision: number; state: PublicationState;
@@ -35,6 +35,10 @@ export type TransferObservation =
   | { kind: 'accepted'; receipt: JsonValue }
   | { kind: 'uncertain'; issue: 'session-expired' | 'upload-unknown' };
 export type RemoteObservation = { state: 'processing' | 'staged' | 'ready' | 'scheduled' | 'published' | 'failed'; receipt: JsonValue; retryAfterMs?: number };
+/** A connector may pause bounded read-only polling without losing the original receipt. */
+export class PublicationInspectionPaused extends Error {
+  constructor(readonly receipt: JsonValue) { super('Remote processing still needs confirmation'); }
+}
 /** Only use rejected/unavailable when no remote creation can have succeeded. */
 export class PublicationStartError extends Error {
   constructor(readonly outcome: 'rejected' | 'unavailable', readonly retryAfterMs = 30000) { super('Publication start could not proceed'); }

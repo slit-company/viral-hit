@@ -53,3 +53,8 @@ The project Publish page composes the same light shell and SEED-backed Button wi
 The Instagram provider card, Page/Instagram selection and account lifecycle reuse the existing shared Button and NativeSelect, ProductPageShell, SEED-based tokens and light surface treatment. These are shared-control/token adaptations, not a new assertion of direct SEED source reuse. Full Page names and both destination IDs remain visible below the native select on mobile. No provider SDK or new browser dependency is introduced.
 
 Real account UI captures at 1440×1000 and 390×844 passed the frozen visual rubric at 4.35/5 (self-review). The flow used real application routes and encrypted account storage with an isolated Meta response fixture, not a real Meta consent/account. Production captures separately show unconfigured Google/Meta controls disabled. Evidence is under `research/evidence/instagram-accounts/`; the failed URL/file evidence-binding attempt is retained, with the corrected binding in `visual-verified/`.
+
+
+## Instagram publication review
+
+Publish composes separate YouTube and Instagram forms around one destination selector and delivery queue. The Instagram form/card reuse shared NativeSelect, Textarea, Button and the existing light SEED surface tokens. Reel/Story-specific caption and disclosure fields stay in the publishing feature; metadata validation, video inspection and provider calls stay in its server domain. Retained playback and revision-bound approval reuse the established review control. This adds no UI library or direct-source-reuse percentage claim.

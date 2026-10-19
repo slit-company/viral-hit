@@ -1,4 +1,4 @@
-import { PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation, type RemoteObservation } from './contracts';
+import { PublicationInspectionPaused, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation, type RemoteObservation } from './contracts';
 import { instagramCheckpointSchema, instagramIdSchema, instagramMetadataSchema, instagramReceiptSchema, type InstagramCheckpoint, type InstagramContainer } from './instagram-contract';
 import { createInstagramTransport, type InstagramCredential } from './instagram-transport.server';
 import { InstagramTransportError } from './instagram-http.server';
@@ -52,7 +52,12 @@ export function createInstagramConnector(options: Options): PublicationConnector
     },
     async inspect(spec, raw, signal) {
       const identity = target(spec, raw, true), prior = instagramReceiptSchema.parse(raw);
-      return observed(identity, await transport(spec).status(identity, signal), prior.mediaId);
+      const result = await transport(spec).status(identity, signal);
+      const observation = observed(identity, result, prior.mediaId);
+      const polls = result.status === 'IN_PROGRESS' ? Math.min(5, (prior.processingPolls ?? 0) + 1) : prior.processingPolls ?? 0;
+      if (polls > 0) observation.receipt = { ...instagramReceiptSchema.parse(observation.receipt), processingPolls: polls };
+      if (observation.state === 'processing' && polls >= 5) throw new PublicationInspectionPaused(observation.receipt);
+      return observation;
     },
     async publish(spec, raw, signal) {
       const identity = target(spec, raw, true);

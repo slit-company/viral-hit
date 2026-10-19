@@ -28,3 +28,17 @@ test('public projection allowlists receipts and bounded progress without session
     assert.equal(JSON.stringify(unknown).includes('private-metadata'), false);
   } finally { store.close(); }
 });
+
+test('Instagram projection exposes only a matching container and never fabricates a permalink or media ID', () => {
+  const store = new PublicationStore(':memory:');
+  try {
+    const record = store.create({ ...spec, connector: 'instagram', destinationId: '222', metadata: { kind: 'story', isAiGenerated: true } }, 'instagram');
+    const receipt = { containerId: '333', instagramId: '222', pageId: '111', status: 'PUBLISHED' };
+    const view = publicationView({ ...record, receipt });
+    assert.equal(view.supported, true); assert.equal(view.instagramMetadata?.kind, 'story'); assert.equal(view.metadata, null); assert.equal(view.delivery, null);
+    assert.equal(view.instagramDelivery?.containerId, '333'); assert.equal(view.instagramDelivery?.mediaId, undefined);
+    assert.equal(publicationView({ ...record, receipt: { ...receipt, instagramId: '555' } }).instagramDelivery, null);
+    assert.equal(publicationView({ ...record, receipt: { ...receipt, token: 'secret' } }).instagramDelivery, null);
+    assert.equal(publicationView({ ...record, spec: { ...record.spec, connectorVersion: 'future' } }).supported, false);
+  } finally { store.close(); }
+});

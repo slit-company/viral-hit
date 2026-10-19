@@ -141,3 +141,24 @@ test('real connector and durable worker recover lost final response by reading o
     assert.equal(f.calls.filter(c => c.url.pathname.endsWith('/media_publish')).length, 1);
   } finally { store.close(); }
 });
+
+test('five durable processing observations pause the queue and subsequent reconciliation never publishes', async () => {
+  const f = fixture(); let now = 1000;
+  const store = new PublicationStore(':memory:', () => now), draft = store.create(spec, 'bounded');
+  const runtime = { connector: async () => f.connector, validateAssets: async () => {}, read: async (_spec: PublicationSpec, asset: number, offset: number, length: number) => f.read(asset, offset, length) };
+  try {
+    store.approve('project', draft.id, 1, draft.digest, 'ui');
+    await runPublicationStep(store, runtime); await runPublicationStep(store, runtime);
+    for (let i = 1; i <= 5; i++) {
+      const result = await runPublicationStep(store, runtime);
+      assert.equal(result?.state, i === 5 ? 'uncertain' : 'processing');
+      assert.equal((result?.receipt as { processingPolls: number }).processingPolls, i); now += 60001;
+    }
+    assert.equal(store.get('project', draft.id)?.issue, 'processing-timeout');
+    assert.equal(await runPublicationStep(store, runtime), null);
+    f.state('FINISHED'); store.reconcile('project', draft.id, 1);
+    assert.equal((await runPublicationStep(store, runtime))?.state, 'uncertain');
+    assert.equal(store.get('project', draft.id)?.issue, 'publish-unknown');
+    assert.equal(f.calls.filter(call => call.url.pathname.endsWith('/media_publish')).length, 0);
+  } finally { store.close(); }
+});

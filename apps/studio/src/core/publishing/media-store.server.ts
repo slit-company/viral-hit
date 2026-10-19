@@ -1,3 +1,4 @@
+import { probePublicationVideo } from './instagram-video.server';
 import { randomUUID } from 'node:crypto';
 import { constants, closeSync, lstatSync, openSync } from 'node:fs';
 import { link, open, unlink } from 'node:fs/promises';
@@ -96,6 +97,21 @@ export class PublicationMediaStore {
     if (count.count !== manifest.blockCount) throw new Error('Publication block index is incomplete');
     const file = await openMediaFile(this.file(projectId, asset), asset.sizeBytes);
     await file.close(); signal.throwIfAborted();
+  }
+  /** Probe the same retained inode after verifying its trusted block manifest. Never returns a path. */
+  async inspectVideo(projectId: string, asset: PublicationAsset, signal: AbortSignal) {
+    const manifest = this.manifest(projectId, asset);
+    const file = await openMediaFile(this.file(projectId, asset), asset.sizeBytes);
+    try {
+      const buffer = Buffer.allocUnsafe(Math.min(PUBLICATION_BLOCK_BYTES, asset.sizeBytes));
+      for (let index = 0; index < manifest.blockCount; index++) {
+        const offset = index * PUBLICATION_BLOCK_BYTES, block = buffer.subarray(0, Math.min(buffer.length, asset.sizeBytes - offset));
+        await readMediaBlock(file, block, offset, signal);
+        if (blockHash(block) !== this.blockHashes(projectId, asset, index, index)[0]) throw new Error('Retained publication media is corrupt');
+      }
+      return await probePublicationVideo(file.fd, signal);
+    }
+    finally { await file.close(); }
   }
   /** At most one output buffer plus one reusable verification block, even across block boundaries. */
   async read(projectId: string, asset: PublicationAsset, offset: number, length: number, signal: AbortSignal): Promise<Uint8Array> {

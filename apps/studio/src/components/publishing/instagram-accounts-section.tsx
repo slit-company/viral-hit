@@ -18,7 +18,7 @@ export function InstagramAccountsSection({ issue, state, onSelectionDone }: { is
       </div>
       <div className="border-t border-[var(--vh-border)] px-5 py-4 text-sm leading-6 text-[var(--vh-text-2)] sm:px-6">
         {loading && !snapshot ? <p role="status">Loading Instagram connections…</p> : !snapshot ? <p>Connection status is unavailable.</p> : ready ? <p>Allow access through Meta, then choose the Page linked to your Instagram account. Access stays on this workspace’s server.</p> : snapshot.instagram === 'origin-mismatch' ? <p>The Meta callback belongs to a different studio address. Open the configured address or ask your workspace operator to update it.</p> : <p>Meta connection is not configured yet. Ask your workspace operator to enable Instagram for this studio.</p>}
-        <p className="mt-2">Connecting does not publish a post. Instagram delivery is not available in Publish yet.</p>
+        <p className="mt-2">Connecting does not publish a post. Prepare and approve a Reel or Story from your project’s Publish view.</p>
       </div>
     </section>
     {selection && <section aria-label="Choose Instagram destination" className="space-y-4 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 sm:p-6">
