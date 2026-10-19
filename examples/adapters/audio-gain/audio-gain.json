@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "operation": "ext.audio-gain",
+  "version": "1",
+  "label": "Local audio gain",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "entry": "audio-gain.mjs",
+  "sha256": "e7fa84f1b774801b571c812a21b906ee39a4e8393a4e850e6fc87ce93e6c5a41",
+  "recovery": "replay",
+  "generation": false,
+  "configuration": [
+    {
+      "name": "VIRAL_HIT_FFMPEG",
+      "required": true
+    }
+  ],
+  "assetInputs": [
+    {
+      "id": "source",
+      "pointer": "/sourceAssetId",
+      "kind": "audio",
+      "maxBytes": 67108864
+    }
+  ],
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "sourceAssetId": {
+        "type": "string",
+        "pattern": "^[a-zA-Z0-9_-]{1,128}$"
+      },
+      "gain": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 2
+      },
+      "duration": {
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 30
+      }
+    },
+    "required": [
+      "sourceAssetId",
+      "gain",
+      "duration"
+    ]
+  }
+}

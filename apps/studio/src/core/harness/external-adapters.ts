@@ -1,3 +1,6 @@
+import { readPointer } from './bindings';
+import { readProjectMediaInput } from './project-media-input';
+import { projectMediaPin } from './project-media-input-schema';
 import { z } from 'zod';
 import { externalCatalog, externalConfigured, externalConfigurationDigest, externalEnvelope, validateExternalInput, type ExternalEntry } from './external-catalog';
 import { binaryReceiptOutput, readBinaryReceipt, saveBinaryReceipt } from './binary-receipts';
@@ -13,7 +16,7 @@ export function createExternalAdapter(entry: ExternalEntry): Adapter {
     // Ordinary errors preserve ambiguous outcomes: never turn a changed runtime into a retryable rejection.
     if (!parsed.success || parsed.data.adapter.digest !== entry.digest || parsed.data.adapter.configuration !== externalConfigurationDigest(entry) || !externalConfigured(entry)) throw new Error(`External adapter changed or was not pinned: ${entry.descriptor.operation}. Restore the original runtime/configuration to inspect this job.`);
     validateExternalInput(entry, parsed.data.payload);
-    return parsed.data.payload;
+    return parsed.data;
   }
   async function implementation() {
     loaded ??= (async () => {
@@ -26,12 +29,20 @@ export function createExternalAdapter(entry: ExternalEntry): Adapter {
     })();
     return loaded;
   }
-  function mediaContext(context: { projectId?: string; jobId?: string }, signal: AbortSignal) {
+  function mediaContext(context: { projectId?: string; jobId?: string }, signal: AbortSignal, envelope: z.infer<typeof externalEnvelope>) {
     const scoped = () => {
       if (!context.projectId || !context.jobId) throw new Error('Binary outputs require project/job context');
       return { projectId: context.projectId, jobId: context.jobId };
     };
+    const inputs = new Map<string, ReturnType<typeof readProjectMediaInput>>();
     return {
+      async readAsset(name: string) {
+        const input = entry.descriptor.assetInputs?.find(input => input.id === name);
+        const pin = projectMediaPin.safeParse(envelope.assetPins?.[name]);
+        if (!input || !pin.success || pin.data.projectId !== context.projectId || pin.data.kind !== input.kind || readPointer(envelope.payload, input.pointer) !== pin.data.assetId) throw new Error('Adapter media input is undeclared, unpinned or belongs to another project');
+        if (!inputs.has(name)) inputs.set(name, readProjectMediaInput({ projectId: context.projectId!, assetId: pin.data.assetId, kind: input.kind, expected: pin.data, maxBytes: input.maxBytes, signal }));
+        return inputs.get(name)!;
+      },
       async readBinary() {
         const result = await readBinaryReceipt(scoped(), signal);
         if (!result) return null;
@@ -49,23 +60,26 @@ export function createExternalAdapter(entry: ExternalEntry): Adapter {
   return {
     recovery: entry.descriptor.recovery,
     async submit(raw, context) {
-      const input = payload(raw), adapter = await implementation();
-      return z.object({ id: z.string().min(1).max(16_000) }).strict().parse(await adapter.submit(input, { ...context, ...mediaContext(context, context.signal) }));
+      const envelope = payload(raw), media = mediaContext(context, context.signal, envelope);
+      // Verify every declared original before any external submission; ordinary errors preserve ambiguity on replay.
+      for (const input of entry.descriptor.assetInputs ?? []) await media.readAsset(input.id);
+      const adapter = await implementation();
+      return z.object({ id: z.string().min(1).max(16_000) }).strict().parse(await adapter.submit(envelope.payload, { ...context, ...media }));
     },
     async poll(id, raw, signal, context) {
-      const input = payload(raw), adapter = await implementation();
-      const result = await adapter.poll(id, input, signal, context ? { ...context, ...mediaContext(context, signal) } : undefined);
+      const envelope = payload(raw), adapter = await implementation();
+      const result = await adapter.poll(id, envelope.payload, signal, context ? { ...context, ...mediaContext(context, signal, envelope) } : undefined);
       if (Buffer.byteLength(JSON.stringify(result) ?? '') > 1_000_000) throw new Error('External adapter result exceeds 1 MB; publish media as binary');
       return pollResult.parse(result);
     },
     ...(entry.descriptor.recovery === 'reconcile' ? { async reconcile(raw: Json, context: Parameters<NonNullable<Adapter['reconcile']>>[1]) {
       const input = payload(raw), adapter = await implementation();
-      return z.object({ id: z.string().min(1).max(16_000) }).strict().nullable().parse(await adapter.reconcile!(input, context));
+      return z.object({ id: z.string().min(1).max(16_000) }).strict().nullable().parse(await adapter.reconcile!(input.payload, context));
     } } : {}),
     async cancel(id, raw, signal) {
       const input = payload(raw), adapter = await implementation();
       if (!adapter.cancel) throw new Error('External adapter cancellation is unsupported');
-      const result = await adapter.cancel(id, input, signal);
+      const result = await adapter.cancel(id, input.payload, signal);
       return result === undefined ? undefined : z.object({ state: z.literal('canceled') }).strict().parse(result);
     },
   };

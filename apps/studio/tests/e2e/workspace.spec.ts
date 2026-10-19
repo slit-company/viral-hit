@@ -811,3 +811,55 @@ test('installed external adapter is discovered through UI and MCP and queues a p
   const same = await mcp(request, 'viral_hit_runs_list', { projectId: id });
   expect(same.structuredContent.result.runs[0].id).toBe(run.id);
 });
+
+test('external media recipes preview only eligible project audio and pin UI and MCP requests', async ({ page, request }) => {
+  const id = await project(request, 'Audio processor inputs'), foreign = await project(request, 'Other audio inputs');
+  const buffer = execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=1', '-f', 'wav', 'pipe:1']);
+  const upload = async (target: string, name: string) => {
+    const response = await request.post(`/api/app/projects/${target}/assets`, { headers, multipart: { file: { name, mimeType: 'audio/wav', buffer } } });
+    expect(response.ok()).toBe(true); return (await response.json()).asset;
+  };
+  const mine = await upload(id, 'my-audio.wav'), other = await upload(foreign, 'foreign-audio.wav');
+  await request.post(`/api/app/projects/${id}/assets`, { headers, multipart: { file: { name: 'image.png', mimeType: 'image/png', buffer: await readFile('public/logo.png') } } });
+  const denied = await request.post(`/api/app/projects/${id}/runs`, { headers, data: { action: 'recipe', recipeId: 'audio-gain', values: { source: other.id }, requestKey: 'foreign-input' } });
+  expect(denied.ok()).toBe(false);
+  await page.goto(`/editor/${id}`); await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('audio-gain');
+  const selection = page.getByLabel('Source audio', { exact: true }), queue = page.getByRole('button', { name: 'Queue workflow', exact: true });
+  await expect(queue).toBeDisabled();
+  await expect(selection.locator('option')).toHaveCount(2);
+  await expect(selection).not.toContainText('foreign-audio.wav'); await expect(selection).not.toContainText('image.png');
+  await selection.selectOption(mine.id);
+  const preview = page.locator('audio[aria-label="Selected Source audio"]');
+  await expect(preview).toBeVisible(); await expect.poll(() => preview.evaluate((e: HTMLAudioElement) => e.readyState)).toBeGreaterThanOrEqual(1);
+  for (const [name, width, height] of [['desktop', 1440, 1000], ['mobile', 390, 844]] as const) {
+    await page.setViewportSize({ width, height }); await selection.scrollIntoViewIfNeeded();
+    await expect(preview).toBeVisible(); expect(await page.locator('body').evaluate(el => el.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `test-results/audio-input-${name}.png` });
+    await queue.scrollIntoViewIfNeeded(); const modal = await page.getByRole('dialog').boundingBox(), box = await queue.boundingBox();
+    expect(box!.y + box!.height).toBeLessThanOrEqual(modal!.y + modal!.height);
+  }
+  await queue.click();
+  await expect.poll(async () => (await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs.length).toBe(1);
+  const result = await mcp(request, 'viral_hit_runs_list', { projectId: id });
+  const run = result.structuredContent.result.runs[0], input = JSON.parse(run.jobs.find((job: any) => job.operation === 'ext.audio-gain').input_json);
+  expect(input.assetPins.source).toMatchObject({ projectId: id, assetId: mine.id, kind: 'audio', sizeBytes: buffer.length });
+  expect(input.assetPins.source.sha256).toMatch(/^[a-f0-9]{64}$/);
+});
+
+test('portable video asset parameters render a playable preview without enabling an absent runtime', async ({ page, request }) => {
+  const id = await project(request, 'Video input preview');
+  createDemoMedia('test-results/video-selection.mp4');
+  const uploaded = await request.post(`/api/app/projects/${id}/assets`, { headers, multipart: { file: { name: 'source-video.mp4', mimeType: 'video/mp4', buffer: await readFile('test-results/video-selection.mp4') } } });
+  expect(uploaded.ok()).toBe(true); const asset = (await uploaded.json()).asset;
+  const manifest = JSON.parse(await readFile('../../examples/adapter-recipes/audio-gain.json', 'utf8'));
+  manifest.id = 'video-preview'; manifest.title = 'Video input preview'; manifest.parameters[0].kind = 'video'; manifest.parameters[0].label = 'Source video'; manifest.nodes[0].operation = 'ext.uninstalled-video';
+  const inspect = await request.post('/api/app/recipes', { headers, data: { action: 'inspect', manifest } });
+  expect(inspect.ok()).toBe(true); const report = await inspect.json();
+  const install = await request.post('/api/app/recipes', { headers, data: { action: 'install', manifest, expectedDigest: report.digest } }); expect(install.ok()).toBe(true);
+  await page.goto(`/editor/${id}`); await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('video-preview'); await page.getByLabel('Source video', { exact: true }).selectOption(asset.id);
+  const video = page.locator('video[aria-label="Selected Source video"]'); await expect(video).toBeVisible();
+  await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThanOrEqual(1);
+  await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeDisabled();
+});

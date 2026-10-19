@@ -83,3 +83,12 @@ test('worker executes captured verified bytes even if the original module file c
   const pinned = pinExternalAdapters(plan(), [c.entry]);
   assert.deepEqual(await adapter.submit(pinned.nodes[0].input, { key: 'stable', dependencies: {}, signal: AbortSignal.timeout(1000) }), { id: 'stable' });
 });
+
+test('media declarations reject unsafe pointers, overlapping IDs and aggregate over-allocation', async () => {
+  const asset = { id: 'source', pointer: '/source', kind: 'audio', maxBytes: 32 * 1024 * 1024 };
+  for (const inputs of [[asset, asset], [{ ...asset, pointer: '/constructor' }], [asset, { ...asset, id: 'second', pointer: '/source/child' }], [{ ...asset, maxBytes: 512 * 1024 * 1024 }, { ...asset, id: 'second', pointer: '/other', maxBytes: 1 }]]) {
+    await assert.rejects(catalog(source, { assetInputs: inputs }));
+  }
+  const { entry } = await catalog(source, { assetInputs: [{ id: 'source', pointer: '/source', kind: 'audio' }] });
+  assert.equal(entry.descriptor.assetInputs![0].maxBytes, 32 * 1024 * 1024);
+});

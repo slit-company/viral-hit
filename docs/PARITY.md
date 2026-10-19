@@ -19,6 +19,8 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 | Agent | Supercomputer: projects, skills, connectors, memory, ask-before-generation mode | Same project operations as UI; durable jobs; revisions, retries, cancellation, budget ledger | Target |
 | Templates | VFX, UGC, explainers, marketing, photography | Versioned, forkable workflows with editable parameters and actual execution | Target |
 | Extensibility | MCP, CLI and API | Versioned APIs, MCP, local/server providers, capability discovery | Target |
+| Publishing | Additional requested scope: Meta/Instagram and YouTube | Generic destination connectors, export identity, approval/schedule, remote receipt and reconciliation | Source audit only; connectors not implemented |
+| Measurement | Additional requested scope: creative performance feedback | Versioned metrics linked to published creative, partial collection states and analysis | Source audit only; not implemented |
 | Collaboration | Team/project sharing and community | Shared projects, comments, permissions, reproducible remix packages | Target |
 
 ## Verified subset (not full-row completion)

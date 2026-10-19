@@ -10,6 +10,8 @@ The shipped `open-frame`, `open-motion` and `spoken-line` recipes cover general 
 
 Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router`, `comfy.workflow`, `comfy.upload`, `asset.materialize` and explicitly installed `ext.*` adapters. See [external runtime installation](EXTERNAL-ADAPTERS.md). An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. The shipped video recipe maps the Kling task-list result at `/data/data/0/outputs/0/url`; other result shapes need their own mapping. It does not currently fall back to a watermark URL. Each other model requires its own declared output mapping.
 
+Asset parameters declare `kind: image | video | audio`; installed adapters can consume verified local bytes through declared [project media inputs](EXTERNAL-ADAPTERS.md#project-media-inputs). Inputs can also come from explicit upstream materializer nodes, allowing generation and processing recipes to compose.
+
 The [JSON Schema](schemas/recipe.schema.json) supports editor tooling. The runtime compiler additionally verifies graph cycles, parameter types/ranges, duplicate identifiers, pointer safety, dependency membership and overlapping bindings. Root `schemaVersion` versions the manifest format; recipe `version` versions the author's behavior. Node operation version and recipe identity/version enter the execution fingerprint.
 
 ```sh
@@ -99,7 +101,7 @@ A node starts with a JSON `input` and existing placeholders. Its `parameters` ma
 }
 ```
 
-The compiler copies typed values, without string interpolation or evaluation. Parameters can be string, finite number, boolean, an enumerated string, or a project image (`type: "asset", kind: "image"`). Image values are project asset IDs, not filesystem paths or remote URLs. String parameters can declare `multiline: false` for short identifiers, URLs and names; omitted/true retains a multiline text area. This is presentation metadata, not a change to string validation. Unknown values and invalid defaults fail validation.
+The compiler copies typed values, without string interpolation or evaluation. Parameters can be string, finite number, boolean, an enumerated string, or project media (`type: "asset", kind: "image" | "video" | "audio"`). Media values are project asset IDs, not filesystem paths or remote URLs. String parameters can declare `multiline: false` for short identifiers, URLs and names; omitted/true retains a multiline text area. This is presentation metadata, not a change to string validation. Unknown values and invalid defaults fail validation.
 
 For multi-stage processing, `bindings` select output JSON from an explicitly declared upstream node. The following is a **contract example**, not a live claim about a particular model's result format:
 
@@ -123,6 +125,10 @@ Prefer a separate module and descriptor following [external adapters](EXTERNAL-A
 Use `recovery: "replay"` only if repeated submission with the same key is guaranteed to recover the original job. Otherwise use `manual`, leaving ambiguous outcomes uncertain. Persist provider identity, model/version, actual cost (or null), output metadata and provenance. Do not return success merely because an HTTP request was accepted.
 
 Third-party executable adapters run with local process privileges. Operators explicitly configure their directory; recipes cannot install code. The shared capability catalog includes installed operations, configuration availability, version, attribution, recovery mode and input schema. Signed packages, isolated workers, automatic model discovery and a hosted plugin marketplace remain planned.
+
+## Source-level model catalog extensions
+
+The editor's model picker consumes pure metadata from `src/config/generation-catalog.ts`; executable provider definitions register separately in `src/config/generation-providers.ts`. Define one browser-safe metadata object and compose it into the server definition. The server rejects mismatched metadata. Keep credentials, SDK clients and database access in the server implementation. Select the active source provider in the catalog config. See [the boundary decision](architecture/001-public-generation-catalog.md). This source-level hook is separate from independently installed harness adapters described above.
 
 ## Contributing
 

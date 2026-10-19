@@ -21,3 +21,19 @@ Pinned package versions match SEED: `@seed-design/react` 2.4.1, `@seed-design/cs
 Review actual routes at 1440×1000 and the project list/recipe modal at 390×844. Inspect the new logo at header size, controls and selected states, light canvas, modal stacking, field scrolling, queue visibility, keyboard focus and media colors. The frozen rubric and actual captures are under ignored `research/evidence/redesign/`. Earlier dark-UI self-review scores are historical functional-layout evidence, not acceptance of the rejected visual direction.
 
 No Higgsfield performance or model-quality parity is established by this redesign. See the validation ledger for functional tests and remaining benchmark gates. Logo source/prompt: [BRAND.md](BRAND.md).
+
+
+## Component audit and ownership rules
+
+The current implementation is not mostly copied SEED source components. It combines direct reuse, adapters around the same SEED primitives and editor-specific components. An import audit on 2026-10-19 found 40 of 65 component `.tsx` files directly importing `components/base/`, `components/ui/` or `@seed-design/react`. This is direct dependency coverage, not the percentage of SEED source code reused; it excludes route files and does not count controls or transitive usage.
+
+| Control/layout | Actual implementation | Reuse classification |
+|---|---|---|
+| Back navigation | shared BackButton with Phosphor/SEED | Direct source reuse |
+| Shared actions and buttons | `base/action.tsx`, `ui/button.tsx` wrapping SEED ActionButton | Adaptation using the same primitive |
+| Shared modal | `ui/dialog.tsx` wrapping SEED ContentDialog | Adaptation using the same primitive |
+| Recipe string/number controls | Feature-local `recipe-parameter-form.tsx` using SEED TextField | Primitive reuse, not copied SEED domain code |
+| Colors/type/interaction states | Owned SEED token and chrome subset | Token/style adaptation |
+| Timeline, media preview, connected canvas | Editor-specific composition | Product-specific components |
+
+Inspected upstream `SectionHeading.tsx`, `PageHeader.tsx` and `LoadingPlaceholder.tsx` are further reusable candidates. They are not integrated merely by appearing in this table. Prefer the actual SEED heading/header and skeleton pattern when replacing corresponding surfaces; the consumer phone shell and Saju commerce/chat components are not appropriate editor primitives. New shared controls must follow [structure rules](architecture/STRUCTURE.md), with feature behavior kept outside the common UI layer.

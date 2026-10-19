@@ -1,6 +1,7 @@
+import { eligibleRecipeAssets, type RecipeInputAsset, type AssetCapability } from '@/core/harness/recipe-assets';
 import { ComfyConnectionSettings } from './comfy-connection-settings';
 import { RecipeLibrary } from './recipe-library';
-import { TextField } from '@seed-design/react';
+import { RecipeParameterForm } from './recipe-parameter-form';
 import { Action } from '@/components/base/action';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ArrowUpRight, RefreshCw } from 'lucide-react';
@@ -12,9 +13,9 @@ import type { TimelineDocument } from '@/core/editor/timeline-document';
 import type { ComfyPreflight } from '@/core/harness/comfy-preflight';
 
 type Run = { id: string; created_at: number; jobs: Job[]; events: { sequence: number; event: string; at: number }[] };
-type Capability = { operation: string; configured: boolean; label: string; configuration: string | null; generation: boolean; reconciliation: boolean; external?: boolean; version?: string; author?: string; license?: string };
+type Capability = AssetCapability & { operation: string; configured: boolean; label: string; configuration: string | null; generation: boolean; reconciliation: boolean; external?: boolean; version?: string; author?: string; license?: string };
 type Result = { configured: boolean; capabilities: Capability[]; runs: Run[] };
-type InputAsset = { id: string; type: string; storageProvider: string; filename: string | null; publicUrl: string; mimeType: string | null; sizeBytes: number | null };
+type InputAsset = RecipeInputAsset;
 export function HarnessDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
@@ -43,9 +44,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const needsGeneration = generationOperations.length > 0;
   const missingCapabilities = remoteOperations.filter(operation => !data?.capabilities?.some(capability => capability.operation === operation && capability.configured));
   const configurationMessage = missingCapabilities.map(operation => data?.capabilities?.find(capability => capability.operation === operation)?.configuration ?? operation).join(', ');
-  const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? inputAssets.some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
+  const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? eligibleRecipeAssets(selected, parameter, inputAssets, data?.capabilities ?? []).some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
+  const materializedInputs = data?.runs.flatMap(run => run.jobs).filter(job => job.operation === 'asset.materialize' && job.state === 'succeeded').map(job => job.id).sort().join(',') ?? '';
+
   useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); setLibraryOpen(false); setConnectionsOpen(false); setLibraryNotice(''); }, [open, projectId]);
   async function checkServer() {
     if (!selected) return;
@@ -77,9 +80,9 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     if (!open) return;
     let active = true;
     setInputAssets([]);
-    void apiJsonGet<{ assets: InputAsset[] }>(`/api/app/projects/${projectId}/assets`).then(result => { if (active) setInputAssets(result.assets.filter(asset => asset.type === 'image' && asset.storageProvider === 'local' && ['image/png', 'image/jpeg', 'image/webp'].includes(asset.mimeType ?? '') && (asset.sizeBytes ?? Infinity) <= 32 * 1024 * 1024)); }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Project images unavailable'); });
+    void apiJsonGet<{ assets: InputAsset[] }>(`/api/app/projects/${projectId}/assets`).then(result => { if (active) setInputAssets(result.assets); }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Project media unavailable'); });
     return () => { active = false; };
-  }, [open, projectId]);
+  }, [open, projectId, materializedInputs]);
   async function act(body: unknown) {
     setBusy(true); setError('');
     try { await apiJsonPost(endpoint, body); await refresh(); return true; }
@@ -143,23 +146,14 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           </select>
           {selected && <>
             <details className="text-xs text-[var(--vh-text-2)]"><summary className="cursor-pointer">Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
-            <div className={`${check ? 'max-h-[13vh] sm:max-h-[min(18rem,calc(85vh-38rem))]' : 'max-h-[28vh] sm:max-h-[min(28rem,calc(85vh-26rem))]'} space-y-4 overflow-y-auto pr-1`} aria-label="Recipe parameters">
-            {selected.parameters.map(parameter => {
-              const id = `recipe-${parameter.id}`;
-              const value = values[parameter.id] ?? parameter.default ?? '';
-              const change = (value: string | number | boolean) => { setValues(current => ({ ...current, [parameter.id]: value })); requestKey.current = ''; invalidateCheck(); setChecking(false); };
-              const fieldClass = 'w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-sm outline-none focus:border-[var(--vh-border-strong)]';
-              return <div key={id} className="space-y-2"><label htmlFor={id} className="block text-xs text-[var(--vh-text-2)]">{parameter.label}</label>
-                {parameter.type === 'asset' ? <><div className="flex items-center gap-2"><select id={id} value={String(value)} onChange={e => change(e.target.value)} className={`${fieldClass} min-w-0 flex-1`}><option value="" disabled>Select a project image…</option>{inputAssets.map(asset => <option key={asset.id} value={asset.id}>{asset.filename ?? asset.id}</option>)}</select>{inputAssets.find(asset => asset.id === value) && <img src={inputAssets.find(asset => asset.id === value)!.publicUrl} alt={`Selected ${parameter.label}`} className="h-14 w-14 shrink-0 rounded-lg border border-[var(--vh-border)] object-contain" />}</div><p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">{inputAssets.length ? remoteOperations.includes('comfy.upload') ? 'This image will be sent to your configured ComfyUI server.' : 'This project image is provided to the selected recipe.' : 'No local images in this project yet.'} <a href={`/assets/${projectId}`} className="underline">Open Assets</a></p></>
-                  : parameter.type === 'string' && parameter.multiline === false ? <TextField.Root className="vh-field"><TextField.Input aria-label={parameter.label} id={id} type="text" value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} /></TextField.Root>
-                  : parameter.type === 'string' ? <TextField.Root className="vh-field"><TextField.Textarea aria-label={parameter.label} autoresize={false} id={id} value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className="resize-y" /></TextField.Root>
-                  : parameter.type === 'number' ? <TextField.Root className="vh-field"><TextField.Input aria-label={parameter.label} id={id} type="number" value={String(value)} min={parameter.min} max={parameter.max} step={parameter.integer ? 1 : 'any'} onChange={e => change(e.target.value === '' ? '' : Number(e.target.value))} /></TextField.Root>
-                  : parameter.type === 'boolean' ? <input id={id} type="checkbox" checked={Boolean(value)} onChange={e => change(e.target.checked)} />
-                  : <select id={id} value={String(value)} onChange={e => change(e.target.value)} className={fieldClass}><option value="" disabled>Select…</option>{parameter.options.map(option => <option key={option} value={option}>{option}</option>)}</select>}
-                {parameter.description && <p className="text-[11px] text-[var(--vh-text-2)]">{parameter.description}</p>}
-              </div>;
-            })}
-            </div>
+            <RecipeParameterForm
+              recipe={selected} values={values} assets={inputAssets}
+              capabilities={data?.capabilities ?? []} projectId={projectId} hasCheck={Boolean(check)}
+              onChange={(parameterId, value) => {
+                setValues(current => ({ ...current, [parameterId]: value }));
+                requestKey.current = ''; invalidateCheck(); setChecking(false);
+              }}
+            />
           </>}
           <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? missingCapabilities.every(operation => operation === 'comfy.workflow' || operation === 'comfy.upload') ? 'Choose your ComfyUI server in Connections to run this recipe.' : `Configure ${configurationMessage} in the server environment, then restart the studio.` : externalCapabilities.length ? `Uses installed adapters: ${externalCapabilities.map(capability => `${capability.label} v${capability.version}`).join(', ')}. Compute and provider charges depend on these adapters.` : !needsGeneration ? 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
           {check && <div role="status" aria-label="Server check result" className="max-h-28 sm:max-h-44 space-y-2 overflow-y-auto rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-xs">
@@ -169,7 +163,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             {check.issues.length > 12 && <p>{check.issues.length - 12} more checks in the CLI/MCP report.</p>}
             <p className="text-[var(--vh-text-2)]">No jobs or uploads started. This check does not guarantee successful execution.</p>
           </div>}
-          <div className="flex gap-2">
+          <div className="sticky bottom-0 z-10 flex gap-2 bg-[var(--vh-surface)] py-3 sm:static sm:py-0">
           {generationOperations.includes('comfy.workflow') && <Action disabled={busy || checking} onClick={() => void checkServer()} className="h-11 min-w-0 flex-1 rounded-lg border border-[var(--vh-border)] px-3 text-xs">{checking ? 'Checking server…' : 'Check server'}</Action>}
           <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
           </div>

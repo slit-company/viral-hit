@@ -1,3 +1,5 @@
+import { pointerParts } from './bindings';
+import { MAX_ADAPTER_INPUT_BYTES, projectMediaPin } from './project-media-input-schema';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { isAbsolute, join } from 'node:path';
@@ -13,6 +15,7 @@ export const externalDescriptor = z.object({
   entry: z.string().regex(/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.mjs$/), sha256: z.string().regex(/^[a-f0-9]{64}$/),
   recovery: z.enum(['manual', 'replay', 'reconcile']), generation: z.boolean(),
   configuration: z.array(z.object({ name: z.string().regex(/^[A-Z][A-Z0-9_]{0,100}$/), required: z.boolean() }).strict()).max(32).default([]),
+  assetInputs: z.array(z.object({ id: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).refine(id => !['constructor', 'prototype'].includes(id)), pointer: z.string().min(1).max(1024), kind: z.enum(['image', 'video', 'audio']), maxBytes: z.number().int().positive().max(MAX_ADAPTER_INPUT_BYTES).default(32 * 1024 * 1024) }).strict()).min(1).max(16).optional(),
   inputSchema: z.record(z.string(), z.json()),
 }).strict();
 export type ExternalDescriptor = z.infer<typeof externalDescriptor>;
@@ -34,6 +37,11 @@ export function readExternalCatalog(directory: string | undefined) {
     if (operations.has(descriptor.operation)) throw new Error(`Duplicate adapter operation: ${descriptor.operation}`);
     operations.add(descriptor.operation);
     if (new Set(descriptor.configuration.map(item => item.name)).size !== descriptor.configuration.length) throw new Error('Duplicate adapter configuration variable');
+    const inputs = descriptor.assetInputs ?? [];
+    if (new Set(inputs.map(input => input.id)).size !== inputs.length) throw new Error('Duplicate adapter asset input');
+    const pointers = inputs.map(input => pointerParts(input.pointer));
+    if (pointers.some((pointer, index) => !pointer.length || pointers.slice(0, index).some(other => other.slice(0, Math.min(other.length, pointer.length)).every((part, i) => part === pointer[i])))) throw new Error('Adapter asset input pointers overlap');
+    if (inputs.reduce((sum, input) => sum + input.maxBytes, 0) > MAX_ADAPTER_INPUT_BYTES) throw new Error('Adapter asset inputs exceed 512 MiB aggregate');
     const bytes = boundedRead(join(directory, descriptor.entry), 2_000_000);
     totalBytes += bytes.length;
     if (totalBytes > 8_000_000) throw new Error('Adapter modules exceed 8 MB aggregate');
@@ -64,6 +72,7 @@ export function validateExternalInput(entry: ExternalEntry, value: Json) {
 export const externalEnvelope = z.object({
   adapter: z.object({ digest: z.string().regex(/^[a-f0-9]{64}$/), configuration: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   payload: z.json(),
+  assetPins: z.record(z.string(), z.union([projectMediaPin, z.object({ projectId: z.null(), assetId: z.null(), kind: z.null(), sha256: z.null(), sizeBytes: z.null() }).strict()])).optional(),
 }).strict();
 export function pinExternalAdapters(plan: Plan, entries = externalCatalog()): Plan {
   return { ...plan, nodes: plan.nodes.map(node => {
