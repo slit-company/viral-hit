@@ -12,10 +12,12 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Result>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [attached, setAttached] = useState<string[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [recipeId, setRecipeId] = useState('open-frame');
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const selected = recipes.find(recipe => recipe.id === recipeId) ?? recipes[0];
+  const needsComfy = selected?.nodes.some(node => node.operation === 'comfy.router');
   const ready = selected?.parameters.every(parameter => values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
@@ -47,6 +49,12 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     requestKey.current ||= crypto.randomUUID();
     if (await act({ action: 'recipe', recipeId: selected.id, values, requestKey: requestKey.current })) { setValues({}); requestKey.current = ''; }
   }
+  async function attach(runId: string, jobId: string) {
+    try {
+      const result = await apiJsonGet<{ timeline: { version: number } | null }>(`/api/app/projects/${projectId}/timeline`);
+      if (await act({ action: 'attach', runId, jobId, expectedRevision: result.timeline?.version ?? 0 })) setAttached(current => [...current, jobId]);
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not attach media'); }
+  }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs hover:bg-white/10" aria-label="Generation runs">
       <Activity size={14} /><span className="hidden lg:inline">Runs</span>
@@ -65,7 +73,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
           </select>
           {selected && <>
-            <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.length} generation step{selected.nodes.length === 1 ? '' : 's'} · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
+            <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.filter(node => node.operation === 'comfy.router').length} generation · {selected.nodes.filter(node => node.operation !== 'comfy.router').length} local steps · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
             <div className="max-h-[28vh] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
             {selected.parameters.map(parameter => {
               const id = `recipe-${parameter.id}`;
@@ -82,9 +90,9 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             })}
             </div>
           </>}
-          <p className="text-xs leading-relaxed text-white/60">{data ? data.configured ? 'Uses your Comfy credits. Final usage appears on the provider receipt.' : 'Connect Comfy with COMFY_API_KEY in the server environment, then restart the studio.' : 'Checking Comfy connection…'}</p>
-          <button disabled={!data?.configured || !ready || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">Queue generation <ArrowUpRight size={15} /></button>
-          <p className="text-[11px] leading-relaxed text-amber-200/80">Preview integration: this route saves the provider receipt. Automatic media import into Assets is still being built.</p>
+          <p className="text-xs leading-relaxed text-white/60">{!needsComfy ? 'This recipe runs local processing without a generation request.' : data ? data.configured ? 'Uses your Comfy credits. Final usage appears on the provider receipt.' : 'Connect Comfy with COMFY_API_KEY in the server environment, then restart the studio.' : 'Checking Comfy connection…'}</p>
+          <button disabled={(needsComfy && !data?.configured) || !ready || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">{needsComfy ? 'Queue generation' : 'Queue import'} <ArrowUpRight size={15} /></button>
+          <p className="text-[11px] leading-relaxed text-white/50">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
         <section className="min-w-0 space-y-3">
           <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">Recent runs</h3><button aria-label="Refresh runs" onClick={() => void refresh().catch(e => setError(String(e)))} className="rounded-md p-1.5 hover:bg-white/10"><RefreshCw size={14} /></button></div>
@@ -92,10 +100,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-white/10 p-3">
             <div className="mb-2 flex items-center justify-between text-[10px] text-white/50"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>
             {run.jobs.map(job => <div key={job.id} className="my-2 rounded-lg bg-black/20 p-2.5 text-xs">
-              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[#c7f36b]' : 'text-white/60'}>{job.state === 'succeeded' ? 'Receipt ready' : job.state}</span></div>
+              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[#c7f36b]' : 'text-white/60'}>{job.state === 'succeeded' ? job.operation === 'asset.materialize' ? 'Asset ready' : 'Receipt ready' : job.state}</span></div>
               {job.cancel_requested === 1 && <p className="mt-1 text-amber-200">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
               {job.error && <p className="mt-2 break-words text-amber-200">{job.error}</p>}
-              {job.output_json && <details className="mt-2 text-white/60"><summary className="cursor-pointer">Provider receipt</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
+              {job.operation === 'asset.materialize' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex gap-4"><button disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[#c7f36b]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</button><a href={`/assets/${projectId}`} className="text-white/60 underline">View assets</a></div>}
+              {job.output_json && <details className="mt-2 text-white/60"><summary className="cursor-pointer">{job.operation === 'asset.materialize' ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
             </div>)}
             <div className="flex gap-3 text-xs">
               {run.jobs.some(j => ['queued', 'submitting', 'running'].includes(j.state)) && <button disabled={busy} onClick={() => void act({ action: 'cancel', runId: run.id })} className="text-white/70 hover:text-white">Request cancel</button>}

@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "remote-media-import",
+  "version": "1.0.0",
+  "title": "Import remote media",
+  "description": "Save a public HTTPS image, video or audio file into this project. No model generation is requested. Use a source you are permitted to keep and edit.",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "category": "utility",
+  "tags": [
+    "image",
+    "video",
+    "audio",
+    "import"
+  ],
+  "parameters": [
+    {
+      "id": "url",
+      "type": "string",
+      "label": "Public HTTPS media URL",
+      "minLength": 10,
+      "maxLength": 16000
+    },
+    {
+      "id": "kind",
+      "type": "enum",
+      "label": "Media type",
+      "options": [
+        "image",
+        "video",
+        "audio"
+      ],
+      "default": "image"
+    },
+    {
+      "id": "label",
+      "type": "string",
+      "label": "Asset name",
+      "default": "Imported media",
+      "maxLength": 160
+    }
+  ],
+  "nodes": [
+    {
+      "id": "media",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "url": "",
+        "kind": "image",
+        "label": ""
+      },
+      "parameters": [
+        {
+          "parameter": "url",
+          "target": "/url"
+        },
+        {
+          "parameter": "kind",
+          "target": "/kind"
+        },
+        {
+          "parameter": "label",
+          "target": "/label"
+        }
+      ]
+    }
+  ]
+}

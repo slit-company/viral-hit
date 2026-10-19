@@ -469,8 +469,10 @@ export function VideoEditorWorkspace({
             projectId,
             name: projectName,
           });
-          timelineVersionRef.current = null;
-          lastSavedDocumentRef.current = null;
+          // An untouched empty editor is a clean baseline, not a pending full-document save.
+          // Otherwise its delayed bootstrap save can erase a first clip added by MCP/Runs.
+          timelineVersionRef.current = 0;
+          lastSavedDocumentRef.current = emptyDocument;
           documentRef.current = emptyDocument;
           resetDocument(emptyDocument);
           setSelectedClipId(null);

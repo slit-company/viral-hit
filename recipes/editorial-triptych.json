@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "Apache-2.0",
   "author": "Viral Hit",
   "tags": [
@@ -54,6 +54,27 @@
       ]
     },
     {
+      "id": "opening-asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "url": "",
+        "kind": "image",
+        "label": "opening"
+      },
+      "dependsOn": [
+        "opening"
+      ],
+      "bindings": [
+        {
+          "node": "opening",
+          "pointer": "/data/result/sample",
+          "target": "/url"
+        }
+      ]
+    },
+    {
       "id": "detail",
       "operation": "comfy.router",
       "version": "1",
@@ -72,6 +93,27 @@
       ]
     },
     {
+      "id": "detail-asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "url": "",
+        "kind": "image",
+        "label": "detail"
+      },
+      "dependsOn": [
+        "detail"
+      ],
+      "bindings": [
+        {
+          "node": "detail",
+          "pointer": "/data/result/sample",
+          "target": "/url"
+        }
+      ]
+    },
+    {
       "id": "closing",
       "operation": "comfy.router",
       "version": "1",
@@ -86,6 +128,27 @@
         {
           "parameter": "closing",
           "target": "/body/prompt"
+        }
+      ]
+    },
+    {
+      "id": "closing-asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "url": "",
+        "kind": "image",
+        "label": "closing"
+      },
+      "dependsOn": [
+        "closing"
+      ],
+      "bindings": [
+        {
+          "node": "closing",
+          "pointer": "/data/result/sample",
+          "target": "/url"
         }
       ]
     }

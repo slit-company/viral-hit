@@ -150,6 +150,7 @@ export const getProjectAssetById = async ({
       filename: userAsset.filename,
       mimeType: userAsset.mimeType,
       sizeBytes: userAsset.sizeBytes,
+      sha256: userAsset.sha256,
       source: userAsset.source,
       assetClass: userAsset.assetClass,
       width: userAsset.width,

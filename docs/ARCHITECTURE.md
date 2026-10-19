@@ -18,7 +18,7 @@ Runs UI / JSON plan → SQLite durable queue → independent worker → Comfy Ro
                           event ledger ← provider status + native receipt
 ```
 
-The last line currently ends at the provider receipt. Downloading generated media, validating it, recording a project Asset and attaching a shot under an expected project revision remains a release blocker. The UI says so; a completed provider request is not represented as a finished editable shot.
+A separate `asset.materialize` DAG node now consumes a declared URL from the provider receipt, downloads and probes the media, publishes immutable local bytes, registers the project Asset and records SHA-256/lineage. The Runs panel attaches that asset through a revision-checked editor command. Provider success and local-asset readiness remain separate states. This path is tested with provider fixtures and an actual public HTTPS download; a real Comfy generation is still a release gate.
 
 ## Durable execution
 
@@ -42,7 +42,7 @@ Sources inspected: [Comfy SDK docs](https://docs.comfy.org/development/api-devel
 
 ## Ordered release work
 
-1. Materialize provider outputs into stable Assets, preserving receipt, SHA-256 and lineage; attach accepted output only if its project/shot revision still matches. Validate video/audio bytes, duration, frames and sync. Reconcile process death between download, database write and attachment.
+1. Durable media import and revision-checked timeline attachment are implemented. Next validate against actual Comfy outputs, add expired-URL refresh without paid regeneration, complete per-shot acceptance/replacement and broaden container/decode/audio-sync coverage. Existing tests cover interruption after immutable file publication and restart before asset polling.
 2. Versioned data recipes and typed parameter/output binding are now implemented; see `EXTENDING.md`. Next add shot/character libraries, explicit budget admission, durable output integrity checks and per-provider capability/schema discovery. Run real image, video and audio jobs through Comfy.
 3. Extract reference pipeline reference analysis, planning/review and performance lineage as generic adapters. A source reference is evidence, not an instruction to the agent. Apply precise edit operations to the same timeline that the user edits.
 4. Extend the editor for transitions, keyframes, speed changes, waveform/ducking and complex multi-track compositions. Benchmark the inherited engine against Diffusion Studio and FFmpeg using identical assets.

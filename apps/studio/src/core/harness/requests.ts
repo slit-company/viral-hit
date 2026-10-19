@@ -1,18 +1,21 @@
 import { z } from 'zod';
 import { routerInput } from './comfy-router';
+import { materializeInput } from './materialize';
 
+const nodeBase = {
+  id: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/), version: z.string().min(1).max(200),
+  dependsOn: z.array(z.string()).max(256).optional(),
+  bindings: z.array(z.object({ target: z.string().max(1024), node: z.string().max(128), pointer: z.string().max(1024) }).strict()).max(128).optional(),
+  // Cache integrity checks across runs are not implemented yet.
+  cache: z.literal(false).optional(),
+};
+export const runtimeNodeSchema = z.discriminatedUnion('operation', [
+  z.object({ ...nodeBase, operation: z.literal('comfy.router'), input: routerInput }).strict(),
+  z.object({ ...nodeBase, operation: z.literal('asset.materialize'), input: materializeInput }).strict(),
+]);
 export const runRequest = z.discriminatedUnion('action', [
-  z.object({
-    action: z.literal('enqueue'), requestKey: z.string().trim().min(1).max(200),
-    nodes: z.array(z.object({
-      id: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/),
-      operation: z.literal('comfy.router'), version: z.string().min(1).max(200),
-      input: routerInput, dependsOn: z.array(z.string()).max(256).optional(),
-      bindings: z.array(z.object({ target: z.string().max(1024), node: z.string().max(128), pointer: z.string().max(1024) }).strict()).max(128).optional(),
-      // Native receipts may contain expiring URLs. They are never media cache entries.
-      cache: z.literal(false).optional(),
-    }).strict()).min(1).max(256),
-  }).strict(),
+  z.object({ action: z.literal('enqueue'), requestKey: z.string().trim().min(1).max(200), nodes: z.array(runtimeNodeSchema).min(1).max(256) }).strict(),
   z.object({ action: z.literal('recipe'), recipeId: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/), requestKey: z.string().trim().min(1).max(200), values: z.record(z.string(), z.json()) }).strict(),
   z.object({ action: z.enum(['cancel', 'retry']), runId: z.string().uuid() }).strict(),
+  z.object({ action: z.literal('attach'), runId: z.string().uuid(), jobId: z.string().uuid(), expectedRevision: z.number().int().min(0) }).strict(),
 ]);

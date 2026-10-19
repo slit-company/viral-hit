@@ -14,6 +14,7 @@ const env = { ...process.env, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR
 delete env.COMFY_API_KEY;
 delete env.VIRAL_HIT_HARNESS_DB;
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });
+execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-media.ts'], { env, stdio: 'inherit' });
 const children = [
   spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '3042', '--strictPort'], { env, stdio: 'inherit' }),
   spawn(process.execPath, ['--import', 'tsx', 'scripts/mcp-server.ts', '--http'], { env, stdio: 'inherit' }),

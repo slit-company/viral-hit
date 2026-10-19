@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "license": "Apache-2.0",
   "author": "Viral Hit",
   "tags": [
@@ -36,6 +36,27 @@
         {
           "parameter": "prompt",
           "target": "/body/prompt"
+        }
+      ]
+    },
+    {
+      "id": "frame-asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "url": "",
+        "kind": "image",
+        "label": "frame"
+      },
+      "dependsOn": [
+        "frame"
+      ],
+      "bindings": [
+        {
+          "node": "frame",
+          "pointer": "/data/result/sample",
+          "target": "/url"
         }
       ]
     }

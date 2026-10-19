@@ -114,13 +114,16 @@ test('generation run panel checks configuration and rejects malformed and untrus
   await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
   await page.getByLabel('Creative recipe').selectOption('community-fixture');
   await expect(page.getByLabel('Community frame prompt')).toBeVisible();
-  await page.getByText('1 generation step · Recipe details', { exact: true }).click();
+  await page.getByText(/Recipe details/, { exact: false }).click();
   await expect(page.getByText(/External test author/)).toBeVisible();
-  await page.getByText('1 generation step · Recipe details', { exact: true }).click();
+  await page.getByText(/Recipe details/, { exact: false }).click();
   await page.getByLabel('Creative recipe').selectOption('editorial-triptych');
   await expect(page.getByLabel('Opening · establish the world')).toBeVisible();
   await expect(page.getByLabel('Detail · the visual idea')).toBeVisible();
   await expect(page.getByLabel('Closing · the final image')).toBeVisible();
+  await page.getByLabel('Creative recipe').selectOption('remote-media-import');
+  await page.getByLabel('Public HTTPS media URL').fill('https://example.org/media.png');
+  await expect(page.getByRole('button', { name: 'Queue import', exact: true })).toBeEnabled();
   await page.getByLabel('Creative recipe').selectOption('open-frame');
   await page.getByLabel('Describe your frame').fill('A paper observatory');
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -195,4 +198,32 @@ test('MCP renders edited video, captions and audio to a durable project asset', 
   expect(Math.abs(Number(video.duration) - Number(audio.duration))).toBeLessThan(0.1);
   const timeline = await (await request.get(`/api/app/projects/${id}/timeline`)).json();
   expect(timeline.timeline.document.lastRenderAssetId).toBe(output.id);
+});
+
+test('a materialized run attaches to the real editor once and survives a reload', async ({ page, request }) => {
+  const replacementWrites: string[] = [];
+  page.on('request', req => { if (req.method() === 'POST' && req.url().endsWith('/commands') && req.postData()?.includes('editor.replace_document')) replacementWrites.push(req.postData()!); });
+  const projects = await (await request.get('/api/app/projects')).json();
+  const project = projects.projects.find((p: { name: string }) => p.name === 'Materialized media E2E fixture');
+  expect(project).toBeTruthy(); const id = project.id;
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await expect(page.getByText('Asset ready', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Add to timeline', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Added to timeline', exact: true })).toBeDisabled();
+  const state = await (await request.get(`/api/app/projects/${id}/runs`)).json();
+  const run = state.runs[0], job = run.jobs[0];
+  const repeated = await request.post(`/api/app/projects/${id}/runs`, { headers, data: { action: 'attach', runId: run.id, jobId: job.id, expectedRevision: 0 } });
+  expect(repeated.ok()).toBe(true);
+  const timeline = await (await request.get(`/api/app/projects/${id}/timeline`)).json();
+  expect(timeline.timeline.document.tracks.flatMap((t: { clips: unknown[] }) => t.clips)).toHaveLength(1);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'test-results/materialized-run-desktop.png' });
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  // The first external clip must arrive in a previously empty editor without a reload or empty autosave.
+  await expect(page.getByText('Imported E2E fixture.png', { exact: true }).first()).toBeVisible();
+  expect(replacementWrites).toHaveLength(0);
+  await page.reload();
+  await expect(page.getByText('Imported E2E fixture.png', { exact: true }).first()).toBeVisible();
+  await page.screenshot({ path: 'test-results/materialized-editor-desktop.png' });
 });

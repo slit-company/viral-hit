@@ -28,9 +28,9 @@ pnpm setup
 pnpm dev
 ```
 
-Open `http://127.0.0.1:3808/projects`. Local import, editing and MP4 export need no generation key. Comfy execution requires your server-side `COMFY_API_KEY` and provider credits. Runs currently persist native provider receipts; automatic output import is not complete.
+Open `http://127.0.0.1:3808/projects`. Local import, editing and MP4 export need no generation key. Comfy execution requires your server-side `COMFY_API_KEY` and provider credits. Built-in image recipes now separate provider generation from durable media import, then offer revision-checked timeline attachment. Actual live Comfy generation has not yet been validated.
 
-Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extraction](docs/REFERENCE-PIPELINE.md), [validation evidence](docs/VALIDATION.md) and [full parity targets](docs/PARITY.md). Current checked results include 445 passing tests and 6 browser flows, including a decoded 1080p MP4 export. They do not establish Higgsfield generation quality or performance parity.
+Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extraction](docs/REFERENCE-PIPELINE.md), [validation evidence](docs/VALIDATION.md) and [full parity targets](docs/PARITY.md). Current checked results include 450 passing tests and 7 browser flows, including a decoded 1080p MP4 export. They do not establish Higgsfield generation quality or performance parity.
 
 ## Extend it
 

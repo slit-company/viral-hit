@@ -6,8 +6,8 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 |---|---|---|
 | Production build | Passed | Local build; not public deployment |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 445 passed | Includes 28 new harness/Router/recipe contract tests; SDK tests use fixtures |
-| Browser E2E | 6 passed | Local Chromium; provider credentials deliberately removed |
+| Unit/integration tests | 450 passed | Includes 33 new harness/Router/recipe/media contract tests; SDK tests use fixtures |
+| Browser E2E | 7 passed | Local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
 | Captions | Passed | Remote edit visible without reload, local text edit persisted; desktop/mobile captures |
@@ -17,6 +17,10 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Visual feedback loop | Passed, 4.205/5 | Actual editor at 1440×1000; not a rating of generation quality |
 | Extensible recipes | Passed | Separate manifest directory, dynamically rendered third-party form, MCP discovery, offline compile and persisted output binding/restart tests; no live generation |
 | Recipe visual feedback | Passed, 4.15/5 | Fixed long-form action clipping after real desktop/mobile inspection |
+| Durable media import | Passed | Live recipe enqueue → separate worker → public HTTPS PNG → local asset → timeline passed, with the pinned upstream SHA-256 verified; PNG, MP4/audio and WAV probe fixtures passed; not an actual model output |
+| Recovery and timeline attachment | Passed | Immutable file recovered after injected interruption without redownload; worker restart, one-clip attachment replay, stale revision rejection, cross-project rejection and corrupt-file rejection |
+| Empty editor regression | Fixed and tested | Initial empty autosave previously erased a first externally inserted clip. New browser test requires live appearance and persistence after reload with no document-replacement write |
+| Materialized media visual feedback | Passed, 4.255/5 | Runs and attached editor reviewed at 1440×1000; real fixture explicitly labeled, no clipping |
 | Actual Comfy generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
 | Higgsfield comparative benchmark | Not run | Full feature/performance parity is not established |
 

@@ -75,6 +75,7 @@ import { openHarness } from '@/core/harness/store';
 import { runRequest } from '@/core/harness/requests';
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan } from '@/core/harness/recipe-plan';
+import { attachMaterializedJob } from '@/core/harness/attach-asset';
 import { loadRecipes } from '@/core/harness/recipe-registry';
 
 import { version as VERSION } from '../../package.json';
@@ -1311,7 +1312,7 @@ export function createViralHitMcpServer() {
   server.registerTool(
     'viral_hit_runs_list',
     {
-      description: 'Read project-scoped durable generation runs, provider receipts and event history. A receipt is not yet an imported media asset.',
+      description: 'Read project-scoped durable generation runs, provider receipts and event history. Provider receipts and successfully materialized local assets are separate job outputs.',
       inputSchema: z.object({ projectId: idSchema.optional() }),
       annotations: { readOnlyHint: true },
     },
@@ -1325,7 +1326,7 @@ export function createViralHitMcpServer() {
   server.registerTool(
     'viral_hit_runs_change',
     {
-      description: 'Enqueue an explicitly requested Comfy Router plan, request cancellation or retry a definitive failure. Enqueue spends provider credits when the independent worker runs. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Native outputs are receipts until media import is implemented.',
+      description: 'Enqueue an explicitly requested plan or recipe, request cancellation, retry a definitive failure, or attach a successfully imported asset to the timeline with expectedRevision. Comfy generation steps spend provider credits; asset.materialize steps only download and store media. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Native provider receipts stay separate from local asset records. Attach rejects stale timeline revisions and preserves prior edits.',
       inputSchema: z.object({ projectId: idSchema.optional(), request: runRequest }),
       annotations: { destructiveHint: false, idempotentHint: false },
     },
@@ -1335,10 +1336,15 @@ export function createViralHitMcpServer() {
       try {
         if (request.action === 'enqueue' || request.action === 'recipe') {
           const plan = request.action === 'recipe' ? await prepareRecipePlan(request.recipeId, request.values, project.id) : { projectId: project.id, nodes: request.nodes };
-          if (!isComfyConfigured()) throw new Error('Comfy API key is not configured on this server');
+          if (plan.nodes.some(node => node.operation === 'comfy.router') && !isComfyConfigured()) throw new Error('Comfy API key is not configured on this server');
           return { runId: h.enqueue(plan, request.requestKey) };
         }
         if (!h.runs(project.id).some(run => run.id === request.runId)) throw new Error('Run not found in this project');
+        if (request.action === 'attach') {
+          const result = await attachMaterializedJob(h, project.id, request.runId, request.jobId, request.expectedRevision);
+          if (!result.ok) throw new ViralHitMcpToolError(result.code === 'REVISION_CONFLICT' ? 409 : 400, { error: result.message, revision: result.revision });
+          return result;
+        }
         if (request.action === 'cancel') h.cancel(request.runId); else h.retry(request.runId);
         return { runId: request.runId };
       } finally { h.close(); }

@@ -4,6 +4,7 @@ import { openHarness } from '@/core/harness/store';
 import { runRequest } from '@/core/harness/requests';
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan } from '@/core/harness/recipe-plan';
+import { attachMaterializedJob } from '@/core/harness/attach-asset';
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
 
@@ -27,11 +28,15 @@ async function POST({ params, request }: Context) {
   try {
     if (body.action === 'enqueue' || body.action === 'recipe') {
       const plan = body.action === 'recipe' ? await prepareRecipePlan(body.recipeId, body.values, params.projectId) : { projectId: params.projectId, nodes: body.nodes };
-      if (!isComfyConfigured()) return Response.json({ error: 'Comfy API key is not configured on this server' }, { status: 503 });
+      if (plan.nodes.some(node => node.operation === 'comfy.router') && !isComfyConfigured()) return Response.json({ error: 'Comfy API key is not configured on this server' }, { status: 503 });
       const runId = h.enqueue(plan, body.requestKey);
       return Response.json({ runId }, { status: 202 });
     }
     if (!h.runs(params.projectId).some(run => run.id === body.runId)) return Response.json({ error: 'Run not found' }, { status: 404 });
+    if (body.action === 'attach') {
+      const result = await attachMaterializedJob(h, params.projectId, body.runId, body.jobId, body.expectedRevision);
+      return Response.json(result.ok ? result : { ...result, error: result.message }, { status: result.ok ? 200 : result.code === 'REVISION_CONFLICT' ? 409 : 400 });
+    }
     if (body.action === 'cancel') h.cancel(body.runId);
     else h.retry(body.runId);
     return Response.json({ runId: body.runId });

@@ -23,7 +23,7 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 
 ## Verified subset (not full-row completion)
 
-Local asset import, canvas/UI/MCP state sharing, multitrack timeline foundation, clip split, caption persistence, actual browser and server MP4 export, durable job recovery tests, project-scoped Runs UI/API/MCP and the SDK Router adapter are implemented. See `VALIDATION.md` for evidence and limits. Actual Comfy output import and live model generation remain open; no entire area above is marked complete.
+Local asset import, canvas/UI/MCP state sharing, multitrack timeline foundation, clip split, caption persistence, actual browser and server MP4 export, durable job recovery tests, project-scoped Runs UI/API/MCP and the SDK Router adapter are implemented. See `VALIDATION.md` for evidence and limits. Provider-receipt-to-asset import and revision-checked attachment pass fixture and browser tests. Actual Comfy generation/import together remains unverified; no entire area above is marked complete.
 
 ## Performance gates
 
