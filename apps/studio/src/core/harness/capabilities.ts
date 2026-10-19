@@ -20,6 +20,6 @@ export function assertRuntimeConfigured(nodes: Pick<NodeSpec, 'operation'>[]) {
   for (const node of nodes) {
     const capability = capabilities.find(capability => capability.operation === node.operation);
     if (!capability) throw new Error(`Unsupported operation: ${node.operation}`);
-    if (!capability.configured) throw new Error(`Configure ${capability.configuration} on the server before queuing ${capability.label}`);
+    if (!capability.configured) throw new Error(node.operation === 'comfy.workflow' || node.operation === 'comfy.upload' ? 'Choose a ComfyUI server in Runs → Connections, or set VIRAL_HIT_COMFYUI_URL, before queueing.' : `Configure ${capability.configuration} on the server before queuing ${capability.label}`);
   }
 }

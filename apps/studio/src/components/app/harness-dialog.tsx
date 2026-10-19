@@ -1,3 +1,4 @@
+import { ComfyConnectionSettings } from './comfy-connection-settings';
 import { RecipeLibrary } from './recipe-library';
 import { TextField } from '@seed-design/react';
 import { Action } from '@/components/base/action';
@@ -17,6 +18,7 @@ type InputAsset = { id: string; type: string; storageProvider: string; filename:
 export function HarnessDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [connectionsOpen, setConnectionsOpen] = useState(false);
   const [libraryNotice, setLibraryNotice] = useState('');
   const [data, setData] = useState<Result>();
   const [error, setError] = useState('');
@@ -43,7 +45,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? inputAssets.some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
-  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); setLibraryOpen(false); setLibraryNotice(''); }, [open, projectId]);
+  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); setLibraryOpen(false); setConnectionsOpen(false); setLibraryNotice(''); }, [open, projectId]);
   async function checkServer() {
     if (!selected) return;
     const epoch = ++checkEpoch.current; setChecking(true); setCheck(undefined); setError('');
@@ -125,11 +127,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     <DialogContent ref={dialogContent} className="max-h-[85vh] overflow-hidden border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl grid-rows-[auto_minmax(0,1fr)]">
       <div className="pr-8">
         <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
-        <DialogTitle className="text-xl">{libraryOpen ? 'Recipe library' : 'Generation runs'}</DialogTitle>
-        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{libraryOpen ? 'Bring your own workflow, make a separate copy, and share its JSON. Installation does not run it.' : 'Your project’s generation history. Closing this window keeps queued work in the local worker.'}</DialogDescription>
+        <DialogTitle className="text-xl">{connectionsOpen ? 'Connections' : libraryOpen ? 'Recipe library' : 'Generation runs'}</DialogTitle>
+        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{connectionsOpen ? 'Choose where your native workflows run.' : libraryOpen ? 'Bring your own workflow, make a separate copy, and share its JSON. Installation does not run it.' : 'Your project’s generation history. Closing this window keeps queued work in the local worker.'}</DialogDescription>
       </div>
       <div ref={dialogBody} className="min-h-0 overflow-y-auto" data-testid="runs-body">
-      {libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipeInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
+      {connectionsOpen ? <ComfyConnectionSettings onBack={() => { setConnectionsOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} onChanged={async () => { invalidateCheck(); setChecking(false); requestKey.current = ''; await refresh(); }} /> : libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipeInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
       {libraryNotice && <p role="status" className="mb-3 rounded-lg bg-[var(--vh-control)] p-3 text-xs">{libraryNotice}</p>}
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">
@@ -158,7 +160,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             })}
             </div>
           </>}
-          <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? `Configure ${configurationMessage} in the server environment, then restart the studio.` : !needsGeneration ? 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
+          <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? missingCapabilities.every(operation => operation === 'comfy.workflow' || operation === 'comfy.upload') ? 'Choose your ComfyUI server in Connections to run this recipe.' : `Configure ${configurationMessage} in the server environment, then restart the studio.` : !needsGeneration ? 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
           {check && <div role="status" aria-label="Server check result" className="max-h-28 sm:max-h-44 space-y-2 overflow-y-auto rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-xs">
             <p className="font-semibold">{check.status === 'issues' ? 'Server check: needs attention' : check.status === 'unavailable' ? 'Server check: unavailable' : check.status === 'not-applicable' ? 'No native workflow to check' : 'Server check: no reported issues'}</p>
             <p className="text-[var(--vh-text-2)]">{check.classes.filter(item => item.status === 'available').length} node types available · {check.issues.filter(item => item.severity === 'deferred').length} checks deferred</p>
@@ -173,7 +175,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
         <section className="min-w-0 space-y-3">
-          <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">Recent runs</h3><Action aria-label="Refresh runs" onClick={() => void refresh().catch(e => setError(String(e)))} className="rounded-md p-1.5 hover:bg-[var(--vh-control)]"><RefreshCw size={14} /></Action></div>
+          <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">Recent runs</h3><Action onClick={() => { setConnectionsOpen(true); setError(''); dialogBody.current?.scrollTo({ top: 0 }); }} className="text-xs text-[var(--color-lime-text)]">Connections</Action><Action aria-label="Refresh runs" onClick={() => void refresh().catch(e => setError(String(e)))} className="rounded-md p-1.5 hover:bg-[var(--vh-control)]"><RefreshCw size={14} /></Action></div>
           {data?.runs.length === 0 && <div className="rounded-xl border border-dashed border-[var(--vh-border)] px-5 py-10 text-center"><Activity className="mx-auto mb-3 text-[var(--vh-text-2)]" size={24} /><p className="text-sm">No runs yet</p><p className="mt-2 text-xs leading-relaxed text-[var(--vh-text-2)]">Queue a creative recipe to keep its progress and output history here.</p></div>}
           {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-[var(--vh-border)] p-3">
             <div className="mb-2 flex items-center justify-between text-[10px] text-[var(--vh-text-2)]"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>

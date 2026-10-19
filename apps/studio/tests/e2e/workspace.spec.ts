@@ -1,3 +1,4 @@
+import { createServer } from 'node:http';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
@@ -180,7 +181,7 @@ test('generation run panel checks configuration and rejects malformed and untrus
   await expect(page.getByLabel('Closing · the final image')).toBeVisible();
   await page.getByLabel('Creative recipe').selectOption('local-canvas');
   await expect(page.getByLabel('Width', { exact: true })).toHaveValue('512');
-  await expect(page.getByText(/Configure VIRAL_HIT_COMFYUI_URL/)).toBeVisible();
+  await expect(page.getByText('Choose your ComfyUI server in Connections to run this recipe.', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
   expect((await request.post(url, { headers, data: { action: 'recipe', recipeId: 'local-canvas', values: {}, requestKey: 'local-not-configured' } })).status()).toBe(503);
   await page.getByLabel('Creative recipe').selectOption('local-diffusion');
@@ -590,4 +591,68 @@ test('ComfyUI graph builder exposes image and numeric controls while preserving 
   const built = await mcp(request, 'viral_hit_recipe_library', { request: { action: 'convert_graph', graph, definition, expectedGraphDigest: inspected.structuredContent.result.graphDigest } });
   expect(built.structuredContent.result.recipe.id).toBe(definition.id);
   expect((await (await request.get('/api/app/recipes')).json()).recipes.some((r: { id: string }) => r.id === definition.id)).toBe(false);
+});
+
+
+test('workspace ComfyUI connections persist across UI and MCP, reject stale saves and start no jobs', async ({ page, request }) => {
+  const seen: string[] = [];
+  const native = createServer((req, res) => { seen.push(`${req.method} ${req.url}`); res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify({ system: { comfyui_version: 'test-server' }, devices: [{ type: 'cpu' }] })); });
+  await new Promise<void>(resolve => native.listen(0, '127.0.0.1', resolve));
+  const url = `http://127.0.0.1:${(native.address() as { port: number }).port}/`;
+  const endpoint = '/api/app/comfy-connection';
+  try {
+    const initial = await (await request.get(endpoint)).json();
+    expect(initial.source).toBe('none');
+    expect((await request.post(endpoint, { data: { action: 'save', url, expectedRevision: initial.revision } })).status()).toBe(403);
+    expect((await request.post(endpoint, { headers: { ...headers, origin: 'https://untrusted.example' }, data: { action: 'save', url, expectedRevision: initial.revision } })).status()).toBe(403);
+    expect((await request.post(endpoint, { headers, data: { action: 'check', url: 'file:///tmp/private' } })).status()).toBe(400);
+    expect((await request.post(endpoint, { headers, data: { action: 'save', url: 'x'.repeat(5000), expectedRevision: 0 } })).status()).toBe(413);
+    const id = await project(request, 'Workspace connection QA');
+    await page.goto(`/editor/${id}`);
+    await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+    await page.getByLabel('Creative recipe').selectOption('local-canvas');
+    await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeDisabled();
+    await page.getByRole('button', { name: 'Connections', exact: true }).click();
+    const field = page.getByLabel('ComfyUI server URL', { exact: true });
+    await expect(field).toBeEnabled(); await field.fill(url);
+    await page.getByRole('button', { name: 'Check connection', exact: true }).click();
+    await expect(page.getByText('Server responded', { exact: true })).toBeVisible();
+    expect((await (await request.get(endpoint)).json()).source).toBe('none');
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.screenshot({ path: 'test-results/connections-desktop.png' });
+    await page.setViewportSize({ width: 390, height: 844 });
+    const modal = page.getByRole('dialog'), save = page.getByRole('button', { name: 'Save connection', exact: true });
+    await page.getByRole('button', { name: 'Check connection', exact: true }).click();
+    await expect(page.getByText('Server responded', { exact: true })).toBeVisible();
+    await expect(save).toBeEnabled();
+    const feedback = await page.getByRole('region', { name: 'Connection feedback' }).boundingBox();
+    const action = await save.boundingBox();
+    expect(feedback!.y + feedback!.height).toBeLessThanOrEqual(action!.y);
+    const m = await modal.boundingBox(), b = await save.boundingBox(), close = await page.getByRole('button', { name: 'Close', exact: true }).boundingBox();
+    expect(b!.y + b!.height).toBeLessThanOrEqual(m!.y + m!.height); expect(b!.x).toBeGreaterThanOrEqual(m!.x);
+    expect(close!.y).toBeGreaterThanOrEqual(m!.y); expect(close!.x + close!.width).toBeLessThanOrEqual(m!.x + m!.width);
+    expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: 'test-results/connections-mobile.png' });
+    await save.click(); await expect(page.getByText('Connection saved for this workspace. No jobs started.', { exact: true })).toBeVisible();
+    const remote = await mcp(request, 'viral_hit_comfy_connection', { request: { action: 'read' } });
+    expect(remote.structuredContent.result.url).toBe(url);
+    const changed = await mcp(request, 'viral_hit_comfy_connection', { request: { action: 'save', url: `${url}other/`, expectedRevision: remote.structuredContent.result.revision } });
+    await field.fill(`${url}stale/`); await save.click();
+    await expect(page.getByRole('alert')).toContainText('Connection settings changed');
+    expect((await (await request.get(endpoint)).json()).url).toBe(changed.structuredContent.result.url);
+    await page.getByRole('button', { name: 'Reload settings', exact: true }).click(); await expect(field).toHaveValue(`${url}other/`);
+    await field.fill(url); await save.click(); await expect(page.getByText('Connection saved for this workspace. No jobs started.', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Back to runs', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeEnabled();
+    expect((await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs).toEqual([]);
+    await page.getByRole('button', { name: 'Connections', exact: true }).click();
+    await page.getByRole('button', { name: 'Disconnect server', exact: true }).click();
+    await expect(page.getByText('Workspace connection disconnected. Existing jobs and assets are retained.', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Back to runs', exact: true }).click(); await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeDisabled();
+    expect(seen).toEqual(['GET /system_stats', 'GET /system_stats']);
+  } finally {
+    const current = await (await request.get(endpoint)).json();
+    if (current.editable && current.url) await request.post(endpoint, { headers, data: { action: 'save', url: null, expectedRevision: current.revision } });
+    native.closeAllConnections(); await new Promise<void>(resolve => native.close(() => resolve()));
+  }
 });

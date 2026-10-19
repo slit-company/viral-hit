@@ -1,3 +1,4 @@
+import { normalizeComfyUrl, readComfyConnection } from './comfy-connection';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { binaryReceiptOutput, readBinaryReceipt, saveBinaryReceipt, ReceiptIntegrityError } from './binary-receipts';
@@ -11,12 +12,11 @@ export const workflowInput = z.object({
   output: z.object({ nodeId, field: z.enum(['images', 'audio', 'gifs', 'videos']), index: z.number().int().min(0).max(255).default(0) }).strict(),
 }).strict().refine(input => Object.hasOwn(input.workflow, input.output.nodeId), 'Output node is missing');
 
-export function comfyWorkflowUrl(value = process.env.VIRAL_HIT_COMFYUI_URL): URL | null {
-  if (!value?.trim()) return null;
-  const url = new URL(value);
-  if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password || url.search || url.hash) throw new Error('ComfyUI URL must be HTTP(S), without credentials, query or fragment');
-  if (!url.pathname.endsWith('/')) url.pathname += '/';
-  return url;
+export function comfyWorkflowUrl(value?: string): URL | null {
+  if (value !== undefined) return value.trim() ? normalizeComfyUrl(value) : null;
+  const connection = readComfyConnection();
+  if (connection.error) throw new Error(connection.error);
+  return connection.url ? normalizeComfyUrl(connection.url) : null;
 }
 export const connectionHash = (url: URL) => createHash('sha256').update(url.href).digest('hex');
 const providerId = z.object({ promptId: z.string().uuid(), connection: z.string().regex(/^[a-f0-9]{64}$/), key: z.string().uuid() }).strict();
@@ -42,8 +42,8 @@ function descriptor(raw: unknown) {
 /** Native ComfyUI: a supplied prompt_id is NOT an idempotency guarantee. Recovery only looks up the first submission. */
 export function createComfyWorkflowAdapter(configuredUrl = () => comfyWorkflowUrl()): Adapter {
   function connection(id?: string) {
-    const url = configuredUrl(); if (!url) throw new RejectedSubmission('Configure VIRAL_HIT_COMFYUI_URL on the server');
-    if (id && providerId.parse(JSON.parse(id)).connection !== connectionHash(url)) throw new RejectedSubmission('ComfyUI connection changed since submission; restore the original connection to reconcile this job');
+    const url = configuredUrl(); if (!url) throw new RejectedSubmission('Connect a ComfyUI server in Runs → Connections, or set VIRAL_HIT_COMFYUI_URL');
+    if (id && providerId.parse(JSON.parse(id)).connection !== connectionHash(url)) throw new Error('ComfyUI connection changed since submission; restore the original connection to reconcile this job');
     return url;
   }
   async function request(base: URL, path: string, signal: AbortSignal, body?: unknown, limit = 8 * 1024 * 1024) {
@@ -69,7 +69,8 @@ export function createComfyWorkflowAdapter(configuredUrl = () => comfyWorkflowUr
       const parsed = workflowInput.safeParse(raw);
       if (!parsed.success) throw new RejectedSubmission('Invalid ComfyUI API-format workflow or output selection');
       const input = parsed.data, base = connection();
-      if (input.connection && input.connection !== connectionHash(base)) throw new RejectedSubmission('Workflow inputs belong to a different ComfyUI connection');
+      if (!input.connection) throw new RejectedSubmission('Workflow connection was not pinned before enqueue; create a new reviewed run');
+      if (input.connection !== connectionHash(base)) throw new RejectedSubmission('Workflow inputs belong to a different ComfyUI connection');
       try {
         const result = await json(base, 'prompt', context.signal, { prompt: input.workflow, prompt_id: context.key, client_id: context.key, extra_data: { viral_hit: { key: context.key, fingerprint: fingerprint(raw) } } });
         const promptId = z.string().uuid().parse(result.prompt_id);
@@ -80,7 +81,11 @@ export function createComfyWorkflowAdapter(configuredUrl = () => comfyWorkflowUr
       }
     },
     async reconcile(input, context) {
-      const base = connection();
+      const base = configuredUrl();
+      if (!base) throw new Error('Restore the original ComfyUI connection before finding this job');
+      const expected = workflowInput.parse(input).connection;
+      if (!expected) throw new Error('Unpinned legacy submission requires manual recovery from its original server history');
+      if (expected !== connectionHash(base)) throw new Error('ComfyUI connection changed; restore the original connection before finding this job');
       const history = await json(base, `history/${encodeURIComponent(context.key)}`, context.signal);
       for (const [id, record] of Object.entries(history)) if (owned((record as any).prompt, context.key, input)) return { id: JSON.stringify({ promptId: z.string().uuid().parse(id), connection: connectionHash(base), key: context.key }) };
       const queue = queueItems(await json(base, 'queue', context.signal));

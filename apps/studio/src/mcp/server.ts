@@ -1,3 +1,4 @@
+import { changeComfyConnection, connectionRequest } from '@/core/harness/comfy-connection';
 import { readFile, stat } from 'node:fs/promises';
 import { isAbsolute, resolve as resolvePath } from 'node:path';
 
@@ -1361,6 +1362,14 @@ export function createViralHitMcpServer() {
       inputSchema: z.object({}), annotations: { readOnlyHint: true },
     },
     withToolErrors(async () => ({ recipes: await loadRecipes(), capabilities: runtimeCapabilities() }))
+  );
+  server.registerTool(
+    'viral_hit_comfy_connection',
+    {
+      description: 'Read, check or explicitly save the local workspace ComfyUI server connection. Read returns URL, source, editability and revision. Check only reads system_stats at the chosen URL, without saving or running a job. Save requires the last read revision and a URL or null to disconnect. Environment-managed connections cannot be changed here. Settings are shared by server/MCP/worker using the same data directory; no restart is needed for workspace settings. Changing connection fences queued and submitted native jobs until the original URL is restored. No credentials, model installation or generation is performed. Only save an endpoint explicitly chosen by the user.',
+      inputSchema: z.object({ request: connectionRequest }), annotations: { destructiveHint: false, idempotentHint: false },
+    },
+    withToolErrors(async ({ request }) => changeComfyConnection(request))
   );
   server.registerTool(
     'viral_hit_recipe_library',

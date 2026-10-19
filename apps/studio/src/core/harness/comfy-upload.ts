@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { getActiveProject } from '../projects/projects';
 import { getProjectAssetById } from '../workspace-lib/assets/user-assets';
 import { LOCAL_PROJECT_ASSET_PROVIDER, resolveLocalProjectAssetPath } from '../projects/local-project-assets';
-import { comfyWorkflowUrl, connectionHash } from './comfy-workflow';
+import { comfyWorkflowUrl, connectionHash, workflowInput } from './comfy-workflow';
 import { probeMedia } from './probe-media';
 import { RejectedSubmission, type Adapter, type Plan } from './durable';
 
@@ -44,12 +44,23 @@ export async function readProjectInputImage(projectId: string, assetId: string, 
 /** Resolve project membership and content identity before the plan is persisted. */
 export async function pinProjectInputs(plan: Plan, configuredUrl = () => comfyWorkflowUrl()): Promise<Plan> {
   const result = structuredClone(plan);
+  const native = result.nodes.some(node => ['comfy.upload', 'comfy.workflow'].includes(node.operation));
+  const base = native ? configuredUrl() : null;
+  if (native && !base) throw new RejectedSubmission('Connect a ComfyUI server in Runs → Connections, or set VIRAL_HIT_COMFYUI_URL');
+  const pinnedConnection = base ? connectionHash(base) : null;
+  for (const node of result.nodes) if (node.operation === 'comfy.workflow') {
+    const input = workflowInput.parse(node.input);
+    if (input.connection && input.connection !== pinnedConnection) throw new RejectedSubmission('ComfyUI connection changed');
+    for (const binding of node.bindings ?? []) if (binding.target === '/connection' || binding.target.startsWith('/connection/')) {
+      if (binding.target !== '/connection' || binding.pointer !== '/connection' || result.nodes.find(source => source.id === binding.node)?.operation !== 'comfy.upload') throw new RejectedSubmission('Workflow connection may only bind to a pinned image upload');
+    }
+    node.input = { ...input, connection: pinnedConnection };
+  }
   for (const node of result.nodes) if (node.operation === 'comfy.upload') {
     if (node.bindings?.length) throw new RejectedSubmission('Input uploads require a selected project asset, not a dependency binding');
-    const input = uploadInput.parse(node.input), base = configuredUrl();
-    if (!base) throw new RejectedSubmission('Configure VIRAL_HIT_COMFYUI_URL');
+    const input = uploadInput.parse(node.input);
     const media = await readProjectInputImage(plan.projectId, input.assetId);
-    const connection = connectionHash(base);
+    const connection = pinnedConnection!;
     if (input.sha256 && input.sha256 !== media.sha256) throw new RejectedSubmission('Selected image content changed');
     if (input.connection && input.connection !== connection) throw new RejectedSubmission('ComfyUI connection changed');
     node.input = { assetId: input.assetId, sha256: media.sha256, connection };

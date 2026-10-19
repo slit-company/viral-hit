@@ -31,6 +31,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_runs_list',
   'viral_hit_runs_change',
   'viral_hit_recipes_list',
+  'viral_hit_comfy_connection',
   'viral_hit_recipe_library',
   'viral_hit_recipe_check',
 ] as const;

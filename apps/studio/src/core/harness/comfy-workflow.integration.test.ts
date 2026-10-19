@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DurableHarness, fingerprint } from './durable';
 import { createComfyWorkflowAdapter, comfyWorkflowUrl, workflowInput } from './comfy-workflow';
+import { pinProjectInputs } from './comfy-upload';
 import { compileRecipe } from './recipes';
 
 const directory = await mkdtemp(join(tmpdir(), 'vh-comfy-workflow-'));
@@ -61,7 +62,7 @@ test('native ComfyUI workflow response, output download and timeline attachment 
   const h = new DurableHarness(':memory:');
   try {
     const adapters = { 'comfy.workflow': createComfyWorkflowAdapter(() => fixture.url), 'asset.materialize': createMaterializeAdapter() };
-    const run = h.enqueue(compileRecipe(recipe, { width: 512, height: 512, color: 1 }, project.id), 'workflow');
+    const run = h.enqueue(await pinProjectInputs(compileRecipe(recipe, { width: 512, height: 512, color: 1 }, project.id), () => fixture.url), 'workflow');
     for (let i = 0; i < 4; i++) await h.step(run, adapters);
     const jobs = h.jobs(run); assert.deepEqual(jobs.map(job => job.state), ['succeeded', 'succeeded']);
     assert.equal(fixture.state.posts, 1); assert.equal(fixture.state.views, 1);
@@ -76,7 +77,7 @@ test('lost submission response recovers from native history after restart withou
   const file = join(directory, 'reconcile.db'); let now = 10000, h = new DurableHarness(file, () => now);
   const adapters = { 'comfy.workflow': createComfyWorkflowAdapter(() => fixture.url) };
   try {
-    const plan = compileRecipe(recipe, {}, project.id); plan.nodes = [plan.nodes[0]];
+    const plan = await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => fixture.url); plan.nodes = [plan.nodes[0]];
     const run = h.enqueue(plan, 'lost'); await h.step(run, adapters);
     assert.equal(h.jobs(run)[0].state, 'submitting'); h.close(); h = new DurableHarness(file, () => now); now += 3000;
     await h.step(run, adapters); assert.equal(h.jobs(run)[0].state, 'running');
@@ -88,7 +89,7 @@ test('unobserved submission stays uncertain and explicit reconciliation only sea
   const fixture = await server(), project = await createProject({ name: 'Unknown workflow fixture' }); fixture.state.drop = true; fixture.state.accept = false;
   let now = 10000; const h = new DurableHarness(':memory:', () => now), adapters = { 'comfy.workflow': createComfyWorkflowAdapter(() => fixture.url) };
   try {
-    const plan = compileRecipe(recipe, {}, project.id); plan.nodes = [plan.nodes[0]];
+    const plan = await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => fixture.url); plan.nodes = [plan.nodes[0]];
     const run = h.enqueue(plan, 'unknown'); await h.step(run, adapters); now += 3000; await h.step(run, adapters);
     assert.equal(h.jobs(run)[0].state, 'uncertain'); h.retry(run); assert.equal(h.jobs(run)[0].state, 'uncertain');
     fixture.publish({ ...fixture.state.last, extra_data: { viral_hit: { key: 'different', fingerprint: fingerprint(plan.nodes[0].input) } } });
@@ -102,7 +103,7 @@ test('targeted cancellation removes only this queued workflow and never calls th
   const fixture = await server(), project = await createProject({ name: 'Targeted cancellation fixture' }); fixture.state.pending = true;
   const h = new DurableHarness(':memory:'), adapters = { 'comfy.workflow': createComfyWorkflowAdapter(() => fixture.url) };
   try {
-    const plan = compileRecipe(recipe, {}, project.id); plan.nodes = [plan.nodes[0]];
+    const plan = await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => fixture.url); plan.nodes = [plan.nodes[0]];
     const run = h.enqueue(plan, 'cancel'); await h.step(run, adapters);
     const other = [2, randomUUID(), {}, {}, []]; fixture.state.queue.push(other);
     h.cancel(run); await h.step(run, adapters); assert.equal(h.jobs(run)[0].state, 'canceled');
@@ -112,7 +113,7 @@ test('targeted cancellation removes only this queued workflow and never calls th
 
 test('native workflow transport rejects server redirects and unsafe output paths, and fences connection changes', async () => {
   const fixture = await server(), project = await createProject({ name: 'Native workflow source validation' });
-  let base = fixture.url; const adapter = createComfyWorkflowAdapter(() => base), input = compileRecipe(recipe, {}, project.id).nodes[0].input;
+  let base = fixture.url; const adapter = createComfyWorkflowAdapter(() => base), input = (await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => fixture.url)).nodes[0].input;
   const context = { key: randomUUID(), dependencies: {}, signal: AbortSignal.timeout(10000), projectId: project.id, runId: randomUUID(), jobId: randomUUID() };
   try {
     fixture.state.unsafeOutput = true; const { id } = await adapter.submit(input, context);
@@ -129,7 +130,7 @@ test('known workflow validation failure is definitive and never enters ambiguous
   const fixture = await server(), project = await createProject({ name: 'Invalid workflow fixture' }); fixture.state.reject = true;
   const h = new DurableHarness(':memory:');
   try {
-    const plan = compileRecipe(recipe, {}, project.id); plan.nodes = [plan.nodes[0]];
+    const plan = await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => fixture.url); plan.nodes = [plan.nodes[0]];
     const run = h.enqueue(plan, 'rejected'); await h.step(run, { 'comfy.workflow': createComfyWorkflowAdapter(() => fixture.url) });
     assert.equal(h.jobs(run)[0].state, 'failed'); assert.equal(fixture.state.posts, 1);
   } finally { h.close(); await fixture.close(); }
@@ -139,7 +140,7 @@ test('confirmed workflow with cleared history resumes observation and its blocke
   const fixture = await server(), project = await createProject({ name: 'Lost provider history fixture' });
   const h = new DurableHarness(':memory:'), adapters = { 'comfy.workflow': createComfyWorkflowAdapter(() => fixture.url), 'asset.materialize': createMaterializeAdapter() };
   try {
-    const plan = compileRecipe(recipe, {}, project.id);
+    const plan = await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => fixture.url);
     const run = h.enqueue(plan, 'history-lost'); await h.step(run, adapters); fixture.state.history = {};
     await h.step(run, adapters); assert.equal(h.jobs(run)[0].state, 'uncertain'); assert.ok(h.jobs(run)[0].provider_id);
     await h.step(run, adapters); assert.equal(h.jobs(run)[1].state, 'blocked');
@@ -147,4 +148,22 @@ test('confirmed workflow with cleared history resumes observation and its blocke
     for (let i = 0; i < 3; i++) await h.step(run, adapters);
     assert.deepEqual(h.jobs(run).map(job => job.state), ['succeeded', 'succeeded']); assert.equal(fixture.state.posts, 1);
   } finally { h.close(); await fixture.close(); }
+});
+
+
+test('switching servers during a lost submission keeps recovery uncertain and cannot make retry resubmit', async () => {
+  const fixture = await server(), other = await server(), project = await createProject({ name: 'Connection recovery fence' });
+  fixture.state.drop = true; let base = fixture.url, now = 10000;
+  const h = new DurableHarness(':memory:', () => now), adapters = { 'comfy.workflow': createComfyWorkflowAdapter(() => base) };
+  try {
+    const plan = await pinProjectInputs(compileRecipe(recipe, {}, project.id), () => base); plan.nodes = [plan.nodes[0]];
+    const run = h.enqueue(plan, 'switch-lost'); await h.step(run, adapters);
+    assert.equal(fixture.state.posts, 1); assert.equal(h.jobs(run)[0].state, 'submitting');
+    base = other.url; now += 3000; await h.step(run, adapters);
+    assert.equal(h.jobs(run)[0].state, 'uncertain'); assert.equal(other.state.paths.length, 0);
+    h.retry(run); assert.equal(h.jobs(run)[0].state, 'uncertain');
+    base = fixture.url; h.requestReconciliation(run, ['comfy.workflow']); await h.step(run, adapters);
+    assert.equal(h.jobs(run)[0].state, 'running'); await h.step(run, adapters);
+    assert.equal(h.jobs(run)[0].state, 'succeeded'); assert.equal(fixture.state.posts, 1); assert.equal(other.state.posts, 0);
+  } finally { h.close(); await fixture.close(); await other.close(); }
 });

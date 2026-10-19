@@ -21,7 +21,7 @@ export async function preflightComfyPlan(plan: Plan, options: { url?: URL | null
   catch { base = null; }
   if (!base) {
     result.status = 'unavailable'; result.classes = classNames.map(name => ({ name, status: 'unavailable' }));
-    result.issues.push({ step: '', node: '', classType: '', severity: 'deferred', message: 'Configure a valid VIRAL_HIT_COMFYUI_URL on the server to inspect installed nodes.' });
+    result.issues.push({ step: '', node: '', classType: '', severity: 'deferred', message: 'Connect a ComfyUI server in Runs → Connections, or configure VIRAL_HIT_COMFYUI_URL, to inspect installed nodes.' });
     return result;
   }
   result.connection = connectionHash(base);
