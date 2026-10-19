@@ -1,0 +1,11 @@
+research/upstream/
+research/evidence/
+.env
+.env.*
+!.env.example
+node_modules/
+.next/
+dist/
+artifacts/
+__pycache__/
+.venv/
