@@ -1,5 +1,24 @@
 # Viral Hit mark
 
+## Standalone key visual
+
+`apps/studio/public/brand/viral-hit-key-visual.png` is a 1536 × 1024 standalone brand image, generated with built-in `image_gen`. It pairs the readable near-black name with a lime elliptical motion stroke on a bright background. The existing header wordmark and app symbol remain the reusable transparent assets. This image is a separate presentation asset.
+
+Final prompt:
+
+```text
+Use case: logo-brand.
+Asset type: finished standalone brand key visual, landscape 1536x1024.
+Primary request: Make the name "Viral Hit" itself look exceptionally clean, striking, fashionable and memorable for an independent open-source creative studio.
+Scene/backdrop: bright warm-white matte background, airy premium editorial poster.
+Subject: exact words "Viral Hit" on one line as the sole text, very large custom near-black bold forward-slanted grotesk lettering. Precision diagonal cuts, beautifully controlled kerning, clearly readable at thumbnail size. A small vivid acid-lime #caff51 fragment at the upper right of the capital H, and a distinctive crisp diagonal cut in the V. Preserve the correctly spelled words V-i-r-a-l H-i-t.
+Composition: central dominant wordmark occupying roughly 80% of width; generous negative space all around; completely uncropped. One elegant oversize acid-lime elliptical motion stroke sweeps behind the typography on a shallow diagonal, with generous whitespace between the stroke and image edges. The single stroke gives motion and a rebellious creative-software attitude, never obscuring letterforms. Restrained near-black, acid-lime and warm-white only.
+Style: impeccable flat graphic design, crisp print-quality edges, contemporary editorial identity with streetwear confidence. Optical balance matters; lettering is the hero.
+Constraints: no additional words, no slogans, no small print, no mockup objects, no interface, no photos, no comic characters, no brand comparisons, no badges, no shadows, no 3D, no gradient, no glow, no distressed texture. Original independent identity. Bright background, not dark.
+```
+
+Visual review checked spelling, full lettering bounds, contrast and spacing at the native size. Local evidence is under `research/evidence/brand-key-visual/`. This review is a design judgment, not evidence of user preference or marketing performance.
+
 Created 2026-10-19 with the built-in `image_gen` tool at the user's request. The actual generated PNG, with its alpha preserved, is saved at `apps/studio/public/brand/viral-hit-mark.png`. It is the app mark and favicon. A separately generated typographic wordmark is saved at `apps/studio/public/brand/viral-hit-wordmark.png` and used in the home/projects header with an accessible text alternative.
 
 The cut V suggests motion and editing; near-black ink and a lime tip connect it to the SEED-based interface.
