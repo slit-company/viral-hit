@@ -410,6 +410,11 @@ export async function renderProjectTimelineToAsset({
     throw new Error(`Timeline diagnostics failed: ${blocking.code}`);
   }
   const inputs = await resolveRenderInputs({ projectId, document });
+  const needsCaptions = document.tracks.some(track => track.kind === 'caption' && !track.hidden && !track.muted && track.clips.some(clip => !clip.muted && clip.text?.trim()));
+  if (needsCaptions) {
+    const availableFilters = await runProcess(ffmpegBin(), ['-hide_banner', '-filters'], { captureStdout: true });
+    if (!/\bdrawtext\s/.test(availableFilters)) throw new Error('This FFmpeg build cannot render captions: drawtext is missing. Install a full FFmpeg build with libfreetype/libharfbuzz and set VIRAL_HIT_FFMPEG to its executable, then retry. Your timeline is preserved.');
+  }
   const directory = await mkdtemp(join(tmpdir(), 'viral-hit-render-'));
   const outputPath = join(directory, 'timeline.mp4');
   try {

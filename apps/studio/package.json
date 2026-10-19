@@ -1,5 +1,5 @@
 {
-  "name": "viral-hit",
+  "name": "@viral-hit/studio",
   "version": "0.2.4",
   "private": true,
   "description": "The open-source, local-first AI canvas for image and video creation and analysis",
@@ -13,13 +13,13 @@
     "url": "https://github.com/slit-company/viral-hit/issues"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=24",
     "pnpm": ">=10"
   },
   "packageManager": "pnpm@10.32.1",
   "type": "module",
   "scripts": {
-    "dev": "tsx scripts/prepare-paraglide.ts && vite dev --host 127.0.0.1 --port 3020 --strictPort",
+    "dev": "node scripts/serve.mjs",
     "dev:agent": "node scripts/dev-with-mcp.mjs",
     "test": "node scripts/run-tests.mjs",
     "test:e2e": "playwright test",
@@ -35,13 +35,15 @@
     "mcp:http": "tsx scripts/mcp-server.ts --http",
     "prebuild": "node scripts/db-setup.mjs",
     "build": "tsx scripts/prepare-paraglide.ts && vite build && node scripts/sanitize-output.mjs",
-    "start": "node .output/server/index.mjs",
+    "start": "node scripts/serve.mjs --production",
     "postinstall": "mkdir -p data && (test -f src/config/db/schema.ts || node scripts/db-setup.mjs)",
     "db:setup": "node scripts/db-setup.mjs",
     "db:push": "drizzle-kit push --config=drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
-    "db:studio": "drizzle-kit studio --config=drizzle.config.ts"
+    "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
+    "harness": "tsx scripts/harness.ts",
+    "worker": "tsx scripts/harness-worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

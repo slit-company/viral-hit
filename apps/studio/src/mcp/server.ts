@@ -71,6 +71,9 @@ import {
   runCanvasGenerationSubmissionOnce,
 } from './generation-canvas';
 import { VIRAL_HIT_MCP_TOOL_NAMES } from './tools';
+import { openHarness } from '@/core/harness/store';
+import { runRequest } from '@/core/harness/requests';
+import { isComfyConfigured } from '@/core/harness/comfy-router';
 
 import { version as VERSION } from '../../package.json';
 const idSchema = z.string().trim().min(1).max(200);
@@ -1303,6 +1306,41 @@ export function createViralHitMcpServer() {
     })
   );
 
+  server.registerTool(
+    'viral_hit_runs_list',
+    {
+      description: 'Read project-scoped durable generation runs, provider receipts and event history. A receipt is not yet an imported media asset.',
+      inputSchema: z.object({ projectId: idSchema.optional() }),
+      annotations: { readOnlyHint: true },
+    },
+    withToolErrors(async ({ projectId }) => {
+      const project = await resolveScopedProject(projectId);
+      const h = openHarness();
+      try { return { configured: isComfyConfigured(), runs: h.runs(project.id).map(run => ({ ...run, jobs: h.jobs(String(run.id)), events: h.events(String(run.id)) })) }; }
+      finally { h.close(); }
+    })
+  );
+  server.registerTool(
+    'viral_hit_runs_change',
+    {
+      description: 'Enqueue an explicitly requested Comfy Router plan, request cancellation or retry a definitive failure. Enqueue spends provider credits when the independent worker runs. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Native outputs are receipts until media import is implemented.',
+      inputSchema: z.object({ projectId: idSchema.optional(), request: runRequest }),
+      annotations: { destructiveHint: false, idempotentHint: false },
+    },
+    withToolErrors(async ({ projectId, request }) => {
+      const project = await resolveScopedProject(projectId);
+      const h = openHarness();
+      try {
+        if (request.action === 'enqueue') {
+          if (!isComfyConfigured()) throw new Error('Comfy API key is not configured on this server');
+          return { runId: h.enqueue({ projectId: project.id, nodes: request.nodes }, request.requestKey) };
+        }
+        if (!h.runs(project.id).some(run => run.id === request.runId)) throw new Error('Run not found in this project');
+        if (request.action === 'cancel') h.cancel(request.runId); else h.retry(request.runId);
+        return { runId: request.runId };
+      } finally { h.close(); }
+    })
+  );
   return server;
 }
 

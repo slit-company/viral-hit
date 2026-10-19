@@ -1,5 +1,7 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, writeFile } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
+import { createDemoMedia } from '../../scripts/demo-media.mjs';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
 let rpcId = 0;
@@ -82,6 +84,36 @@ test('Local image media renders and exports MP4 without a provider key', async (
   const result = await download;
   expect(result.suggestedFilename()).toMatch(/\.mp4$/);
   expect((await stat((await result.path())!)).size).toBeGreaterThan(1000);
+  await result.saveAs('test-results/verified-local-export.mp4');
+  const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-count_frames', '-show_streams', '-show_format', '-of', 'json', 'test-results/verified-local-export.mp4'], { encoding: 'utf8' }));
+  const video = probe.streams.find((stream: { codec_type: string }) => stream.codec_type === 'video');
+  expect(video.codec_name).toBe('h264');
+  expect(Number(video.nb_read_frames)).toBeGreaterThanOrEqual(48);
+  expect(Number(probe.format.duration)).toBeCloseTo(2, 0);
+  expect(video.width).toBeGreaterThan(0); expect(video.height).toBeGreaterThan(0);
+});
+
+test('generation run panel checks configuration and rejects malformed and untrusted requests', async ({ page, request }) => {
+  const id = await project(request, 'Harness visibility QA');
+  const url = `/api/app/projects/${id}/runs`;
+  const state = await request.get(url); expect(state.ok()).toBe(true);
+  expect((await state.json()).runs).toEqual([]);
+  const agentRuns = await mcp(request, 'viral_hit_runs_list', { projectId: id });
+  expect(JSON.stringify(agentRuns)).toContain('"runs":[]');
+  expect((await request.post(url, { data: { action: 'cancel', runId: 'not-a-uuid' } })).status()).toBe(403);
+  expect((await request.post(url, { headers, data: { action: 'enqueue', nodes: [] } })).status()).toBe(400);
+  expect((await request.post(url, { headers, data: { action: 'cancel', runId: '00000000-0000-4000-8000-000000000000' } })).status()).toBe(404);
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await expect(page.getByText('No generations yet', { exact: true })).toBeVisible();
+  await page.getByLabel('Describe your frame').fill('A paper observatory');
+  // E2E deliberately runs without provider credentials; never submit paid work.
+  await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'test-results/harness-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.screenshot({ path: 'test-results/harness-mobile.png' });
+  await expect(page.getByRole('button', { name: 'Queue generation' })).toBeVisible();
 });
 
 test('MCP captions appear without reload and local caption edits persist through editor.apply', async ({ page, request }) => {
@@ -122,4 +154,31 @@ test('Studio sends asset-first validation and does not submit when provider setu
   expect(payload.effectId).toBeUndefined();
   await expect(page.getByText(/key|configured|connect/i).last()).toBeVisible();
   expect(submissions).toHaveLength(0);
+});
+
+test('MCP renders edited video, captions and audio to a durable project asset', async ({ request }) => {
+  createDemoMedia('test-results/motion-source.mp4');
+  const id = await project(request, 'Motion and audio QA');
+  const uploaded = await request.post(`/api/app/projects/${id}/assets`, { headers, multipart: { file: {
+    name: 'motion.mp4', mimeType: 'video/mp4', buffer: await readFile('test-results/motion-source.mp4'),
+  } } });
+  expect(uploaded.ok()).toBe(true); const { asset } = await uploaded.json();
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [
+    { type: 'add_clip', clipId: 'motion', assetId: asset.id, sourceUrl: asset.publicUrl, name: 'Original procedural motion', sourceType: 'video', sourceDuration: 3 },
+    { type: 'split_clip', clipId: 'motion', sourceTime: 1.5, rightClipId: 'motion-tail' },
+    { type: 'upsert_caption', clipId: 'title', text: 'VIRAL HIT', startTime: 0, duration: 3 },
+  ] });
+  const render = await mcp(request, 'viral_hit_editor_render', { projectId: id });
+  const output = render.structuredContent.result.asset;
+  const media = await request.get(output.publicUrl); expect(media.ok()).toBe(true);
+  await writeFile('test-results/verified-motion-export.mp4', await media.body());
+  const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-count_frames', '-show_streams', '-show_format', '-of', 'json', 'test-results/verified-motion-export.mp4'], { encoding: 'utf8' }));
+  const video = probe.streams.find((s: { codec_type: string }) => s.codec_type === 'video');
+  const audio = probe.streams.find((s: { codec_type: string }) => s.codec_type === 'audio');
+  expect(video.codec_name).toBe('h264'); expect(audio.codec_name).toBe('aac');
+  expect(Number(video.nb_read_frames)).toBe(90);
+  expect(Number(probe.format.duration)).toBeCloseTo(3, 1);
+  expect(Math.abs(Number(video.duration) - Number(audio.duration))).toBeLessThan(0.1);
+  const timeline = await (await request.get(`/api/app/projects/${id}/timeline`)).json();
+  expect(timeline.timeline.document.lastRenderAssetId).toBe(output.id);
 });

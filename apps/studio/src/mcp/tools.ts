@@ -28,6 +28,8 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_editor_diagnostics',
   'viral_hit_editor_view',
   'viral_hit_editor_history',
+  'viral_hit_runs_list',
+  'viral_hit_runs_change',
 ] as const;
 
 export type ViralHitMcpToolName = (typeof VIRAL_HIT_MCP_TOOL_NAMES)[number];

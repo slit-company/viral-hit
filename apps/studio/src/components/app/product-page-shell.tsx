@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Images, LayoutPanelTop, Scissors, Workflow } from 'lucide-react';
 
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
+import { HarnessDialog } from '@/components/app/harness-dialog';
 import { LanguageSwitcher } from '@/components/app/language-switcher';
 import { GitHubIcon } from '@/components/icons/github';
 import { Link } from '@/core/i18n/navigation';
@@ -136,6 +137,7 @@ export function ProductPageShell({
             </div>
 
             <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
+              {projectId && <HarnessDialog key={projectId} projectId={projectId} />}
               {projectId && workspaceMode ? (
                 <nav
                   className="flex items-center rounded-full border border-white/[0.09] bg-white/[0.035] p-1"

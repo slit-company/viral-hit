@@ -5,6 +5,8 @@ import { spawn, execFileSync } from 'node:child_process';
 
 const directory = await mkdtemp(join(tmpdir(), 'viral-hit-e2e-'));
 const env = { ...process.env, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
+delete env.COMFY_API_KEY;
+delete env.VIRAL_HIT_HARNESS_DB;
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });
 const children = [
   spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '3042', '--strictPort'], { env, stdio: 'inherit' }),

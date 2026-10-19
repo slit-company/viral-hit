@@ -1,0 +1,15 @@
+{
+  "projectId": "original-film",
+  "nodes": [
+    {
+      "id": "opening-frame",
+      "operation": "comfy.router",
+      "version": "1",
+      "input": {
+        "model": "bfl/flux-2-pro",
+        "body": { "prompt": "An original miniature paper observatory on a volcanic island, early morning natural light, wide cinematic composition, no text." }
+      },
+      "cache": false
+    }
+  ]
+}
