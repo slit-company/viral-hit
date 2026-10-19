@@ -1,3 +1,4 @@
+import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
 import {
   Download,
@@ -560,12 +561,13 @@ export function VideoEditorWorkspace({
     };
   }, [loadFailedMessage, projectId, projectName]);
 
-  useTimelinePersistence({
+  const persistence = useTimelinePersistence({
     projectId, document, hydrated: isTimelineHydrated,
     documentRef, versionRef: timelineVersionRef, savedRef: lastSavedDocumentRef,
     onDocument: setDocument, onStatus: setSaveStatus, onError: setError,
-    onRemote: (remoteDocument) => {
+    onRemote: (remoteDocument, restored = false) => {
       resetDocument(remoteDocument);
+      if (restored && lastSavedDocumentRef.current) pastDocumentsRef.current.push(lastSavedDocumentRef.current);
         const remoteVisualClips = remoteDocument.tracks
           .filter((track) => track.kind === 'video')
           .flatMap((track) => track.clips);
@@ -1405,6 +1407,7 @@ export function VideoEditorWorkspace({
         });
         timelineVersionRef.current = saved.version;
         lastSavedDocumentRef.current = saved.document;
+      persistence.checkpoint();
         await apiJsonPost(
           `/api/app/projects/${encodeURIComponent(projectId)}/timeline`,
           {}
@@ -1433,6 +1436,7 @@ export function VideoEditorWorkspace({
       });
       timelineVersionRef.current = saved.version;
       lastSavedDocumentRef.current = saved.document;
+      persistence.checkpoint();
       await apiJsonPost(
         `/api/app/projects/${encodeURIComponent(projectId)}/timeline`,
         {}
@@ -1519,6 +1523,7 @@ export function VideoEditorWorkspace({
       onDragOver={(event) => event.preventDefault()}
       onDrop={handleDrop}
     >
+      <TimelineDraftRecovery canRestore={persistence.canRestore} open={persistence.draftReviewOpen} records={persistence.drafts} error={persistence.draftError} busy={persistence.recovering} onClose={persistence.closeDrafts} onRestore={persistence.restoreDraft} onDiscard={persistence.discardDraft} onReload={persistence.reloadDrafts} />
       <input
         ref={fileInputRef}
         type="file"
@@ -1756,6 +1761,7 @@ export function VideoEditorWorkspace({
                 <FileVideo2 className="size-3.5" />
               </span>
               <span>{t('status.ready')}</span>
+              <Action aria-label="Review local drafts" onClick={persistence.openDrafts} className="rounded-md px-2 py-1 text-xs hover:bg-[var(--vh-control)]">Drafts</Action>
               {saveStatus !== 'idle' ? (
                 <span className="text-[var(--vh-text-2)]">
                   {saveStatus === 'saving' ? t('status.saving') : t('status.saved')}

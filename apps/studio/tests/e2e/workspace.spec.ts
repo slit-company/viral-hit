@@ -656,3 +656,124 @@ test('workspace ComfyUI connections persist across UI and MCP, reject stale save
     native.closeAllConnections(); await new Promise<void>(resolve => native.close(() => resolve()));
   }
 });
+
+test('an interrupted conflict rebase recovers its local draft after reopening and preserves disjoint server edits', async ({ page, request, context }) => {
+  const id = await project(request, 'Draft recovery QA');
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [{ type: 'upsert_caption', clipId: 'draft-caption', text: 'Before interruption', startTime: 0, duration: 3 }] });
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Before interruption 3.00s', exact: true }).click();
+  // Freeze network observation while a concurrent editor advances the saved revision.
+  await page.route(`**/api/app/projects/${id}/timeline`, route => route.request().method() === 'GET' ? route.abort('failed') : route.continue());
+  const conflict = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith('/commands') && response.status() === 409);
+  await page.locator('textarea').first().fill('Recovered local caption');
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [{ type: 'upsert_caption', clipId: 'remote-caption', text: 'Concurrent remote caption', startTime: 3, duration: 2 }] });
+  await conflict;
+  const draftKey = `viral-hit:timeline-draft:v1:${id}:`;
+  await expect.poll(() => page.evaluate(prefix => Object.keys(localStorage).filter(key => key.startsWith(prefix)).length, draftKey)).toBe(1);
+  await page.close(); // No beforeunload promise can finish a rebase after a tab/process is gone.
+  const reopened = await context.newPage();
+  await reopened.goto(`/editor/${id}`);
+  await expect(reopened.getByRole('heading', { name: 'Local timeline drafts', exact: true })).toBeVisible();
+  const before = (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline;
+  expect(before.document.tracks.flatMap((t: any) => t.clips).find((c: any) => c.id === 'draft-caption').text).toBe('Before interruption');
+  await reopened.setViewportSize({ width: 1440, height: 1000 }); await reopened.screenshot({ path: 'test-results/recovery-desktop.png' });
+  await reopened.setViewportSize({ width: 390, height: 844 });
+  const modal = await reopened.getByRole('dialog').boundingBox(), restore = await reopened.getByRole('button', { name: 'Restore draft', exact: true }).boundingBox();
+  expect(restore!.y + restore!.height).toBeLessThanOrEqual(modal!.y + modal!.height);
+  expect(await reopened.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+  await reopened.screenshot({ path: 'test-results/recovery-mobile.png' });
+  await reopened.getByRole('button', { name: 'Restore draft', exact: true }).click();
+  await expect.poll(async () => {
+    const timeline = (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline;
+    return timeline.document.tracks.flatMap((t: any) => t.clips).map((c: any) => c.text);
+  }).toEqual(['Recovered local caption', 'Concurrent remote caption']);
+  await expect.poll(() => reopened.evaluate(prefix => Object.keys(localStorage).filter(key => key.startsWith(prefix)).length, draftKey)).toBe(0);
+  await reopened.setViewportSize({ width: 1440, height: 1000 });
+  await reopened.getByRole('button', { name: 'Undo edit', exact: true }).first().click();
+  await expect.poll(async () => (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline.document.tracks.flatMap((t: any) => t.clips).map((c: any) => c.text)).toEqual(['Before interruption', 'Concurrent remote caption']);
+  await reopened.getByRole('button', { name: 'Redo edit', exact: true }).first().click();
+  await expect.poll(async () => (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline.document.tracks.flatMap((t: any) => t.clips).map((c: any) => c.text)).toEqual(['Recovered local caption', 'Concurrent remote caption']);
+  await expect.poll(() => reopened.evaluate(prefix => Object.keys(localStorage).filter(key => key.startsWith(prefix)).length, draftKey)).toBe(0);
+  await reopened.reload(); await expect(reopened.getByRole('dialog')).toHaveCount(0);
+  await expect(reopened.getByText('Recovered local caption', { exact: true }).first()).toBeVisible(); await reopened.close();
+});
+
+test('conflicting draft recovery preserves both versions and exports the exact pending snapshot', async ({ page, request, context }) => {
+  const id = await project(request, 'Draft conflict QA');
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [{ type: 'upsert_caption', clipId: 'conflict-caption', text: 'Shared base', startTime: 0, duration: 3 }] });
+  await page.goto(`/editor/${id}`); await page.getByRole('button', { name: 'Shared base 3.00s', exact: true }).click();
+  await page.route('**/commands', route => route.abort('failed'));
+  await page.locator('textarea').first().fill('My unsaved version');
+  const draftKey = `viral-hit:timeline-draft:v1:${id}:`;
+  await expect.poll(() => page.evaluate(prefix => Object.keys(localStorage).filter(key => key.startsWith(prefix)).length, draftKey)).toBe(1);
+  const raw = await page.evaluate(prefix => localStorage.getItem(Object.keys(localStorage).find(key => key.startsWith(prefix))!)!, draftKey);
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [{ type: 'upsert_caption', clipId: 'conflict-caption', text: 'Saved remote version', startTime: 0, duration: 3 }] });
+  await page.close(); const reopened = await context.newPage();
+  await reopened.goto(`/editor/${id}`); await reopened.getByRole('button', { name: 'Restore draft', exact: true }).click();
+  await expect(reopened.getByRole('alert')).toContainText('Nothing was overwritten');
+  const timeline = (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline;
+  expect(timeline.document.tracks.flatMap((t: any) => t.clips).find((c: any) => c.id === 'conflict-caption').text).toBe('Saved remote version');
+  const pending = reopened.waitForEvent('download'); await reopened.getByRole('button', { name: 'Download draft JSON', exact: true }).click();
+  const downloaded = await pending; await downloaded.saveAs('test-results/conflicting-draft.json');
+  expect(await readFile('test-results/conflicting-draft.json', 'utf8')).toBe(raw);
+  await reopened.setViewportSize({ width: 390, height: 844 }); await reopened.getByRole('alert').scrollIntoViewIfNeeded();
+  await reopened.screenshot({ path: 'test-results/recovery-conflict-mobile.png' });
+  await reopened.getByRole('button', { name: 'Delete this draft', exact: true }).click();
+  await expect(reopened.getByText('No recoverable drafts in this browser.', { exact: true })).toBeVisible();
+  await reopened.getByRole('button', { name: 'Continue editing', exact: true }).click();
+  await expect(reopened.getByText('Saved remote version', { exact: true }).first()).toBeVisible(); await reopened.close();
+});
+
+test('a newer edit is saved after a slow acknowledgement without another user action', async ({ page, request }) => {
+  const id = await project(request, 'Save drain QA');
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [{ type: 'upsert_caption', clipId: 'slow-caption', text: 'Original', startTime: 0, duration: 3 }] });
+  await page.goto(`/editor/${id}`); await page.getByRole('button', { name: 'Original 3.00s', exact: true }).click();
+  let release: (() => void) | undefined, captured = false;
+  await page.route('**/commands', async route => {
+    if (captured) { await route.continue(); return; } captured = true;
+    const response = await route.fetch();
+    await new Promise<void>(resolve => { release = resolve; });
+    await route.fulfill({ response });
+  });
+  await page.locator('textarea').first().fill('First saved snapshot');
+  await expect.poll(() => Boolean(release)).toBe(true);
+  await page.locator('textarea').first().fill('Newer edit while saving');
+  await page.waitForTimeout(850); release!();
+  await expect.poll(async () => (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline.document.tracks.flatMap((t: any) => t.clips).find((c: any) => c.id === 'slow-caption').text).toBe('Newer edit while saving');
+  await expect.poll(() => page.evaluate(prefix => Object.keys(localStorage).filter(key => key.startsWith(prefix)).length, `viral-hit:timeline-draft:v1:${id}:`)).toBe(0);
+});
+
+test('edits made during conflict recovery do not silently overwrite a concurrent saved field', async ({ page, request }) => {
+  const id = await project(request, 'In-flight merge QA');
+  await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [
+    { type: 'upsert_caption', clipId: 'caption-a', text: 'Base A', startTime: 0, duration: 3 },
+    { type: 'upsert_caption', clipId: 'caption-b', text: 'Base B', startTime: 3, duration: 3 },
+  ] });
+  await page.goto(`/editor/${id}`); await page.getByRole('button', { name: 'Base A 3.00s', exact: true }).click();
+  let calls = 0, release: (() => void) | undefined;
+  await page.route('**/commands', async route => {
+    calls++;
+    if (calls === 1) {
+      await mcp(request, 'viral_hit_editor_edit', { projectId: id, operations: [{ type: 'upsert_caption', clipId: 'caption-b', text: 'Remote B', startTime: 3, duration: 3 }] });
+      await route.continue(); return;
+    }
+    if (calls === 2) {
+      const response = await route.fetch();
+      await new Promise<void>(resolve => { release = resolve; });
+      await route.fulfill({ response }); return;
+    }
+    await route.continue();
+  });
+  await page.locator('textarea').first().fill('Local A');
+  await expect.poll(() => Boolean(release)).toBe(true);
+  await page.getByRole('button', { name: 'Base B 3.00s', exact: true }).click();
+  await page.locator('textarea').first().fill('New local B');
+  await page.waitForTimeout(850); release!();
+  await expect(page.getByText(/Concurrent edits overlap/)).toBeVisible();
+  const timeline = (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline;
+  expect(timeline.document.tracks.flatMap((t: any) => t.clips).map((c: any) => c.text)).toEqual(['Local A', 'Remote B']);
+  expect(calls).toBe(2);
+  await expect(page.locator('textarea').first()).toHaveValue('New local B');
+  const draft = await page.evaluate(prefix => JSON.parse(localStorage.getItem(Object.keys(localStorage).find(key => key.startsWith(prefix))!)!), `viral-hit:timeline-draft:v1:${id}:`);
+  expect(draft.document.tracks.flatMap((t: any) => t.clips).find((c: any) => c.id === 'caption-b').text).toBe('New local B');
+});

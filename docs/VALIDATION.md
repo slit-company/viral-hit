@@ -7,8 +7,8 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Production build | Passed | Local build; not public deployment |
 | Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 498 passed | Includes shared connection settings, concurrent revisions, bounded probes and native connection/recovery fences; provider SDK tests use fixtures |
-| Browser E2E | 16 passed in final full run | Local Chromium; provider credentials removed. An earlier take-restoration timeout remains recorded below |
+| Unit/integration tests | 501 passed | Includes browser draft journal, merge/conflict preservation and shared native connection fences; provider SDK tests use fixtures |
+| Browser E2E | 20 passed in full run, affected cases rechecked | Local Chromium; final Undo/Redo addition verified separately after correcting ambiguous button selectors. See recovery evidence below |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
 | Captions | Passed | Remote edit visible without reload, local text edit persisted; desktop/mobile captures |
@@ -119,3 +119,15 @@ Release gates include real provider artifact localization, crash recovery at eve
 Browser motion demo export also decoded to 90 video frames (3.000s) and AAC audio (3.072s). The 72ms container/audio tail is recorded as a remaining browser-export alignment issue; no exact audio-duration parity is claimed. Server export of the motion/caption fixture has matching 3.000s streams.
 
 The first clean-checkout attempt exposed a documentation error: `pnpm setup` invokes pnpm’s own shell setup instead of the package script. Use the explicit `pnpm run setup` shown in the corrected README. The corrected command installed dependencies and initialized the SQLite schema before a successful build.
+
+## Interrupted timeline edits and local draft recovery
+
+The editor now journals the saved base and pending timeline before network saving. A reopened editor offers explicit recovery, snapshot download and exact-snapshot deletion. Disjoint remote edits merge; overlapping changes preserve both versions. Recovery is undoable and redoable while retaining unrelated server edits. See [editing recovery](EDITING-RECOVERY.md) for browser-storage limits and remaining gaps.
+
+An earlier take-restoration trace showed a 409 followed by `beforeunload` and a canceled rebase GET; the local Original selection was absent from subsequent server reads. The cause of reload is not established. This motivated durable local drafts rather than relying on unload-time network completion. The trace and concise finding are retained under `research/evidence/timeline-recovery/`.
+
+All 501 source tests, TypeScript and production build passed. The complete 20-test browser suite passed before adding restoration Undo/Redo. The seven affected browser cases were then rechecked: six passed, while the recovery case stopped at a test selector. Its first selector used the wrong button name; the next matched both editor toolbars. After selecting the actual first toolbar action, the final targeted test passed, including server-observed Undo, Redo, draft cleanup and reload. Product source did not change between that final build and targeted run. Logs: `tests-final.log`, `typecheck-final.log`, `build-final.log`, `e2e-final.log`, `e2e-recheck.log`, `e2e-undo-final.log`, `e2e-undo-verified.log`.
+
+New browser cases exercise interrupted 409 recovery with disjoint remote edits, conflicting recovery with exact JSON download, an edit made during a slow acknowledgement, and overlap introduced during a rebased save. The initial exact-JSON comparison exposed timestamp-only rewrites of unchanged drafts; journal writes now retain identical serialized snapshots. The overlapping in-flight rebase previously ignored its conflict list; it now reports and preserves the local version without overwriting the server field. These checks use real local UI/HTTP/MCP storage with controlled request failures, not a browser-process crash or multi-device synchronization benchmark.
+
+Actual UI captures at 1440×1000 and 390×844 show the recovery choices and conflict state. The fixed visual rubric passed at 4.37/5, with actions inside dialog bounds and no horizontal overflow. This is self-review, not user design acceptance. Existing development React state-update warnings remain. Per-field conflict resolution, downloaded-draft reimport and portable media bundles are not implemented by this change.
