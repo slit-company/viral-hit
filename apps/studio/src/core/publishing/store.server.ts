@@ -23,7 +23,8 @@ export class PublicationStore {
   private db: DatabaseSync;
   constructor(file: string, private now = Date.now) {
     this.db = new DatabaseSync(file);
-    this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
+    try {
+      this.db.exec(`PRAGMA busy_timeout=5000; PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL;
       CREATE TABLE IF NOT EXISTS publications (
         id TEXT PRIMARY KEY, project_id TEXT NOT NULL, request_key TEXT NOT NULL, creation_digest TEXT NOT NULL,
         spec_json TEXT NOT NULL, digest TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 1, state TEXT NOT NULL,
@@ -33,6 +34,11 @@ export class PublicationStore {
       CREATE INDEX IF NOT EXISTS publication_queue ON publications(state,next_poll,lease_until);
       CREATE TABLE IF NOT EXISTS publication_events (id INTEGER PRIMARY KEY, publication_id TEXT NOT NULL, state TEXT NOT NULL, issue TEXT, at INTEGER NOT NULL);
       CREATE INDEX IF NOT EXISTS publication_event_history ON publication_events(publication_id,id);`);
+      this.transaction(() => {
+        const columns = this.db.prepare('PRAGMA table_info(publications)').all();
+        if (!columns.some(column => column.name === 'admission_digest')) this.db.exec('ALTER TABLE publications ADD COLUMN admission_digest TEXT');
+      });
+    } catch (error) { this.db.close(); throw error; }
   }
   close() { this.db.close(); }
   private transaction<T>(fn: () => T): T {
@@ -54,17 +60,22 @@ export class PublicationStore {
     if (!this.get(projectId, id)) throw new Error('Publication not found');
     return this.db.prepare('SELECT state,issue,at FROM publication_events WHERE publication_id=? ORDER BY id').all(id);
   }
-  create(raw: unknown, requestKey: string) {
+  findRequest(projectId: string, requestKey: string) {
+    const row = this.db.prepare('SELECT * FROM publications WHERE project_id=? AND request_key=?').get(projectId, requestKey) as (Row & { admission_digest: string | null }) | undefined;
+    return row ? { record: record(row), admissionDigest: row.admission_digest } : null;
+  }
+  create(raw: unknown, requestKey: string, admissionDigest?: string) {
     const spec = specOf(raw), hash = digest(spec);
+    if (admissionDigest !== undefined && !/^[a-f0-9]{64}$/.test(admissionDigest)) throw new Error('Invalid publication admission digest');
     if (!/^[a-zA-Z0-9_.:-]{1,200}$/.test(requestKey)) throw new Error('Invalid publication request key');
     return this.transaction(() => {
-      const prior = this.db.prepare('SELECT * FROM publications WHERE project_id=? AND request_key=?').get(spec.projectId, requestKey) as (Row & { creation_digest: string }) | undefined;
+      const prior = this.db.prepare('SELECT * FROM publications WHERE project_id=? AND request_key=?').get(spec.projectId, requestKey) as (Row & { creation_digest: string; admission_digest: string | null }) | undefined;
       if (prior) {
-        if (prior.creation_digest !== hash) throw new Error('Publication request key is bound to different content');
+        if (prior.creation_digest !== hash || (admissionDigest !== undefined && prior.admission_digest !== admissionDigest)) throw new Error('Publication request key is bound to different content');
         return record(prior);
       }
       const id = randomUUID(), now = this.now();
-      this.db.prepare("INSERT INTO publications(id,project_id,request_key,creation_digest,spec_json,digest,state,created_at,updated_at) VALUES(?,?,?,?,?,?,'draft',?,?)").run(id, spec.projectId, requestKey, hash, bounded(spec), hash, now, now);
+      this.db.prepare("INSERT INTO publications(id,project_id,request_key,creation_digest,spec_json,digest,state,created_at,updated_at,admission_digest) VALUES(?,?,?,?,?,?,'draft',?,?,?)").run(id, spec.projectId, requestKey, hash, bounded(spec), hash, now, now, admissionDigest ?? null);
       this.event(id, 'draft'); return this.get(spec.projectId, id)!;
     });
   }

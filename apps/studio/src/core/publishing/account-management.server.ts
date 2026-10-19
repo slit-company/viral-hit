@@ -10,6 +10,7 @@ export function openPublishingAccountManagement(options: { root?: string; key?: 
   try { store = new PublicationAccountStore(vault); } catch (error) { vault.close(); throw error; }
   return {
     list: () => store.list(),
+    get: (id: string) => store.get(id),
     disconnect: (id: string, revision: number) => store.disconnect(id, revision),
     close() { store.close(); vault.close(); },
   };

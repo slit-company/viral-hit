@@ -2,7 +2,7 @@ import { BackButton } from '@/components/base/back-button';
 import { useRouter } from '@/core/i18n/navigation';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Images, LayoutPanelTop, Link2, Scissors, Workflow } from 'lucide-react';
+import { Images, LayoutPanelTop, Link2, Scissors, Send, Workflow } from 'lucide-react';
 
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
 import { HarnessDialog } from '@/components/app/harness-dialog';
@@ -20,11 +20,13 @@ export function ProductPageShell({
   workspaceName,
   projectId,
   workspaceMode,
+  publishing = false,
 }: {
   children: ReactNode;
   workspaceName?: string | null;
   projectId?: string | null;
   workspaceMode?: WorkspaceMode;
+  publishing?: boolean;
 }) {
   const t = useTranslations('AppShell');
   const router = useRouter();
@@ -52,7 +54,7 @@ export function ProductPageShell({
   }, [getDisplayWorkspaceName, workspaceName]);
 
   useEffect(() => {
-    if (!projectId) return;
+    if (!projectId || !workspaceMode) return;
 
     const controller = new AbortController();
     void apiJsonPost(
@@ -119,7 +121,7 @@ export function ProductPageShell({
 
   return (
     <div className="vh-product-shell flex h-screen min-h-screen flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
-      <header className={`pointer-events-auto sticky top-0 z-40 shrink-0 border-b border-[var(--vh-border)] bg-[var(--vh-surface)]/96 text-[var(--vh-text-1)] backdrop-blur-xl ${projectId && workspaceMode ? 'pb-10 sm:pb-0' : ''}`}>
+      <header className={`pointer-events-auto sticky top-0 z-40 shrink-0 border-b border-[var(--vh-border)] bg-[var(--vh-surface)]/96 text-[var(--vh-text-1)] backdrop-blur-xl ${projectId && (workspaceMode || publishing) ? 'pb-10 sm:pb-0' : ''}`}>
           <div className="flex h-14 items-center gap-3 px-4 lg:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <BackButton label={t('header.backHome')} onClick={() => router.push('/')} />
@@ -131,7 +133,7 @@ export function ProductPageShell({
 
             <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
               {projectId && <HarnessDialog key={projectId} projectId={projectId} />}
-              {projectId && workspaceMode ? (
+              {projectId && (workspaceMode || publishing) ? (
                 <nav
                   className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1 max-sm:absolute max-sm:inset-x-4 max-sm:top-14"
                   aria-label={t('header.workspaceView')}
@@ -175,6 +177,7 @@ export function ProductPageShell({
                 </nav>
               ) : null}
               <LanguageSwitcher variant="workspace" />
+              {projectId && <Link href={`/publish/${projectId}`} aria-label="Publish project" title="Publish project" aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
               <Link href="/connections" aria-label="Publishing connections" title="Publishing connections" className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>
               <WorkspaceApiConfigDialog
                 providerId={ACTIVE_GENERATION_PROVIDER_ID}

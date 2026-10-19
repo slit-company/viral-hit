@@ -1,3 +1,5 @@
+import { jsonResult, errorResult, withToolErrors, ViralHitMcpToolError } from './tool-results';
+import { registerPublishingTools } from './publishing-tools';
 import { changeComfyConnection, connectionRequest } from '@/core/harness/comfy-connection';
 import { readFile, stat } from 'node:fs/promises';
 import { isAbsolute, resolve as resolvePath } from 'node:path';
@@ -136,60 +138,6 @@ const generationReferenceSchema = z.object({
   ]),
   deliveryUrl: z.string().trim().min(1).max(4096).optional(),
 });
-
-const jsonResult = (result: unknown) => ({
-  content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }],
-  structuredContent: { result },
-});
-
-class ViralHitMcpToolError extends Error {
-  readonly status: number;
-  readonly details: Record<string, unknown>;
-
-  constructor(status: number, details: Record<string, unknown>) {
-    super(
-      typeof details.error === 'string'
-        ? details.error
-        : `Cloud API request failed with status ${status}.`
-    );
-    this.name = 'ViralHitMcpToolError';
-    this.status = status;
-    this.details = details;
-  }
-}
-
-const errorResult = (error: unknown) => ({
-  content: [
-    {
-      type: 'text' as const,
-      text: error instanceof Error ? error.message : 'ViralHit tool failed.',
-    },
-  ],
-  isError: true,
-  structuredContent: {
-    error:
-      error instanceof ViralHitMcpToolError
-        ? {
-            message: error.message,
-            status: error.status,
-            details: error.details,
-          }
-        : {
-            message:
-              error instanceof Error ? error.message : 'ViralHit tool failed.',
-          },
-  },
-});
-
-const withToolErrors = <TArgs, TResult>(
-  handler: (args: TArgs) => Promise<TResult> | TResult
-) => async (args: TArgs) => {
-  try {
-    return jsonResult(await handler(args));
-  } catch (error) {
-    return errorResult(error);
-  }
-};
 
 const workspaceHandoffResult = (
   handoff: ViralHitWorkspaceHandoff,
@@ -1391,6 +1339,7 @@ export function createViralHitMcpServer() {
       return preflightComfyPlan(plan, { deferredInputs });
     })
   );
+  registerPublishingTools(server, resolveScopedProject);
   return server;
 }
 

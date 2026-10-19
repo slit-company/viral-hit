@@ -46,7 +46,9 @@
     "harness": "tsx scripts/harness.ts",
     "worker": "tsx scripts/harness-worker.ts",
     "recipe": "tsx scripts/recipe.ts",
-    "adapter": "tsx scripts/adapter.ts"
+    "adapter": "tsx scripts/adapter.ts",
+    "publication": "tsx scripts/publication.ts",
+    "publication:worker": "tsx scripts/publication-worker.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

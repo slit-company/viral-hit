@@ -26,7 +26,7 @@ export function PublishingAccountsPage({ callbackIssue }: { callbackIssue?: stri
           </div>
           <div className="border-t border-[var(--vh-border)] px-5 py-4 text-sm leading-6 text-[var(--vh-text-2)] sm:px-6">
             {loading && !snapshot ? <p role="status">Loading connections…</p> : !snapshot ? <p>Connection status is unavailable.</p> : ready ? <p>Google will ask you to choose a channel and allow channel lookup and video uploads. Access stays on this workspace’s server.</p> : snapshot.youtube === 'origin-mismatch' ? <p>The Google callback belongs to a different studio address. Open the configured studio address or ask your workspace operator to update it.</p> : <p>Google connection is not configured yet. Ask your workspace operator to enable YouTube for this studio.</p>}
-            <p className="mt-2">Connecting does not upload a video. The publishing queue is still being integrated.</p>
+            <p className="mt-2">Connecting does not upload a video. Open Publish in a project to prepare and approve a delivery.</p>
           </div>
         </section>
         <section aria-labelledby="connected-channels" className="space-y-3">

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { PublicationStore } from './store.server';
 import { publicPublication, type PublicationSpec } from './contracts';
 
@@ -10,6 +11,28 @@ const spec: PublicationSpec = {
   schemaVersion: 1, projectId: 'project', connector: 'example', connectorVersion: '1', accountId: 'account', destinationId: 'channel',
   assets: [{ assetId: 'asset', sha256: 'a'.repeat(64), sizeBytes: 10, contentType: 'video/mp4' }], metadata: { title: 'Reviewed' },
 };
+
+test('existing databases migrate admission identity without rebinding historical keys or losing revisions', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'publication-migration-')), file = join(dir, 'jobs.sqlite');
+  let store = new PublicationStore(file);
+  try {
+    const original = store.create(spec, 'legacy'); store.close();
+    const old = new DatabaseSync(file);
+    try { old.exec('ALTER TABLE publications DROP COLUMN admission_digest'); } finally { old.close(); }
+    store = new PublicationStore(file);
+    assert.equal(store.findRequest('project', 'legacy')?.admissionDigest, null);
+    assert.equal(store.findRequest('project', 'legacy')?.record.id, original.id);
+    assert.throws(() => store.create(spec, 'legacy', 'a'.repeat(64)), /different content/);
+    const next = store.create(spec, 'new', 'b'.repeat(64));
+    store.revise('project', next.id, 1, { ...spec, metadata: { title: 'Revised' } });
+    store.close(); store = new PublicationStore(file);
+    assert.equal(store.findRequest('project', 'new')?.admissionDigest, 'b'.repeat(64));
+    assert.equal(store.findRequest('project', 'new')?.record.revision, 2);
+    assert.equal(store.findRequest('other', 'new'), null);
+    assert.throws(() => store.create(spec, 'new', 'c'.repeat(64)), /different content/);
+    assert.equal(store.create(spec, 'new', 'b'.repeat(64)).revision, 2);
+  } finally { store.close(); rmSync(dir, { recursive: true, force: true }); }
+});
 
 test('canonical intent, idempotency, revision approval, project boundaries and redacted views survive reopening', () => {
   const dir = mkdtempSync(join(tmpdir(), 'publication-')), file = join(dir, 'jobs.sqlite');

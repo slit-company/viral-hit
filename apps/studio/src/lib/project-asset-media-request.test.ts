@@ -18,6 +18,20 @@ test('normalizes browser media destinations for dynamic project assets', () => {
   assert.equal(normalized.url, request.url);
 });
 
+test('retained publication videos route dynamically without dropping range, digest or cross-site trust evidence', () => {
+  const url = 'http://127.0.0.1:3808/api/app/projects/p/publications/job/media?digest=reviewed';
+  const request = new Request(url, { headers: { range: 'bytes=3-19', 'sec-fetch-dest': 'video', 'sec-fetch-site': 'cross-site', origin: 'https://foreign.example' } });
+  const normalized = normalizeProjectAssetMediaRequest(request);
+  assert.equal(normalized.headers.get('sec-fetch-dest'), null);
+  assert.equal(normalized.headers.get('sec-fetch-site'), 'cross-site');
+  assert.equal(normalized.headers.get('origin'), 'https://foreign.example');
+  assert.equal(normalized.headers.get('range'), 'bytes=3-19');
+  assert.equal(normalized.url, url);
+  for (const path of ['/api/app/projects/p/publications', '/api/app/projects/p/publications/job/metadata', '/api/app/projects/p/publications/job/media/other']) {
+    assert.equal(shouldNormalizeProjectAssetMediaRequest({ method: 'GET', url: path, destination: 'video' }), false);
+  }
+});
+
 test('leaves ordinary routes and non-media requests unchanged', () => {
   const pageImage = new Request('http://127.0.0.1:3020/logo.png', {
     headers: { 'sec-fetch-dest': 'image' },

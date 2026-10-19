@@ -8,6 +8,7 @@ if (!production) execFileSync(process.execPath, ['--import', 'tsx', 'scripts/pre
 const children = [
   spawn(process.execPath, production ? ['.output/server/index.mjs'] : ['node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', process.env.PORT || '3808', '--strictPort'], { stdio: 'inherit' }),
   spawn(process.execPath, ['--import', 'tsx', 'scripts/harness-worker.ts'], { stdio: 'inherit' }),
+  spawn(process.execPath, ['--import', 'tsx', 'scripts/publication-worker.ts'], { stdio: 'inherit' }),
 ];
 let stopping = false;
 function stop() { if (stopping) return; stopping = true; for (const child of children) child.kill('SIGTERM'); }
