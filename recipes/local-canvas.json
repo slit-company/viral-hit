@@ -1,0 +1,115 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "category": "self-hosted",
+  "tags": [
+    "comfyui",
+    "image",
+    "local"
+  ],
+  "id": "local-canvas",
+  "title": "Local canvas",
+  "description": "Create a solid-color image on your ComfyUI server. A model-free connection check and canvas source, not AI generation. Requires EmptyImage and SaveImage nodes.",
+  "parameters": [
+    {
+      "id": "width",
+      "label": "Width",
+      "type": "number",
+      "integer": true,
+      "default": 512,
+      "min": 64,
+      "max": 4096
+    },
+    {
+      "id": "height",
+      "label": "Height",
+      "type": "number",
+      "integer": true,
+      "default": 512,
+      "min": 64,
+      "max": 4096
+    },
+    {
+      "id": "color",
+      "label": "RGB color as an integer",
+      "type": "number",
+      "integer": true,
+      "default": 13038443,
+      "min": 0,
+      "max": 16777215
+    }
+  ],
+  "nodes": [
+    {
+      "id": "workflow",
+      "operation": "comfy.workflow",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "workflow": {
+          "1": {
+            "class_type": "EmptyImage",
+            "inputs": {
+              "width": 512,
+              "height": 512,
+              "batch_size": 1,
+              "color": 13038443
+            }
+          },
+          "2": {
+            "class_type": "SaveImage",
+            "inputs": {
+              "images": [
+                "1",
+                0
+              ],
+              "filename_prefix": "Viral Hit/canvas"
+            }
+          }
+        },
+        "output": {
+          "nodeId": "2",
+          "field": "images",
+          "index": 0
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "width",
+          "target": "/workflow/1/inputs/width"
+        },
+        {
+          "parameter": "height",
+          "target": "/workflow/1/inputs/height"
+        },
+        {
+          "parameter": "color",
+          "target": "/workflow/1/inputs/color"
+        }
+      ]
+    },
+    {
+      "id": "image",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "image",
+        "label": "Local canvas"
+      },
+      "dependsOn": [
+        "workflow"
+      ],
+      "bindings": [
+        {
+          "node": "workflow",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}

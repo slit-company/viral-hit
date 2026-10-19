@@ -33,7 +33,7 @@ export function createComfyRouterAdapter(models = comfy.models): Adapter {
         try {
           const saved = await readBinaryReceipt(context, signal);
           if (saved) {
-            if (saved.receipt.model !== model || saved.receipt.providerJobId !== id) return { state: 'failed', error: 'Saved provider receipt does not match this job' };
+            if (saved.receipt.provider !== 'comfy-router' || saved.receipt.model !== model || saved.receipt.providerJobId !== id) return { state: 'failed', error: 'Saved provider receipt does not match this job' };
             return { state: 'succeeded', output: binaryReceiptOutput(saved.receipt) };
           }
         } catch (error) {

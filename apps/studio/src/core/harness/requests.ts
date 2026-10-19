@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { workflowInput } from './comfy-workflow';
 import { routerInput } from './comfy-router';
 import { materializeInput } from './materialize';
 
@@ -11,11 +12,12 @@ const nodeBase = {
 };
 export const runtimeNodeSchema = z.discriminatedUnion('operation', [
   z.object({ ...nodeBase, operation: z.literal('comfy.router'), input: routerInput }).strict(),
+  z.object({ ...nodeBase, operation: z.literal('comfy.workflow'), input: workflowInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('asset.materialize'), input: materializeInput }).strict(),
 ]);
 export const runRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('enqueue'), requestKey: z.string().trim().min(1).max(200), nodes: z.array(runtimeNodeSchema).min(1).max(256) }).strict(),
   z.object({ action: z.literal('recipe'), recipeId: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/), requestKey: z.string().trim().min(1).max(200), values: z.record(z.string(), z.json()) }).strict(),
-  z.object({ action: z.enum(['cancel', 'retry']), runId: z.string().uuid() }).strict(),
+  z.object({ action: z.enum(['cancel', 'retry', 'reconcile']), runId: z.string().uuid() }).strict(),
   z.object({ action: z.literal('attach'), runId: z.string().uuid(), jobId: z.string().uuid(), expectedRevision: z.number().int().min(0) }).strict(),
 ]);

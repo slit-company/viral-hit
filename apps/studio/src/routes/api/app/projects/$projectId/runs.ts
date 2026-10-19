@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { getActiveProject } from '@/core/projects/projects';
 import { openHarness } from '@/core/harness/store';
 import { runRequest } from '@/core/harness/requests';
+import { runtimeCapabilities, assertRuntimeConfigured, reconciliableOperations } from '@/core/harness/capabilities';
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan } from '@/core/harness/recipe-plan';
 import { attachMaterializedJob } from '@/core/harness/attach-asset';
@@ -14,7 +15,7 @@ async function GET({ params }: Context) {
   const h = openHarness();
   try {
     const runs = h.runs(params.projectId).map(run => ({ ...run, jobs: h.jobs(String(run.id)), events: h.events(String(run.id)) }));
-    return Response.json({ configured: isComfyConfigured(), runs }, { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json({ configured: isComfyConfigured(), capabilities: runtimeCapabilities(), runs }, { headers: { 'Cache-Control': 'no-store' } });
   } finally { h.close(); }
 }
 async function POST({ params, request }: Context) {
@@ -28,7 +29,7 @@ async function POST({ params, request }: Context) {
   try {
     if (body.action === 'enqueue' || body.action === 'recipe') {
       const plan = body.action === 'recipe' ? await prepareRecipePlan(body.recipeId, body.values, params.projectId) : { projectId: params.projectId, nodes: body.nodes };
-      if (plan.nodes.some(node => node.operation === 'comfy.router') && !isComfyConfigured()) return Response.json({ error: 'Comfy API key is not configured on this server' }, { status: 503 });
+      try { assertRuntimeConfigured(plan.nodes); } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Runtime unavailable' }, { status: 503 }); }
       const runId = h.enqueue(plan, body.requestKey);
       return Response.json({ runId }, { status: 202 });
     }
@@ -38,6 +39,7 @@ async function POST({ params, request }: Context) {
       return Response.json(result.ok ? result : { ...result, error: result.message }, { status: result.ok ? 200 : result.code === 'REVISION_CONFLICT' ? 409 : 400 });
     }
     if (body.action === 'cancel') h.cancel(body.runId);
+    else if (body.action === 'reconcile') h.requestReconciliation(body.runId, reconciliableOperations);
     else h.retry(body.runId);
     return Response.json({ runId: body.runId });
   } catch (error) {

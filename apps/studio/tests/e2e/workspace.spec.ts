@@ -121,6 +121,13 @@ test('generation run panel checks configuration and rejects malformed and untrus
   await expect(page.getByLabel('Opening · establish the world')).toBeVisible();
   await expect(page.getByLabel('Detail · the visual idea')).toBeVisible();
   await expect(page.getByLabel('Closing · the final image')).toBeVisible();
+  await page.getByLabel('Creative recipe').selectOption('local-canvas');
+  await expect(page.getByLabel('Width', { exact: true })).toHaveValue('512');
+  await expect(page.getByText(/Configure VIRAL_HIT_COMFYUI_URL/)).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
+  expect((await request.post(url, { headers, data: { action: 'recipe', recipeId: 'local-canvas', values: {}, requestKey: 'local-not-configured' } })).status()).toBe(503);
+  await page.getByLabel('Creative recipe').selectOption('local-diffusion');
+  await expect(page.getByLabel('Installed checkpoint filename')).toBeVisible();
   await page.getByLabel('Creative recipe').selectOption('open-motion');
   await page.getByLabel('Describe the action and camera').fill('A slow orbit around an original paper sculpture.');
   await page.getByLabel('Frame shape').selectOption('9:16');

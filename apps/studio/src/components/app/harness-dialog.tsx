@@ -6,7 +6,8 @@ import type { Job } from '@/core/harness/durable';
 import type { Recipe } from '@/core/harness/recipes';
 
 type Run = { id: string; created_at: number; jobs: Job[]; events: { sequence: number; event: string; at: number }[] };
-type Result = { configured: boolean; runs: Run[] };
+type Capability = { operation: string; configured: boolean; label: string; configuration: string | null; generation: boolean; reconciliation: boolean };
+type Result = { configured: boolean; capabilities: Capability[]; runs: Run[] };
 export function HarnessDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<Result>();
@@ -17,7 +18,10 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [recipeId, setRecipeId] = useState('open-frame');
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const selected = recipes.find(recipe => recipe.id === recipeId) ?? recipes[0];
-  const needsComfy = selected?.nodes.some(node => node.operation === 'comfy.router');
+  const generationOperations = [...new Set(selected?.nodes.filter(node => node.operation !== 'asset.materialize').map(node => node.operation) ?? [])];
+  const needsGeneration = generationOperations.length > 0;
+  const missingCapabilities = generationOperations.filter(operation => !data?.capabilities?.some(capability => capability.operation === operation && capability.configured));
+  const configurationMessage = missingCapabilities.map(operation => data?.capabilities?.find(capability => capability.operation === operation)?.configuration ?? operation).join(', ');
   const ready = selected?.parameters.every(parameter => values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
@@ -73,7 +77,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
           </select>
           {selected && <>
-            <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.filter(node => node.operation === 'comfy.router').length} generation · {selected.nodes.filter(node => node.operation !== 'comfy.router').length} local steps · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
+            <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.filter(node => node.operation !== 'asset.materialize').length} generation · {selected.nodes.filter(node => node.operation === 'asset.materialize').length} local steps · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
             <div className="max-h-[28vh] sm:max-h-[min(28rem,calc(85vh-26rem))] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
             {selected.parameters.map(parameter => {
               const id = `recipe-${parameter.id}`;
@@ -91,8 +95,8 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             })}
             </div>
           </>}
-          <p className="text-xs leading-relaxed text-white/60">{!needsComfy ? 'This recipe runs local processing without a generation request.' : data ? data.configured ? 'Uses your Comfy credits. Final usage appears on the provider receipt.' : 'Connect Comfy with COMFY_API_KEY in the server environment, then restart the studio.' : 'Checking Comfy connection…'}</p>
-          <button disabled={(needsComfy && !data?.configured) || !ready || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">{needsComfy ? 'Queue generation' : 'Queue import'} <ArrowUpRight size={15} /></button>
+          <p className="text-xs leading-relaxed text-white/60">{!needsGeneration ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? `Configure ${configurationMessage} in the server environment, then restart the studio.` : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
+          <button disabled={(needsGeneration && missingCapabilities.length > 0) || !ready || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">{needsGeneration ? 'Queue generation' : 'Queue import'} <ArrowUpRight size={15} /></button>
           <p className="text-[11px] leading-relaxed text-white/50">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
         <section className="min-w-0 space-y-3">
@@ -109,6 +113,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             </div>)}
             <div className="flex gap-3 text-xs">
               {run.jobs.some(j => ['queued', 'submitting', 'running'].includes(j.state)) && <button disabled={busy} onClick={() => void act({ action: 'cancel', runId: run.id })} className="text-white/70 hover:text-white">Request cancel</button>}
+              {run.jobs.some(j => j.state === 'uncertain' && data.capabilities?.some(capability => capability.operation === j.operation && capability.reconciliation)) && <button disabled={busy} onClick={() => void act({ action: 'reconcile', runId: run.id })} className="text-[#c7f36b]">Find original job</button>}
               {run.jobs.some(j => j.state === 'failed' && !j.cancel_requested) && <button disabled={busy} onClick={() => void act({ action: 'retry', runId: run.id })} className="text-[#c7f36b]">Retry failed work</button>}
             </div>
           </article>)}

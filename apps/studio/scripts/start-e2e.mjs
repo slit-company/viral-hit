@@ -12,6 +12,7 @@ extension.parameters[0].label = 'Community frame prompt';
 await writeFile(join(recipes, 'community-fixture.json'), JSON.stringify(extension));
 const env = { ...process.env, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
 delete env.COMFY_API_KEY;
+delete env.VIRAL_HIT_COMFYUI_URL;
 delete env.VIRAL_HIT_HARNESS_DB;
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });
 execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-media.ts'], { env, stdio: 'inherit' });

@@ -11,7 +11,7 @@ export const binaryReference = z.object({ jobId: z.string().uuid(), sha256: z.st
 export type ReceiptContext = { projectId: string; jobId: string };
 const receiptSchema = z.object({
   schemaVersion: z.literal(1), projectId: z.string(), jobId: z.string().uuid(),
-  provider: z.literal('comfy-router'), model: z.string(), providerJobId: z.string(),
+  provider: z.enum(['comfy-router', 'comfy-workflow']), model: z.string(), providerJobId: z.string(),
   requestId: z.string().nullable(), contentType: z.string().max(1000),
   creditsUsed: z.string().nullable(), servingProvider: z.string().nullable(),
   droppedParams: z.array(z.string()).nullable(),

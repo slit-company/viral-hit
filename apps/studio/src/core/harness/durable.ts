@@ -14,14 +14,16 @@ export type Job = {
   cacheable: number; cached_from: string | null;
   bindings_json: string; execution_input_json: string | null;
 };
-export type Poll = { state: 'running' | 'succeeded' | 'failed' | 'canceled'; output?: Json; error?: string; retryAfterMs?: number };
+export type Poll = { state: 'running' | 'succeeded' | 'failed' | 'canceled' | 'uncertain'; output?: Json; error?: string; retryAfterMs?: number };
 export interface Adapter {
   /** replay: repeated submission with the SAME key returns the same paid job. */
-  recovery: 'replay' | 'manual';
+  recovery: 'replay' | 'manual' | 'reconcile';
   submit(input: Json, context: { key: string; dependencies: Record<string, Json>; signal: AbortSignal; projectId?: string; runId?: string; jobId?: string }): Promise<{ id: string }>;
+  /** Resolve an ambiguous submission by observation only; never submit here. */
+  reconcile?(input: Json, context: { key: string; signal: AbortSignal }): Promise<{ id: string } | null>;
   poll(id: string, input: Json, signal: AbortSignal, context?: { projectId: string; runId: string; jobId: string }): Promise<Poll>;
   /** Must request cancellation, not pretend the remote job has stopped. */
-  cancel?(id: string, input: Json, signal: AbortSignal): Promise<void>;
+  cancel?(id: string, input: Json, signal: AbortSignal): Promise<void | { state: 'canceled' }>;
 }
 export class RejectedSubmission extends Error {}
 
@@ -141,6 +143,26 @@ export class DurableHarness {
       }
     });
   }
+  requestReconciliation(runId: string, operations: readonly string[]) {
+    this.transaction(() => {
+      const jobs = this.jobs(runId), resumed = new Set<string>();
+      for (const job of jobs) {
+        if (job.state !== 'uncertain' || !operations.includes(job.operation)) continue;
+        this.db.prepare("UPDATE vh_jobs SET state=?,next_poll=0 WHERE id=?").run(job.provider_id ? 'running' : 'submitting', job.id);
+        this.event(job, 'reconciliation_requested'); resumed.add(job.node_id);
+      }
+      // Blocked descendants never submitted. Resume their dependency checks, not definitively failed jobs.
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const job of jobs) {
+          if (job.state !== 'blocked' || job.cancel_requested || resumed.has(job.node_id) || !(JSON.parse(job.dependencies_json) as string[]).some(id => resumed.has(id))) continue;
+          this.db.prepare("UPDATE vh_jobs SET state='queued',error=NULL,next_poll=0 WHERE id=?").run(job.id);
+          resumed.add(job.node_id); changed = true; this.event(job, 'dependency_reconciliation_requested');
+        }
+      }
+    });
+  }
   private claim(runId: string, pausedOperations: readonly string[] = []): Job | undefined {
     return this.transaction(() => {
       const jobs = this.jobs(runId), byId = new Map(jobs.map(j => [j.node_id, j]));
@@ -175,6 +197,12 @@ export class DurableHarness {
     const signal = AbortSignal.timeout(60_000);
     try {
       if (!job.provider_id) {
+        if (job.state === 'submitting' && adapter.recovery === 'reconcile') {
+          const recovered = await adapter.reconcile?.(input, { key: job.idempotency_key, signal });
+          if (recovered?.id) this.transition(job, 'running', { providerId: recovered.id });
+          else this.transition(job, 'uncertain', { error: 'Original submission was not found. Reconcile again after checking the provider; no resubmission was made.' });
+          return true;
+        }
         if (job.state === 'submitting' && adapter.recovery === 'manual') {
           this.transition(job, 'uncertain', { error: 'Submission outcome unknown. Reconcile the provider job before retrying.' }); return true;
         }
@@ -192,7 +220,7 @@ export class DurableHarness {
       const latest = this.jobs(runId).find(j => j.id === job.id)!;
       if (latest.cancel_requested) {
         if (!adapter.cancel) { this.transition(job, 'uncertain', { error: 'Provider cancellation unsupported; remote job may still run' }); return true; }
-        try { await adapter.cancel(job.provider_id, input, signal); }
+        try { const result = await adapter.cancel(job.provider_id, input, signal); if (result?.state === 'canceled') { this.transition(job, 'canceled'); return true; } }
         catch { this.event(job, 'cancel_response_unconfirmed'); }
       }
       const run = this.db.prepare('SELECT project_id FROM vh_runs WHERE id=?').get(runId)!;
@@ -202,7 +230,7 @@ export class DurableHarness {
       const detail = error instanceof Error ? error.message : String(error);
       if (error instanceof RejectedSubmission || error instanceof BindingError) this.transition(job, 'failed', { error: detail });
       else if (job.provider_id) this.transition(job, 'running', { error: detail, nextPoll: this.now() + 5000 });
-      else this.transition(job, adapter.recovery === 'manual' || job.attempts >= 2 ? 'uncertain' : 'submitting', { error: detail, nextPoll: this.now() + 2000 });
+      else this.transition(job, adapter.recovery === 'manual' || (adapter.recovery === 'reconcile' && job.state === 'submitting') || job.attempts >= 2 ? 'uncertain' : 'submitting', { error: detail, nextPoll: this.now() + 2000 });
     }
     return true;
   }
