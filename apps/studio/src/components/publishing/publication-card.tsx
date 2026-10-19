@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import type { PublicationView } from '@/core/publishing/public-view';
 import type { PublicationRequest } from '@/core/publishing/requests';
 
-const labels: Record<PublicationView['state'], string> = { draft: 'Draft', approved: 'Queued for upload', starting: 'Creating upload session', uploading: 'Uploading', accepted: 'Video received', processing: 'YouTube processing', ready: 'Ready on YouTube', scheduled: 'Scheduled on YouTube', published: 'Public on YouTube', reconciling: 'Checking original upload', uncertain: 'Needs attention', failed: 'Delivery failed', canceled: 'Canceled' };
+const labels: Record<PublicationView['state'], string> = { draft: 'Draft', approved: 'Queued for upload', starting: 'Creating upload session', uploading: 'Uploading', accepted: 'Video received', staged: 'Ready to publish', publishing: 'Publishing', processing: 'YouTube processing', ready: 'Ready on YouTube', scheduled: 'Scheduled on YouTube', published: 'Public on YouTube', reconciling: 'Checking original upload', uncertain: 'Needs attention', failed: 'Delivery failed', canceled: 'Canceled' };
 const issues: Record<NonNullable<PublicationView['issue']>, string> = {
   'start-unknown': 'The session response was lost. Check your channel before preparing another upload; this job will not create a second session.',
+  'publish-unknown': 'The final publication response is unconfirmed. Check the original container; this job will not automatically publish again.',
   'upload-unknown': 'The last response was unclear. The worker will check the original remote session before sending more bytes.',
   'session-expired': 'The original upload session expired. Check your channel before starting another draft.',
   'remote-rejected': 'YouTube rejected this delivery. Review your channel and video settings.',

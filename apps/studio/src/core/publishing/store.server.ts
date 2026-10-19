@@ -135,7 +135,7 @@ export class PublicationStore {
   }
   claim(): PublicationRecord | null {
     return this.transaction(() => {
-      const row = this.db.prepare("SELECT * FROM publications WHERE state IN ('approved','starting','uploading','accepted','processing','scheduled','reconciling') AND next_poll<=? AND lease_until<=? ORDER BY created_at,id LIMIT 1").get(this.now(), this.now()) as Row | undefined;
+      const row = this.db.prepare("SELECT * FROM publications WHERE state IN ('approved','starting','uploading','accepted','processing','staged','publishing','scheduled','reconciling') AND next_poll<=? AND lease_until<=? ORDER BY created_at,id LIMIT 1").get(this.now(), this.now()) as Row | undefined;
       if (!row) return null;
       const token = randomUUID();
       this.db.prepare('UPDATE publications SET lease_token=?,lease_until=? WHERE id=?').run(token, this.now() + 120000, row.id);
@@ -152,6 +152,15 @@ export class PublicationStore {
     });
   }
   checkpoint(claim: PublicationRecord, value: JsonValue) { return this.finish(claim, 'uploading', { checkpoint: value }); }
+  /** The original container receipt survives a lost media_publish response. */
+  beginPublish(claim: PublicationRecord) {
+    return this.transaction(() => {
+      const current = this.get(claim.spec.projectId, claim.id);
+      if (!current || current.state !== 'staged' || current.receipt === null || current.digest !== claim.digest || current.leaseToken !== claim.leaseToken || current.leaseUntil <= this.now() || current.approval?.digest !== current.digest || current.approval.revision !== current.revision) return false;
+      this.db.prepare("UPDATE publications SET state='publishing',updated_at=? WHERE id=?").run(this.now(), claim.id);
+      this.event(claim.id, 'publishing'); return true;
+    });
+  }
   finish(claim: PublicationRecord, state: PublicationState, patch: { checkpoint?: JsonValue; receipt?: JsonValue; issue?: PublicationIssue; delayMs?: number } = {}) {
     const checkpoint = patch.checkpoint === undefined ? null : bounded(patch.checkpoint), receipt = patch.receipt === undefined ? null : bounded(patch.receipt);
     const delay = Math.min(86400000, Math.max(0, patch.delayMs ?? 0));

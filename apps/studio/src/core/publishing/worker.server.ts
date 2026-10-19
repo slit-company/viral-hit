@@ -1,4 +1,4 @@
-import { PublicationAssetError, PublicationStartError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
+import { PublicationAssetError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
 import type { PublicationStore } from './store.server';
 
 export type PublicationRuntime = {
@@ -21,8 +21,8 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
     return store.get(claim.spec.projectId, claim.id);
   }
   // A prior owner may have sent POST and died before storing its response.
-  if (claim.state === 'starting') {
-    finish(claim, 'uncertain', { issue: 'start-unknown' });
+  if (claim.state === 'starting' || claim.state === 'publishing') {
+    finish(claim, 'uncertain', { issue: claim.state === 'starting' ? 'start-unknown' : 'publish-unknown' });
     return store.get(claim.spec.projectId, claim.id);
   }
   let connector: PublicationConnector;
@@ -34,9 +34,9 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
     finish(claim, claim.state, { issue: 'runtime-unavailable', delayMs: 30000 });
     return store.get(claim.spec.projectId, claim.id);
   }
-  let starting = false;
+  let starting = false, publishing = false;
   const transferred = (observation: TransferObservation, readOnly = false) => {
-    if (observation.kind === 'accepted') finish(claim, 'accepted', { receipt: observation.receipt });
+    if (observation.kind === 'accepted') finish(claim, readOnly && connector.publish ? 'reconciling' : 'accepted', { receipt: observation.receipt });
     else if (observation.kind === 'uncertain') finish(claim, 'uncertain', { issue: observation.issue });
     else finish(claim, readOnly ? 'uncertain' : 'uploading', {
       checkpoint: observation.checkpoint, issue: readOnly ? 'upload-incomplete' : null, delayMs: observation.retryAfterMs,
@@ -52,9 +52,24 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
       const checkpoint = await connector.start(claim.spec, signal);
       // Never send bytes until this checkpoint has survived its own commit.
       store.checkpoint(claim, checkpoint);
+    } else if (claim.state === 'staged' && claim.receipt !== null) {
+      if (!connector.publish) throw new PublicationPublishError('unavailable');
+      signal.throwIfAborted();
+      if (!store.beginPublish(claim)) return store.get(claim.spec.projectId, claim.id);
+      publishing = true;
+      const observation = await connector.publish(claim.spec, claim.receipt, signal);
+      // A returned staged observation cannot authorize an implicit second publish attempt.
+      const state = observation.state === 'staged' ? 'uncertain' : ['processing', 'scheduled'].includes(observation.state) ? 'reconciling' : observation.state;
+      finish(claim, state, {
+        receipt: observation.receipt, issue: observation.state === 'staged' ? 'publish-unknown' : observation.state === 'failed' ? 'remote-rejected' : null,
+        delayMs: observation.retryAfterMs ?? 60000,
+      });
     } else if (claim.receipt !== null) {
       const observation = await connector.inspect(claim.spec, claim.receipt, signal);
-      finish(claim, observation.state, { receipt: observation.receipt, issue: observation.state === 'failed' ? 'remote-rejected' : null, delayMs: observation.retryAfterMs ?? 30000 });
+      const readOnly = claim.state === 'reconciling' && Boolean(connector.publish);
+      const state = readOnly && observation.state === 'staged' ? 'uncertain'
+        : readOnly && ['processing', 'scheduled'].includes(observation.state) ? 'reconciling' : observation.state;
+      finish(claim, state, { receipt: observation.receipt, issue: state === 'uncertain' ? 'publish-unknown' : state === 'failed' ? 'remote-rejected' : null, delayMs: observation.retryAfterMs ?? 30000 });
     } else if (claim.checkpoint !== null && claim.state === 'reconciling') {
       transferred(await connector.reconcile(claim.spec, claim.checkpoint, signal), true);
     } else if (claim.checkpoint !== null && claim.state === 'uploading') {
@@ -66,7 +81,12 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
       transferred(await connector.transfer(claim.spec, claim.checkpoint, read, signal));
     } else finish(claim, 'uncertain', { issue: 'upload-unknown' });
   } catch (error) {
-    if (error instanceof PublicationAssetError) finish(claim, claim.state === 'approved' && !starting ? 'approved' : 'uncertain', { issue: 'asset-unavailable', delayMs: 30000 });
+    if (publishing) {
+      if (error instanceof PublicationPublishError) finish(claim, error.outcome === 'rejected' ? 'failed' : 'staged', {
+        issue: error.outcome === 'rejected' ? 'remote-rejected' : 'runtime-unavailable', delayMs: error.retryAfterMs,
+      });
+      else finish(claim, 'uncertain', { issue: 'publish-unknown' });
+    } else if (error instanceof PublicationAssetError) finish(claim, claim.state === 'approved' && !starting ? 'approved' : 'uncertain', { issue: 'asset-unavailable', delayMs: 30000 });
     else if (starting) {
       if (error instanceof PublicationStartError) finish(claim, error.outcome === 'rejected' ? 'failed' : 'approved', {
         issue: error.outcome === 'rejected' ? 'remote-rejected' : 'runtime-unavailable', delayMs: error.retryAfterMs,

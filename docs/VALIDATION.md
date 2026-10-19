@@ -261,3 +261,15 @@ Initial failures are retained in ignored evidence: static MCP catalog checks nee
 The production studio on port 3808 restarted only after confirming zero active generation jobs; both workers report ready. Aside opened its real project Publish page. Production has no connected Google account or OAuth configuration, so draft saving is disabled with an explanation, while its actual source video and timeline export appear in the selector. Desktop/mobile captures show no horizontal overflow, no overlapping Back/Publish controls and no page errors. A real read-only CLI invocation returns the same empty queue and unconfigured state. No real video was uploaded or message sent.
 
 Meta/Instagram publishing, retained-media cleanup, live provider verification, full Higgsfield breadth/quality/performance and public-release readiness remain open. This milestone does not complete the full Viral Hit goal.
+
+## Instagram upload and final-publication protocol — 2026-10-20
+
+The new server connector supports local MP4 Reels/video Stories through Facebook Login for Business. The shared durable executor now fences a separate final publish request and preserves read-only recovery after an ambiguous response. [Decision 009](architecture/009-instagram-publication.md) records the official contracts and rollout limits. This is a protocol milestone; Instagram account onboarding and application/UI admission remain pending. No live Instagram upload or post occurred.
+
+- 632 source tests passed, including a real local HTTP streaming upload, resumed offset/length checks, bounded media reads, cancellation, lost acknowledgements, immutable destination checks and the Instagram connector with the real store/worker against provider fixtures.
+- 31 browser tests passed, including the existing YouTube review, retained-video playback, approvals, connections, editor and recipe flows.
+- TypeScript, translation, production build and architecture checks passed: 370 modules, 163 browser-reachable modules, zero cycles, 23 unchanged existing size allowances. No runtime dependency added.
+- Production assets: 179 files / 8,441,913 bytes; JavaScript 1,879,747 bytes / 552,606 gzip bytes, within the existing budgets. Gzip JavaScript grew 124 bytes for state/issue labels; Instagram execution stays server-only.
+- The main local server was restarted after confirming nine completed generation jobs and no pending publication jobs. Aside verified the production publication screen with its existing project videos; the production root returned HTTP 200. No visual layout changed in this milestone.
+
+Ignored evidence: `research/evidence/instagram-publishing/` contains inspected official documentation, source/browser test logs, architecture, typecheck, i18n, build and performance results. Provider fixtures establish failure-handling behavior, not real Meta permissions, app review, encoding acceptance, or publication success.
