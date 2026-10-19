@@ -2,15 +2,17 @@ import { z } from 'zod';
 import type { JsonValue } from '../../lib/canonical-json';
 
 const id = z.string().regex(/^[a-zA-Z0-9_.-]{1,128}$/);
+export const publicationAssetSchema = z.object({
+  assetId: id, sha256: z.string().regex(/^[a-f0-9]{64}$/),
+  sizeBytes: z.number().int().positive().max(256 * 1024 ** 3),
+  contentType: z.string().regex(/^(image|video|audio)\/[a-z0-9.+-]{1,80}$/),
+}).strict();
+export type PublicationAsset = z.infer<typeof publicationAssetSchema>;
 export const publicationSpecSchema = z.object({
   schemaVersion: z.literal(1), projectId: id,
   connector: id, connectorVersion: z.string().min(1).max(80),
   accountId: id, destinationId: id,
-  assets: z.array(z.object({
-    assetId: id, sha256: z.string().regex(/^[a-f0-9]{64}$/),
-    sizeBytes: z.number().int().positive().max(256 * 1024 ** 3),
-    contentType: z.string().regex(/^(image|video|audio)\/[a-z0-9.+-]{1,80}$/),
-  }).strict()).min(1).max(20),
+  assets: z.array(publicationAssetSchema).min(1).max(20),
   metadata: z.json(),
 }).strict();
 export type PublicationSpec = z.infer<typeof publicationSpecSchema>;

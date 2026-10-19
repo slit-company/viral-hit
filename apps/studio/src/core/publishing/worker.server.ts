@@ -3,7 +3,7 @@ import type { PublicationStore } from './store.server';
 
 export type PublicationRuntime = {
   connector(spec: PublicationSpec, signal: AbortSignal): Promise<PublicationConnector>;
-  /** Verify all approved content before creating any remote object. Bounded streaming only. */
+  /** Check approved snapshot identities/availability. Retention verifies full hashes; reads verify blocks. */
   validateAssets(spec: PublicationSpec, signal: AbortSignal): Promise<void>;
   /** Return exact, integrity-checked bytes for the approved asset, never an arbitrary path. */
   read(spec: PublicationSpec, asset: number, offset: number, length: number, signal: AbortSignal): Promise<Uint8Array>;
