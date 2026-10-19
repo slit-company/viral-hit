@@ -1,5 +1,13 @@
 # Validation ledger — 2026-10-19
 
+## Optional local-media milestone
+
+The separately installed music2 0.4.0/vid2 0.6.0 bridge passes nine extension tests, the architecture gate, production footprint gate, TypeScript and all 514 studio source tests. Actual engine execution passed the data-URL adapter loader, durable queue, binary receipt, materializer, revision-checked timeline attachment and server export. Both jobs submitted once. The mixed H.264/AAC output has 120 decoded video frames and exactly 4.000s video/audio. This is synthesized music/procedural motion, not model-quality evidence.
+
+On a production server, desktop/mobile forms exposed both recipes through existing SEED controls. A custom BPM/seed authored through the UI succeeded and retained its exact input; an unknown instrument failed without endless polling, leaving materialization blocked. UI page errors were empty. Raw CLI JSON errors were replaced with a concise message/input path after visual review, improving the rubric score from 3.975 to 4.325/5 without hard failures. A repeat live run using the final adapter build passed (`run-6jHz4J`). The main application source/bundle is unchanged; engine installation is optional. See [coverage](LOCAL-MEDIA-SOURCES.md), [limits/setup](../extensions/local-media/README.md) and [performance evidence](PERFORMANCE.md).
+
+Evidence: `research/evidence/local-media/`, including real media, isolated database, run IDs, stream probes, browser checks and visual captures. The source test count does not include the nine standalone extension tests. Prior full browser regression evidence below remains from the previous app-source change; this milestone uses the real extension-specific browser flow.
+
 Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser tests run against this checkout. Raw logs and captures are local ignored evidence under `research/evidence/` and `apps/studio/test-results/`.
 
 | Check | Result | Limit |

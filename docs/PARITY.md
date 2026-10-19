@@ -33,6 +33,8 @@ Independently installed `ext.*` execution adapters now share discovery, typed in
 
 ## Performance gates
 
+Optional music2 and vid2 adapters now execute authored scores/procedural timelines through the real harness, produce WAV/MP4 assets, attach to the editor and export together. This is a bounded subset of Audio/Editor/Templates, not full-row completion. ima2 is inspected but not integrated; Meta/YouTube publishing remains source-audit/design work. See [source coverage](LOCAL-MEDIA-SOURCES.md) and [measured performance/bundle budgets](PERFORMANCE.md).
+
 Measure cold and warm runs separately on fixed machine/browser/model versions. Report p50/p95, failures, external generation cost and number of rerun nodes. Never compare different providers as if only the harness changed.
 
 - Preview: measure dropped frames and scrubbing latency on 1080p/4K, landscape/portrait, short and multi-minute projects.

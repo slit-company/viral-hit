@@ -1,5 +1,7 @@
 # Install a runtime without editing the studio
 
+The [optional local-media package](../extensions/local-media/README.md) now connects real music2 score synthesis and vid2 procedural motion rendering through this contract. It is installed separately and adds no engine dependencies to the browser/studio. See its exact bridge limits and live verification command.
+
 Viral Hit can load explicitly installed execution adapters alongside its built-in Comfy Router, ComfyUI and media import operations. Recipes remain data-only; importing a recipe never installs or executes its adapter. An operator installs trusted code on the host, and UI, HTTP, MCP and worker discover the same operation catalog.
 
 ## Try the independent audio example

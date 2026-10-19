@@ -1,0 +1,26 @@
+{
+  "name": "@viral-hit/local-media",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test test/*.test.mjs",
+    "test:live": "node ../../apps/studio/node_modules/tsx/dist/cli.mjs --tsconfig ../../apps/studio/tsconfig.json ../../apps/studio/scripts/verify-local-media.ts"
+  },
+  "dependencies": {
+    "music2-gen": "0.4.0",
+    "vid2-gen": "0.6.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  },
+  "allowScripts": {
+    "bun@1.4.0": true,
+    "esbuild@0.28.1": true
+  }
+}

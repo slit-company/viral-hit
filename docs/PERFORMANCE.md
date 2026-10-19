@@ -1,0 +1,24 @@
+# Performance rules and measured scope
+
+Optional generators/renderers execute outside the browser and start only for work. Normal studio setup does not install music2, vid2, ima2 or Bun. This extension changes no studio runtime dependency, frontend source or production build artifact.
+
+Run `pnpm performance:check` after a build. It refuses those packages in the studio manifest and enforces [the budget](performance-budget.json): **10,000,000 bytes** of public files and **600,000 bytes** for all JavaScript files individually gzip-compressed. The cumulative-chunk metric includes lazy routes; it is not initial page transfer or the server's compression policy. The manifest check does not inspect arbitrary package internals. Investigate a regression before increasing the budget; moving heavy runtimes into the default install requires an architectural decision.
+
+Local macOS arm64 production build, Node 24.19.0, 2026-10-19:
+
+| Measurement | Result | Conditions |
+|---|---|---|
+| Public files, logical bytes | 8,393,761 | 173 files including fonts/branding; allocated disk usage differs |
+| All client JS, raw / individually gzipped | 1,832,755 / 535,985 bytes | Same production build before/after optional installation |
+| Optional runtime disk usage | About 125 MiB | music2, vid2, Bun and esbuild development dependency; separate from studio |
+| Idle app processes | 219.5 MiB aggregate RSS; zero engine processes | One snapshot of production launcher/server/worker with both adapters enabled; browser excluded |
+| Music render → asset registration | 770 ms | One 4s three-track score, 48kHz stereo 16-bit PCM, 768,044 bytes |
+| Motion render → asset registration | 1,473 ms | One 4s 640×360/30fps title, 120 frames, 29,113 bytes |
+| Music / motion observed descendant RSS peak | 164.6 / 235.8 MiB | Aggregate child RSS sampled every 100ms; excludes studio/browser; not exact peak/cap |
+| Editor route readiness, p50 / p95 | 126 / 137 ms | Five local navigations, warm server/OS, fresh Chromium contexts, Runs button visible |
+| Runs form visibility after click, p50 / p95 | 105 / 128 ms | Same five samples, 1440×1000; not scrub/edit latency |
+| Mixed editor export | 4.000s video/audio | H.264/AAC, 120 decoded video frames; full decoder check passed |
+
+Ignored evidence: `research/evidence/local-media/footprint.json`, `navigation.json`, `idle.json`, `run-QEeF5G/result.json`. Render timings are single small fixtures, not percentiles. Full install time, cold startup, sustained idle/browser memory, long scores, 1080p/4K projects, dropped frames, scrub/edit latency and model cost/quality still need fixed-dataset measurement. No Higgsfield comparison has run.
+
+Authoring size, duration, deadlines and accepted output are bounded; video segments serialize. This does not establish that every accepted document is cheap. Add streaming/project-media bindings and a persistent background-render protocol before substantially larger jobs. Compare generation using identical providers/models/settings and retain failures/cost; orchestration alone does not prove model superiority.

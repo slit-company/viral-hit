@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "title": "Viral Hit — first pulse",
+  "bpm": 120,
+  "seed": 7301,
+  "sampleRate": 48000,
+  "loop": true,
+  "tailSeconds": 1,
+  "master": { "ceilingDb": -1, "targetLufs": -18 },
+  "tracks": [
+    { "id": "kick", "kind": "drums", "instrument": "drums", "pattern": "bd ~ bd ~", "gain": -20 },
+    { "id": "hats", "kind": "drums", "instrument": "drums", "pattern": "~ hh ~ hh", "gain": -27 },
+    { "id": "keys", "kind": "notes", "instrument": "marimba", "pattern": "c4 e4 g4 b4", "gain": -18, "sends": { "reverb": 0.1 } }
+  ],
+  "sections": [{ "id": "pulse", "bars": 2 }],
+  "arrangement": [{ "section": "pulse" }]
+}

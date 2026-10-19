@@ -15,6 +15,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
 | `src/core/db/`, `src/core/workspace-db/`, storage modules | Database/file persistence and transaction boundaries | UI or provider workflows |
 | `examples/adapters/`, `recipes/` | Independently replaceable processors and portable workflows | Imports from app internals, private account data or product-wide assumptions |
+| `extensions/<name>/` | Separately installed runtimes, bundled entrypoints, own tests/lockfile | Default studio dependencies, browser imports, silent tool installation |
 | `research/upstream/`, `research/evidence/` | Ignored reference checkouts and local evidence | Runtime dependencies or distributable private content |
 
 Dependencies point from presentation/transport into domain services and then persistence/provider adapters. Core never imports UI or routes. Shared controls never import feature/domain logic. Runtime imports reachable from browser components must not reach Node built-ins, database drivers or provider SDKs. Use type-only imports for server-owned types. New browser/server mixed modules must be split at the boundary, not hidden behind `typeof window` branches.

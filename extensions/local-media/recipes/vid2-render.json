@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "vid2-render",
+  "version": "1.0.0",
+  "title": "Local motion timeline",
+  "description": "Render a vid2 Timeline JSON into H.264 MP4. Procedural motion, bundled fonts, up to 60 seconds.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "video",
+  "parameters": [
+    {
+      "id": "document",
+      "label": "Timeline JSON",
+      "type": "string",
+      "multiline": true,
+      "minLength": 2,
+      "maxLength": 16000,
+      "default": "{\n  \"version\": 1,\n  \"output\": { \"width\": 640, \"height\": 360, \"fps\": 30, \"container\": \"mp4\", \"videoCodec\": \"h264\", \"quality\": \"standard\" },\n  \"scenes\": [\n    {\n      \"id\": \"title\",\n      \"duration\": \"2.3s\",\n      \"background\": \"#F7F6F2\",\n      \"layers\": [\n        { \"type\": \"shape\", \"shape\": \"rect\", \"x\": 48, \"y\": 54, \"width\": 78, \"height\": 8, \"color\": \"#FF5438\" },\n        { \"type\": \"text\", \"text\": \"VIRAL HIT\", \"size\": 68, \"color\": \"#191919\", \"y\": 145, \"animation\": \"rise\" },\n        { \"type\": \"text\", \"text\": \"MAKE SOMETHING MOVE.\", \"font\": \"mono\", \"size\": 16, \"color\": \"#6B6862\", \"y\": 245, \"animation\": \"fade\" }\n      ],\n      \"transition\": { \"type\": \"fade\", \"duration\": \"0.3s\" }\n    },\n    {\n      \"id\": \"create\",\n      \"duration\": \"2s\",\n      \"background\": \"#FF5438\",\n      \"layers\": [\n        { \"type\": \"text\", \"text\": \"YOUR NEXT HIT.\", \"size\": 54, \"color\": \"#FFFFFF\", \"y\": \"center\", \"animation\": \"pop\" }\n      ]\n    }\n  ]\n}\n"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "render",
+      "operation": "ext.vid2-render",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "document": ""
+      },
+      "parameters": [
+        {
+          "parameter": "document",
+          "target": "/document"
+        }
+      ]
+    },
+    {
+      "id": "asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "video",
+        "label": "Local motion timeline"
+      },
+      "dependsOn": [
+        "render"
+      ],
+      "bindings": [
+        {
+          "node": "render",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}

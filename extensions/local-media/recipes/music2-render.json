@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "music2-render",
+  "version": "1.0.0",
+  "title": "Local music score",
+  "description": "Render an editable music2 Song JSON into a synthesized WAV. Built-in instruments, up to 60 seconds.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "audio",
+  "parameters": [
+    {
+      "id": "document",
+      "label": "Song JSON",
+      "type": "string",
+      "multiline": true,
+      "minLength": 2,
+      "maxLength": 16000,
+      "default": "{\n  \"version\": 1,\n  \"title\": \"Viral Hit — first pulse\",\n  \"bpm\": 120,\n  \"seed\": 7301,\n  \"sampleRate\": 48000,\n  \"loop\": true,\n  \"tailSeconds\": 1,\n  \"master\": { \"ceilingDb\": -1, \"targetLufs\": -18 },\n  \"tracks\": [\n    { \"id\": \"kick\", \"kind\": \"drums\", \"instrument\": \"drums\", \"pattern\": \"bd ~ bd ~\", \"gain\": -20 },\n    { \"id\": \"hats\", \"kind\": \"drums\", \"instrument\": \"drums\", \"pattern\": \"~ hh ~ hh\", \"gain\": -27 },\n    { \"id\": \"keys\", \"kind\": \"notes\", \"instrument\": \"marimba\", \"pattern\": \"c4 e4 g4 b4\", \"gain\": -18, \"sends\": { \"reverb\": 0.1 } }\n  ],\n  \"sections\": [{ \"id\": \"pulse\", \"bars\": 2 }],\n  \"arrangement\": [{ \"section\": \"pulse\" }]\n}\n"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "render",
+      "operation": "ext.music2-render",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "document": ""
+      },
+      "parameters": [
+        {
+          "parameter": "document",
+          "target": "/document"
+        }
+      ]
+    },
+    {
+      "id": "asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "audio",
+        "label": "Local music score"
+      },
+      "dependsOn": [
+        "render"
+      ],
+      "bindings": [
+        {
+          "node": "render",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}

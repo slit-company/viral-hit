@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "output": { "width": 640, "height": 360, "fps": 30, "container": "mp4", "videoCodec": "h264", "quality": "standard" },
+  "scenes": [
+    {
+      "id": "title",
+      "duration": "2.3s",
+      "background": "#F7F6F2",
+      "layers": [
+        { "type": "shape", "shape": "rect", "x": 48, "y": 54, "width": 78, "height": 8, "color": "#FF5438" },
+        { "type": "text", "text": "VIRAL HIT", "size": 68, "color": "#191919", "y": 145, "animation": "rise" },
+        { "type": "text", "text": "MAKE SOMETHING MOVE.", "font": "mono", "size": 16, "color": "#6B6862", "y": 245, "animation": "fade" }
+      ],
+      "transition": { "type": "fade", "duration": "0.3s" }
+    },
+    {
+      "id": "create",
+      "duration": "2s",
+      "background": "#FF5438",
+      "layers": [
+        { "type": "text", "text": "YOUR NEXT HIT.", "size": 54, "color": "#FFFFFF", "y": "center", "animation": "pop" }
+      ]
+    }
+  ]
+}

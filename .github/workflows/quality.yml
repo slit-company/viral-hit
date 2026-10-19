@@ -34,9 +34,18 @@ jobs:
       # Generate ignored Paraglide/router files before typechecking a fresh clone.
       # Build and browser tests must run sequentially: both generate these files.
       - run: pnpm build
+      - run: pnpm performance:check
+        working-directory: .
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm i18n:check
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - run: pnpm audit --prod --audit-level high
+      - run: npm ci && npm test && npm run build
+        working-directory: extensions/local-media
+      - run: npm run test:live -- "$RUNNER_TEMP/viral-hit-local-media"
+        working-directory: extensions/local-media
+        env:
+          VIRAL_HIT_FFMPEG: /usr/bin/ffmpeg
+          VIRAL_HIT_FFPROBE: /usr/bin/ffprobe

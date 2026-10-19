@@ -12,6 +12,7 @@
     "test": "pnpm --dir apps/studio test",
     "typecheck": "pnpm --dir apps/studio typecheck",
     "setup": "pnpm --dir apps/studio install --frozen-lockfile && pnpm --dir apps/studio db:setup && pnpm --dir apps/studio db:push",
-    "architecture:check": "node scripts/check-architecture.mjs && node --test scripts/check-architecture.test.mjs"
+    "architecture:check": "node scripts/check-architecture.mjs && node --test scripts/check-architecture.test.mjs",
+    "performance:check": "node scripts/check-performance.mjs"
   }
 }
