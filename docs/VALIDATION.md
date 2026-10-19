@@ -7,8 +7,8 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Production build | Passed | Local build; not public deployment |
 | Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 473 passed | Includes seven workflow-import tests, five input-upload integration tests and seven native ComfyUI integration tests; SDK tests use fixtures |
-| Browser E2E | 10 passed | One sequential run, local Chromium; provider credentials deliberately removed |
+| Unit/integration tests | 481 passed | Includes eight native preflight tests, seven workflow-import tests, five input-upload tests and seven native workflow tests; SDK tests use fixtures |
+| Browser E2E | 11 passed; affected three rerun after layout changes | Local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
 | Captions | Passed | Remote edit visible without reload, local text edit persisted; desktop/mobile captures |
@@ -28,6 +28,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Multimodal form/editor visual feedback | Passed, 4.28/5 | Fixed identifier textareas and clipped desktop controls; motion/speech forms and mixed editor reviewed at 1440×1000; existing mobile form checked at 390×844 |
 | Native ComfyUI workflow | Passed | Real model-free native server run; see [local ComfyUI](LOCAL-COMFYUI.md). No diffusion quality claim |
 | User graph → portable recipe → native execution → editor | Passed | Offline CLI import, external recipe directory, UI parameter edits, real ComfyUI 720×480 PNG, durable import and timeline reload; model-free graph |
+| Native server preflight | Passed | CLI/HTTP/MCP/UI inspect installed schemas without jobs/uploads; missing checkpoint and deferred uploaded filename verified on real server |
 | Project image input → ComfyUI → editor | Passed | Real 640×640 RGBA output, original retained, input upload recovery fixture tests; visual review 4.335/5 |
 | Light UI and generated branding | Passed, visual review 4.325/5 | Actual desktop 1440×1000 and mobile 390×844 captures; self-review is not user design acceptance |
 | Actual paid Comfy Router generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
@@ -54,6 +55,14 @@ Workflow importer evidence: `research/evidence/comfy-import/` contains CLI inspe
 All 473 source tests, TypeScript, production build and 10 browser tests passed. New fixture tests cover project isolation, modified source bytes, server changes, lost upload response/restart, deterministic filenames, redirect refusal and output-name rejection. Browser checks cover project-scoped selection, preview and mobile action visibility. The first full browser run overlapped a build and dev startup, causing generated Paraglide files to disappear/change during requests; seven tests failed. Running build and E2E sequentially passed all ten. Both logs are retained. Development React state-update warnings remain; the final production UI smoke recorded no page errors.
 
 The actual production selector was reviewed at 1440×1000 and 390×844. A large full-width preview hid dimension fields on mobile; compacting the preview beside selection improved the fixed rubric from 3.94 to 4.335/5. The queue action remains visible and the Height control is reachable by scrolling. The first controller attempt stopped on an artifact/source metadata mismatch; it is retained under `review/`. The corrected evidence-source run is under `visual-review/`. This review is not user design acceptance.
+
+## Native server preflight
+
+Evidence is under `research/evidence/comfy-preflight/`. On the actual configured native server, `local-canvas` reported its two available node classes; `local-diffusion` reported six available classes but no checkpoint choices; `local-image-resize` reported four classes and deferred its not-yet-uploaded filename. Empty user values were inspected without becoming executable plans. CLI exit codes were respectively 0, 2 and 0. Native history gained no new jobs. The production UI repeated the check, retained an empty harness run list and recorded no page errors.
+
+Eight source tests cover GET-only behavior, class deduplication, reported choices/ranges, missing graph inputs, dangling links, deferred values, missing user selections, malformed/failed/oversized/redirected/timed-out responses and path normalization. Ordinary compilation continues to reject missing/cleared required inputs. HTTP/MCP/UI E2E verifies unconfigured reporting, no run creation and clearing a late response after input edits. The first test run exposed an outdated shared MCP catalog after the new tool was registered; the catalog and exact-inventory test now list all 33 tools. All 481 source tests, typecheck and build passed. All 11 browser tests passed, then the three affected UI/focus tests passed again after layout changes.
+
+The initial visual inspection caught the queue action clipped by the modal even though a window-coordinate check passed. The final layout uses a compact action row, a bounded result panel and a shorter parameter scroller while the report is visible; tests now compare action coordinates with modal bounds. Desktop 1440×1000 and mobile 390×844 production captures verify the correction; the fixed visual rubric improved from 3.39/5 with hard failures to 4.28/5 without hard failures. This schema snapshot does not verify custom runtime semantics, model quality or successful generation, and never substitutes for ComfyUI execution-time validation.
 
 ## Quality and speed protocol
 

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { Job } from '@/core/harness/durable';
 import type { Recipe } from '@/core/harness/recipes';
+import type { ComfyPreflight } from '@/core/harness/comfy-preflight';
 
 type Run = { id: string; created_at: number; jobs: Job[]; events: { sequence: number; event: string; at: number }[] };
 type Capability = { operation: string; configured: boolean; label: string; configuration: string | null; generation: boolean; reconciliation: boolean };
@@ -16,6 +17,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Result>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [check, setCheck] = useState<ComfyPreflight>();
+  const checkEpoch = useRef(0);
+  const dialogContent = useRef<HTMLDivElement>(null);
+  function invalidateCheck() { checkEpoch.current++; setCheck(undefined); }
   const [attached, setAttached] = useState<string[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [inputAssets, setInputAssets] = useState<InputAsset[]>([]);
@@ -30,6 +36,16 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? inputAssets.some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
+  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); }, [open, projectId]);
+  async function checkServer() {
+    if (!selected) return;
+    const epoch = ++checkEpoch.current; setChecking(true); setCheck(undefined); setError('');
+    try {
+      const result = await apiJsonPost<ComfyPreflight>(`/api/app/projects/${projectId}/preflight`, { recipeId: selected.id, values });
+      if (epoch === checkEpoch.current) { setCheck(result); requestAnimationFrame(() => { if (epoch === checkEpoch.current) dialogContent.current?.scrollTo({ top: 0 }); }); }
+    } catch (e) { if (epoch === checkEpoch.current) setError(e instanceof Error ? e.message : 'Server check failed'); }
+    finally { if (epoch === checkEpoch.current) setChecking(false); }
+  }
   async function refresh() { setData(await apiJsonGet<Result>(endpoint)); }
   useEffect(() => {
     if (!open) return;
@@ -63,7 +79,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   async function generate() {
     if (!selected) return;
     requestKey.current ||= crypto.randomUUID();
-    if (await act({ action: 'recipe', recipeId: selected.id, values, requestKey: requestKey.current })) { setValues({}); requestKey.current = ''; }
+    if (await act({ action: 'recipe', recipeId: selected.id, values, requestKey: requestKey.current })) { setValues({}); requestKey.current = ''; invalidateCheck(); }
   }
   async function attach(runId: string, jobId: string) {
     try {
@@ -75,7 +91,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--vh-border)] px-2.5 text-xs hover:bg-[var(--vh-control)]" aria-label="Generation runs">
       <Activity size={14} /><span className="hidden lg:inline">Runs</span>
     </DialogTrigger>
-    <DialogContent className="max-h-[85vh] overflow-y-auto border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl">
+    <DialogContent ref={dialogContent} className="max-h-[85vh] overflow-y-auto border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl">
       <div className="pr-8">
         <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
         <DialogTitle className="text-xl">Generation runs</DialogTitle>
@@ -84,17 +100,17 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">
           <label htmlFor="run-recipe" className="block text-xs text-[var(--vh-text-2)]">Creative recipe</label>
-          <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; }} className="w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] p-2.5 text-sm">
+          <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; invalidateCheck(); setChecking(false); }} className="w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] p-2.5 text-sm">
             {!recipes.length && <option value="">No recipes available</option>}
             {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
           </select>
           {selected && <>
             <details className="text-xs text-[var(--vh-text-2)]"><summary className="cursor-pointer">Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
-            <div className="max-h-[28vh] sm:max-h-[min(28rem,calc(85vh-26rem))] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
+            <div className={`${check ? 'max-h-[13vh] sm:max-h-[min(18rem,calc(85vh-38rem))]' : 'max-h-[28vh] sm:max-h-[min(28rem,calc(85vh-26rem))]'} space-y-4 overflow-y-auto pr-1`} aria-label="Recipe parameters">
             {selected.parameters.map(parameter => {
               const id = `recipe-${parameter.id}`;
               const value = values[parameter.id] ?? parameter.default ?? '';
-              const change = (value: string | number | boolean) => { setValues(current => ({ ...current, [parameter.id]: value })); requestKey.current = ''; };
+              const change = (value: string | number | boolean) => { setValues(current => ({ ...current, [parameter.id]: value })); requestKey.current = ''; invalidateCheck(); setChecking(false); };
               const fieldClass = 'w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-sm outline-none focus:border-[var(--vh-border-strong)]';
               return <div key={id} className="space-y-2"><label htmlFor={id} className="block text-xs text-[var(--vh-text-2)]">{parameter.label}</label>
                 {parameter.type === 'asset' ? <><div className="flex items-center gap-2"><select id={id} value={String(value)} onChange={e => change(e.target.value)} className={`${fieldClass} min-w-0 flex-1`}><option value="" disabled>Select a project image…</option>{inputAssets.map(asset => <option key={asset.id} value={asset.id}>{asset.filename ?? asset.id}</option>)}</select>{inputAssets.find(asset => asset.id === value) && <img src={inputAssets.find(asset => asset.id === value)!.publicUrl} alt={`Selected ${parameter.label}`} className="h-14 w-14 shrink-0 rounded-lg border border-[var(--vh-border)] object-contain" />}</div><p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">{inputAssets.length ? 'This image will be sent to your configured ComfyUI server.' : 'No local images in this project yet.'} <a href={`/assets/${projectId}`} className="underline">Open Assets</a></p></>
@@ -109,7 +125,17 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             </div>
           </>}
           <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? `Configure ${configurationMessage} in the server environment, then restart the studio.` : !needsGeneration ? 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
-          <Action disabled={missingCapabilities.length > 0 || !ready || busy} onClick={() => void generate()} className="vh-primary w-full">{needsGeneration ? 'Queue generation' : 'Queue import'} <ArrowUpRight size={15} /></Action>
+          {check && <div role="status" aria-label="Server check result" className="max-h-28 sm:max-h-44 space-y-2 overflow-y-auto rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-xs">
+            <p className="font-semibold">{check.status === 'issues' ? 'Server check: needs attention' : check.status === 'unavailable' ? 'Server check: unavailable' : check.status === 'not-applicable' ? 'No native workflow to check' : 'Server check: no reported issues'}</p>
+            <p className="text-[var(--vh-text-2)]">{check.classes.filter(item => item.status === 'available').length} node types available · {check.issues.filter(item => item.severity === 'deferred').length} checks deferred</p>
+            {check.issues.slice(0, 12).map((issue, index) => <div key={index} className="break-words"><p className="font-medium">{[issue.classType, issue.node && `#${issue.node}`, issue.input].filter(Boolean).join(' · ')}</p><p>{issue.message}</p>{issue.choices?.length ? <p className="mt-1 text-[var(--vh-text-2)]">Available: {issue.choices.slice(0, 5).join(', ')}{(issue.choiceCount ?? 0) > 5 ? ' …' : ''}</p> : null}</div>)}
+            {check.issues.length > 12 && <p>{check.issues.length - 12} more checks in the CLI/MCP report.</p>}
+            <p className="text-[var(--vh-text-2)]">No jobs or uploads started. This check does not guarantee successful execution.</p>
+          </div>}
+          <div className="flex gap-2">
+          {generationOperations.includes('comfy.workflow') && <Action disabled={busy || checking} onClick={() => void checkServer()} className="h-11 min-w-0 flex-1 rounded-lg border border-[var(--vh-border)] px-3 text-xs">{checking ? 'Checking server…' : 'Check server'}</Action>}
+          <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
+          </div>
           <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
         <section className="min-w-0 space-y-3">

@@ -27,6 +27,26 @@ export const recipeSchema = z.object({
 }).strict();
 export type Recipe = z.infer<typeof recipeSchema>;
 
+/** Inspection-only placeholders are never enqueued. Deferred targets keep them out of value checks. */
+export function compileRecipeForCheck(raw: unknown, supplied: Record<string, unknown>, projectId: string) {
+  const recipe = recipeSchema.parse(raw);
+  const missing = recipe.parameters.filter(p => (!Object.hasOwn(supplied, p.id) && p.default === undefined) || (supplied[p.id] === '' && (p.type === 'number' || p.type === 'asset' || p.type === 'enum' || (p.type === 'string' && (p.minLength ?? 1) > 0))));
+  const values: Record<string, unknown> = { ...supplied };
+  for (const p of missing) {
+    if (p.default !== undefined) { values[p.id] = p.default; continue; }
+    switch (p.type) {
+      case 'string': values[p.id] = '?'.repeat(Math.max(1, p.minLength ?? 1)); break;
+      case 'number': values[p.id] = p.integer ? Math.ceil(p.min ?? Math.min(0, p.max ?? 0)) : p.min ?? Math.min(0, p.max ?? 0); break;
+      case 'enum': values[p.id] = p.options[0]; break;
+      case 'boolean': values[p.id] = false; break;
+      case 'asset': values[p.id] = 'inspection-only'; break;
+    }
+  }
+  const missingIds = new Set(missing.map(p => p.id));
+  const deferredInputs = Object.fromEntries(recipe.nodes.map(node => [node.id, (node.parameters ?? []).filter(b => missingIds.has(b.parameter)).map(b => b.target)]));
+  return { plan: compileRecipe(recipe, values, projectId), deferredInputs };
+}
+
 function validateValue(definition: Recipe['parameters'][number], value: unknown): Json {
   const fail = () => { throw new Error(`Invalid recipe parameter: ${definition.id}`); };
   if (value === undefined) fail();

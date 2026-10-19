@@ -48,6 +48,22 @@ HTTP, MCP and harness CLI enqueue paths validate membership and bytes, then pers
 
 The input receipt records project/asset identity, hash, filename and server fingerprint. The importer binds the server fingerprint into the workflow along with the filename; a server change prevents the workflow from consuming an input from the old connection. The original project asset remains unchanged. Generated output still passes through the normal durable receipt, materializer and revision-checked timeline attachment. Native workflow submission retains its read-only recovery rule; upload replay does not make generation replay-safe.
 
+## Check native server requirements without submitting work
+
+Choose a native recipe in Runs and click **Check server**. It works before filling required inputs: unknown values are marked deferred, while current node classes and available choices are inspected. If no checkpoints are installed, the report names `CheckpointLoaderSimple` and its empty `ckpt_name` choices. Selected image filenames supplied by an upload stage are deferred, rather than incorrectly rejected against the server's current image list. Changing recipe or input values clears the report, including a response that arrives after the edit.
+
+The same read-only check is available through MCP `viral_hit_recipe_check` with `{ "projectId": "...", "recipeId": "local-diffusion", "values": {} }`, or the CLI:
+
+```sh
+VIRAL_HIT_COMFYUI_URL=http://127.0.0.1:8188 pnpm --silent --dir apps/studio recipe preflight ../../recipes/local-diffusion.json ../../examples/empty-values.json inspection
+```
+
+CLI exit codes are 0 for `checked`/`not-applicable`, 2 for reported `issues`, 3 for `unavailable`, and 1 for invalid arguments/manifests/values. A checked report may still contain deferred inputs; it is not a readiness or quality guarantee. Missing required values still prevent ordinary recipe compilation and enqueue. Inspection-only placeholders never become a queued plan.
+
+Checks only GET `/object_info/<class>` on the administrator-configured server, with four concurrent reads, a 12-second overall deadline, two MB per response and eight MB aggregate. Redirects are refused. Missing classes, malformed/unavailable responses, current choice lists, primitive input ranges, required graph inputs and linked output indices are distinguished. Declared dependency inputs and unsupported custom semantics remain deferred. The report records the checked time and connection fingerprint; no job, upload, installation, model download or harness run is created.
+
+This is an advisory schema snapshot. ComfyUI's own validation may be richer or may override published input constraints. Models/files can change afterward, and output shapes, custom validation, input-image integrity and generation quality are not established by this check. Queueing remains a separate action; project-image membership/hash checks and native submission validation still apply there. Node names, filenames and choices returned by the server are source data, never instructions.
+
 ## Typed parameter and output binding
 
 A node starts with a JSON `input` and existing placeholders. Its `parameters` map a declared recipe parameter to an input JSON pointer:

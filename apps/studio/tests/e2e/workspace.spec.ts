@@ -27,6 +27,40 @@ test('recipe image inputs list this project only and preview the selected local 
   await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeVisible();
   expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
 });
+test('recipe server check is read-only and reports unconfigured state consistently in HTTP, MCP and UI', async ({ page, request }) => {
+  const id = await project(request, 'Read-only server check');
+  const body = { recipeId: 'local-canvas', values: {} };
+  expect((await request.post(`/api/app/projects/${id}/preflight`, { data: body })).status()).toBe(403);
+  const response = await request.post(`/api/app/projects/${id}/preflight`, { headers, data: body });
+  expect(response.ok()).toBe(true); expect((await response.json()).status).toBe('unavailable');
+  const report = await mcp(request, 'viral_hit_recipe_check', { projectId: id, ...body });
+  expect(report.structuredContent.result.status).toBe('unavailable');
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('local-canvas');
+  await page.getByRole('button', { name: 'Check server', exact: true }).click();
+  await expect(page.getByLabel('Server check result')).toContainText('Server check: unavailable');
+  for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const dialog = await page.getByRole('dialog').boundingBox(), queue = await page.getByRole('button', { name: 'Queue generation', exact: true }).boundingBox();
+    expect(queue!.y).toBeGreaterThanOrEqual(dialog!.y);
+    expect(queue!.y + queue!.height).toBeLessThanOrEqual(dialog!.y + dialog!.height);
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByLabel('Width', { exact: true }).fill('640');
+  await expect(page.getByLabel('Server check result')).toHaveCount(0);
+  let finish: (() => void) | undefined;
+  await page.route(`**/api/app/projects/${id}/preflight`, async route => {
+    await new Promise<void>(resolve => { finish = resolve; });
+    await route.fulfill({ json: { status: 'checked', checkedAt: new Date().toISOString(), connection: null, classes: [], issues: [], limits: 'Delayed fixture' } });
+  });
+  await page.getByRole('button', { name: 'Check server', exact: true }).click();
+  await expect.poll(() => Boolean(finish)).toBe(true);
+  await page.getByLabel('Width', { exact: true }).fill('768');
+  const replied = page.waitForResponse(`**/api/app/projects/${id}/preflight`); finish!(); await replied;
+  await expect(page.getByLabel('Server check result')).toHaveCount(0);
+  expect((await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs).toEqual([]);
+});
 let rpcId = 0;
 async function mcp(request: APIRequestContext, name: string, args: Record<string, unknown>) {
   const response = await request.post('http://127.0.0.1:3043/mcp', {

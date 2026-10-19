@@ -1,7 +1,8 @@
 import { closeSync, fstatSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
-import { compileRecipe, recipeSchema } from '../src/core/harness/recipes';
+import { compileRecipe, compileRecipeForCheck, recipeSchema } from '../src/core/harness/recipes';
 import { comfyRecipeDefinitionSchema, importComfyRecipe, inspectComfyGraph } from '../src/core/harness/import-comfy-recipe';
+import { preflightComfyPlan } from '../src/core/harness/comfy-preflight';
 const [command, file, values, projectId] = process.argv.slice(2);
 function readJson(path: string): unknown {
   const fd = openSync(path, 'r');
@@ -23,9 +24,13 @@ try {
     writeFileSync(projectId, JSON.stringify(recipe, null, 2) + '\n', { flag: 'wx' });
     console.log(JSON.stringify({ id: recipe.id, version: recipe.version, file: projectId }));
   }
-  else if (command === 'compile' && file && values && projectId) {
+  else if ((command === 'compile' || command === 'preflight') && file && values && projectId) {
     const raw = JSON.parse(readFileSync(file, 'utf8'));
     const supplied = JSON.parse(readFileSync(values, 'utf8'));
-    console.log(JSON.stringify(compileRecipe(raw, supplied, projectId), null, 2));
-  } else throw new Error('Usage: recipe schema|comfy-schema <output.json> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile <recipe.json> <values.json> <project-id>');
+    if (command === 'preflight') {
+      const { plan, deferredInputs } = compileRecipeForCheck(raw, supplied, projectId);
+      const report = await preflightComfyPlan(plan, { deferredInputs }); console.log(JSON.stringify(report, null, 2));
+      process.exitCode = report.status === 'issues' ? 2 : report.status === 'unavailable' ? 3 : 0;
+    } else console.log(JSON.stringify(compileRecipe(raw, supplied, projectId), null, 2));
+  } else throw new Error('Usage: recipe schema|comfy-schema <output.json> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
 } catch (error) { console.error(error instanceof Error ? error.message : 'Recipe failed'); process.exitCode = 1; }
