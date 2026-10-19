@@ -24,7 +24,7 @@ Do not copy brand assets, private data or credentials into the public product.
 Requires Node 24+, pnpm 10, and FFmpeg/ffprobe. From this directory:
 
 ```sh
-pnpm setup
+pnpm run setup
 pnpm dev
 ```
 

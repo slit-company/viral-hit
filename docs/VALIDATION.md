@@ -5,6 +5,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Check | Result | Limit |
 |---|---|---|
 | Production build | Passed | Local build; not public deployment |
+| Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
 | Unit/integration tests | 450 passed | Includes 33 new harness/Router/recipe/media contract tests; SDK tests use fixtures |
 | Browser E2E | 7 passed | Local Chromium; provider credentials deliberately removed |
@@ -32,6 +33,8 @@ Before claiming parity, freeze a test suite covering at least image generation/e
 
 Retain all attempts, provider receipts, full wall times, costs, failure types, output hashes, accepted revisions and final exports. Measure orchestration overhead separately from provider generation time. Compare p50/p95 only after enough repeated runs; one successful short export proves neither editor throughput nor generation quality. For subjective quality, use blinded pairwise review with prompt adherence, identity, motion continuity, typography, pacing and audio alignment scored separately. Record ties and failures.
 
-Release gates include real provider artifact localization, crash recovery at every persistence boundary, visual review at fixed sizes, long/4K/multi-track playback tests, A/V drift measurement and a clean-checkout install. These remain open until actual evidence is attached.
+Release gates include real provider artifact localization, crash recovery at every persistence boundary, visual review at fixed sizes, long/4K/multi-track playback tests, A/V drift measurement and a clean-checkout install. The clean-checkout install/build gate passed; the remaining release gates stay open until actual evidence is attached.
 
 Browser motion demo export also decoded to 90 video frames (3.000s) and AAC audio (3.072s). The 72ms container/audio tail is recorded as a remaining browser-export alignment issue; no exact audio-duration parity is claimed. Server export of the motion/caption fixture has matching 3.000s streams.
+
+The first clean-checkout attempt exposed a documentation error: `pnpm setup` invokes pnpm’s own shell setup instead of the package script. Use the explicit `pnpm run setup` shown in the corrected README. The corrected command installed dependencies and initialized the SQLite schema before a successful build.

@@ -54,7 +54,7 @@ Sources inspected: [Comfy SDK docs](https://docs.comfy.org/development/api-devel
 From the repository root, Node 24+, pnpm 10 and FFmpeg/ffprobe on PATH:
 
 ```sh
-pnpm setup
+pnpm run setup
 pnpm dev
 ```
 
