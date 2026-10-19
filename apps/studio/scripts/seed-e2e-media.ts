@@ -48,3 +48,25 @@ try {
     if (ledger.jobs(run).some(job => job.state !== 'succeeded')) throw new Error(`Could not create ${recipeId} fixture`);
   }
 } finally { ledger.close(); }
+
+// Distinct source colors make source selection observable in decoded exports.
+const takeProject = await createProject({ name: 'Take E2E fixture' });
+const { persistViralHitCommand } = await import('../src/core/commands/persist');
+const takeLedger = openHarness();
+try {
+  for (const [name, color] of [['Original coral', '0xe94455'], ['Alternative lime', '0x99ee33']] as const) {
+    const image = join(getViralHitDataRoot(), `${name}.png`);
+    execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', `color=c=${color}:s=320x320`, '-frames:v', '1', image]);
+    const adapter = createMaterializeAdapter({ download: async (_url, destination) => { await copyFile(image, destination); }, probe: probeMedia });
+    const run = takeLedger.enqueue({ projectId: takeProject.id, nodes: [{ id: 'image', operation: 'asset.materialize', version: 'fixture', input: { url: 'https://example.invalid/take.png', kind: 'image', label: name } }] }, name);
+    await takeLedger.step(run, { 'asset.materialize': adapter }); await takeLedger.step(run, { 'asset.materialize': adapter });
+    const job = takeLedger.jobs(run)[0]; if (job.state !== 'succeeded') throw new Error('Take fixture failed');
+    if (name === 'Original coral') {
+      const asset = JSON.parse(job.output_json!);
+      const result = await persistViralHitCommand({ projectId: takeProject.id, origin: 'system', commandId: 'seed-take-timeline', expectedRevision: 0, command: { type: 'editor.apply', operations: [
+        { type: 'add_clip', clipId: 'take-target', assetId: asset.assetId, sourceUrl: asset.publicUrl, name: 'Opening scene', sourceType: 'image', sourceDuration: 2 },
+        { type: 'add_clip', clipId: 'take-neighbor', assetId: asset.assetId, sourceUrl: asset.publicUrl, name: 'Closing scene', sourceType: 'image', sourceDuration: 2 },
+      ] } }); if (!result.ok) throw new Error(result.message);
+    }
+  }
+} finally { takeLedger.close(); }

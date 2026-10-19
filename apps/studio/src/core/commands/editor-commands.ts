@@ -259,10 +259,23 @@ export function applyEditorOperations(
       if (!findTimelineClip(document, operation.clipId)) {
         throw new ViralHitCommandError('NOT_FOUND', `Clip ${operation.clipId} was not found.`);
       }
+      const clip = findTimelineClip(document, operation.clipId)!;
+      if (document.tracks.some(track => track.id === clip.trackId && track.locked) ||
+          clip.sourceType !== (operation.take.sourceType ?? 'video') ||
+          (clip.sourceType !== 'image' && operation.take.sourceDuration < clip.duration - 0.05)) {
+        throw new ViralHitCommandError('INVALID_COMMAND', 'A take needs an unlocked clip of the same media kind and enough source duration.');
+      }
       next = addTimelineTake(document, operation.clipId, operation.take);
     } else if (operation.type === 'activate_take') {
       if (!findTimelineClip(document, operation.clipId)) {
         throw new ViralHitCommandError('NOT_FOUND', `Clip ${operation.clipId} was not found.`);
+      }
+      const clip = findTimelineClip(document, operation.clipId)!;
+      const take = clip.takes.find(item => item.id === operation.takeId);
+      if (document.tracks.some(track => track.id === clip.trackId && track.locked) ||
+          (operation.takeId !== null && (!take || (take.sourceType ?? 'video') !== clip.sourceType ||
+            (clip.sourceType !== 'image' && take.sourceDuration < clip.duration - 0.05)))) {
+        throw new ViralHitCommandError('INVALID_COMMAND', 'The take is unavailable, too short, incompatible, or its track is locked.');
       }
       next = activateTimelineTake(document, operation.clipId, operation.takeId);
     } else if (operation.type === 'upsert_caption') {

@@ -35,8 +35,8 @@ async function POST({ params, request }: Context) {
       return Response.json({ runId }, { status: 202 });
     }
     if (!h.runs(params.projectId).some(run => run.id === body.runId)) return Response.json({ error: 'Run not found' }, { status: 404 });
-    if (body.action === 'attach') {
-      const result = await attachMaterializedJob(h, params.projectId, body.runId, body.jobId, body.expectedRevision);
+    if (body.action === 'attach' || body.action === 'take') {
+      const result = await attachMaterializedJob(h, params.projectId, body.runId, body.jobId, body.expectedRevision, body.action === 'take' ? body.clipId : undefined);
       return Response.json(result.ok ? result : { ...result, error: result.message }, { status: result.ok ? 200 : result.code === 'REVISION_CONFLICT' ? 409 : 400 });
     }
     if (body.action === 'cancel') h.cancel(body.runId);

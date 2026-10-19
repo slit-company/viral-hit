@@ -44,6 +44,8 @@ export const DEFAULT_OVERLAY_TRANSFORM: TimelineOverlayTransform = {
 };
 
 export type TimelineTake = {
+  /** Missing in legacy video takes. */
+  sourceType?: 'image' | 'video' | 'audio';
   id: string;
   assetId: string;
   sourceUrl: string;
@@ -157,6 +159,7 @@ const timelineClipSchema = z.object({
         sourceUrl: z.string().max(4096),
         name: z.string().min(1).max(240),
         sourceDuration: z.number().finite().positive().max(86_400),
+        sourceType: z.enum(['image', 'video', 'audio']).optional(),
         sourceGenerationId: z.string().min(1).max(200).nullable(),
         prompt: z.string().max(20_000),
         createdAt: z.string().min(1).max(80),
@@ -520,6 +523,9 @@ export function normalizeTimelineDocument(
           'Timeline clip has an invalid source range.'
         );
       }
+      if (clip.takes.some(take => (take.sourceType ?? 'video') !== clip.sourceType)) {
+        throw new TimelineDocumentValidationError('Timeline take media kind must match its clip.');
+      }
       if (
         clip.activeTakeId &&
         !clip.takes.some((take) => take.id === clip.activeTakeId)
@@ -750,8 +756,9 @@ export function addTimelineTake(
   const clip = findTimelineClip(document, clipId);
   if (
     !clip ||
-    clip.sourceType !== 'video' ||
-    input.sourceDuration < clip.duration - 0.05
+    clip.sourceType !== (input.sourceType ?? 'video') ||
+    document.tracks.some(track => track.id === clip.trackId && track.locked) ||
+    (clip.sourceType !== 'image' && input.sourceDuration < clip.duration - 0.05)
   ) {
     return document;
   }
@@ -791,8 +798,10 @@ export function activateTimelineTake(
     : null;
   if (
     !clip ||
+    document.tracks.some(track => track.id === clip.trackId && track.locked) ||
     (takeId && !take) ||
-    (take && take.sourceDuration < clip.duration - 0.05)
+    (take && (take.sourceType ?? 'video') !== clip.sourceType) ||
+    (take && clip.sourceType !== 'image' && take.sourceDuration < clip.duration - 0.05)
   ) {
     return document;
   }

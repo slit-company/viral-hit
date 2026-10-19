@@ -21,5 +21,6 @@ export const runRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('enqueue'), requestKey: z.string().trim().min(1).max(200), nodes: z.array(runtimeNodeSchema).min(1).max(256) }).strict(),
   z.object({ action: z.literal('recipe'), recipeId: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/), requestKey: z.string().trim().min(1).max(200), values: z.record(z.string(), z.json()) }).strict(),
   z.object({ action: z.enum(['cancel', 'retry', 'reconcile']), runId: z.string().uuid() }).strict(),
+  z.object({ action: z.literal('take'), runId: z.string().uuid(), jobId: z.string().uuid(), clipId: z.string().min(1).max(160), expectedRevision: z.number().int().min(0) }).strict(),
   z.object({ action: z.literal('attach'), runId: z.string().uuid(), jobId: z.string().uuid(), expectedRevision: z.number().int().min(0) }).strict(),
 ]);

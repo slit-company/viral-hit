@@ -304,3 +304,30 @@ test('audio volume, mute, and fades are non-destructive clip settings', () => {
   assert.equal(result?.fadeIn, 1);
   assert.equal(result?.fadeOut, 1.5);
 });
+
+test('same-kind image, audio and video alternatives preserve original trims and reject incompatible or locked edits', async () => {
+  const { applyEditorOperations } = await import('../commands/editor-commands');
+  for (const kind of ['image', 'audio', 'video'] as const) {
+    let doc = addSourceClip(createTimelineDocument({ projectId: 'takes', name: 'General takes' }), {
+      clipId: 'target', assetId: 'original', sourceUrl: '/original', name: 'Original', sourceType: kind, sourceDuration: 8,
+    });
+    if (kind !== 'image') doc = trimTimelineClip(doc, 'target', 2, 6);
+    const original = findTimelineClip(doc, 'target')!;
+    const take = { id: 'alternative', assetId: 'new', sourceUrl: '/new', name: 'New', sourceType: kind, sourceDuration: original.duration, sourceGenerationId: 'job', prompt: '' };
+    const added = applyEditorOperations(doc, [{ type: 'add_take', clipId: 'target', take }, { type: 'activate_take', clipId: 'target', takeId: take.id }]).document;
+    const active = findTimelineClip(added, 'target')!;
+    assert.equal(active.assetId, 'original'); assert.equal(active.inPoint, original.inPoint);
+    assert.equal(active.duration, original.duration); assert.equal(active.startTime, original.startTime);
+    assert.equal(getTimelineClipSource(active).assetId, 'new'); assert.equal(getTimelineClipSource(active).inPoint, 0);
+    const restored = activateTimelineTake(added, 'target', null);
+    assert.equal(getTimelineClipSource(findTimelineClip(restored, 'target')!).inPoint, original.inPoint);
+    assert.equal(getTimelineClipSource(findTimelineClip(restored, 'target')!).assetId, 'original');
+    assert.throws(() => applyEditorOperations(doc, [{ type: 'add_take', clipId: 'target', take: { ...take, sourceType: kind === 'image' ? 'audio' : 'image' } }]), /same media kind/);
+    if (kind !== 'image') assert.throws(() => applyEditorOperations(doc, [{ type: 'add_take', clipId: 'target', take: { ...take, sourceDuration: 1 } }]), /enough source duration/);
+    const locked = { ...added, tracks: added.tracks.map(track => ({ ...track, locked: true })) };
+    assert.throws(() => applyEditorOperations(locked, [{ type: 'add_take', clipId: 'target', take }]), /unlocked/);
+    assert.throws(() => applyEditorOperations(locked, [{ type: 'activate_take', clipId: 'target', takeId: null }]), /locked/);
+    assert.throws(() => applyEditorOperations(added, [{ type: 'activate_take', clipId: 'target', takeId: 'missing' }]), /unavailable/);
+    assert.equal(normalizeTimelineDocument(added, 'takes').tracks.flatMap(t => t.clips)[0].takes[0].sourceType, kind);
+  }
+});

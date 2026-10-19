@@ -24,7 +24,7 @@ function DialogContent({ className, children, showCloseButton = true, showOverla
       {showOverlay && <DialogOverlay />}
       <ContentDialog.Content data-slot="dialog-content" className={cn('vh-dialog break-normal relative z-10 grid w-full max-w-lg gap-4 rounded-3xl border border-border p-6 text-sm text-foreground outline-none', className)} {...props}>
         {children}
-        {showCloseButton && <ContentDialog.CloseButton asChild><Action data-slot="dialog-close" aria-label="Close" className="absolute right-3 top-3 grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-muted"><X size={18} /></Action></ContentDialog.CloseButton>}
+        {showCloseButton && <ContentDialog.CloseButton asChild><Action data-slot="dialog-close" aria-label="Close" className="absolute right-3 top-3 m-0 grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-muted"><X size={18} /></Action></ContentDialog.CloseButton>}
       </ContentDialog.Content>
     </ContentDialog.Positioner>
   </DialogPortal>;

@@ -687,7 +687,7 @@ export function VideoEditorWorkspace({
         audio.pause();
         continue;
       }
-      const target = clip.inPoint + offset;
+      const target = getTimelineClipSource(clip).inPoint + offset;
       if (Math.abs(audio.currentTime - target) > 0.12) audio.currentTime = target;
       const fadeInGain = clip.fadeIn > 0 ? Math.min(1, offset / clip.fadeIn) : 1;
       const fadeOutGain =
@@ -1500,16 +1500,17 @@ export function VideoEditorWorkspace({
 
   const activateTake = (takeId: string | null) => {
     if (!selectedClip) return;
-    const next = applyEditorOperations(document, [
-      { type: 'activate_take', clipId: selectedClip.id, takeId },
-    ]).document;
-    const nextClip = findTimelineClip(next, selectedClip.id);
-    if (!nextClip) return;
-    const nextSource = getTimelineClipSource(nextClip);
-    commitDocument(next);
-    setSourceUrl(nextSource.sourceUrl);
-    sourceFileRef.current = null;
-    seek(nextSource.inPoint);
+    try {
+      const next = applyEditorOperations(document, [
+        { type: 'activate_take', clipId: selectedClip.id, takeId },
+      ]).document;
+      const nextClip = findTimelineClip(next, selectedClip.id);
+      if (!nextClip) return;
+      commitDocument(next);
+      selectClip(nextClip);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Could not switch take');
+    }
   };
 
   return (
@@ -1559,11 +1560,25 @@ export function VideoEditorWorkspace({
               if (element) audioElementsRef.current.set(clip.id, element);
               else audioElementsRef.current.delete(clip.id);
             }}
-            src={clip.sourceUrl}
+            src={getTimelineClipSource(clip).sourceUrl}
             preload="auto"
             className="hidden"
           />
         ))}
+
+      {selectedClip && selectedClip.takes.length > 0 && (
+        <div className="flex shrink-0 items-center gap-3 border-b border-[var(--vh-border)] bg-[var(--vh-surface)] px-4 py-2">
+          <label htmlFor="clip-take" className="shrink-0 text-xs font-medium">Clip take</label>
+          <select id="clip-take" aria-label="Clip take" value={selectedClip.activeTakeId ?? ''}
+            disabled={document.tracks.some(track => track.id === selectedClip.trackId && track.locked)}
+            onChange={event => activateTake(event.target.value || null)}
+            className="h-9 min-w-0 max-w-sm flex-1 rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] px-2 text-xs">
+            <option value="">Original · {selectedClip.name}</option>
+            {selectedClip.takes.map((take, index) => <option key={take.id} value={take.id}>Take {index + 1} · {take.name}</option>)}
+          </select>
+          <span className="hidden text-xs text-[var(--vh-text-2)] sm:inline">Timing stays unchanged</span>
+        </div>
+      )}
 
       <div className="flex min-h-0 flex-1">
         <aside className="hidden w-[292px] shrink-0 flex-col border-r border-[var(--vh-border)] bg-[var(--vh-surface)] lg:flex">
@@ -1926,7 +1941,7 @@ export function VideoEditorWorkspace({
                     }}
                   >
                     <img
-                      src={overlay.sourceUrl}
+                      src={getTimelineClipSource(overlay).sourceUrl}
                       alt=""
                       draggable={false}
                       className="block h-auto w-full select-none"
@@ -2059,7 +2074,7 @@ export function VideoEditorWorkspace({
                           : 'border-[var(--vh-border)] text-[var(--vh-text-2)] hover:bg-[var(--vh-control)]'
                       }`}
                     >
-                      <span className="min-w-0 truncate">AI Take {index + 1} · {take.prompt}</span>
+                      <span className="min-w-0 truncate">Take {index + 1} · {take.prompt || take.name}</span>
                       {selectedClip.activeTakeId === take.id ? <span>✓</span> : null}
                     </Action>
                   ))}

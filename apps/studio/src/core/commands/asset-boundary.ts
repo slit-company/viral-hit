@@ -98,9 +98,9 @@ export async function normalizeCommandAssetReferences({
                   const takeAsset = await loadCommandAsset({
                     projectId,
                     assetId: take.assetId,
-                    expectedType: 'video',
+                    expectedType: clip.sourceType as 'image' | 'video' | 'audio',
                   });
-                  return { ...take, sourceUrl: takeAsset.publicUrl };
+                  return { ...take, sourceType: takeAsset.type, sourceUrl: takeAsset.publicUrl };
                 })
               ),
             };
@@ -164,7 +164,7 @@ export async function normalizeCommandAssetReferences({
           const asset = await loadCommandAsset({
             projectId,
             assetId: operation.take.assetId,
-            expectedType: 'video',
+            expectedType: operation.take.sourceType ?? 'video',
           });
           return {
             ...operation,

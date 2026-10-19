@@ -380,6 +380,7 @@ export const editorOperationSchema = z.discriminatedUnion('type', [
           sourceUrl: z.string().trim().max(4096).optional().default(''),
           name: z.string().trim().min(1).max(240),
           sourceDuration: positiveDurationSchema,
+          sourceType: z.enum(['image', 'video', 'audio']).optional(),
           sourceGenerationId: commandIdSchema.nullable(),
           prompt: z.string().max(20_000),
           createdAt: z.string().trim().min(1).max(80).optional(),

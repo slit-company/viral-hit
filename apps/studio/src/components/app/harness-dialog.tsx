@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { Job } from '@/core/harness/durable';
 import type { Recipe } from '@/core/harness/recipes';
+import type { TimelineDocument } from '@/core/editor/timeline-document';
 import type { ComfyPreflight } from '@/core/harness/comfy-preflight';
 
 type Run = { id: string; created_at: number; jobs: Job[]; events: { sequence: number; event: string; at: number }[] };
@@ -21,7 +22,10 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [check, setCheck] = useState<ComfyPreflight>();
   const checkEpoch = useRef(0);
   const dialogContent = useRef<HTMLDivElement>(null);
+  const dialogBody = useRef<HTMLDivElement>(null);
   function invalidateCheck() { checkEpoch.current++; setCheck(undefined); }
+  const [takeTarget, setTakeTarget] = useState<{ jobId: string; timeline: TimelineDocument; version: number; clipId: string }>();
+  const [takeNotice, setTakeNotice] = useState('');
   const [attached, setAttached] = useState<string[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [inputAssets, setInputAssets] = useState<InputAsset[]>([]);
@@ -36,13 +40,13 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? inputAssets.some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
-  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); }, [open, projectId]);
+  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); }, [open, projectId]);
   async function checkServer() {
     if (!selected) return;
     const epoch = ++checkEpoch.current; setChecking(true); setCheck(undefined); setError('');
     try {
       const result = await apiJsonPost<ComfyPreflight>(`/api/app/projects/${projectId}/preflight`, { recipeId: selected.id, values });
-      if (epoch === checkEpoch.current) { setCheck(result); requestAnimationFrame(() => { if (epoch === checkEpoch.current) dialogContent.current?.scrollTo({ top: 0 }); }); }
+      if (epoch === checkEpoch.current) { setCheck(result); requestAnimationFrame(() => { if (epoch === checkEpoch.current) dialogBody.current?.scrollTo({ top: 0 }); }); }
     } catch (e) { if (epoch === checkEpoch.current) setError(e instanceof Error ? e.message : 'Server check failed'); }
     finally { if (epoch === checkEpoch.current) setChecking(false); }
   }
@@ -87,16 +91,35 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       if (await act({ action: 'attach', runId, jobId, expectedRevision: result.timeline?.version ?? 0 })) setAttached(current => [...current, jobId]);
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not attach media'); }
   }
+  async function chooseTake(job: Job) {
+    setBusy(true); setError(''); setTakeNotice(''); setTakeTarget(undefined);
+    try {
+      const { timeline } = await apiJsonGet<{ timeline: { document: TimelineDocument; version: number } | null }>(`/api/app/projects/${projectId}/timeline`);
+      if (!timeline) throw new Error('Add a clip to the timeline first.');
+      const kind = JSON.parse(job.output_json ?? '{}').kind;
+      const tracks = timeline.document.tracks.filter(track => !track.locked).map(track => ({ ...track, clips: track.clips.filter(clip => clip.sourceType === kind && !clip.takes.some(take => take.sourceGenerationId === job.id)) }));
+      if (!tracks.some(track => track.clips.length)) throw new Error('No unlocked clips of this media kind remain. Previously added takes can be selected in the editor.');
+      setTakeTarget({ jobId: job.id, timeline: { ...timeline.document, tracks }, version: timeline.version, clipId: '' });
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not load target clips'); }
+    finally { setBusy(false); }
+  }
+  async function applyTake(runId: string) {
+    if (!takeTarget?.clipId) return;
+    if (await act({ action: 'take', runId, jobId: takeTarget.jobId, clipId: takeTarget.clipId, expectedRevision: takeTarget.version })) {
+      setTakeTarget(undefined); setTakeNotice('Take applied. Close this window and use Clip take in the editor to restore the original.');
+    }
+  }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--vh-border)] px-2.5 text-xs hover:bg-[var(--vh-control)]" aria-label="Generation runs">
       <Activity size={14} /><span className="hidden lg:inline">Runs</span>
     </DialogTrigger>
-    <DialogContent ref={dialogContent} className="max-h-[85vh] overflow-y-auto border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl">
+    <DialogContent ref={dialogContent} className="max-h-[85vh] overflow-hidden border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl grid-rows-[auto_minmax(0,1fr)]">
       <div className="pr-8">
         <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
         <DialogTitle className="text-xl">Generation runs</DialogTitle>
         <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">Your project’s generation history. Closing this window keeps queued work in the local worker.</DialogDescription>
       </div>
+      <div ref={dialogBody} className="min-h-0 overflow-y-auto" data-testid="runs-body">
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">
           <label htmlFor="run-recipe" className="block text-xs text-[var(--vh-text-2)]">Creative recipe</label>
@@ -147,7 +170,16 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
               <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? job.operation === 'asset.materialize' ? 'Asset ready' : job.operation === 'comfy.upload' ? 'Input ready' : 'Receipt ready' : job.state}</span></div>
               {job.cancel_requested === 1 && <p className="mt-1 text-amber-800">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
               {job.error && <p className="mt-2 break-words text-amber-800">{job.error}</p>}
-              {job.operation === 'asset.materialize' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex gap-4"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
+              {job.operation === 'asset.materialize' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><Action disabled={busy} onClick={() => void chooseTake(job)} className="text-[var(--color-lime-text)]">Use as take</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
+              {takeTarget?.jobId === job.id && <div className="mt-3 space-y-2 border-t border-[var(--vh-border)] pt-3">
+                <label className="block" htmlFor={`take-${job.id}`}>Target clip</label>
+                <select id={`take-${job.id}`} value={takeTarget.clipId} onChange={event => setTakeTarget({ ...takeTarget, clipId: event.target.value })} className="h-10 w-full min-w-0 rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] px-2">
+                  <option value="">Choose a clip</option>
+                  {takeTarget.timeline.tracks.flatMap(track => track.clips.map(clip => <option key={clip.id} value={clip.id}>{clip.name} · {clip.startTime.toFixed(1)}s · {clip.duration.toFixed(1)}s long</option>))}
+                </select>
+                <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Keeps timing, effects and the original. The new take starts at source time zero. Audio and video must cover the full clip.</p>
+                <div className="flex gap-2"><Action disabled={busy || !takeTarget.clipId} onClick={() => void applyTake(run.id)} className="vh-primary flex-1 text-xs">Apply take</Action><Action disabled={busy} onClick={() => setTakeTarget(undefined)} className="px-2">Cancel</Action></div>
+              </div>}
               {job.output_json && <details className="mt-2 text-[var(--vh-text-2)]"><summary className="cursor-pointer">{job.operation === 'asset.materialize' ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
             </div>)}
             <div className="flex gap-3 text-xs">
@@ -158,7 +190,9 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           </article>)}
         </section>
       </div>
-      {error && <p role="alert" className="rounded-lg bg-red-500/10 p-3 text-sm text-red-800">{error}</p>}
+      {takeNotice && <p role="status" className="rounded-lg bg-[var(--vh-control)] p-3 text-sm">{takeNotice}</p>}
+      {error && <p role="alert" className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-800">{error}</p>}
+      </div>
     </DialogContent>
   </Dialog>;
 }

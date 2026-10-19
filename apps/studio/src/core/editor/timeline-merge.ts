@@ -125,14 +125,20 @@ export function mergeTimelineDocuments({
 }) {
   const conflicts: TimelineMergeConflict[] = [];
   const merged = mergeValue({
-    base,
-    local,
-    remote,
+    // Renders are derived artifacts, not competing user edits. Their source
+    // must still match the merged document before retaining either receipt.
+    base: { ...base, lastRenderAssetId: null, lastRenderUrl: null },
+    local: { ...local, lastRenderAssetId: null, lastRenderUrl: null },
+    remote: { ...remote, lastRenderAssetId: null, lastRenderUrl: null },
     path: 'timeline',
     conflicts,
   });
+  const document = normalizeTimelineDocument(merged, local.projectId);
+  const source = ({ updatedAt: _time, lastRenderAssetId: _asset, lastRenderUrl: _url, ...rest }: TimelineDocument) => rest;
+  const matching = equal(source(document), source(normalizeTimelineDocument(remote, remote.projectId))) ? remote
+    : equal(source(document), source(normalizeTimelineDocument(local, local.projectId))) ? local : null;
   return {
-    document: normalizeTimelineDocument(merged, local.projectId),
+    document: { ...document, lastRenderAssetId: matching?.lastRenderAssetId ?? null, lastRenderUrl: matching?.lastRenderUrl ?? null },
     conflicts,
   };
 }

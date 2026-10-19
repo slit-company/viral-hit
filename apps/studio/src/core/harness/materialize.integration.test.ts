@@ -194,3 +194,64 @@ test('video recipe consumes the native Kling task-list response and attaches the
     assert.equal(clip.duration, 3);
   } finally { h.close(); }
 });
+
+test('materialized takes preserve unrelated edits, enforce revision/type/duration/hash and import once per target', async () => {
+  const { findTimelineClip, getTimelineClipSource } = await import('../editor/timeline-document');
+  const { saveProjectTimeline } = await import('../editor/timeline-state');
+  const video = join(directory, 'take-video.mp4'); createDemoMedia(video);
+  const audio = join(directory, 'take-audio.wav');
+  execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=880:duration=3', audio]);
+  for (const kind of ['image', 'video', 'audio'] as const) {
+    const project = await createProject({ name: `Targeted ${kind} fixture` });
+    const h = new DurableHarness(join(directory, `take-${kind}.db`));
+    try {
+      const adapter = createMaterializeAdapter({ download: async (_url, destination) => { await copyFile(kind === 'image' ? 'public/logo.png' : kind === 'video' ? video : audio, destination); }, probe: probeMedia });
+      const run = h.enqueue({ projectId: project.id, nodes: [{ id: 'import', operation: 'asset.materialize', version: '1', input: { url: 'https://example.org/take', kind } }] }, 'take-fixture');
+      await h.step(run, { 'asset.materialize': adapter }); await h.step(run, { 'asset.materialize': adapter });
+      const job = h.jobs(run)[0]; assert.equal(job.state, 'succeeded');
+      const output = JSON.parse(job.output_json!);
+      const asset = (await getProjectAssetById({ projectId: project.id, assetId: output.assetId }))!;
+      const initial = await persistViralHitCommand({ projectId: project.id, origin: 'ui', commandId: 'initial', expectedRevision: 0, command: { type: 'editor.apply', operations: [
+        { type: 'add_clip', clipId: 'target', assetId: asset.id, sourceUrl: asset.publicUrl, sourceType: kind, name: 'Original target', sourceDuration: 3 },
+        { type: 'add_clip', clipId: 'neighbor', assetId: asset.id, sourceUrl: asset.publicUrl, sourceType: kind, name: 'Untouched neighbor', sourceDuration: 3 },
+        { type: 'upsert_caption', clipId: 'caption', text: 'Preserve caption', startTime: 0, duration: 3 },
+      ] } }); assert.equal(initial.ok, true);
+      const before = (await loadProjectTimeline(project.id))!;
+      const conflict = await attachMaterializedJob(h, project.id, run, job.id, 0, 'target');
+      assert.equal(conflict.ok, false); if (!conflict.ok) assert.equal(conflict.code, 'REVISION_CONFLICT');
+      await assert.rejects(attachMaterializedJob(h, project.id, run, job.id, before.version, 'caption'), /same media kind/);
+      await assert.rejects(attachMaterializedJob(h, project.id, run, job.id, before.version, 'missing'), /not found/);
+      if (kind !== 'image') {
+        // A longer scene cannot be silently filled by a shorter result.
+        const tooLong = { ...before.document, tracks: before.document.tracks.map(track => ({ ...track, clips: track.clips.map(clip => clip.id === 'neighbor' ? { ...clip, duration: 5, sourceDuration: 5, outPoint: 5 } : clip) })) };
+        const longer = await saveProjectTimeline({ projectId: project.id, baseVersion: before.version, document: tooLong });
+        await assert.rejects(attachMaterializedJob(h, project.id, run, job.id, longer.version, 'neighbor'), /shorter/);
+        const reset = await saveProjectTimeline({ projectId: project.id, baseVersion: longer.version, document: before.document });
+        before.version = reset.version;
+      }
+      const result = await attachMaterializedJob(h, project.id, run, job.id, before.version, 'target'); assert.equal(result.ok, true);
+      const afterTake = (await loadProjectTimeline(project.id))!;
+      assert.equal(afterTake.version, before.version + 1);
+      assert.deepEqual(findTimelineClip(afterTake.document, 'neighbor'), findTimelineClip(before.document, 'neighbor'));
+      assert.deepEqual(findTimelineClip(afterTake.document, 'caption'), findTimelineClip(before.document, 'caption'));
+      const target = findTimelineClip(afterTake.document, 'target')!;
+      assert.equal(target.takes.length, 1); assert.equal(target.activeTakeId, target.takes[0].id);
+      assert.equal(target.takes[0].sourceType, kind); assert.equal(target.takes[0].sourceGenerationId, job.id);
+      assert.equal(getTimelineClipSource(target).inPoint, 0);
+      assert.equal((await attachMaterializedJob(h, project.id, run, job.id, before.version, 'target')).ok, true);
+      assert.equal((await loadProjectTimeline(project.id))!.version, afterTake.version);
+      const restore = await persistViralHitCommand({ projectId: project.id, origin: 'ui', commandId: 'restore', expectedRevision: afterTake.version, command: { type: 'editor.apply', operations: [{ type: 'activate_take', clipId: 'target', takeId: null }] } }); assert.equal(restore.ok, true);
+      await attachMaterializedJob(h, project.id, run, job.id, before.version, 'target');
+      assert.equal(findTimelineClip((await loadProjectTimeline(project.id))!.document, 'target')!.activeTakeId, null);
+      const current = (await loadProjectTimeline(project.id))!;
+      const locked = await saveProjectTimeline({ projectId: project.id, baseVersion: current.version, document: { ...current.document, tracks: current.document.tracks.map(t => ({ ...t, locked: true })) } });
+      const lockedResult = await attachMaterializedJob(h, project.id, run, job.id, locked.version, 'neighbor');
+      assert.equal(lockedResult.ok, false);
+      const other = await createProject({ name: 'Other take owner' });
+      await assert.rejects(attachMaterializedJob(h, other.id, run, job.id, 0, 'target'), /not found/);
+      const path = resolveLocalProjectAssetPath({ objectKey: asset.objectKey });
+      await writeFile(path, 'corrupt result');
+      await assert.rejects(attachMaterializedJob(h, project.id, run, job.id, locked.version, 'neighbor'), /hash changed/);
+    } finally { h.close(); }
+  }
+});

@@ -371,3 +371,68 @@ test('Light surfaces and SEED dialog keep keyboard focus on desktop and mobile',
   await expect(page.locator('img[src="/brand/viral-hit-wordmark.png"]').first()).toBeVisible();
   expect(await page.locator('body').evaluate(el => el.scrollWidth <= innerWidth)).toBe(true);
 });
+
+test('a harness result replaces only a selected scene, exports its real pixels, and restores the original', async ({ page, request }) => {
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  const projects = await (await request.get('/api/app/projects')).json();
+  const id = projects.projects.find((p: { name: string }) => p.name === 'Take E2E fixture').id;
+  const readTimeline = async () => (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline;
+  const before = await readTimeline();
+  const neighbor = before.document.tracks.flatMap((t: { clips: any[] }) => t.clips).find((c: { id: string }) => c.id === 'take-neighbor');
+  const runs = (await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs;
+  const run = runs.find((r: { jobs: any[] }) => r.jobs.some(j => JSON.parse(j.input_json).label === 'Alternative lime'));
+  const job = run.jobs[0], output = JSON.parse(job.output_json);
+  await page.goto(`/editor/${id}`);
+  await expect(page.getByText('Opening scene', { exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  const card = page.locator('article').filter({ hasText: run.id.slice(0, 8) });
+  await card.getByRole('button', { name: 'Use as take', exact: true }).click();
+  await page.getByLabel('Target clip', { exact: true }).selectOption('take-target');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.waitForTimeout(400);
+  await page.screenshot({ path: 'test-results/take-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const apply = page.getByRole('button', { name: 'Apply take', exact: true });
+  await apply.scrollIntoViewIfNeeded();
+  const modal = await page.getByRole('dialog').boundingBox(), button = await apply.boundingBox();
+  expect(button!.y).toBeGreaterThanOrEqual(modal!.y); expect(button!.y + button!.height).toBeLessThanOrEqual(modal!.y + modal!.height + 1);
+  const close = await page.getByRole('button', { name: 'Close', exact: true }).boundingBox();
+  expect(close!.y).toBeGreaterThanOrEqual(modal!.y); expect(close!.y + close!.height).toBeLessThanOrEqual(modal!.y + modal!.height + 1);
+  expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/take-mobile.png' });
+  await apply.click();
+  await expect(page.getByRole('status').filter({ hasText: 'Take applied.' })).toBeVisible();
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByLabel('Clip take', { exact: true })).not.toHaveValue('');
+  const current = await readTimeline();
+  const clips = current.document.tracks.flatMap((t: { clips: any[] }) => t.clips);
+  const target = clips.find((c: { id: string }) => c.id === 'take-target');
+  expect(clips).toHaveLength(2); expect(target.duration).toBe(2); expect(target.startTime).toBe(0);
+  expect(target.takes[0].assetId).toBe(output.assetId);
+  expect(clips.find((c: { id: string }) => c.id === 'take-neighbor')).toEqual(neighbor);
+  await expect(page.locator(`img[src="${output.publicUrl}"]`).first()).toBeVisible();
+  await page.reload(); await expect(page.getByLabel('Clip take', { exact: true })).toHaveValue(target.activeTakeId);
+  await page.screenshot({ path: 'test-results/take-editor-mobile.png' });
+  // Verify both browser and server exporters resolve the chosen source.
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  const downloaded = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Export MP4', exact: true }).click();
+  await (await downloaded).saveAs('test-results/take-browser-export.mp4');
+  const render = await mcp(request, 'viral_hit_editor_render', { projectId: id });
+  const media = await request.get(render.structuredContent.result.asset.publicUrl);
+  await writeFile('test-results/take-server-export.mp4', await media.body());
+  for (const file of ['test-results/take-browser-export.mp4', 'test-results/take-server-export.mp4']) {
+    const pixel = (at: string) => [...execFileSync('ffmpeg', ['-v', 'error', '-ss', at, '-i', file, '-vf', 'crop=2:2:iw/2:ih/2,scale=1:1', '-frames:v', '1', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'])];
+    const opening = pixel('0.5'), closing = pixel('2.5');
+    expect(opening[1]).toBeGreaterThan(opening[0] + 40); expect(opening[1]).toBeGreaterThan(opening[2] + 100);
+    expect(closing[0]).toBeGreaterThan(closing[1] + 100);
+  }
+  await page.getByLabel('Clip take', { exact: true }).selectOption('');
+  await expect.poll(async () => (await readTimeline()).document.tracks.flatMap((t: { clips: any[] }) => t.clips).find((c: { id: string }) => c.id === 'take-target').activeTakeId).toBeNull();
+  const repeat = await request.post(`/api/app/projects/${id}/runs`, { headers, data: { action: 'take', runId: run.id, jobId: job.id, clipId: 'take-target', expectedRevision: before.version } });
+  expect(repeat.ok()).toBe(true);
+  await page.reload(); await expect(page.getByLabel('Clip take', { exact: true })).toHaveValue('');
+  const restored = await readTimeline();
+  expect(restored.document.tracks.flatMap((t: { clips: any[] }) => t.clips).find((c: { id: string }) => c.id === 'take-target').takes).toHaveLength(1);
+  expect(errors).toEqual([]);
+});
