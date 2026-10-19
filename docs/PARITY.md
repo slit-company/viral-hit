@@ -31,6 +31,8 @@ Interrupted timeline edits now have browser-local draft recovery, exact-snapshot
 
 Independently installed `ext.*` execution adapters now share discovery, typed input schemas, pinned plan admission and the durable worker. Code/configuration fingerprints fence old jobs; scoped binary receipts flow through media import and timeline attachment. The procedural WAV example has executed on the production build and exported with a visual clip. This proves extension plumbing and a real local processor, not third-party model quality, isolated plugin execution or a marketplace. See [external adapters](EXTERNAL-ADAPTERS.md).
 
+[Reference intake](REFERENCE-INTAKE.md) now supports a local CLI for local videos, optional YoutubeExplode downloads and explicit Instagram direct-video item payloads. A real public YouTube example was downloaded with audio, sampled and added to an isolated project timeline. Instagram payload parsing/download boundaries are tested, but live login/inbox polling, shared-reel acquisition, full audiovisual analysis and intake UI/HTTP/MCP remain open. This is source acquisition, not outbound publishing or generation-quality parity.
+
 ## Performance gates
 
 Optional music2 and vid2 adapters now execute authored scores/procedural timelines through the real harness, produce WAV/MP4 assets, attach to the editor and export together. This is a bounded subset of Audio/Editor/Templates, not full-row completion. ima2 is inspected but not integrated. [Publishing](PUBLISHING.md) has a fixture-tested YouTube connector/store/step worker and encrypted OAuth account service but no operational account/approval/UI flow or background scheduler. See [source coverage](LOCAL-MEDIA-SOURCES.md) and [measured performance/bundle budgets](PERFORMANCE.md).

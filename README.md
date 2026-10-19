@@ -43,3 +43,5 @@ The interface now uses [SEED components and a light theme](docs/DESIGN.md), with
 Unsaved timeline edits are backed up in the current browser. **Drafts** reviews and restores interrupted edits while preserving concurrent saved changes; see [editing recovery and storage limits](docs/EDITING-RECOVERY.md).
 
 Install a new execution engine without editing the app: [external adapters](docs/EXTERNAL-ADAPTERS.md) share typed input discovery, pinned jobs, binary output receipts and editor integration. A standalone procedural WAV example is included; executable modules are enabled only by an operator-configured directory.
+
+Bring source videos into a project with the [reference intake CLI](docs/REFERENCE-INTAKE.md): local files, an optional YoutubeExplode engine, or explicit Instagram direct-video items. Originals and sampled frames become project assets. Automatic inbox collection and a source-import UI are still pending.

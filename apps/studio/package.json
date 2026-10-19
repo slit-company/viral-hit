@@ -30,6 +30,7 @@
     "integration:pack:workbuddy-runtime": "pnpm integration:build:workbuddy-runtime && npm pack ./dist/workbuddy-runtime-package --pack-destination ./dist",
     "integration:probe:workbuddy-runtime": "tsx scripts/probe-workbuddy-runtime-package.ts",
     "integration:package:workbuddy": "tsx scripts/package-workbuddy-connector.ts",
+    "reference": "tsx scripts/reference.ts",
     "media:localize": "tsx scripts/localize-project-media.ts",
     "mcp": "tsx scripts/mcp-server.ts",
     "mcp:http": "tsx scripts/mcp-server.ts --http",

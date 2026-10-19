@@ -1,0 +1,13 @@
+# 005: Optional source engines and project reference intake
+
+`core/references/` owns source selection, acquisition, local validation and reference asset registration. `extensions/youtube-intake/` is an independently built YoutubeExplode command-line engine. Neither the desktop YoutubeDownloader application nor a .NET runtime becomes a studio dependency. Provider downloads and FFmpeg run outside database transactions. All callers use the same project intake service.
+
+Start with explicit YouTube IDs and an operator-supplied raw Instagram direct-message item. The latter is an ingestion boundary for an authorized inbox connector, not proof of a live account session. Require the expected item/sender identity and direct video media; reject shared-post previews, disappearing-media envelopes and image-only summaries. Never infer a full video from a thumbnail. Inbox login, polling, membership revalidation and private session storage remain a separate connector responsibility.
+
+The source identity is scoped to project/account/thread/item and hashed before public asset metadata. Signed CDN URLs remain transient. Validate every Instagram CDN redirect and pin public DNS on the actual download socket; no cookies or bearer credentials go to the media host. Expired URLs fail without substituting a thumbnail. Retrying source acquisition requires a refreshed payload from the original connector.
+
+Copy or download to private temporary storage, inspect the actual container, bound duration/dimensions/bytes and extract five bounded PNG samples with FFmpeg. A common immutable local asset registration path verifies SHA-256 and uses a deterministic source identity. Replays reuse original registered bytes rather than redownload into the same identity; changed retained bytes fail. Atomic no-overwrite files permit registration recovery after interruption. Partial frame registration is repairable on retry. Source identifiers and sample timestamps are separate from full-motion/audio analysis claims.
+
+Source samples and original video become project reference assets, usable by existing editor and project-media recipe inputs. Intake does not edit a timeline, enqueue generation, send a DM or publish a post. New HTTP/MCP/UI callers must independently validate their transport trust; the initial caller is a local CLI. Disk cleanup and automatic inbox collection are not implied by file/asset registration.
+
+Verification must include real MP4 decoding/frame extraction, replay after source deletion, corrupted retained bytes, identity isolation, CDN validation and rejected preview-only inputs. Test .NET build and bounded subprocess failure independently of live YouTube access. No reference acquisition result establishes generation quality or Higgsfield parity.

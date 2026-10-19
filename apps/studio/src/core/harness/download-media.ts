@@ -18,9 +18,10 @@ export function mediaUrl(raw: string) {
 }
 
 /** HTTPS only, public DNS pinned to the socket, redirects revalidated, no auth/cookie forwarding. */
-export async function downloadMedia(raw: string, destination: string, signal: AbortSignal, maxBytes = MAX_REMOTE_MEDIA_BYTES): Promise<void> {
+export async function downloadMedia(raw: string, destination: string, signal: AbortSignal, maxBytes = MAX_REMOTE_MEDIA_BYTES, validateUrl: (raw: string) => unknown = () => undefined): Promise<void> {
   let ownsDestination = false;
   try {
+    validateUrl(raw);
     let url = mediaUrl(raw);
     for (let redirect = 0; redirect <= 4; redirect++) {
       signal.throwIfAborted();
@@ -41,7 +42,8 @@ export async function downloadMedia(raw: string, destination: string, signal: Ab
       if ([301, 302, 303, 307, 308].includes(response.statusCode ?? 0)) {
         const location = response.headers.location; response.destroy();
         if (!location || redirect === 4) throw new Error('Media redirect limit reached');
-        url = mediaUrl(new URL(location, url).href); continue;
+        const next = new URL(location, url).href; validateUrl(next);
+        url = mediaUrl(next); continue;
       }
       if (response.statusCode !== 200) { response.destroy(); throw new Error(`Media server returned ${response.statusCode ?? 'no status'}`); }
       const length = Number(response.headers['content-length']);
@@ -53,7 +55,7 @@ export async function downloadMedia(raw: string, destination: string, signal: Ab
         callback(size > maxBytes ? new Error('Media exceeds download limit') : null, chunk);
       } });
       let file;
-      try { file = await open(destination, 'wx'); }
+      try { file = await open(destination, 'wx', 0o600); }
       catch (error) { response.destroy(); throw error; }
       ownsDestination = true;
       await pipeline(response, bound, file.createWriteStream(), { signal });
