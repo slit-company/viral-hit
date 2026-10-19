@@ -515,3 +515,79 @@ test('recipe library HTTP rejects untrusted, oversized and stale installation re
   expect((await request.post(url, { headers, data: { action: 'install', manifest: { ...copy, title: 'Changed' }, expectedDigest: report.digest } })).status()).toBe(409);
   expect((await (await request.get(url)).json()).recipes.some((r: { id: string }) => r.id === copy.id)).toBe(false);
 });
+
+test('ComfyUI graph builder exposes image and numeric controls while preserving native connections', async ({ page, request }) => {
+  const id = await project(request, 'Comfy graph builder QA');
+  const graph = JSON.parse(await readFile('../../examples/comfy-api-resize.json', 'utf8'));
+  const projectsRuns = async () => (await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs;
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByRole('button', { name: 'Recipe library', exact: true }).click();
+  await page.getByRole('button', { name: /Import ComfyUI workflow/ }).click();
+  await page.getByLabel('ComfyUI API graph JSON', { exact: true }).fill('{"nodes":[],"links":[]}');
+  await page.getByRole('button', { name: 'Inspect API graph', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('API-format');
+  await page.getByLabel('Import ComfyUI graph file').setInputFiles({ name: 'resize-api.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(graph)) });
+  await page.getByRole('button', { name: 'Inspect API graph', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Build recipe for review', exact: true })).toBeDisabled();
+  await page.getByLabel('Recipe name', { exact: true }).fill('Portable image workshop');
+  await page.getByLabel('Recipe ID', { exact: true }).fill('builder-image-workshop');
+  await page.getByLabel('Source author', { exact: true }).fill('Viral Hit');
+  await page.getByLabel('Source license', { exact: true }).fill('Apache-2.0');
+  await page.getByLabel('Recipe description', { exact: true }).fill('A user-authored resize workflow with preserved alpha.');
+  await page.getByLabel('Inspect node', { exact: true }).selectOption('1');
+  await page.getByLabel('Expose #1 image', { exact: true }).check();
+  await page.getByLabel('Control label for #1 image', { exact: true }).fill('Source image');
+  await page.getByLabel('Control ID for #1 image', { exact: true }).fill('source');
+  await page.getByLabel('Control type for #1 image', { exact: true }).selectOption('asset');
+  await page.getByLabel('Inspect node', { exact: true }).selectOption('2');
+  await expect(page.getByLabel('Expose #2 image', { exact: true })).toBeDisabled();
+  for (const name of ['width', 'height']) {
+    await page.getByLabel(`Expose #2 ${name}`, { exact: true }).check();
+    await page.getByLabel(`Control ID for #2 ${name}`, { exact: true }).fill(name);
+    await page.getByLabel(`Control label for #2 ${name}`, { exact: true }).fill(name === 'width' ? 'Width' : 'Height');
+    await page.getByLabel(`min for #2 ${name}`, { exact: true }).fill('64');
+    await page.getByLabel(`max for #2 ${name}`, { exact: true }).fill('4096');
+  }
+  await page.getByLabel('Expose #2 upscale_method', { exact: true }).check();
+  await page.getByLabel('Control ID for #2 upscale_method', { exact: true }).fill('method');
+  await page.getByLabel('Control label for #2 upscale_method', { exact: true }).fill('Resize method');
+  await page.getByLabel('Control type for #2 upscale_method', { exact: true }).selectOption('enum');
+  await page.getByLabel('Choices for #2 upscale_method', { exact: true }).fill('lanczos\nnearest-exact');
+  await page.getByLabel('Output node', { exact: true }).selectOption('3');
+  await page.getByLabel('Output array', { exact: true }).selectOption('images');
+  await page.getByLabel('Media kind', { exact: true }).selectOption('image');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByLabel('Output node', { exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/graph-builder-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const build = page.getByRole('button', { name: 'Build recipe for review', exact: true });
+  await page.getByLabel('Output node', { exact: true }).scrollIntoViewIfNeeded();
+  const modal = await page.getByRole('dialog').boundingBox();
+  for (const action of [build, page.getByRole('button', { name: 'Close', exact: true })]) {
+    const box = await action.boundingBox(); expect(box!.y).toBeGreaterThanOrEqual(modal!.y); expect(box!.y + box!.height).toBeLessThanOrEqual(modal!.y + modal!.height + 1);
+  }
+  expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/graph-builder-mobile.png' });
+  expect(await projectsRuns()).toHaveLength(0);
+  await build.click();
+  const review = page.getByRole('region', { name: 'Recipe inspection', exact: true });
+  await expect(review).toContainText('3 steps · 4 inputs');
+  await expect(review).toContainText('Viral Hit · Apache-2.0');
+  const converted = JSON.parse(await page.getByLabel('Recipe JSON', { exact: true }).inputValue());
+  expect(converted.nodes.find((node: { operation: string }) => node.operation === 'comfy.workflow').input.workflow).toEqual(graph);
+  expect(converted.parameters.find((parameter: { id: string }) => parameter.id === 'source').default).toBeUndefined();
+  expect((await (await request.get('/api/app/recipes')).json()).recipes.some((r: { id: string }) => r.id === converted.id)).toBe(false);
+  await page.screenshot({ path: 'test-results/graph-builder-review-mobile.png' });
+  await page.getByRole('button', { name: 'Install recipe', exact: true }).click();
+  await expect(page.getByLabel('Creative recipe')).toHaveValue(converted.id);
+  await expect(page.getByLabel('Source image', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Resize method', { exact: true })).toHaveValue('lanczos');
+  expect(await projectsRuns()).toHaveLength(0);
+  // MCP invokes the same converter; it does not silently install the second ID.
+  const inspected = await mcp(request, 'viral_hit_recipe_library', { request: { action: 'inspect_graph', graph } });
+  const definition = JSON.parse(await readFile('../../examples/comfy-resize-definition.json', 'utf8')); definition.id = 'mcp-built-not-installed';
+  const built = await mcp(request, 'viral_hit_recipe_library', { request: { action: 'convert_graph', graph, definition, expectedGraphDigest: inspected.structuredContent.result.graphDigest } });
+  expect(built.structuredContent.result.recipe.id).toBe(definition.id);
+  expect((await (await request.get('/api/app/recipes')).json()).recipes.some((r: { id: string }) => r.id === definition.id)).toBe(false);
+});

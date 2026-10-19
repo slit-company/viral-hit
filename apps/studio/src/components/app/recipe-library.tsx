@@ -1,10 +1,11 @@
+import { ComfyRecipeBuilder } from './comfy-recipe-builder';
 import { useEffect, useRef, useState } from 'react';
 import { Download, FileJson, Copy, ArrowLeft } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { apiJsonPost } from '@/lib/api-client';
 import type { Recipe } from '@/core/harness/recipes';
 
-type Inspection = {
+export type RecipeInspection = {
   recipe: Recipe; digest: string; collision: 'none' | 'same' | 'different' | 'reserved';
   operations: string[]; unavailableOperations: string[]; parameterCount: number; nodeCount: number;
 };
@@ -18,7 +19,8 @@ function download(recipe: Recipe) {
 
 export function RecipeLibrary({ selected, onInstalled, onBack }: { selected?: Recipe; onInstalled: (recipe: Recipe) => Promise<void>; onBack: () => void }) {
   const [text, setText] = useState('');
-  const [inspection, setInspection] = useState<Inspection>();
+  const [graphBuilder, setGraphBuilder] = useState(false);
+  const [inspection, setInspection] = useState<RecipeInspection>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -46,7 +48,7 @@ export function RecipeLibrary({ selected, onInstalled, onBack }: { selected?: Re
     try {
       if (new TextEncoder().encode(text).byteLength > 128_000) throw new Error('Recipe JSON must be 128 KB or smaller.');
       const manifest = JSON.parse(text);
-      const result = await apiJsonPost<Inspection>('/api/app/recipes', { action: 'inspect', manifest });
+      const result = await apiJsonPost<RecipeInspection>('/api/app/recipes', { action: 'inspect', manifest });
       if (current === epoch.current) setInspection(result);
     } catch (error) { if (current === epoch.current) setError(error instanceof Error ? error.message : 'Could not inspect recipe'); }
     finally { setBusy(false); }
@@ -60,8 +62,12 @@ export function RecipeLibrary({ selected, onInstalled, onBack }: { selected?: Re
     } catch (error) { setError(error instanceof Error ? error.message : 'Could not install recipe'); }
     finally { setBusy(false); }
   }
+  if (graphBuilder) return <ComfyRecipeBuilder onBack={() => setGraphBuilder(false)} onBuilt={result => {
+    edit(JSON.stringify(result.recipe, null, 2)); setInspection(result); setGraphBuilder(false);
+  }} />;
   return <div className="space-y-4">
     <Action onClick={onBack} disabled={busy} className="inline-flex items-center gap-1.5 text-xs text-[var(--vh-text-2)]"><ArrowLeft size={14} />Back to runs</Action>
+    <Action disabled={busy} onClick={() => { setGraphBuilder(true); setError(''); }} className="flex w-full items-center justify-between rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-left text-xs"><span><strong className="block text-sm">Import ComfyUI workflow</strong><span className="mt-1 block text-[var(--vh-text-2)]">Choose graph inputs and an output, then build a portable recipe.</span></span><FileJson size={18} className="ml-3 shrink-0" /></Action>
     {selected && <section className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3">
       <p className="text-xs text-[var(--vh-text-2)]">Selected recipe</p>
       <p className="mt-1 break-words text-sm font-semibold">{selected.title} <span className="font-normal text-[var(--vh-text-2)]">v{selected.version}</span></p>

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawn } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
-import { inspectRecipe, installRecipe, validateRecipeManifest } from './recipe-library';
+import { inspectRecipe, installRecipe, validateRecipeManifest, changeRecipeLibrary, recipeLibraryRequest } from './recipe-library';
 import { loadRecipes } from './recipe-registry';
 import { prepareRecipePlan } from './recipe-plan';
 import { readInstalledRecipes } from './recipe-storage';
@@ -107,4 +107,40 @@ test('library capacity and database symlinks are rejected without changing store
   assert.throws(readInstalledRecipes, /regular database/);
   await assert.rejects(installRecipe(extra, extraReport.digest), /regular database/);
   assert.equal(existsSync(join(root, 'must-not-create.sqlite')), false);
+}));
+
+test('graph authoring inspection pins content and refuses canvas layouts, oversized graphs and stale conversion', async () => isolated(async (_root, _catalog, data) => {
+  const graph = JSON.parse(readFileSync('../../examples/comfy-api-resize.json', 'utf8'));
+  const definition = JSON.parse(readFileSync('../../examples/comfy-resize-definition.json', 'utf8'));
+  const inspected = await changeRecipeLibrary(recipeLibraryRequest.parse({ action: 'inspect_graph', graph }));
+  assert.ok('graphDigest' in inspected); if (!('graphDigest' in inspected)) throw new Error('Wrong inspection result');
+  assert.equal(inspected.nodes.find(n => n.nodeId === '1')!.inputs.find(i => i.input === 'image')!.exposable, true);
+  assert.equal(inspected.nodes.find(n => n.nodeId === '2')!.inputs.find(i => i.input === 'image')!.exposable, false);
+  const changed = structuredClone(graph); changed['2'].inputs.width += 1;
+  await assert.rejects(changeRecipeLibrary(recipeLibraryRequest.parse({ action: 'convert_graph', graph: changed, definition, expectedGraphDigest: inspected.graphDigest })), /changed after inspection/);
+  await assert.rejects(changeRecipeLibrary({ action: 'inspect_graph', graph: { nodes: [], links: [] } }), /API-format/);
+  await assert.rejects(changeRecipeLibrary({ action: 'inspect_graph', graph: { '1': { class_type: 'Huge', inputs: { value: 'x'.repeat(128_000) } } } }), /128 KB/);
+  assert.equal(existsSync(data), false);
+}));
+
+test('HTTP/MCP authoring conversion preserves attribution and image graph links without installing or queueing', async () => isolated(async (_root, _catalog, data) => {
+  const graph = JSON.parse(readFileSync('../../examples/comfy-api-resize.json', 'utf8'));
+  const original = structuredClone(graph);
+  const definition = { ...JSON.parse(readFileSync('../../examples/comfy-resize-definition.json', 'utf8')), id: 'portable-resize-builder', author: 'Original graph author', license: 'Apache-2.0' };
+  const inspected = await changeRecipeLibrary({ action: 'inspect_graph', graph });
+  if (!('graphDigest' in inspected)) throw new Error('Wrong inspection result');
+  const request = recipeLibraryRequest.parse({ action: 'convert_graph', graph, definition, expectedGraphDigest: inspected.graphDigest });
+  const converted = await changeRecipeLibrary(request);
+  if (!('recipe' in converted)) throw new Error('Wrong conversion result');
+  assert.deepEqual(graph, original);
+  assert.equal(converted.recipe.author, definition.author); assert.equal(converted.recipe.license, definition.license);
+  assert.deepEqual((converted.recipe.nodes.find(n => n.operation === 'comfy.workflow')!.input as any).workflow, original);
+  assert.equal(converted.recipe.nodes[0].operation, 'comfy.upload');
+  assert.equal(converted.recipe.parameters[0].type, 'asset'); assert.equal(converted.recipe.parameters[0].default, undefined);
+  assert.equal(existsSync(data), false); assert.equal((await loadRecipes()).length, 1);
+  const installed = await changeRecipeLibrary({ action: 'install', manifest: converted.recipe, expectedDigest: converted.digest });
+  assert.ok('installed' in installed && installed.installed);
+  assert.equal((await loadRecipes()).length, 2);
+  assert.equal(existsSync(join(data, 'harness.db')), false);
+  assert.throws(() => recipeLibraryRequest.parse({ action: 'convert_graph', graph, expectedGraphDigest: inspected.graphDigest, definition: { ...definition, license: undefined } }));
 }));

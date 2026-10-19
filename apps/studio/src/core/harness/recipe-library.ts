@@ -2,9 +2,13 @@ import { z } from 'zod';
 import { compileRecipeForCheck, recipeSchema } from './recipes';
 import { loadRecipeDirectory, loadRecipes } from './recipe-registry';
 import { recipeDigest, storeInstalledRecipe, RecipeConflictError } from './recipe-storage';
+import { fingerprint, type Json } from './durable';
+import { inspectComfyGraph, importComfyRecipe, comfyRecipeDefinitionSchema } from './import-comfy-recipe';
 import { supportedOperations } from './capabilities';
 
 export const recipeLibraryRequest = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('inspect_graph'), graph: z.unknown() }).strict(),
+  z.object({ action: z.literal('convert_graph'), graph: z.unknown(), definition: comfyRecipeDefinitionSchema, expectedGraphDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('inspect'), manifest: z.unknown() }).strict(),
   z.object({ action: z.literal('install'), manifest: z.unknown(), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
 ]);
@@ -36,4 +40,25 @@ export async function installRecipe(raw: unknown, expectedDigest: string) {
   if (recipeDigest(recipe) !== expectedDigest) throw new RecipeConflictError('Recipe changed after inspection. Inspect the current JSON again.');
   if ((await loadRecipeDirectory()).some(item => item.id === recipe.id)) throw new RecipeConflictError('This ID belongs to the file catalog. Use a new ID to preserve the original.');
   return storeInstalledRecipe(recipe);
+}
+
+export function inspectRecipeGraph(graph: unknown) {
+  const bytes = JSON.stringify(graph);
+  if (!bytes || Buffer.byteLength(bytes) > 128_000) throw new Error('API graph exceeds 128 KB');
+  const nodes = inspectComfyGraph(graph);
+  return { nodes, graphDigest: fingerprint(graph as Json) };
+}
+
+/** Shared offline authoring boundary for HTTP and MCP; conversion never installs or executes. */
+export async function changeRecipeLibrary(request: z.infer<typeof recipeLibraryRequest>) {
+  switch (request.action) {
+    case 'inspect': return inspectRecipe(request.manifest);
+    case 'install': return installRecipe(request.manifest, request.expectedDigest);
+    case 'inspect_graph': return inspectRecipeGraph(request.graph);
+    case 'convert_graph': {
+      const inspected = inspectRecipeGraph(request.graph);
+      if (inspected.graphDigest !== request.expectedGraphDigest) throw new RecipeConflictError('API graph changed after inspection. Inspect it again.');
+      return inspectRecipe(importComfyRecipe(request.graph, request.definition));
+    }
+  }
 }
