@@ -1,0 +1,19 @@
+{
+  "name": "viral-hit",
+  "owner": {
+    "name": "Viral Hit"
+  },
+  "description": "Official Viral Hit plugins for Claude Code.",
+  "version": "0.2.4",
+  "plugins": [
+    {
+      "name": "viral-hit",
+      "source": "./integrations/claude-code/viral-hit",
+      "description": "Operate a local Viral Hit Canvas and video Editor through MCP.",
+      "version": "0.2.4",
+      "author": {
+        "name": "Viral Hit"
+      }
+    }
+  ]
+}

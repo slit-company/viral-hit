@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "viral-hit": {
+      "command": "./scripts/launch_viral_hit_mcp",
+      "cwd": ".",
+      "env_vars": [
+        "VIRAL_HIT_ROOT",
+        "VIRAL_HIT_NODE",
+        "VIRAL_HIT_FFMPEG",
+        "NODE_ENV",
+        "DATABASE_PROVIDER",
+        "DATABASE_URL",
+        "DATABASE_AUTH_TOKEN",
+        "GENERATION_PROVIDER"
+      ],
+      "tool_timeout_sec": 3600
+    }
+  }
+}

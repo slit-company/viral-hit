@@ -1,0 +1,14 @@
+{
+  "$comment": "ZCode — copy the mcp.servers entry into ~/.zcode/cli/config.json (user scope, all sessions) or <repo>/.zcode/config.json (workspace scope). ZCode's schema is strict: unknown top-level keys make the server get dropped silently. 'cwd' is supported and recommended.",
+  "mcp": {
+    "servers": {
+      "viral-hit": {
+        "type": "stdio",
+        "command": "/absolute/path/to/viral-hit/apps/studio/node_modules/.bin/tsx",
+        "args": ["/absolute/path/to/viral-hit/apps/studio/scripts/mcp-server.ts"],
+        "cwd": "/absolute/path/to/viral-hit/apps/studio",
+        "enabled": true
+      }
+    }
+  }
+}

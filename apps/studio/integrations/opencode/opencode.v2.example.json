@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "$comment": "OpenCode V2 — merge this mcp block into ~/.config/opencode/opencode.json or the project opencode.json. V2 nests servers under mcp.servers and uses disabled instead of enabled.",
+  "mcp": {
+    "servers": {
+      "viral-hit": {
+        "type": "local",
+        "command": [
+          "/absolute/path/to/viral-hit/apps/studio/node_modules/.bin/tsx",
+          "/absolute/path/to/viral-hit/apps/studio/scripts/mcp-server.ts"
+        ],
+        "cwd": "/absolute/path/to/viral-hit/apps/studio",
+        "disabled": false
+      }
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "viral-hit": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["--yes", "@viral-hit/studio-workbuddy@0.2.4"],
+      "runtime": {
+        "type": "node",
+        "version": "22"
+      },
+      "npmRegistry": "https://registry.npmjs.org",
+      "timeout": 30000
+    }
+  }
+}

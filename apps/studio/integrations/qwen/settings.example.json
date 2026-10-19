@@ -1,0 +1,10 @@
+{
+  "$comment": "Qwen Code (阿里通义千问 CLI) — copy the mcpServers block into ~/.qwen/settings.json (global) or .qwen/settings.json in the project. Standard command/args/env shape.",
+  "mcpServers": {
+    "viral-hit": {
+      "command": "/absolute/path/to/viral-hit/apps/studio/node_modules/.bin/tsx",
+      "args": ["/absolute/path/to/viral-hit/apps/studio/scripts/mcp-server.ts"],
+      "env": {}
+    }
+  }
+}

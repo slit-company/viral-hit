@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "viral-hit": {
+      "command": "pnpm",
+      "args": ["--silent", "mcp"]
+    }
+  }
+}

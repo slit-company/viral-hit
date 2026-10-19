@@ -1,0 +1,14 @@
+{
+  "name": "viral-hit",
+  "displayName": "Viral Hit",
+  "version": "0.2.4",
+  "description": "Operate a local Viral Hit Canvas, shared Assets, generation workspace, and video Editor through MCP.",
+  "author": {
+    "name": "Viral Hit",
+    "url": "https://github.com/slit-company/viral-hit"
+  },
+  "homepage": "https://github.com/slit-company/viral-hit",
+  "repository": "https://github.com/slit-company/viral-hit",
+  "license": "Apache-2.0",
+  "keywords": ["viral-hit", "canvas", "video-editor", "generation", "mcp"]
+}
