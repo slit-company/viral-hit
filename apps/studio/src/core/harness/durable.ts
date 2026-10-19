@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import { bindOutputs, BindingError, validateBindings, type OutputBinding } from './bindings';
+import { canonicalJson } from '../../lib/canonical-json';
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
 export type NodeSpec = { id: string; operation: string; version: string; input: Json; dependsOn?: string[]; cache?: boolean; bindings?: OutputBinding[] };
@@ -27,13 +28,7 @@ export interface Adapter {
 }
 export class RejectedSubmission extends Error {}
 
-function canonical(value: Json): string {
-  if (Array.isArray(value)) return '[' + value.map(canonical).join(',') + ']';
-  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + canonical(value[k])).join(',') + '}';
-  if (typeof value === 'number' && !Number.isFinite(value)) throw new Error('Non-finite input');
-  return JSON.stringify(value);
-}
-export const fingerprint = (value: Json) => createHash('sha256').update(canonical(value)).digest('hex');
+export const fingerprint = (value: Json) => createHash('sha256').update(canonicalJson(value)).digest('hex');
 
 export function compilePlan(plan: Plan) {
   if (!plan.projectId?.trim() || !Array.isArray(plan.nodes) || !plan.nodes.length || plan.nodes.length > 256) throw new Error('A project and 1–256 nodes are required');
