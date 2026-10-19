@@ -7,8 +7,8 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Production build | Passed | Local build; not public deployment |
 | Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 450 passed | Includes 33 new harness/Router/recipe/media contract tests; SDK tests use fixtures |
-| Browser E2E | 7 passed | Local Chromium; provider credentials deliberately removed |
+| Unit/integration tests | 454 passed | Includes 37 new harness/Router/recipe/media contract tests; SDK tests use fixtures |
+| Browser E2E | 8 passed | Local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
 | Captions | Passed | Remote edit visible without reload, local text edit persisted; desktop/mobile captures |
@@ -22,6 +22,10 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Recovery and timeline attachment | Passed | Immutable file recovered after injected interruption without redownload; worker restart, one-clip attachment replay, stale revision rejection, cross-project rejection and corrupt-file rejection |
 | Empty editor regression | Fixed and tested | Initial empty autosave previously erased a first externally inserted clip. New browser test requires live appearance and persistence after reload with no document-replacement write |
 | Materialized media visual feedback | Passed, 4.255/5 | Runs and attached editor reviewed at 1440×1000; real fixture explicitly labeled, no clipping |
+| Video and speech recipes | Contract/fixture tests passed | Model-specific public schemas checked and hashed; typed controls, native request bodies and output bindings tested; no paid model calls |
+| Binary result recovery | Passed | Real encoded MP3 with fixture SDK; interrupted after atomic receipt publication, recovered without another submit/get; altered bytes and cross-project references rejected; mislabeled HTML never registers as audio |
+| Recipe outputs → mixed timeline → MP4 | Passed | Browser attached both recipe assets, reload preserved video/audio tracks, MCP export decoded without errors: H.264 1920×1080, 90 frames, AAC, both streams 3.000s; procedural video/tone fixtures, not model-quality evidence |
+| Multimodal form/editor visual feedback | Passed, 4.28/5 | Fixed identifier textareas and clipped desktop controls; motion/speech forms and mixed editor reviewed at 1440×1000; existing mobile form checked at 390×844 |
 | Actual Comfy generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
 | Higgsfield comparative benchmark | Not run | Full feature/performance parity is not established |
 

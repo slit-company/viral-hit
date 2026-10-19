@@ -1,0 +1,24 @@
+{
+  "contracts": [
+    {
+      "model": "kling/kling-3.0-turbo",
+      "recipe": "open-motion",
+      "schemaUrl": "https://docs.comfy.org/router-schemas/kling/kling-3.0-turbo.json",
+      "observedDate": "2026-10-19",
+      "schemaVersion": "0d4704f286c5",
+      "schemaSha256": "5228b4e0cec3f8bc78fe0864df3bd572a2d076628be067feb8048a919d0fb4b8",
+      "inputContractVerified": true,
+      "liveGenerationVerified": false
+    },
+    {
+      "model": "elevenlabs/eleven_v3",
+      "recipe": "spoken-line",
+      "schemaUrl": "https://docs.comfy.org/router-schemas/elevenlabs/eleven_v3.json",
+      "observedDate": "2026-10-19",
+      "schemaVersion": "6f10f163c78d",
+      "schemaSha256": "587d85c476285f9f8776c43ad246537dc4f17986f7381dc6d4b308b97fe11401",
+      "inputContractVerified": true,
+      "liveGenerationVerified": false
+    }
+  ]
+}

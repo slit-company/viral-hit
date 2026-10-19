@@ -74,14 +74,15 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           </select>
           {selected && <>
             <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.filter(node => node.operation === 'comfy.router').length} generation · {selected.nodes.filter(node => node.operation !== 'comfy.router').length} local steps · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
-            <div className="max-h-[28vh] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
+            <div className="max-h-[28vh] sm:max-h-[min(28rem,calc(85vh-26rem))] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
             {selected.parameters.map(parameter => {
               const id = `recipe-${parameter.id}`;
               const value = values[parameter.id] ?? parameter.default ?? '';
               const change = (value: string | number | boolean) => { setValues(current => ({ ...current, [parameter.id]: value })); requestKey.current = ''; };
               const fieldClass = 'w-full rounded-lg border border-white/15 bg-black/20 p-3 text-sm outline-none focus:border-[#c7f36b]';
               return <div key={id} className="space-y-2"><label htmlFor={id} className="block text-xs text-white/70">{parameter.label}</label>
-                {parameter.type === 'string' ? <textarea id={id} value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className={`${fieldClass} min-h-28 resize-y`} />
+                {parameter.type === 'string' && parameter.multiline === false ? <input id={id} type="text" value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className={fieldClass} />
+                  : parameter.type === 'string' ? <textarea id={id} value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className={`${fieldClass} min-h-28 resize-y`} />
                   : parameter.type === 'number' ? <input id={id} type="number" value={String(value)} min={parameter.min} max={parameter.max} step={parameter.integer ? 1 : 'any'} onChange={e => change(e.target.value === '' ? '' : Number(e.target.value))} className={fieldClass} />
                   : parameter.type === 'boolean' ? <input id={id} type="checkbox" checked={Boolean(value)} onChange={e => change(e.target.checked)} />
                   : <select id={id} value={String(value)} onChange={e => change(e.target.value)} className={fieldClass}><option value="" disabled>Select…</option>{parameter.options.map(option => <option key={option} value={option}>{option}</option>)}</select>}
@@ -96,7 +97,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
         </section>
         <section className="min-w-0 space-y-3">
           <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">Recent runs</h3><button aria-label="Refresh runs" onClick={() => void refresh().catch(e => setError(String(e)))} className="rounded-md p-1.5 hover:bg-white/10"><RefreshCw size={14} /></button></div>
-          {data?.runs.length === 0 && <div className="rounded-xl border border-dashed border-white/15 px-5 py-10 text-center"><Activity className="mx-auto mb-3 text-white/30" size={24} /><p className="text-sm">No generations yet</p><p className="mt-2 text-xs leading-relaxed text-white/50">Queue a frame to track progress and keep its generation history here.</p></div>}
+          {data?.runs.length === 0 && <div className="rounded-xl border border-dashed border-white/15 px-5 py-10 text-center"><Activity className="mx-auto mb-3 text-white/30" size={24} /><p className="text-sm">No runs yet</p><p className="mt-2 text-xs leading-relaxed text-white/50">Queue a creative recipe to keep its progress and output history here.</p></div>}
           {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-white/10 p-3">
             <div className="mb-2 flex items-center justify-between text-[10px] text-white/50"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>
             {run.jobs.map(job => <div key={job.id} className="my-2 rounded-lg bg-black/20 p-2.5 text-xs">

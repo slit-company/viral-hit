@@ -72,6 +72,9 @@
                 "type": "string",
                 "const": "string"
               },
+              "multiline": {
+                "type": "boolean"
+              },
               "default": {
                 "type": "string",
                 "maxLength": 16000

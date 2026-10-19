@@ -1,5 +1,6 @@
 import { comfy } from '@comfyorg/sdk';
 import { z } from 'zod';
+import { binaryReceiptOutput, readBinaryReceipt, saveBinaryReceipt, ReceiptIntegrityError } from './binary-receipts';
 import { RejectedSubmission, type Adapter, type Json } from './durable';
 
 export const routerInput = z.object({
@@ -26,8 +27,20 @@ export function createComfyRouterAdapter(models = comfy.models): Adapter {
         throw new Error('Comfy submission response was not confirmed; the same request key will be used for recovery.');
       }
     },
-    async poll(id, input, signal) {
+    async poll(id, input, signal, context) {
       const { model } = routerInput.parse(input);
+      if (context) {
+        try {
+          const saved = await readBinaryReceipt(context, signal);
+          if (saved) {
+            if (saved.receipt.model !== model || saved.receipt.providerJobId !== id) return { state: 'failed', error: 'Saved provider receipt does not match this job' };
+            return { state: 'succeeded', output: binaryReceiptOutput(saved.receipt) };
+          }
+        } catch (error) {
+          if (error instanceof ReceiptIntegrityError) return { state: 'failed', error: error.message };
+          throw error;
+        }
+      }
       const handle = models.handle(model, id);
       const status = await handle.status({ signal });
       if (!status.completed) return { state: 'running', retryAfterMs: status.retryAfterMs ?? 2000 };
@@ -36,11 +49,24 @@ export function createComfyRouterAdapter(models = comfy.models): Adapter {
         error: `Comfy completed with ${status.errorType}`,
       };
       const result = await handle.get({ signal, timeoutMs: 50_000 });
-      if (result.kind !== 'json') return { state: 'failed', error: 'Binary Router output requires a media adapter; not attached to project.' };
+      if (result.kind === 'binary') {
+        if (!context) return { state: 'failed', error: 'Binary output requires project execution context' };
+        try {
+          const saved = await saveBinaryReceipt(context, {
+            provider: 'comfy-router', model, providerJobId: id, requestId: result.requestId,
+            contentType: result.contentType, creditsUsed: result.creditsUsed ?? null,
+            servingProvider: result.servingProvider ?? null, droppedParams: result.droppedParams ? [...result.droppedParams] : null,
+          }, result.data, signal);
+          return { state: 'succeeded', output: binaryReceiptOutput(saved) };
+        } catch (error) {
+          if (error instanceof ReceiptIntegrityError) return { state: 'failed', error: error.message };
+          throw error;
+        }
+      }
       return { state: 'succeeded', output: {
         provider: 'comfy-router', model, requestId: result.requestId,
         data: JSON.parse(JSON.stringify(result.data)) as Json,
-        creditsUsed: result.creditsUsed ?? null,
+        creditsUsed: result.creditsUsed ?? null, servingProvider: result.servingProvider ?? null, droppedParams: result.droppedParams ? [...result.droppedParams] : null,
         // The native receipt is durable; remote media URLs still need local materialization.
         mediaMaterialized: false,
       } };

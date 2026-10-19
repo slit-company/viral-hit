@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "remote-media-import",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "title": "Import remote media",
   "description": "Save a public HTTPS image, video or audio file into this project. No model generation is requested. Use a source you are permitted to keep and edit.",
   "license": "Apache-2.0",
@@ -19,7 +19,8 @@
       "type": "string",
       "label": "Public HTTPS media URL",
       "minLength": 10,
-      "maxLength": 16000
+      "maxLength": 16000,
+      "multiline": false
     },
     {
       "id": "kind",
@@ -37,7 +38,8 @@
       "type": "string",
       "label": "Asset name",
       "default": "Imported media",
-      "maxLength": 160
+      "maxLength": 160,
+      "multiline": false
     }
   ],
   "nodes": [

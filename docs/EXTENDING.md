@@ -6,9 +6,9 @@ The core must support both general creative work and specialized workflows. A ne
 
 A recipe is a versioned JSON file with identity, author/license, category, typed parameters, nodes and bindings. Put a manifest in `recipes/`, or point `VIRAL_HIT_RECIPES_DIR` to your own manifest directory before starting the app/MCP server. The studio reads the catalog and builds the input form from each manifest. Agents discover the same catalog through `viral_hit_recipes_list`; `viral_hit_runs_change` accepts `action: "recipe"`, `recipeId`, `values` and a stable `requestKey`.
 
-The shipped `open-frame` recipe is general-purpose. `remote-media-import` imports public HTTPS image/video/audio media without a generation key. `editorial-triptych` specializes the same machinery for three directed frames. It does not promise character continuity or automatic film assembly. Add product photography, storyboards, animation keyframes or other recipes without changing core UI components. Each recipe must describe real operation coverage accurately.
+The shipped `open-frame`, `open-motion` and `spoken-line` recipes cover general image, video and speech workflows. `remote-media-import` imports public HTTPS image/video/audio media without a generation key. `editorial-triptych` specializes the same machinery for three directed frames. It does not promise character continuity or automatic film assembly. Add product photography, storyboards, animation keyframes or other recipes without changing core UI components. Each recipe must describe real operation coverage accurately.
 
-Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router` and `asset.materialize`. An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. Each other model requires its own declared output mapping.
+Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router` and `asset.materialize`. An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. The shipped video recipe maps the Kling task-list result at `/data/data/0/outputs/0/url`; other result shapes need their own mapping. It does not currently fall back to a watermark URL. Each other model requires its own declared output mapping.
 
 The [JSON Schema](schemas/recipe.schema.json) supports editor tooling. The runtime compiler additionally verifies graph cycles, parameter types/ranges, duplicate identifiers, pointer safety, dependency membership and overlapping bindings. Root `schemaVersion` versions the manifest format; recipe `version` versions the author's behavior. Node operation version and recipe identity/version enter the execution fingerprint.
 
@@ -30,7 +30,7 @@ A node starts with a JSON `input` and existing placeholders. Its `parameters` ma
 }
 ```
 
-The compiler copies typed values, without string interpolation or evaluation. Parameters can be string, finite number, boolean or an enumerated string. Unknown values and invalid defaults fail validation.
+The compiler copies typed values, without string interpolation or evaluation. Parameters can be string, finite number, boolean or an enumerated string. String parameters can declare `multiline: false` for short identifiers, URLs and names; omitted/true retains a multiline text area. This is presentation metadata, not a change to string validation. Unknown values and invalid defaults fail validation.
 
 For multi-stage processing, `bindings` select output JSON from an explicitly declared upstream node. The following is a **contract example**, not a live claim about a particular model's result format:
 
@@ -73,3 +73,25 @@ FFprobe validates supported raster/container types, dimensions, stream presence 
 The default image duration on attachment is three seconds; imported video/audio uses the probed duration. Supported initial containers include PNG/JPEG/WebP/GIF, MP4, WebM, MP3, WAV and Ogg. Expired provider-URL refresh, cross-run media cache validation, per-shot replacement/acceptance, background repair and full decoding still need work. A canceled import can retain an already published asset for audit; its run is not eligible for automatic attachment.
 
 Evidence for the FLUX mapping: [official Comfy cinematic example](https://github.com/Comfy-Org/comfy-cinematic-studio/blob/main/lib/flux-output.ts). Download address classification uses the [ipaddr.js public API](https://github.com/whitequark/ipaddr.js) pinned at 2.5.0.
+
+## Video and speech contracts
+
+`open-motion` exposes a prompt, 16:9/9:16/1:1 framing, integer duration 3–15 seconds and 720p/1080p settings using `kling/kling-3.0-turbo`. `spoken-line` uses `elevenlabs/eleven_v3` with the model-specific `inputs: [{text, voice_id}]` body and a stability setting. There is no fixed brand, narrator, language, advertising format or required aspect ratio in the engine. Voice IDs are supplied by the user; provider access and model capabilities still apply.
+
+These contracts were read from the public [Kling schema](https://docs.comfy.org/router-schemas/kling/kling-3.0-turbo.json) and [Eleven v3 schema](https://docs.comfy.org/router-schemas/elevenlabs/eleven_v3.json). Schema version and SHA-256 are pinned in [model-contracts.json](../research/model-contracts.json). The model-specific schema takes precedence over a generic SDK example. The checked Eleven v3 route uses dialogue inputs, rather than a top-level `text` property. Input-contract inspection and fixture execution do not establish real provider acceptance or generation quality.
+
+For binary-returning models, bind the provider node's `/binaryReceipt` to a materializer input's `/receipt`:
+
+```json
+{
+  "id": "voice-asset",
+  "operation": "asset.materialize",
+  "version": "1",
+  "cache": false,
+  "input": { "receipt": null, "kind": "audio", "label": "Narration" },
+  "dependsOn": ["voice"],
+  "bindings": [{ "node": "voice", "pointer": "/binaryReceipt", "target": "/receipt" }]
+}
+```
+
+Use either `url` or `receipt`, never both. The resolved receipt is an opaque job ID plus hash; recipes cannot supply local paths or another project's ID. Binary results are retained before the provider job is marked successful. The materializer verifies and copies them into normal Assets, then the existing revision-checked attachment adds video to a visual track or audio to an audio track. Extending the same pattern to music, effects or other binary models still requires a verified native input contract and a supported output container.

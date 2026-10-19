@@ -6,7 +6,7 @@ const identifier = z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).refine(value => ![
 const version = z.string().regex(/^\d+\.\d+\.\d+$/);
 const parameterBase = { id: identifier, label: z.string().min(1).max(120), description: z.string().max(1000).optional() };
 const parameter = z.discriminatedUnion('type', [
-  z.object({ ...parameterBase, type: z.literal('string'), default: z.string().max(16000).optional(), minLength: z.number().int().min(0).max(16000).optional(), maxLength: z.number().int().min(1).max(16000).optional() }).strict(),
+  z.object({ ...parameterBase, type: z.literal('string'), multiline: z.boolean().optional(), default: z.string().max(16000).optional(), minLength: z.number().int().min(0).max(16000).optional(), maxLength: z.number().int().min(1).max(16000).optional() }).strict(),
   z.object({ ...parameterBase, type: z.literal('number'), default: z.number().finite().optional(), min: z.number().finite().optional(), max: z.number().finite().optional(), integer: z.boolean().optional() }).strict(),
   z.object({ ...parameterBase, type: z.literal('boolean'), default: z.boolean().optional() }).strict(),
   z.object({ ...parameterBase, type: z.literal('enum'), options: z.array(z.string().min(1).max(200)).min(1).max(100), default: z.string().optional() }).strict(),

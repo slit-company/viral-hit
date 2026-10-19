@@ -108,7 +108,7 @@ test('generation run panel checks configuration and rejects malformed and untrus
   expect((await request.post(url, { headers, data: { action: 'cancel', runId: '00000000-0000-4000-8000-000000000000' } })).status()).toBe(404);
   await page.goto(`/editor/${id}`);
   await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
-  await expect(page.getByText('No generations yet', { exact: true })).toBeVisible();
+  await expect(page.getByText('No runs yet', { exact: true })).toBeVisible();
   await page.getByLabel('Describe your frame').fill('A paper observatory');
   // E2E deliberately runs without provider credentials; never submit paid work.
   await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
@@ -121,6 +121,20 @@ test('generation run panel checks configuration and rejects malformed and untrus
   await expect(page.getByLabel('Opening · establish the world')).toBeVisible();
   await expect(page.getByLabel('Detail · the visual idea')).toBeVisible();
   await expect(page.getByLabel('Closing · the final image')).toBeVisible();
+  await page.getByLabel('Creative recipe').selectOption('open-motion');
+  await page.getByLabel('Describe the action and camera').fill('A slow orbit around an original paper sculpture.');
+  await page.getByLabel('Frame shape').selectOption('9:16');
+  await page.getByLabel('Duration in seconds').fill('8');
+  await page.getByLabel('Resolution', { exact: true }).selectOption('1080p');
+  await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.screenshot({ path: 'test-results/motion-recipe-desktop.png' });
+  await page.getByLabel('Creative recipe').selectOption('spoken-line');
+  await page.getByLabel('Text to speak').fill('This is an unsubmitted recipe form, not generated speech.');
+  await page.getByLabel('ElevenLabs voice ID').fill('test-voice');
+  await expect(page.getByLabel('Voice stability')).toHaveValue('0.5');
+  await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
+  await page.screenshot({ path: 'test-results/speech-recipe-desktop.png' });
   await page.getByLabel('Creative recipe').selectOption('remote-media-import');
   await page.getByLabel('Public HTTPS media URL').fill('https://example.org/media.png');
   await expect(page.getByRole('button', { name: 'Queue import', exact: true })).toBeEnabled();
@@ -226,4 +240,38 @@ test('a materialized run attaches to the real editor once and survives a reload'
   await page.reload();
   await expect(page.getByText('Imported E2E fixture.png', { exact: true }).first()).toBeVisible();
   await page.screenshot({ path: 'test-results/materialized-editor-desktop.png' });
+});
+
+test('video and binary audio recipes attach through Runs and export a decoded movie together', async ({ page, request }) => {
+  const projects = await (await request.get('/api/app/projects')).json();
+  const project = projects.projects.find((p: { name: string }) => p.name === 'Multimodal E2E fixture');
+  expect(project).toBeTruthy(); const id = project.id;
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await expect(page.getByText('Asset ready', { exact: true })).toHaveCount(2);
+  await page.getByRole('button', { name: 'Add to timeline', exact: true }).first().click();
+  await expect(page.getByRole('button', { name: 'Added to timeline', exact: true })).toHaveCount(1);
+  await page.getByRole('button', { name: 'Add to timeline', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Added to timeline', exact: true })).toHaveCount(2);
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(page.getByText('open motion.mp4', { exact: true }).first()).toBeVisible();
+  await page.reload();
+  const timeline = await (await request.get(`/api/app/projects/${id}/timeline`)).json();
+  const tracks = timeline.timeline.document.tracks;
+  expect(tracks.flatMap((t: { clips: unknown[] }) => t.clips)).toHaveLength(2);
+  expect(tracks.find((t: { kind: string }) => t.kind === 'audio').clips).toHaveLength(1);
+  await expect(page.getByText('open motion.mp4', { exact: true }).first()).toBeVisible();
+  await page.screenshot({ path: 'test-results/multimodal-editor-desktop.png' });
+  const render = await mcp(request, 'viral_hit_editor_render', { projectId: id });
+  const output = render.structuredContent.result.asset;
+  const media = await request.get(output.publicUrl); expect(media.ok()).toBe(true);
+  const path = 'test-results/verified-multimodal-export.mp4'; await writeFile(path, await media.body());
+  const probe = JSON.parse(execFileSync('ffprobe', ['-v', 'error', '-count_frames', '-show_streams', '-of', 'json', path], { encoding: 'utf8' }));
+  const video = probe.streams.find((s: { codec_type: string }) => s.codec_type === 'video');
+  const audio = probe.streams.find((s: { codec_type: string }) => s.codec_type === 'audio');
+  expect(video.codec_name).toBe('h264'); expect(audio.codec_name).toBe('aac');
+  expect(Number(video.nb_read_frames)).toBeGreaterThanOrEqual(90);
+  expect(Math.abs(Number(video.duration) - Number(audio.duration))).toBeLessThan(0.1);
+  execFileSync('ffmpeg', ['-v', 'error', '-i', path, '-f', 'null', '-'], { stdio: 'pipe' });
 });

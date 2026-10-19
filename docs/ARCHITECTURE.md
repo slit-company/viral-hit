@@ -18,7 +18,7 @@ Runs UI / JSON plan → SQLite durable queue → independent worker → Comfy Ro
                           event ledger ← provider status + native receipt
 ```
 
-A separate `asset.materialize` DAG node now consumes a declared URL from the provider receipt, downloads and probes the media, publishes immutable local bytes, registers the project Asset and records SHA-256/lineage. The Runs panel attaches that asset through a revision-checked editor command. Provider success and local-asset readiness remain separate states. This path is tested with provider fixtures and an actual public HTTPS download; a real Comfy generation is still a release gate.
+A separate `asset.materialize` DAG node now consumes a declared URL or project-scoped binary reference from the provider receipt, acquires and probes the media, publishes immutable local bytes, registers the project Asset and records SHA-256/lineage. The Runs panel attaches that asset through a revision-checked editor command. Provider success and local-asset readiness remain separate states. This path is tested with provider fixtures and an actual public HTTPS download; a real Comfy generation is still a release gate.
 
 ## Durable execution
 
@@ -34,7 +34,7 @@ The default runner serializes provider calls. Parallel workers are fenced by lea
 
 ## Provider contracts
 
-The initial Comfy Router adapter uses the actual `@comfyorg/sdk` package pinned at 0.5.0, with native model request bodies. No browser credentials are used. `COMFY_API_KEY` is server-only. The Runs panel initially exposes FLUX.2 Pro images; the CLI accepts other Router model paths and native bodies, but each model's capabilities must be validated against its published schema before advertising support.
+The initial Comfy Router adapter uses the actual `@comfyorg/sdk` package pinned at 0.5.0, with native model request bodies. No browser credentials are used. `COMFY_API_KEY` is server-only. The Runs catalog includes FLUX.2 Pro images, Kling 3.0 Turbo video and Eleven v3 speech, with the latter two checked against published model-specific input/output schemas. The recipes are implemented and fixture-tested; live provider runs, quality and latency remain unverified. The CLI accepts other Router model paths and native bodies, but each model's capabilities require their own validation.
 
 Comfy Cloud workflow idempotency differs from Router: Cloud's duplicate submission rejection does not recover an unknown original job. A Cloud adapter must use reconciliation, not copy the Router retry behavior. Self-hosted ComfyUI via the API proxy is a separate provider with its own deployment, model weights and resource requirements.
 
@@ -84,3 +84,11 @@ pnpm --dir apps/studio test:e2e
 Use the appropriate executable on your machine. The application reports an actionable error before rendering if captions require a missing filter. Set the same environment variable in `.env.local` inside `apps/studio` for normal use. The `serve` script loads `.env.local`/`.env` for both web and worker, with parent environment taking priority.
 
 For a local editable demonstration with original procedural motion, split clips and captions, run `node scripts/create-demo.mjs` from `apps/studio` while the app is running. It creates a new project and prints its editor URL. This is a rendering fixture, not AI-generated footage.
+
+## Binary provider results
+
+The Router adapter retains binary results under the configured data root's `harness-receipts/<project>/<job>/`, separate from public Assets. Bytes and metadata are written in a temporary directory and published by one directory rename. On restart, a valid saved receipt resolves the poll without another provider result fetch or submission. The receipt preserves request identity, model, reported credits, serving provider, dropped parameters, declared media type, size and SHA-256; no base64 payload enters SQLite or the UI response.
+
+A downstream materialization node receives an opaque `{jobId, sha256}` reference, resolves it only within its own project, verifies both source and copied bytes, and probes the real container before registering the asset. Provider Content-Type is descriptive, not trusted. Invalid bytes remain an auditable receipt but never become an editable asset. Cancellation still follows the existing ledger; saved bytes do not make a canceled job eligible for attachment.
+
+This is process-restart recovery, not a power-loss durability guarantee. Automatic cleanup of orphaned temporary receipt directories and retention policies remain pending. The SDK buffers binary responses in memory and applies its own response cap; storage also rejects empty bodies and bodies over 512 MiB. Large-file streaming needs a future transport surface.

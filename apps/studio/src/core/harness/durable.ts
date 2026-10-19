@@ -19,7 +19,7 @@ export interface Adapter {
   /** replay: repeated submission with the SAME key returns the same paid job. */
   recovery: 'replay' | 'manual';
   submit(input: Json, context: { key: string; dependencies: Record<string, Json>; signal: AbortSignal; projectId?: string; runId?: string; jobId?: string }): Promise<{ id: string }>;
-  poll(id: string, input: Json, signal: AbortSignal): Promise<Poll>;
+  poll(id: string, input: Json, signal: AbortSignal, context?: { projectId: string; runId: string; jobId: string }): Promise<Poll>;
   /** Must request cancellation, not pretend the remote job has stopped. */
   cancel?(id: string, input: Json, signal: AbortSignal): Promise<void>;
 }
@@ -195,7 +195,8 @@ export class DurableHarness {
         try { await adapter.cancel(job.provider_id, input, signal); }
         catch { this.event(job, 'cancel_response_unconfirmed'); }
       }
-      const result = await adapter.poll(job.provider_id, input, signal);
+      const run = this.db.prepare('SELECT project_id FROM vh_runs WHERE id=?').get(runId)!;
+      const result = await adapter.poll(job.provider_id, input, signal, { projectId: String(run.project_id), runId, jobId: job.id });
       this.transition(job, result.state, { output: result.output, error: result.error, nextPoll: result.state === 'running' ? this.now() + Math.max(100, result.retryAfterMs ?? 2000) : 0 });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);

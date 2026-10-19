@@ -65,3 +65,14 @@ test('registry reads third-party data manifests and rejects duplicated ids', asy
     writeFileSync(join(dir, 'two.json'), JSON.stringify(recipe())); await assert.rejects(loadRecipes(dir), /Duplicate/);
   } finally { rmSync(dir, { recursive: true }); }
 });
+
+test('shipped motion and speech recipes validate controls before submission and preserve native model bodies', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const video = JSON.parse(await readFile('../../recipes/open-motion.json', 'utf8'));
+  for (const values of [{ duration: 2 }, { duration: 16 }, { duration: 3.5 }, { resolution: '4k' }, { 'aspect-ratio': '4:3' }]) assert.throws(() => compileRecipe(video, { prompt: 'Original camera move', ...values }, 'p'), /Invalid/);
+  const speech = JSON.parse(await readFile('../../recipes/spoken-line.json', 'utf8'));
+  assert.throws(() => compileRecipe(speech, { text: 'Hello' }, 'p'), /Invalid/);
+  const plan = compileRecipe(speech, { text: 'Hello', voice: 'chosen-voice' }, 'p');
+  assert.deepEqual(plan.nodes[0].input, { model: 'elevenlabs/eleven_v3', body: { inputs: [{ text: 'Hello', voice_id: 'chosen-voice' }], settings: { stability: 0.5 } } });
+  assert.deepEqual(bindOutputs(plan.nodes[1].input, { generate: { binaryReceipt: { jobId: 'opaque-job', sha256: 'file-hash' } } }, plan.nodes[1].bindings!), { receipt: { jobId: 'opaque-job', sha256: 'file-hash' }, kind: 'audio', label: 'spoken line' });
+});

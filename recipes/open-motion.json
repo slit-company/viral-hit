@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "id": "open-motion",
+  "title": "Open motion",
+  "description": "Direct an original video from text with Kling 3.0 Turbo. Choose framing, duration and resolution. Uses Comfy credits; provider quality and latency are not yet benchmarked.",
+  "category": "general",
+  "tags": [
+    "video",
+    "comfy-router"
+  ],
+  "parameters": [
+    {
+      "id": "prompt",
+      "type": "string",
+      "label": "Describe the action and camera",
+      "minLength": 3,
+      "maxLength": 3072
+    },
+    {
+      "id": "aspect-ratio",
+      "type": "enum",
+      "label": "Frame shape",
+      "options": [
+        "16:9",
+        "9:16",
+        "1:1"
+      ],
+      "default": "16:9"
+    },
+    {
+      "id": "duration",
+      "type": "number",
+      "label": "Duration in seconds",
+      "integer": true,
+      "min": 3,
+      "max": 15,
+      "default": 5
+    },
+    {
+      "id": "resolution",
+      "type": "enum",
+      "label": "Resolution",
+      "options": [
+        "720p",
+        "1080p"
+      ],
+      "default": "720p"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "generate",
+      "operation": "comfy.router",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "model": "kling/kling-3.0-turbo",
+        "body": {
+          "prompt": "",
+          "settings": {
+            "aspect_ratio": "16:9",
+            "duration": 5,
+            "resolution": "720p"
+          }
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "prompt",
+          "target": "/body/prompt"
+        },
+        {
+          "parameter": "aspect-ratio",
+          "target": "/body/settings/aspect_ratio"
+        },
+        {
+          "parameter": "duration",
+          "target": "/body/settings/duration"
+        },
+        {
+          "parameter": "resolution",
+          "target": "/body/settings/resolution"
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "url": "",
+        "kind": "video",
+        "label": "open motion"
+      },
+      "dependsOn": [
+        "generate"
+      ],
+      "bindings": [
+        {
+          "node": "generate",
+          "pointer": "/data/data/0/outputs/0/url",
+          "target": "/url"
+        }
+      ]
+    }
+  ]
+}

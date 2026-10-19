@@ -23,7 +23,7 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 
 ## Verified subset (not full-row completion)
 
-Local asset import, canvas/UI/MCP state sharing, multitrack timeline foundation, clip split, caption persistence, actual browser and server MP4 export, durable job recovery tests, project-scoped Runs UI/API/MCP and the SDK Router adapter are implemented. See `VALIDATION.md` for evidence and limits. Provider-receipt-to-asset import and revision-checked attachment pass fixture and browser tests. Actual Comfy generation/import together remains unverified; no entire area above is marked complete.
+Local asset import, canvas/UI/MCP state sharing, multitrack timeline foundation, clip split, caption persistence, actual browser and server MP4 export, durable job recovery tests, project-scoped Runs UI/API/MCP and the SDK Router adapter are implemented. See `VALIDATION.md` for evidence and limits. Provider-receipt-to-asset import and revision-checked attachment pass fixture and browser tests. Image, video and binary audio recipe paths share the materializer and editor; byte-receipt recovery and a mixed recipe-output export are fixture-tested. Actual Comfy generation/import together remains unverified; no entire area above is marked complete.
 
 ## Performance gates
 
@@ -40,7 +40,7 @@ Measure cold and warm runs separately on fixed machine/browser/model versions. R
 
 - [ ] Full acceptance matrix with evidence and honest remaining gaps
 - [ ] Comfy Router/SDK real generation receipt
-- [ ] Local install tested from a clean checkout
+- [x] Local install tested from a clean checkout (`29672cd`; see validation ledger)
 - [ ] Open-source license and third-party notices
 - [ ] Sanitized public release with no private brand/IP/account data
 - [ ] ≤2 minute demo covering creation, targeted revision, timeline edit, export

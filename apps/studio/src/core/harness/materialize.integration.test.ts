@@ -109,3 +109,88 @@ test('process interruption after immutable file publication recovers without a s
   assert.equal((await adapter.poll(recovered.id, input, context.signal)).state, 'succeeded');
   assert.equal(downloads, 1); assert.equal((await listProjectAssets({ projectId: project.id })).length, 1);
 });
+
+// Real encoded media with a fixture SDK transport: proves byte retention and editing, not TTS quality.
+test('binary Router audio survives receipt/ledger interruption and reaches the audio timeline without resubmission', async () => {
+  const { createComfyRouterAdapter } = await import('./comfy-router');
+  const { readBinaryReceipt } = await import('./binary-receipts');
+  const { compileRecipe } = await import('./recipes');
+  const project = await createProject({ name: 'Binary audio recovery fixture' });
+  const audioFile = join(directory, 'speech-fixture.mp3');
+  execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=330:duration=1.5', '-c:a', 'libmp3lame', audioFile]);
+  const bytes = await readFile(audioFile); let submits = 0, gets = 0, now = 10_000;
+  const sdk = {
+    async submit() { submits++; return { requestId: 'binary-provider-job' }; },
+    handle() { return { async status() { return { completed: true }; }, async get() { gets++; return { kind: 'binary', data: bytes, requestId: 'binary-provider-job', contentType: 'audio/mpeg', creditsUsed: '0.004', servingProvider: 'fixture', droppedParams: [] }; } }; },
+  } as unknown as Parameters<typeof createComfyRouterAdapter>[0];
+  const router = createComfyRouterAdapter(sdk), media = createMaterializeAdapter();
+  const recipe = JSON.parse(await readFile('../../recipes/spoken-line.json', 'utf8'));
+  const plan = compileRecipe(recipe, { text: 'A fixture does not prove speech quality.', voice: 'test-voice' }, project.id);
+  const database = join(directory, 'audio-recovery.db'); let h = new DurableHarness(database, () => now);
+  const run = h.enqueue(plan, 'binary-request');
+  const interrupted: Adapter = { ...router, async poll(...args) { await router.poll(...args); throw new Error('Injected process interruption after receipt publication'); } };
+  await h.step(run, { 'comfy.router': router });
+  await h.step(run, { 'comfy.router': interrupted });
+  assert.equal(h.jobs(run)[0].state, 'running');
+  assert.ok(await readBinaryReceipt({ projectId: project.id, jobId: h.jobs(run)[0].id }, AbortSignal.timeout(5000)));
+  h.close(); now += 6000; h = new DurableHarness(database, () => now);
+  for (let i = 0; i < 3; i++) await h.step(run, { 'comfy.router': router, 'asset.materialize': media });
+  const jobs = h.jobs(run); assert.deepEqual(jobs.map(j => j.state), ['succeeded', 'succeeded']);
+  assert.equal(submits, 1); assert.equal(gets, 1);
+  const receipt = JSON.parse(jobs[0].output_json!);
+  assert.equal(receipt.creditsUsed, '0.004'); assert.equal(receipt.servingProvider, 'fixture');
+  assert.equal(receipt.data, undefined); assert.equal(JSON.stringify(receipt).includes(bytes.toString('base64')), false);
+  const output = JSON.parse(jobs[1].output_json!); assert.equal(output.kind, 'audio'); assert.equal(output.sha256, await fileHash(audioFile));
+  assert.equal((await attachMaterializedJob(h, project.id, run, jobs[1].id, 0)).ok, true);
+  const timeline = (await loadProjectTimeline(project.id))!.document;
+  assert.ok(timeline.tracks.some(track => track.kind === 'audio' && track.clips.some(clip => clip.assetId === output.assetId)));
+  // A source receipt is scoped to its project and hash, not a caller-supplied filesystem path.
+  const other = await createProject({ name: 'Other binary project' });
+  await assert.rejects(media.submit({ kind: 'audio', receipt: receipt.binaryReceipt }, { projectId: other.id, runId: run, jobId: jobs[1].id, key: 'other', dependencies: {}, signal: AbortSignal.timeout(5000) }), /unavailable/);
+  const saved = await readBinaryReceipt({ projectId: project.id, jobId: jobs[0].id }, AbortSignal.timeout(5000));
+  await writeFile(saved!.file, 'tampered');
+  assert.equal((await router.poll('binary-provider-job', plan.nodes[0].input, AbortSignal.timeout(5000), { projectId: project.id, runId: run, jobId: jobs[0].id })).state, 'failed');
+  assert.equal(gets, 1); assert.equal(submits, 1); h.close();
+});
+
+test('binary receipt publication preserves original bytes on replay conflict and never trusts the content type', async () => {
+  const { randomUUID } = await import('node:crypto');
+  const { saveBinaryReceipt, readBinaryReceipt } = await import('./binary-receipts');
+  const project = await createProject({ name: 'Untrusted binary fixture' });
+  const context = { projectId: project.id, jobId: randomUUID() }, signal = AbortSignal.timeout(10000);
+  const details = { provider: 'comfy-router' as const, model: 'fixture/audio', providerJobId: 'r', requestId: 'r', contentType: 'audio/mpeg', creditsUsed: null, servingProvider: null, droppedParams: null };
+  const bytes = Buffer.from('<html>Not audio despite the declared type</html>');
+  const receipt = await saveBinaryReceipt(context, details, bytes, signal);
+  assert.deepEqual(await saveBinaryReceipt(context, details, bytes, signal), receipt);
+  await assert.rejects(saveBinaryReceipt(context, details, Buffer.from('different'), signal), /differs/);
+  const saved = await readBinaryReceipt(context, signal); assert.deepEqual(await readFile(saved!.file), bytes);
+  const adapter = createMaterializeAdapter();
+  await assert.rejects(adapter.submit({ kind: 'audio', receipt: { jobId: context.jobId, sha256: receipt.sha256 } }, { ...context, runId: 'fixture', key: 'html', dependencies: {}, signal }));
+  assert.equal((await listProjectAssets({ projectId: project.id })).length, 0);
+  await assert.rejects(saveBinaryReceipt({ ...context, jobId: randomUUID() }, details, new Uint8Array(), signal), /empty/);
+});
+
+test('video recipe consumes the native Kling task-list response and attaches the real MP4 duration', async () => {
+  const { createComfyRouterAdapter } = await import('./comfy-router');
+  const { compileRecipe } = await import('./recipes');
+  const project = await createProject({ name: 'Video recipe fixture' });
+  const recipe = JSON.parse(await readFile('../../recipes/open-motion.json', 'utf8'));
+  const plan = compileRecipe(recipe, { prompt: 'Original test animation', duration: 3, 'aspect-ratio': '16:9', resolution: '1080p' }, project.id);
+  let submits = 0;
+  const router = createComfyRouterAdapter({ async submit(model: string, body: unknown) {
+    assert.equal(model, 'kling/kling-3.0-turbo');
+    assert.deepEqual(body, { prompt: 'Original test animation', settings: { aspect_ratio: '16:9', duration: 3, resolution: '1080p' } });
+    submits++; return { requestId: 'video-job' };
+  }, handle() { return { async status() { return { completed: true }; }, async get() { return { kind: 'json', requestId: 'video-job', data: { code: 0, data: [{ id: 'native-task', status: 'succeeded', outputs: [{ type: 'video', url: 'https://example.org/fixture.mp4', duration: '3' }] }] } }; } }; } } as unknown as Parameters<typeof createComfyRouterAdapter>[0]);
+  const video = join(directory, 'video-recipe.mp4'); createDemoMedia(video);
+  const media = createMaterializeAdapter({ download: async (url, destination) => { assert.equal(url, 'https://example.org/fixture.mp4'); await copyFile(video, destination); }, probe: probeMedia });
+  const h = new DurableHarness(':memory:'); const run = h.enqueue(plan, 'video-fixture');
+  try {
+    for (let i = 0; i < 4; i++) await h.step(run, { 'comfy.router': router, 'asset.materialize': media });
+    const jobs = h.jobs(run); assert.deepEqual(jobs.map(j => j.state), ['succeeded', 'succeeded']); assert.equal(submits, 1);
+    const output = JSON.parse(jobs[1].output_json!); assert.equal(output.durationMs, 3000); assert.equal(output.kind, 'video');
+    assert.equal((await attachMaterializedJob(h, project.id, run, jobs[1].id, 0)).ok, true);
+    const clip = (await loadProjectTimeline(project.id))!.document.tracks.flatMap(t => t.clips).find(c => c.assetId === output.assetId)!;
+    assert.equal(clip.duration, 3);
+  } finally { h.close(); }
+});

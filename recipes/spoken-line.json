@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "id": "spoken-line",
+  "title": "Spoken line",
+  "description": "Create speech for a film, narration, a character or an explanation. Supply a voice ID available to your provider account. Uses Eleven v3 through Comfy credits; this recipe makes no voice-consistency or alignment guarantee.",
+  "category": "general",
+  "tags": [
+    "audio",
+    "comfy-router"
+  ],
+  "parameters": [
+    {
+      "id": "text",
+      "type": "string",
+      "label": "Text to speak",
+      "minLength": 1,
+      "maxLength": 12000
+    },
+    {
+      "id": "voice",
+      "type": "string",
+      "label": "ElevenLabs voice ID",
+      "minLength": 1,
+      "maxLength": 200,
+      "multiline": false
+    },
+    {
+      "id": "stability",
+      "type": "number",
+      "label": "Voice stability",
+      "min": 0,
+      "max": 1,
+      "default": 0.5
+    }
+  ],
+  "nodes": [
+    {
+      "id": "generate",
+      "operation": "comfy.router",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "model": "elevenlabs/eleven_v3",
+        "body": {
+          "inputs": [
+            {
+              "text": "",
+              "voice_id": ""
+            }
+          ],
+          "settings": {
+            "stability": 0.5
+          }
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "text",
+          "target": "/body/inputs/0/text"
+        },
+        {
+          "parameter": "voice",
+          "target": "/body/inputs/0/voice_id"
+        },
+        {
+          "parameter": "stability",
+          "target": "/body/settings/stability"
+        }
+      ]
+    },
+    {
+      "id": "media",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "audio",
+        "label": "spoken line"
+      },
+      "dependsOn": [
+        "generate"
+      ],
+      "bindings": [
+        {
+          "node": "generate",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}
