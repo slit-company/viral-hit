@@ -60,7 +60,7 @@ test('generated videos expose a direct playback entry', () => {
   assert.match(source, /const handlePreviewLatestOutput/);
   assert.match(
     source,
-    /cardMediaType === 'video'[\s\S]*?<button[\s\S]*?handlePreviewLatestOutput/
+    /cardMediaType === 'video'[\s\S]*?<Action[\s\S]*?handlePreviewLatestOutput/
   );
   assert.match(source, /function StaticVideoPoster/);
   assert.match(source, /captureStaticVideoPreview\(video, maxEdge\)/);

@@ -837,7 +837,7 @@ function CreativeCanvasReactFlowCanvas({
           deleteKeyCode={['Backspace', 'Delete']}
           elevateNodesOnSelect
           proOptions={{ hideAttribution: true }}
-          colorMode="dark"
+          colorMode="light"
         >
           <Background
             id="viral-hit-minor-dots"
@@ -859,7 +859,7 @@ function CreativeCanvasReactFlowCanvas({
               pannable
               zoomable
               nodeColor="rgba(127, 176, 242, 0.55)"
-              nodeStrokeColor="rgba(255, 255, 255, 0.16)"
+              nodeStrokeColor="var(--vh-border-strong)"
               nodeStrokeWidth={1}
               maskColor="rgba(10, 10, 11, 0.66)"
             />

@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   countPromptCharacters,
   getGenerationPromptConstraints,
@@ -791,13 +792,13 @@ export function CreativeCanvasFrontLayer() {
             creativeCanvasPanelClassName
           )}
         >
-          <button
+          <Action
             type="button"
             className={cn(
               'inline-flex size-8 items-center justify-center rounded-xl transition duration-150',
               activeCanvasTool === 'select'
-                ? 'bg-white/[0.10] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                : 'text-[var(--vh-text-2)] hover:bg-white/[0.06] hover:text-white'
+                ? 'bg-[var(--vh-control)] text-[var(--vh-text-1)] shadow-none'
+                : 'text-[var(--vh-text-2)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
             )}
             onClick={() => {
               setActiveCanvasTool('select');
@@ -807,14 +808,14 @@ export function CreativeCanvasFrontLayer() {
             aria-pressed={activeCanvasTool === 'select'}
           >
             <MousePointer2 className="size-3.5" />
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
             className={cn(
               'inline-flex size-8 items-center justify-center rounded-xl transition duration-150',
               activeCanvasTool === 'pan'
-                ? 'bg-white/[0.10] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]'
-                : 'text-[var(--vh-text-2)] hover:bg-white/[0.06] hover:text-white'
+                ? 'bg-[var(--vh-control)] text-[var(--vh-text-1)] shadow-none'
+                : 'text-[var(--vh-text-2)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
             )}
             onClick={() => {
               setActiveCanvasTool('pan');
@@ -824,11 +825,11 @@ export function CreativeCanvasFrontLayer() {
             aria-pressed={activeCanvasTool === 'pan'}
           >
             <Hand className="size-3.5" />
-          </button>
-          <div className="mx-1 h-5 w-px bg-white/10" />
-          <button
+          </Action>
+          <div className="mx-1 h-5 w-px bg-[var(--vh-control)]" />
+          <Action
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-white/[0.06] hover:text-white"
+            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]"
             onClick={() => {
               if (typeof editor.zoomOut === 'function') {
                 editor.zoomOut(undefined, { animation: { duration: 180 } });
@@ -837,10 +838,10 @@ export function CreativeCanvasFrontLayer() {
             aria-label={labels.zoomOutLabel}
           >
             <Minus className="size-3.5" />
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
-            className="inline-flex h-8 min-w-[54px] items-center justify-center rounded-xl bg-white/[0.05] px-2 text-[12px] font-medium tabular-nums text-[var(--vh-text-2)] transition duration-150 hover:text-white"
+            className="inline-flex h-8 min-w-[54px] items-center justify-center rounded-xl bg-[var(--vh-control)] px-2 text-[12px] font-medium tabular-nums text-[var(--vh-text-2)] transition duration-150 hover:text-[var(--vh-text-1)]"
             onClick={() => {
               if (typeof editor.resetZoom === 'function') {
                 editor.resetZoom(undefined, { animation: { duration: 180 } });
@@ -848,10 +849,10 @@ export function CreativeCanvasFrontLayer() {
             }}
           >
             {zoomLevel}%
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-white/[0.06] hover:text-white"
+            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]"
             onClick={() => {
               if (typeof editor.zoomIn === 'function') {
                 editor.zoomIn(undefined, { animation: { duration: 180 } });
@@ -860,19 +861,19 @@ export function CreativeCanvasFrontLayer() {
             aria-label={labels.zoomInLabel}
           >
             <Plus className="size-3.5" />
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
-            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-white/[0.06] hover:text-white"
+            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]"
             onClick={() => editor.fitView({ animation: { duration: 220 } })}
             aria-label={labels.fitViewLabel}
           >
             <Focus className="size-3.5" />
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
             className={cn(
-              'inline-flex size-8 items-center justify-center rounded-xl transition duration-150 hover:bg-white/[0.06] hover:text-white',
+              'inline-flex size-8 items-center justify-center rounded-xl transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]',
               edgesVisible
                 ? 'text-[var(--vh-text-2)]'
                 : 'bg-[var(--vh-graph-soft)] text-[var(--vh-graph)]'
@@ -888,11 +889,11 @@ export function CreativeCanvasFrontLayer() {
             aria-pressed={!edgesVisible}
           >
             <EyeOff className="size-3.5" />
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
             className={cn(
-              'inline-flex size-8 items-center justify-center rounded-xl transition duration-150 hover:bg-white/[0.06] hover:text-white',
+              'inline-flex size-8 items-center justify-center rounded-xl transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]',
               isSnapToGridActive
                 ? 'bg-[var(--vh-graph-soft)] text-[var(--vh-graph)]'
                 : 'text-[var(--vh-text-2)]'
@@ -906,26 +907,26 @@ export function CreativeCanvasFrontLayer() {
             aria-pressed={isSnapToGridActive}
           >
             <Magnet className="size-3.5" />
-          </button>
-          <div className="mx-1 h-5 w-px bg-white/10" />
-          <button
+          </Action>
+          <div className="mx-1 h-5 w-px bg-[var(--vh-control)]" />
+          <Action
             type="button"
             disabled={!canUndoCanvas}
             onClick={onUndoCanvas}
-            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-white/[0.06] hover:text-white disabled:pointer-events-none disabled:text-white/25"
+            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] disabled:pointer-events-none disabled:text-[var(--vh-text-2)]"
             aria-label={labels.undoLabel}
           >
             <Undo2 className="size-3.5" />
-          </button>
-          <button
+          </Action>
+          <Action
             type="button"
             disabled={!canRedoCanvas}
             onClick={onRedoCanvas}
-            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-white/[0.06] hover:text-white disabled:pointer-events-none disabled:text-white/25"
+            className="inline-flex size-8 items-center justify-center rounded-xl text-[var(--vh-text-2)] transition duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] disabled:pointer-events-none disabled:text-[var(--vh-text-2)]"
             aria-label={labels.redoLabel}
           >
             <Redo2 className="size-3.5" />
-          </button>
+          </Action>
         </div>
       ) : null}
 

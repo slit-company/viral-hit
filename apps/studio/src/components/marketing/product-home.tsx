@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   ArrowRight,
   ArrowUp,
@@ -61,12 +62,12 @@ function WorkspaceCard({
 }) {
   return (
     <Link href={href} className="group block h-full">
-      <article className="relative flex h-full min-h-[212px] flex-col overflow-hidden rounded-[var(--vh-radius)] border border-white/[0.07] bg-white/[0.025] p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] transition duration-300 hover:-translate-y-0.5 hover:border-white/[0.16] hover:bg-white/[0.045]">
+      <article className="relative flex h-full min-h-[212px] flex-col overflow-hidden rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-6 shadow-none transition duration-300 hover:-translate-y-0.5 hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]">
         <div className="flex items-start justify-between">
-          <span className="grid size-10 place-items-center rounded-[var(--vh-radius-sm)] border border-white/[0.06] bg-[#111113] text-[var(--vh-accent)] transition-shadow duration-300 group-hover:shadow-[0_0_28px_rgba(255,122,51,0.2)]">
+          <span className="grid size-10 place-items-center rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-accent)] transition-shadow duration-300 group-hover:shadow-none">
             {icon}
           </span>
-          <span className="vh-product-display text-[11px] font-semibold tracking-[0.14em] text-white/25">
+          <span className="vh-product-display text-[11px] font-semibold tracking-[0.14em] text-[var(--vh-text-2)]">
             {index}
           </span>
         </div>
@@ -76,7 +77,7 @@ function WorkspaceCard({
         <p className="mt-2 truncate whitespace-nowrap text-[13px] leading-[1.65] text-[var(--vh-text-2)]">
           {description}
         </p>
-        <span className="mt-auto inline-flex items-center gap-2 pt-6 text-[12.5px] font-medium text-white/65 transition-colors group-hover:text-white">
+        <span className="mt-auto inline-flex items-center gap-2 pt-6 text-[12.5px] font-medium text-[var(--vh-text-2)] transition-colors group-hover:text-[var(--vh-text-1)]">
           {openLabel}
           <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
         </span>
@@ -92,7 +93,7 @@ function PromptComposer({ copy }: { copy: HomeCopy }) {
     <form
       action="/studio"
       method="get"
-      className="mx-auto mt-10 flex min-h-[160px] w-full max-w-[720px] flex-col rounded-[var(--vh-radius)] border border-white/[0.13] bg-[linear-gradient(145deg,#1b1b1e_0%,#151517_100%)] p-5 text-left shadow-[0_30px_100px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.035)] sm:p-6"
+      className="mx-auto mt-10 flex min-h-[160px] w-full max-w-[720px] flex-col rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 text-left shadow-none sm:p-6"
     >
       <textarea
         name="prompt"
@@ -100,16 +101,16 @@ function PromptComposer({ copy }: { copy: HomeCopy }) {
         onChange={(event) => setPrompt(event.target.value)}
         placeholder={copy.prompt}
         aria-label={copy.prompt}
-        className="min-h-16 w-full resize-none border-0 bg-transparent text-[15px] leading-6 text-white outline-none placeholder:text-[var(--vh-text-3)] sm:text-base"
+        className="min-h-16 w-full resize-none border-0 bg-transparent text-[15px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-3)] sm:text-base"
       />
       <div className="mt-auto flex items-end justify-end">
-        <button
+        <Action
           type="submit"
           aria-label={copy.create}
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--vh-accent)] text-[var(--vh-accent-ink)] shadow-[0_8px_24px_rgba(255,122,51,0.3)] transition hover:scale-[1.04] hover:bg-[#ff8a4d]"
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--vh-accent)] text-[var(--vh-accent-ink)] shadow-none transition hover:scale-[1.04] hover:bg-[var(--vh-accent)]"
         >
           <ArrowUp className="size-4" />
-        </button>
+        </Action>
       </div>
     </form>
   );
@@ -127,7 +128,7 @@ export function ProductHome({ locale }: { locale: string }) {
             <span className="size-1.5 rounded-full bg-[var(--vh-accent)]" />
             {copy.eyebrow}
           </p>
-          <h1 className="vh-product-display vh-product-hero-title mx-auto mt-6 w-full max-w-[720px] text-[clamp(2.25rem,6.6vw,4.75rem)] font-semibold leading-[1.04] tracking-[-0.04em] text-[#f7f7f8]">
+          <h1 className="vh-product-display vh-product-hero-title mx-auto mt-6 w-full max-w-[720px] text-[clamp(2.25rem,6.6vw,4.75rem)] font-semibold leading-[1.04] tracking-[-0.04em] text-[var(--vh-text-1)]">
             {titleLines.map((line) => (
               <span key={line} className="block">
                 {line}
@@ -144,7 +145,7 @@ export function ProductHome({ locale }: { locale: string }) {
             </h2>
             <Link
               href="/projects"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--vh-text-2)] transition hover:text-white"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--vh-text-2)] transition hover:text-[var(--vh-text-1)]"
             >
               {copy.projects}
               <ArrowRight className="size-3.5" />

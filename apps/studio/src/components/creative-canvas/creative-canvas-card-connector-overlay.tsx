@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import type { CanvasCardMediaType } from '@/core/creative-canvas/canvas-types';
 import { ImageIcon, Plus, Upload, Video } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -317,7 +318,7 @@ export function CardConnectorOverlay() {
             border: `1.5px solid ${
               isHovered || isDraggingSource
                 ? 'var(--vh-graph)'
-                : 'rgba(255,255,255,0.24)'
+                : 'var(--vh-border-strong)'
             }`,
             color: isHovered || isDraggingSource
               ? 'var(--vh-graph)'
@@ -407,7 +408,7 @@ export function CardConnectorOverlay() {
       {createMenu && (
         <div
           ref={menuRef}
-          className="pointer-events-auto absolute overflow-hidden rounded-[var(--vh-radius-sm)] border border-white/10 bg-[var(--vh-surface-2)]/95 p-1.5 shadow-[0_24px_64px_rgba(0,0,0,0.55)] backdrop-blur-xl"
+          className="pointer-events-auto absolute overflow-hidden rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-surface-2)]/95 p-1.5 shadow-none backdrop-blur-xl"
           style={{
             left: menuLeft,
             top: menuTop,
@@ -416,28 +417,28 @@ export function CardConnectorOverlay() {
           onPointerDown={(event) => event.stopPropagation()}
         >
           <div className="grid grid-cols-3 gap-1">
-            <button
+            <Action
               type="button"
               aria-label={labels.createImageGenerationCardLabel}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[12px] font-semibold text-[var(--vh-text-1)] transition hover:bg-[var(--vh-accent)]/10 hover:text-[#ff9a62]"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[12px] font-semibold text-[var(--vh-text-1)] transition hover:bg-[var(--vh-accent)]/10 hover:text-[var(--vh-graph)]"
               onClick={() => handleCreateFromMenu('image')}
             >
               <ImageIcon aria-hidden="true" size={15} strokeWidth={2} />
               {labels.imageModeLabel}
-            </button>
-            <button
+            </Action>
+            <Action
               type="button"
               aria-label={labels.createVideoGenerationCardLabel}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[12px] font-semibold text-[var(--creative-canvas-ink)] transition hover:bg-white/[0.06]"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[12px] font-semibold text-[var(--creative-canvas-ink)] transition hover:bg-[var(--vh-control)]"
               onClick={() => handleCreateFromMenu('video')}
             >
               <Video aria-hidden="true" size={15} strokeWidth={2} />
               {labels.videoModeLabel}
-            </button>
-            <button
+            </Action>
+            <Action
               type="button"
               aria-label={labels.uploadImageLabel}
-              className="flex h-10 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[12px] font-semibold text-[var(--creative-canvas-ink)] transition hover:bg-white/[0.06]"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-[10px] px-2 text-[12px] font-semibold text-[var(--creative-canvas-ink)] transition hover:bg-[var(--vh-control)]"
               onClick={() => {
                 onUploadImage();
                 setCreateMenu(null);
@@ -445,7 +446,7 @@ export function CardConnectorOverlay() {
             >
               <Upload aria-hidden="true" size={15} strokeWidth={2} />
               {labels.connectorUploadLabel}
-            </button>
+            </Action>
           </div>
         </div>
       )}

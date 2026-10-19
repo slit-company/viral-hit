@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { getModelIconPathByModelId } from '@/core/workspace-lib/model-icons';
 import type { VideoAnalysisDepth } from '@/core/effects/video-analysis';
 import { cn } from '@/lib/utils';
@@ -44,7 +45,7 @@ export function CreativeCanvasAnalysisDepthPicker({
 
   return (
     <div ref={containerRef} className={cn(composerFieldSlotClassName, 'min-w-0')}>
-      <button
+      <Action
         type="button"
         aria-label={labels.analysisModelLabel}
         aria-expanded={isOpen}
@@ -54,22 +55,22 @@ export function CreativeCanvasAnalysisDepthPicker({
         className={cn(composerFieldButtonClassName, 'w-fit max-w-full')}
       >
         {iconPath ? (
-          <span className="grid size-4 shrink-0 place-items-center rounded-[5px] bg-white/90 ring-1 ring-black/10">
+          <span className="grid size-4 shrink-0 place-items-center rounded-[5px] bg-[var(--vh-control)] ring-1 ring-black/10">
             <img src={iconPath} alt="" className="max-h-3 max-w-3 object-contain" />
           </span>
         ) : (
           <ScanSearch className="size-3.5 shrink-0 text-[var(--vh-graph)]" />
         )}
-        <span className="line-clamp-1 text-[12px] font-semibold text-white">
+        <span className="line-clamp-1 text-[12px] font-semibold text-[var(--vh-text-1)]">
           {label}
         </span>
         <ChevronDown
           className={cn(
-            'size-3.5 shrink-0 text-white/45 transition-transform duration-200',
+            'size-3.5 shrink-0 text-[var(--vh-text-2)] transition-transform duration-200',
             isOpen && 'rotate-180'
           )}
         />
-      </button>
+      </Action>
 
       {isOpen ? (
         <div
@@ -93,7 +94,7 @@ export function CreativeCanvasAnalysisDepthPicker({
               );
 
               return (
-                <button
+                <Action
                   key={option}
                   type="button"
                   disabled={isDraftBusy}
@@ -104,11 +105,11 @@ export function CreativeCanvasAnalysisDepthPicker({
                   className={getComposerOptionRowClassName(isSelected)}
                 >
                   {optionIcon ? (
-                    <span className="grid size-5 shrink-0 place-items-center rounded-[5px] bg-white/90 ring-1 ring-black/10">
+                    <span className="grid size-5 shrink-0 place-items-center rounded-[5px] bg-[var(--vh-control)] ring-1 ring-black/10">
                       <img src={optionIcon} alt="" className="max-h-3.5 max-w-3.5 object-contain" />
                     </span>
                   ) : (
-                    <ScanSearch className="size-3.5 shrink-0 text-white/60" />
+                    <ScanSearch className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
                   )}
                   <span className="flex-1 text-left text-[12px] font-medium text-[var(--vh-text-1)]">
                     {optionLabel}
@@ -116,7 +117,7 @@ export function CreativeCanvasAnalysisDepthPicker({
                   {isSelected ? (
                     <Check className="size-3.5 shrink-0 text-[var(--vh-accent)]" />
                   ) : null}
-                </button>
+                </Action>
               );
             })}
           </div>

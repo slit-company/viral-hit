@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
@@ -24,21 +25,21 @@ export function CreativeCanvasMediaPreviewOverlay({
     <section
       aria-label={media.title}
       aria-modal="true"
-      className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-black/55 px-6 py-8 backdrop-blur-sm"
+      className="pointer-events-auto absolute inset-0 z-50 flex items-center justify-center bg-[var(--vh-control)] px-6 py-8 backdrop-blur-sm"
       role="dialog"
     >
       <div className="relative flex max-w-[min(1120px,calc(100vw-48px))] flex-col items-center">
-        <button
+        <Action
           type="button"
           aria-label={closeLabel}
           className={cn(
-            'absolute -right-3 -top-3 z-10 inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-white/15 bg-black/75 px-2.5 text-[12px] font-semibold text-white shadow-lg transition hover:bg-black'
+            'absolute -right-3 -top-3 z-10 inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 text-[12px] font-semibold text-[var(--vh-text-1)] shadow-lg transition hover:bg-black'
           )}
           onClick={onClose}
         >
           <X className="size-4" strokeWidth={2.2} />
           <span className="sr-only">{closeLabel}</span>
-        </button>
+        </Action>
         {media.type === 'video' ? (
           <video
             src={media.url}
@@ -48,17 +49,17 @@ export function CreativeCanvasMediaPreviewOverlay({
             muted
             playsInline
             preload="metadata"
-            className="max-h-[calc(100vh-140px)] max-w-full rounded-[10px] bg-black object-contain shadow-2xl"
+            className="max-h-[calc(100vh-140px)] max-w-full rounded-[10px] bg-black object-contain shadow-lg"
           />
         ) : (
           <img
             src={media.url}
             alt={media.title}
-            className="max-h-[calc(100vh-140px)] max-w-full rounded-[10px] bg-white object-contain shadow-2xl"
+            className="max-h-[calc(100vh-140px)] max-w-full rounded-[10px] bg-white object-contain shadow-lg"
             draggable={false}
           />
         )}
-        <div className="mt-3 max-w-full truncate rounded-full bg-black/65 px-3 py-1.5 text-[12px] font-medium text-white">
+        <div className="mt-3 max-w-full truncate rounded-full bg-[var(--vh-control)] px-3 py-1.5 text-[12px] font-medium text-[var(--vh-text-1)]">
           {media.title}
         </div>
       </div>

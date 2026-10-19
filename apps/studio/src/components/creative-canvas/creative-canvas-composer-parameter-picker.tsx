@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import type {
   WorkspaceAspectRatio,
   WorkspaceBackgroundSource,
@@ -125,7 +126,7 @@ export function CreativeCanvasComposerParameterPicker({
           : 'relative w-fit min-w-0 max-w-[min(240px,100%)] flex-none'
       )}
     >
-      <button
+      <Action
         type="button"
         disabled={isDraftBusy}
         title={parameterSummaryLabel}
@@ -143,22 +144,22 @@ export function CreativeCanvasComposerParameterPicker({
         <span
           className={cn(
             'flex min-w-0 items-center gap-2 overflow-hidden',
-            isBatchTone ? 'text-white' : 'text-white'
+            isBatchTone ? 'text-[var(--vh-text-1)]' : 'text-[var(--vh-text-1)]'
           )}
         >
           {visibleParameterSummaryTokens.map((token, index) => (
             <span key={`${token}-${index}`} className="contents">
               {!isBatchTone && index > 0 ? (
-                <span className="shrink-0 text-white/35">·</span>
+                <span className="shrink-0 text-[var(--vh-text-2)]">·</span>
               ) : null}
               {isBatchTone && index > 0 ? (
-                <span className="shrink-0 text-white/45">·</span>
+                <span className="shrink-0 text-[var(--vh-text-2)]">·</span>
               ) : null}
               <span
                 className={cn(
                   'min-w-0',
                   isBatchTone
-                    ? 'text-[18px] font-semibold tracking-[-0.04em] text-white'
+                    ? 'text-[18px] font-semibold tracking-[-0.04em] text-[var(--vh-text-1)]'
                     : 'text-[12px] font-medium',
                   index === visibleParameterSummaryTokens.length - 1
                     ? 'truncate'
@@ -173,11 +174,11 @@ export function CreativeCanvasComposerParameterPicker({
         <ChevronDown
           className={cn(
             'pointer-events-none size-3.5 shrink-0 transition-transform duration-200',
-            isBatchTone ? 'text-[var(--vh-text-2)]' : 'text-white/45',
+            isBatchTone ? 'text-[var(--vh-text-2)]' : 'text-[var(--vh-text-2)]',
             isOpen ? 'rotate-180' : ''
           )}
         />
-      </button>
+      </Action>
 
       {isOpen ? (
         <div
@@ -195,7 +196,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {selectedOutputQualities.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -209,7 +210,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {item.toUpperCase()}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -222,7 +223,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {selectedAspectRatioOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -236,7 +237,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -249,7 +250,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className="grid grid-cols-3 gap-1.5">
                   {selectedDurationOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -263,7 +264,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {item}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -276,7 +277,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {selectedCharacterOrientationOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -293,7 +294,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -306,7 +307,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {selectedBackgroundSourceOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -323,7 +324,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -336,7 +337,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className="grid grid-cols-2 gap-1.5">
                   {selectedLanguageOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -350,7 +351,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -363,7 +364,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className={compactParameterGroupClass}>
                   {selectedModeOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -377,7 +378,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -390,7 +391,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className={compactParameterGroupClass}>
                   {selectedVariantOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -404,7 +405,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>
@@ -417,7 +418,7 @@ export function CreativeCanvasComposerParameterPicker({
                 </p>
                 <div className={compactParameterGroupClass}>
                   {selectedQualityOptions.map((item) => (
-                    <button
+                    <Action
                       key={item}
                       type="button"
                       disabled={isDraftBusy}
@@ -431,7 +432,7 @@ export function CreativeCanvasComposerParameterPicker({
                       )}
                     >
                       {normalizeComposerToken(item, labels)}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               </section>

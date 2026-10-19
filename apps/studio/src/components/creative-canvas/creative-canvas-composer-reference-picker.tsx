@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { cn } from '@/lib/utils';
 import type { CanvasGenerationCard } from '@/core/creative-canvas/canvas-types';
 import { ChevronDown, GripVertical, ImagePlus, Video, X } from 'lucide-react';
@@ -82,7 +83,7 @@ export function CreativeCanvasComposerReferencePicker({
         {isRow && attachedCount > 0 ? (
           <div className="flex min-w-0 max-w-[392px] items-center gap-1 overflow-x-auto pr-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {currentReferenceCards.map((card) => (
-              <button
+              <Action
                 key={card.id}
                 type="button"
                 draggable={!isDraftBusy}
@@ -118,13 +119,13 @@ export function CreativeCanvasComposerReferencePicker({
                 onPointerDownCapture={stopComposerEvent}
                 title={`${card.alias ?? ''} · ${card.name}`}
                 className={cn(
-                  'group/reference inline-flex h-7 shrink-0 items-center gap-1 rounded-lg border bg-white/[0.035] pl-1 pr-1.5 text-[11px] font-semibold text-[var(--vh-text-1)] transition',
+                  'group/reference inline-flex h-7 shrink-0 items-center gap-1 rounded-lg border bg-[var(--vh-control)] pl-1 pr-1.5 text-[11px] font-semibold text-[var(--vh-text-1)] transition',
                   draggedReferenceId === card.id
                     ? 'border-[var(--vh-graph)] opacity-55'
-                    : 'border-white/[0.09] hover:border-white/[0.18] hover:bg-white/[0.07]'
+                    : 'border-[var(--vh-border)] hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]'
                 )}
               >
-                <span className="relative inline-flex size-5 shrink-0 overflow-hidden rounded-[5px] bg-black/50">
+                <span className="relative inline-flex size-5 shrink-0 overflow-hidden rounded-[5px] bg-[var(--vh-control)]">
                   {card.thumbnailUrl && card.type === 'video' ? (
                     <video
                       src={card.thumbnailUrl}
@@ -141,24 +142,24 @@ export function CreativeCanvasComposerReferencePicker({
                       className="size-full object-cover"
                     />
                   ) : card.type === 'video' ? (
-                    <Video className="m-auto size-3 text-white/70" />
+                    <Video className="m-auto size-3 text-[var(--vh-text-2)]" />
                   ) : (
-                    <ImagePlus className="m-auto size-3 text-white/70" />
+                    <ImagePlus className="m-auto size-3 text-[var(--vh-text-2)]" />
                   )}
                   {card.type === 'video' ? (
-                    <Video className="pointer-events-none absolute bottom-0 right-0 size-2.5 rounded-sm bg-black/65 p-0.5 text-white" />
+                    <Video className="pointer-events-none absolute bottom-0 right-0 size-2.5 rounded-sm bg-[var(--vh-control)] p-0.5 text-[var(--vh-text-1)]" />
                   ) : null}
                 </span>
                 <span className="whitespace-nowrap font-mono tracking-[-0.02em] text-[var(--vh-graph)]">
                   {card.alias}
                 </span>
-                <GripVertical className="size-3 text-white/20 transition group-hover/reference:text-white/45" />
-              </button>
+                <GripVertical className="size-3 text-[var(--vh-text-2)] transition group-hover/reference:text-[var(--vh-text-2)]" />
+              </Action>
             ))}
           </div>
         ) : null}
 
-        <button
+        <Action
           type="button"
           disabled={isDraftBusy || options.length === 0}
           onClick={() => {
@@ -166,9 +167,9 @@ export function CreativeCanvasComposerReferencePicker({
           }}
           onPointerDownCapture={stopComposerEvent}
           className={cn(
-            'relative inline-flex shrink-0 items-center justify-center text-[var(--vh-text-3)] transition-all duration-200 hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60',
+            'relative inline-flex shrink-0 items-center justify-center text-[var(--vh-text-3)] transition-all duration-200 hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] disabled:cursor-not-allowed disabled:opacity-60',
             isRow
-              ? 'h-7 w-7 rounded-lg border border-dashed border-white/[0.12] bg-white/[0.025]'
+              ? 'h-7 w-7 rounded-lg border border-dashed border-[var(--vh-border)] bg-[var(--vh-control)]'
               : 'h-8 w-8 rounded-lg'
           )}
           aria-label={primaryLabel}
@@ -180,7 +181,7 @@ export function CreativeCanvasComposerReferencePicker({
             <ImagePlus className="size-4" />
           )}
           {!isRow && attachedCount > 0 ? (
-            <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--vh-graph)] px-1 text-[9px] font-bold leading-none text-white">
+            <span className="absolute -right-1 -top-1 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--vh-graph)] px-1 text-[9px] font-bold leading-none text-[var(--vh-text-1)]">
               {attachedCount}
             </span>
           ) : null}
@@ -193,7 +194,7 @@ export function CreativeCanvasComposerReferencePicker({
               )}
             />
           ) : null}
-        </button>
+        </Action>
 
         {isOpen ? (
           <div
@@ -206,7 +207,7 @@ export function CreativeCanvasComposerReferencePicker({
             <div className="max-h-[320px] space-y-2.5 overflow-y-auto">
             <div className="space-y-0.5">
               {options.map((option) => (
-                <button
+                <Action
                   key={option.intent}
                   type="button"
                   disabled={isDraftBusy}
@@ -236,7 +237,7 @@ export function CreativeCanvasComposerReferencePicker({
                       {option.remaining}
                     </span>
                   ) : null}
-                </button>
+                </Action>
               ))}
             </div>
 
@@ -248,7 +249,7 @@ export function CreativeCanvasComposerReferencePicker({
                 {currentReferenceCards.map((card) => (
                   <div
                     key={card.id}
-                    className="flex w-full items-center justify-between gap-2 rounded-[8px] px-2 py-1.5 transition-colors duration-150 hover:bg-white/[0.06]"
+                    className="flex w-full items-center justify-between gap-2 rounded-[8px] px-2 py-1.5 transition-colors duration-150 hover:bg-[var(--vh-control)]"
                   >
                     <span className="flex min-w-0 items-center gap-2.5 text-[var(--vh-text-1)]">
                       {card.thumbnailUrl && card.type === 'video' ? (
@@ -261,7 +262,7 @@ export function CreativeCanvasComposerReferencePicker({
                             preload="metadata"
                             className="size-full object-cover"
                           />
-                          <Video className="pointer-events-none absolute inset-0 m-auto size-3.5 text-white drop-shadow" />
+                          <Video className="pointer-events-none absolute inset-0 m-auto size-3.5 text-[var(--vh-text-1)] drop-shadow" />
                         </span>
                       ) : card.thumbnailUrl ? (
                         <img
@@ -271,7 +272,7 @@ export function CreativeCanvasComposerReferencePicker({
                           className="size-8 shrink-0 rounded-md object-cover"
                         />
                       ) : (
-                        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[var(--vh-text-2)]">
+                        <span className="inline-flex size-8 shrink-0 items-center justify-center rounded-md bg-[var(--vh-control)] text-[var(--vh-text-2)]">
                           {card.type === 'video' ? (
                             <Video className="size-3.5" />
                           ) : (
@@ -288,17 +289,17 @@ export function CreativeCanvasComposerReferencePicker({
                         </span>
                       </span>
                     </span>
-                    <button
+                    <Action
                       type="button"
                       disabled={isDraftBusy}
                       onClick={() => {
                         onRemoveCanvasReference(activeDraftId, card.id);
                       }}
-                      className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-[var(--vh-text-3)] transition hover:bg-white/10 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-[var(--vh-text-3)] transition hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] disabled:cursor-not-allowed disabled:opacity-60"
                       aria-label={labels.removeReferenceLabel}
                     >
                       <X className="size-3.5" />
-                    </button>
+                    </Action>
                   </div>
                 ))}
               </div>
@@ -315,7 +316,7 @@ export function CreativeCanvasComposerReferencePicker({
               ) : (
                 <div className="grid grid-cols-4 gap-1.5 px-2.5 pb-1">
                   {canvasReferenceCards.map((card) => (
-                    <button
+                    <Action
                       key={card.id}
                       type="button"
                       disabled={isDraftBusy}
@@ -323,7 +324,7 @@ export function CreativeCanvasComposerReferencePicker({
                         onAttachCanvasReference(activeDraftId, card.id);
                       }}
                       title={card.name}
-                      className="relative aspect-square overflow-hidden rounded-lg border border-white/[0.08] transition hover:border-[var(--vh-graph)] disabled:cursor-not-allowed disabled:opacity-60"
+                      className="relative aspect-square overflow-hidden rounded-lg border border-[var(--vh-border)] transition hover:border-[var(--vh-graph)] disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {card.thumbnailUrl && card.type === 'video' ? (
                         <span className="relative inline-flex size-full bg-black">
@@ -335,7 +336,7 @@ export function CreativeCanvasComposerReferencePicker({
                             preload="metadata"
                             className="size-full object-cover"
                           />
-                          <Video className="pointer-events-none absolute inset-0 m-auto size-4 text-white drop-shadow" />
+                          <Video className="pointer-events-none absolute inset-0 m-auto size-4 text-[var(--vh-text-1)] drop-shadow" />
                         </span>
                       ) : card.thumbnailUrl ? (
                         <img
@@ -353,7 +354,7 @@ export function CreativeCanvasComposerReferencePicker({
                           )}
                         </span>
                       )}
-                    </button>
+                    </Action>
                   ))}
                 </div>
               )}

@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import type { RecentAsset } from '@/core/workspace-lib/app/workspace-client-api';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import { Clock3, ImagePlus, Plus } from 'lucide-react';
@@ -56,7 +57,7 @@ export default function CreativeCanvasSidebar({
   return (
     <>
       <div
-        className="pointer-events-auto absolute left-4 top-[39%] z-50 flex w-[54px] -translate-y-1/2 flex-col items-center gap-1 rounded-[var(--vh-radius-sm)] border border-white/[0.13] bg-[var(--creative-canvas-panel)] px-1.5 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.055),0_24px_56px_rgba(0,0,0,0.48)] backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-3 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent"
+        className="pointer-events-auto absolute left-4 top-[39%] z-50 flex w-[54px] -translate-y-1/2 flex-col items-center gap-1 rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--creative-canvas-panel)] px-1.5 py-2 shadow-none backdrop-blur-2xl before:pointer-events-none before:absolute before:inset-x-3 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent"
       >
         <ToolBtn
           icon={<Plus size={18} />}
@@ -113,27 +114,27 @@ function ToolBtn({
 }) {
   const idleTone =
     tone === 'danger'
-      ? 'text-[var(--creative-canvas-error)] hover:border-[var(--creative-canvas-error)]/20 hover:bg-[#3a2025] hover:text-[#ff9aa1]'
-      : 'text-[var(--vh-text-2)] hover:border-white/[0.07] hover:bg-white/[0.05] hover:text-[var(--vh-text-1)]';
+      ? 'text-[var(--creative-canvas-error)] hover:border-[var(--creative-canvas-error)]/20 hover:bg-[var(--vh-surface)] hover:text-[#ff9aa1]'
+      : 'text-[var(--vh-text-2)] hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]';
 
   return (
-    <button
+    <Action
       type="button"
       title={title}
       onClick={onClick}
       disabled={disabled}
       className={`group relative flex h-10 w-10 items-center justify-center rounded-xl border border-transparent transition-[color,background-color,border-color,box-shadow,transform] duration-150 ease-out active:scale-[0.94] ${
         active
-          ? 'border-white/[0.12] bg-white/[0.08] text-[var(--vh-text-1)] shadow-[inset_0_1px_0_rgba(255,255,255,0.07),0_8px_22px_rgba(0,0,0,0.4)]'
+          ? 'border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-1)] shadow-none'
           : idleTone
       } disabled:cursor-wait disabled:opacity-55`}
       aria-pressed={active}
     >
       {icon}
-      <span className="pointer-events-none absolute left-[calc(100%+11px)] top-1/2 z-[90] -translate-y-1/2 translate-x-1 whitespace-nowrap rounded-[8px] border border-white/10 bg-[var(--vh-surface-2)]/95 px-2.5 py-1.5 text-[11px] font-medium text-[var(--vh-text-1)] opacity-0 shadow-[0_10px_28px_rgba(0,0,0,0.42)] backdrop-blur-xl transition-[opacity,transform] duration-150 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
+      <span className="pointer-events-none absolute left-[calc(100%+11px)] top-1/2 z-[90] -translate-y-1/2 translate-x-1 whitespace-nowrap rounded-[8px] border border-[var(--vh-border)] bg-[var(--vh-surface-2)]/95 px-2.5 py-1.5 text-[11px] font-medium text-[var(--vh-text-1)] opacity-0 shadow-none backdrop-blur-xl transition-[opacity,transform] duration-150 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100">
         {title}
       </span>
-    </button>
+    </Action>
   );
 }
 
@@ -170,7 +171,7 @@ function SlidePanel({
   return (
     <div
       ref={panelRef}
-      className="vh-slide-in pointer-events-auto absolute left-20 top-[39%] z-40 max-h-[calc(100%-80px)] w-[280px] -translate-y-1/2 overflow-hidden rounded-[var(--vh-radius-sm)] border border-white/[0.12] bg-[var(--creative-canvas-panel)] text-[var(--vh-text-1)] shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_28px_64px_rgba(0,0,0,0.46)] backdrop-blur-2xl"
+      className="vh-slide-in pointer-events-auto absolute left-20 top-[39%] z-40 max-h-[calc(100%-80px)] w-[280px] -translate-y-1/2 overflow-hidden rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--creative-canvas-panel)] text-[var(--vh-text-1)] shadow-none backdrop-blur-2xl"
     >
       <div className="max-h-[calc(100vh-160px)] overflow-y-auto">
         {children}
@@ -185,7 +186,7 @@ function SidebarPanelLoading() {
       {Array.from({ length: 4 }).map((_, index) => (
         <div
           key={index}
-          className="h-12 animate-pulse rounded-[10px] bg-white/[0.05]"
+          className="h-12 animate-pulse rounded-[10px] bg-[var(--vh-control)]"
         />
       ))}
     </div>

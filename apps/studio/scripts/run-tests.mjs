@@ -18,7 +18,7 @@ if (files.length === 0) {
 
 const result = spawnSync(
   process.execPath,
-  ['--import', 'tsx', '--test', ...files],
+  ['--import', 'tsx', '--import', './scripts/test-css-loader.mjs', '--test', ...files],
   {
     cwd: root,
     stdio: 'inherit',

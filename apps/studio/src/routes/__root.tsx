@@ -16,9 +16,9 @@ import { getQueryClient } from '@/lib/query-client';
 import { m } from '@/paraglide/messages.js';
 import { getLocale, locales, localizeUrl } from '@/paraglide/runtime.js';
 
-import '@fontsource-variable/figtree';
+import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css';
 import '@fontsource-variable/geist-mono';
-import '@fontsource-variable/space-grotesk';
+
 import '@/styles/globals.css';
 
 export const Route = createRootRoute({
@@ -32,6 +32,7 @@ export const Route = createRootRoute({
         { name: 'description', content: appConfig.app_description },
       ],
       links: [
+        { rel: 'icon', type: 'image/png', href: '/brand/viral-hit-mark.png' },
         ...locales.map((loc) => ({
           rel: 'alternate',
           hrefLang: loc,
@@ -50,21 +51,22 @@ function RootComponent() {
     <QueryClientProvider client={getQueryClient()}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="light"
+        forcedTheme="light"
+        enableSystem={false}
         disableTransitionOnChange
       >
         <Outlet />
         <Toaster position="top-center" richColors />
       </ThemeProvider>
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      {import.meta.env.DEV && import.meta.env.VITE_QUERY_DEVTOOLS === 'true' && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (
-    <html lang={getLocale()} suppressHydrationWarning>
+    <html data-seed-color-mode="light-only" lang={getLocale()} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>

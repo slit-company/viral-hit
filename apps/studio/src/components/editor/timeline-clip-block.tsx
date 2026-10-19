@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { FileVideo2, ImageIcon, Volume2 } from 'lucide-react';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import type { TimelineClip } from '@/core/editor/timeline-document';
@@ -37,12 +38,12 @@ export function TimelineClipBlock({
     <div
       className={`group absolute inset-y-1 touch-none overflow-hidden rounded-[9px] border text-left transition ${
         selected
-          ? 'cursor-grab border-[var(--vh-accent)] bg-[#2a1a12] shadow-[0_0_0_1px_rgba(255,103,0,0.3),0_8px_24px_rgba(0,0,0,0.2)] active:cursor-grabbing'
+          ? 'cursor-grab border-[var(--vh-accent)] bg-[var(--vh-surface)] shadow-none active:cursor-grabbing'
           : clip.sourceType === 'audio'
             ? 'cursor-grab border-[var(--vh-graph)]/30 bg-[var(--vh-graph)]/12 hover:border-[var(--vh-graph)]/50 hover:bg-[var(--vh-graph)]/18 active:cursor-grabbing'
             : clip.sourceType === 'caption'
-              ? 'cursor-grab border-white/16 bg-[#1d2430] hover:border-white/28 hover:bg-[#232b38] active:cursor-grabbing'
-            : 'cursor-grab border-white/12 bg-[#202124] hover:border-white/24 hover:bg-[#242529] active:cursor-grabbing'
+              ? 'cursor-grab border-[var(--vh-border)] bg-[var(--vh-surface)] hover:border-[var(--vh-border)] hover:bg-[var(--vh-surface)] active:cursor-grabbing'
+            : 'cursor-grab border-[var(--vh-border)] bg-[var(--vh-surface)] hover:border-[var(--vh-border)] hover:bg-[var(--vh-surface)] active:cursor-grabbing'
       }`}
       style={{ left: `${left}%`, width: `${Math.max(width, 1.2)}%` }}
       title={
@@ -53,7 +54,7 @@ export function TimelineClipBlock({
           : `${clip.name} · ${formatTime(clip.inPoint)}–${formatTime(clip.outPoint)}`
       }
     >
-      <button
+      <Action
         type="button"
         onClick={(event) => {
           event.stopPropagation();
@@ -87,12 +88,12 @@ export function TimelineClipBlock({
             className="absolute inset-0 size-full object-cover opacity-28 transition group-hover:opacity-38"
           />
         ) : null}
-        <span className="absolute inset-0 bg-gradient-to-r from-black/72 via-black/38 to-black/10" />
+        <span className="absolute inset-0 bg-gradient-to-r from-white/95 via-white/80 to-white/50" />
         <span className="relative flex h-full min-w-0 flex-col justify-between px-2.5 py-2">
-          <span className="block truncate text-[11px] font-[560] tracking-[-0.01em] text-white/95">
+          <span className="block truncate text-[11px] font-[560] tracking-[-0.01em] text-[var(--vh-text-1)]">
             {clip.sourceType === 'caption' ? clip.text || clip.name : clip.name}
           </span>
-          <span className="flex items-center gap-1.5 text-[10px] font-[500] tabular-nums text-white/62">
+          <span className="flex items-center gap-1.5 text-[10px] font-[500] tabular-nums text-[var(--vh-text-2)]">
             {clip.sourceType === 'image' ? (
               <ImageIcon className="size-3" />
             ) : clip.sourceType === 'video' ? (
@@ -103,8 +104,8 @@ export function TimelineClipBlock({
             {clip.duration.toFixed(2)}s
           </span>
         </span>
-      </button>
-      <button
+      </Action>
+      <Action
         type="button"
         aria-label={trimStartLabel}
         title={trimStartLabel}
@@ -119,9 +120,9 @@ export function TimelineClipBlock({
             : 'opacity-0 group-hover:opacity-70'
         }`}
       >
-        <span className="absolute bottom-2 left-1 top-2 w-px rounded-full bg-white/80" />
-      </button>
-      <button
+        <span className="absolute bottom-2 left-1 top-2 w-px rounded-full bg-[var(--vh-control)]" />
+      </Action>
+      <Action
         type="button"
         aria-label={trimEndLabel}
         title={trimEndLabel}
@@ -136,8 +137,8 @@ export function TimelineClipBlock({
             : 'opacity-0 group-hover:opacity-70'
         }`}
       >
-        <span className="absolute bottom-2 right-1 top-2 w-px rounded-full bg-white/80" />
-      </button>
+        <span className="absolute bottom-2 right-1 top-2 w-px rounded-full bg-[var(--vh-control)]" />
+      </Action>
     </div>
   );
 }

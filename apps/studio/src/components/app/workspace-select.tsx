@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { Check, ChevronDown } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
@@ -101,7 +102,7 @@ export function WorkspaceSelect({
 
   return (
     <div ref={rootRef} className="relative min-w-0">
-      <button
+      <Action
         ref={triggerRef}
         type="button"
         aria-label={ariaLabel}
@@ -116,9 +117,9 @@ export function WorkspaceSelect({
         {selected?.leading ?? leadingIcon}
         <span className="min-w-0 truncate text-left">{selected?.label}</span>
         <ChevronDown
-          className={`size-3.5 shrink-0 text-white/40 transition-transform ${open ? 'rotate-180' : ''}`}
+          className={`size-3.5 shrink-0 text-[var(--vh-text-2)] transition-transform ${open ? 'rotate-180' : ''}`}
         />
-      </button>
+      </Action>
 
       {open && menuPosition
         ? createPortal(
@@ -130,14 +131,14 @@ export function WorkspaceSelect({
                 bottom: menuPosition.bottom,
                 minWidth: menuPosition.minWidth,
               }}
-              className="vh-pop-in z-[70] max-h-[264px] origin-bottom overflow-y-auto rounded-[var(--vh-radius-sm)] border border-white/10 bg-[var(--vh-surface-2)] p-1.5 text-[var(--vh-text-1)] shadow-[0_24px_64px_rgba(0,0,0,0.55),0_2px_10px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.03)]"
+              className="vh-pop-in z-[70] max-h-[264px] origin-bottom overflow-y-auto rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-surface-2)] p-1.5 text-[var(--vh-text-1)] shadow-none"
               role="listbox"
               aria-label={ariaLabel}
             >
               {options.map((option) => {
                 const isSelected = option.value === selected?.value;
                 return (
-                  <button
+                  <Action
                     key={option.value}
                     type="button"
                     role="option"
@@ -155,7 +156,7 @@ export function WorkspaceSelect({
                     {isSelected ? (
                       <Check className="size-3.5 shrink-0 text-[var(--vh-accent)]" />
                     ) : null}
-                  </button>
+                  </Action>
                 );
               })}
             </div>,

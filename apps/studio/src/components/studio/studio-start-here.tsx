@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { useState } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -44,23 +45,13 @@ export function StudioStartHere() {
         aria-label="Starting ideas"
         className="relative mx-auto h-[122px] w-[min(88vw,350px)] sm:h-[148px] sm:w-[500px]"
       >
-        <div className="pointer-events-none absolute inset-0 opacity-45 blur-[42px]">
-          {STUDIO_START_HERE_IDEAS.map((idea) => (
-            <img
-              key={`glow-${idea.src}`}
-              src={idea.src}
-              alt=""
-              className={`absolute border-[6px] border-[#6b6b72]/75 object-cover shadow-[0_18px_52px_rgba(0,0,0,0.45)] ${idea.className}`}
-            />
-          ))}
-        </div>
 
         {STUDIO_START_HERE_IDEAS.map((idea) => {
           const isSelected = selectedSrc === idea.src;
           const hasSelection = selectedSrc !== null;
 
           return (
-            <button
+            <Action
               key={idea.src}
               type="button"
               title={idea.title}
@@ -68,10 +59,10 @@ export function StudioStartHere() {
               aria-pressed={isSelected}
               onClick={() => setSelectedSrc(idea.src)}
               className={cn(
-                'group absolute overflow-hidden border-[6px] border-[#6b6b72]/85 bg-[#141416] object-cover shadow-[0_18px_48px_rgba(0,0,0,0.4)] transition-[transform,border-color,filter,box-shadow,opacity] duration-300 ease-out hover:z-20 hover:scale-[1.045] hover:border-white/65 hover:brightness-100 hover:opacity-100 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a33]',
+                'group absolute overflow-hidden border-[4px] border-[var(--vh-surface)] bg-[var(--vh-surface)] object-cover shadow-none transition-[transform,border-color,filter,box-shadow,opacity] duration-300 ease-out hover:z-20 hover:scale-[1.045] hover:border-[var(--vh-border)] hover:brightness-100 hover:opacity-100 focus-visible:z-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]',
                 idea.className,
                 isSelected &&
-                  'z-20 scale-[1.06] border-white/85 brightness-[1.14] shadow-[0_24px_62px_rgba(0,0,0,0.58),0_0_0_2px_rgba(255,255,255,0.12)]',
+                  'z-20 scale-[1.06] border-[var(--vh-border)] brightness-[1.14] shadow-none',
                 hasSelection && !isSelected && 'brightness-[0.72] opacity-70'
               )}
             >
@@ -83,14 +74,14 @@ export function StudioStartHere() {
                   isSelected && 'scale-105'
                 )}
               />
-            </button>
+            </Action>
           );
         })}
       </div>
-      <h1 className="mt-7 text-[1.7rem] font-semibold leading-none tracking-[-0.035em] text-white sm:text-[2.15rem]">
+      <h1 className="mt-7 text-[1.7rem] font-semibold leading-none tracking-[-0.035em] text-[var(--vh-text-1)] sm:text-[2.15rem]">
         Create Here
       </h1>
-      <p className="mx-auto mt-3 max-w-[390px] text-[13px] leading-6 text-white/35 sm:text-sm">
+      <p className="mx-auto mt-3 max-w-[390px] text-[13px] leading-6 text-[var(--vh-text-2)] sm:text-sm">
         Imagine the scene. Shape the mood. Bring it to life.
       </p>
     </div>

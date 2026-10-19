@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   type RecentAsset,
   fetchRecentAssets,
@@ -92,18 +93,18 @@ export function HistoryPanel({
       {!loading && audios.length > 0 ? (
         <AssetSection label={t('sidebar.recentAudios')}>
           {audios.map((audio) => (
-            <button
+            <Action
               key={audio.id}
               type="button"
               onClick={() => onSelectAsset({ ...audio, mediaType: 'audio' })}
-              className="group flex aspect-square flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/50 transition hover:border-[var(--vh-graph)] hover:text-white"
+              className="group flex aspect-square flex-col items-center justify-center gap-1 overflow-hidden rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] transition hover:border-[var(--vh-graph)] hover:text-[var(--vh-text-1)]"
               title={audio.filename || t('sidebar.recentAudioAlt')}
             >
               <AudioLines className="size-5 text-[var(--vh-graph)]" />
               <span className="max-w-full truncate px-1 text-[9px]">
                 {audio.filename || t('sidebar.recentAudioAlt')}
               </span>
-            </button>
+            </Action>
           ))}
         </AssetSection>
       ) : null}
@@ -138,10 +139,10 @@ function AssetThumbnail({
   onClick: () => void;
 }) {
   return (
-    <button
+    <Action
       type="button"
       onClick={onClick}
-      className="group relative aspect-square overflow-hidden rounded-lg border border-white/[0.08] bg-white/[0.04] transition-all duration-200 hover:scale-[1.04] hover:border-[var(--vh-graph)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.35)] active:scale-[0.98]"
+      className="group relative aspect-square overflow-hidden rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] transition-all duration-200 hover:scale-[1.04] hover:border-[var(--vh-graph)] hover:shadow-none active:scale-[0.98]"
     >
       {isVideo ? (
         <video
@@ -161,12 +162,12 @@ function AssetThumbnail({
         />
       )}
       {isVideo ? (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-white/90">
-            <Video size={12} className="text-[#1D1D1F]" />
+        <div className="absolute inset-0 flex items-center justify-center bg-[var(--vh-control)]">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[var(--vh-control)]">
+            <Video size={12} className="text-[var(--vh-text-2)]" />
           </div>
         </div>
       ) : null}
-    </button>
+    </Action>
   );
 }

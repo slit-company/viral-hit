@@ -4,7 +4,8 @@ import tailwindcss from '@tailwindcss/vite';
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 import viteReact from '@vitejs/plugin-react';
 import { nitro } from 'nitro/vite';
-import { defineConfig } from 'vite';
+import { defineConfig, defaultClientConditions, defaultServerConditions } from 'vite';
+import { seedDesignPlugin } from '@seed-design/vite-plugin';
 
 import { paraglideCompilerOptions } from './src/config/paraglide';
 import { shouldNormalizeProjectAssetMediaRequest } from './src/lib/project-asset-media-request';
@@ -16,8 +17,11 @@ export default defineConfig({
   },
   resolve: {
     tsconfigPaths: true,
+    conditions: ['seed-layered', ...defaultClientConditions],
   },
+  ssr: { resolve: { conditions: ['seed-layered', ...defaultServerConditions] }, noExternal: [/^@seed-design\//] },
   plugins: [
+    seedDesignPlugin({ colorMode: 'light-only' }),
     {
       name: 'viral-hit-project-asset-media-routes',
       enforce: 'pre',

@@ -7,8 +7,9 @@ const shellSource = readFileSync(
   'utf8'
 );
 
-test('workspace logo returns to the real Home route', () => {
-  assert.match(shellSource, /href="\/"/);
+test('SEED back button returns to the Home route', () => {
+  assert.match(shellSource, /<BackButton/);
+  assert.match(shellSource, /router\.push\('\/'\)/);
   assert.doesNotMatch(shellSource, /href=\{Routes\.History\}/);
 });
 const apiConfigSource = readFileSync(
@@ -63,7 +64,7 @@ test('API configuration exposes persisted connection state without revealing the
   assert.match(apiConfigSource, /triggerConfiguredLabel/);
   assert.match(apiConfigSource, /apiKeyPreview/);
   assert.match(apiConfigSource, /maskApiKeyPreview/);
-  assert.match(apiConfigSource, /bg-\[#c7f36b\]/);
+  assert.match(apiConfigSource, /bg-\[var\(--vh-accent\)\]/);
   assert.doesNotMatch(apiConfigSource, /connectHint/);
   assert.doesNotMatch(apiConfigSource, /replaceKey/);
   assert.doesNotMatch(apiConfigSource, /changeKey/);

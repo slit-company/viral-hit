@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   Menu,
   X,
@@ -55,14 +56,13 @@ export function Brand({ href = '/' }: { href?: string }) {
     <Link
       href={href}
       aria-label={`${appConfig.app_name} home`}
-      className="vh-product-display inline-flex min-w-0 items-center gap-2.5 text-[15px] font-semibold tracking-[-0.02em] text-[#f6f6f4] sm:text-base"
+      className="vh-product-display inline-flex min-w-0 items-center gap-2.5 text-[15px] font-semibold tracking-[-0.02em] text-[var(--vh-text-1)] sm:text-base"
     >
       <img
-        src={appConfig.app_logo}
-        alt=""
-        className="size-7 shrink-0 rounded-[9px] object-contain"
+        src={appConfig.app_wordmark}
+        alt={appConfig.app_name}
+        className="h-11 w-[148px] shrink-0 object-contain"
       />
-      <span className="truncate">{appConfig.app_name}</span>
     </Link>
   );
 }
@@ -85,8 +85,8 @@ function CapsuleNav({
             href={item.href}
             className={
               isActive
-                ? 'text-white'
-                : 'text-white/45 transition-colors hover:text-white'
+                ? 'text-[var(--vh-text-1)]'
+                : 'text-[var(--vh-text-2)] transition-colors hover:text-[var(--vh-text-1)]'
             }
           >
             {item.label}
@@ -114,10 +114,10 @@ export function ProductShell({
   return (
     <div
       lang={currentLocale}
-      className="vh-product-shell min-h-[100dvh] bg-[var(--vh-bg)] pt-4 text-[#f4f4f5] selection:bg-[#ff7a33]/35 sm:pt-5"
+      className="vh-product-shell min-h-[100dvh] bg-[var(--vh-bg)] pt-4 text-[var(--vh-text-1)] selection:bg-[var(--vh-accent)]/35 sm:pt-5"
     >
       <header className="sticky top-3 z-40 px-4 sm:top-4 sm:px-6">
-        <div className="mx-auto flex h-[60px] w-full min-w-0 max-w-[1280px] items-center gap-3 rounded-full border border-white/[0.08] bg-[#131416]/90 px-3.5 shadow-[0_18px_60px_rgba(0,0,0,0.36)] backdrop-blur-2xl sm:px-5">
+        <div className="mx-auto flex h-[60px] w-full min-w-0 max-w-[1280px] items-center gap-3 rounded-full border border-[var(--vh-border)] bg-[var(--vh-surface)]/90 px-3.5 shadow-none backdrop-blur-2xl sm:px-5">
           <Brand />
 
           <CapsuleNav active={active} items={navItems} />
@@ -127,34 +127,34 @@ export function ProductShell({
               <LanguageSwitcher />
             </div>
 
-            <button
+            <Action
               type="button"
               aria-label={
                 menuOpen ? copy.closeNavigation : copy.openNavigation
               }
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
-              className="grid size-10 place-items-center rounded-full border border-white/10 bg-white/[0.035] text-white transition hover:border-white/20 md:hidden"
+              className="grid size-10 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-1)] transition hover:border-[var(--vh-border)] md:hidden"
             >
               {menuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-            </button>
+            </Action>
           </div>
         </div>
 
         {menuOpen ? (
-          <div className="absolute inset-x-4 top-[calc(100%+8px)] rounded-[18px] border border-white/10 bg-[#111113]/95 p-2 shadow-2xl backdrop-blur-xl md:hidden">
+          <div className="absolute inset-x-4 top-[calc(100%+8px)] rounded-[18px] border border-[var(--vh-border)] bg-[var(--vh-surface)]/95 p-2 shadow-lg backdrop-blur-xl md:hidden">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="block rounded-[12px] px-4 py-3 text-sm font-medium text-[#d4d4d8] hover:bg-white/[0.06] hover:text-white"
+                className="block rounded-[12px] px-4 py-3 text-sm font-medium text-[var(--vh-text-1)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]"
               >
                 {item.label}
               </Link>
             ))}
-            <div className="mt-2 flex items-center justify-between border-t border-white/10 px-2 pt-3">
-              <span className="text-[11px] font-medium text-[#77777e]">
+            <div className="mt-2 flex items-center justify-between border-t border-[var(--vh-border)] px-2 pt-3">
+              <span className="text-[11px] font-medium text-[var(--vh-text-2)]">
                 {copy.switchLanguage}
               </span>
               <LanguageSwitcher />
@@ -165,12 +165,12 @@ export function ProductShell({
 
       {children}
 
-      <footer className="px-5 pb-8 pt-16 text-center text-[11px] font-[500] text-[#626269]">
+      <footer className="px-5 pb-8 pt-16 text-center text-[11px] font-[500] text-[var(--vh-text-2)]">
         <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
-          <Link href="/terms-of-service" className="transition hover:text-[#b6b6bb]">
+          <Link href="/terms-of-service" className="transition hover:text-[var(--vh-text-1)]">
             {copy.terms}
           </Link>
-          <Link href="/privacy-policy" className="transition hover:text-[#b6b6bb]">
+          <Link href="/privacy-policy" className="transition hover:text-[var(--vh-text-1)]">
             {copy.privacy}
           </Link>
         </div>

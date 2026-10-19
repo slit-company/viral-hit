@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { CanvasGenerationCard } from '@/core/creative-canvas/canvas-types';
@@ -238,13 +239,13 @@ export function CreativeCanvasComposerShell({
               />
 
               {activeMention && mentionOptions.length > 0 ? (
-                <div className="vh-pop-in absolute left-2 top-full z-50 mt-1.5 w-[min(340px,calc(100vw-72px))] overflow-hidden rounded-xl border border-white/10 bg-[var(--vh-surface-2)] p-1.5 shadow-[0_22px_54px_rgba(0,0,0,0.58),inset_0_1px_0_rgba(255,255,255,0.04)]">
+                <div className="vh-pop-in absolute left-2 top-full z-50 mt-1.5 w-[min(340px,calc(100vw-72px))] overflow-hidden rounded-xl border border-[var(--vh-border)] bg-[var(--vh-surface-2)] p-1.5 shadow-none">
                   {mentionOptions.slice(0, 8).map((mention, index) => {
                     const reference = promptReferences.find(
                       (item) => item.cardId === mention.cardId
                     );
                     return (
-                      <button
+                      <Action
                         key={mention.cardId}
                         type="button"
                         onMouseDown={(event) => event.preventDefault()}
@@ -254,11 +255,11 @@ export function CreativeCanvasComposerShell({
                         className={cn(
                           'flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition',
                           index === selectedMentionIndex
-                            ? 'bg-white/[0.09] text-white'
-                            : 'text-[var(--vh-text-2)] hover:bg-white/[0.06] hover:text-white'
+                            ? 'bg-[var(--vh-control)] text-[var(--vh-text-1)]'
+                            : 'text-[var(--vh-text-2)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
                         )}
                       >
-                        <span className="relative inline-flex size-8 shrink-0 overflow-hidden rounded-md bg-black/45">
+                        <span className="relative inline-flex size-8 shrink-0 overflow-hidden rounded-md bg-[var(--vh-control)]">
                           {reference?.thumbnailUrl && mention.type === 'video' ? (
                             <video
                               src={reference.thumbnailUrl}
@@ -288,10 +289,10 @@ export function CreativeCanvasComposerShell({
                             {mention.name}
                           </span>
                         </span>
-                        <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-white/30">
+                        <span className="text-[10px] font-medium uppercase tracking-[0.08em] text-[var(--vh-text-2)]">
                           {mention.type}
                         </span>
-                      </button>
+                      </Action>
                     );
                   })}
                 </div>
@@ -310,14 +311,14 @@ export function CreativeCanvasComposerShell({
             >
               {promptCharacterCount}/{promptCharacterLimit}
             </span>
-            <button
+            <Action
               type="button"
-              className="inline-flex size-7 items-center justify-center rounded-lg text-[var(--vh-text-3)] transition hover:bg-white/10 hover:text-white"
+              className="inline-flex size-7 items-center justify-center rounded-lg text-[var(--vh-text-3)] transition hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]"
               onClick={() => onActiveComposerCardIdChange(null)}
               aria-label={labels.closeComposerLabel}
             >
               <X className="size-3.5" />
-            </button>
+            </Action>
           </div>
         </div>
       </div>
@@ -328,7 +329,7 @@ export function CreativeCanvasComposerShell({
           <div className="min-w-0">{children}</div>
 
           <div className="flex shrink-0 items-center gap-2">
-            <button
+            <Action
               type="button"
               onClick={() => {
                 onGenerateDraft(activeDraftCard.id);
@@ -345,7 +346,7 @@ export function CreativeCanvasComposerShell({
               ) : (
                 <ArrowUp className="size-3.5" />
               )}
-            </button>
+            </Action>
           </div>
         </div>
       </div>

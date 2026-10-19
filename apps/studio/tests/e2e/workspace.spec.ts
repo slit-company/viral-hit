@@ -282,3 +282,35 @@ test('video and binary audio recipes attach through Runs and export a decoded mo
   expect(Math.abs(Number(video.duration) - Number(audio.duration))).toBeLessThan(0.1);
   execFileSync('ffmpeg', ['-v', 'error', '-i', path, '-f', 'null', '-'], { stdio: 'pipe' });
 });
+
+test('Light surfaces and SEED dialog keep keyboard focus on desktop and mobile', async ({ page, request }) => {
+  const id = await project(request, 'SEED component QA');
+  await page.emulateMedia({ colorScheme: 'dark' });
+  await page.goto(`/canvas/${id}`);
+  await expect(page.locator('.react-flow')).toHaveClass(/light/);
+  await expect(page.locator('html')).toHaveAttribute('data-seed-color-mode', 'light-only');
+  await expect(page.locator('.vh-product-shell').first()).toHaveCSS('background-color', 'rgb(252, 252, 252)');
+  const trigger = page.getByRole('button', { name: 'Generation runs', exact: true });
+  await trigger.click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+  for (let i = 0; i < 15; i++) {
+    await page.keyboard.press('Tab');
+    expect(await dialog.evaluate(el => el.contains(document.activeElement))).toBe(true);
+  }
+  await page.keyboard.press('Escape');
+  await expect(dialog).toBeHidden();
+  await expect(trigger).toBeFocused();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await trigger.click();
+  await expect(dialog).toBeVisible();
+  const bounds = await dialog.boundingBox();
+  expect(bounds!.x).toBeGreaterThanOrEqual(0);
+  expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(390);
+  await page.getByRole('button', { name: 'Close', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  await page.goto('/projects');
+  await expect(page.locator('img[src="/brand/viral-hit-wordmark.png"]').first()).toBeVisible();
+  expect(await page.locator('body').evaluate(el => el.scrollWidth <= innerWidth)).toBe(true);
+});

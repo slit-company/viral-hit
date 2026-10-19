@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { cn } from '@/lib/utils';
 import type { CanvasOutputCard } from '@/core/creative-canvas/canvas-types';
 import { History } from 'lucide-react';
@@ -40,20 +41,20 @@ export function CreativeCanvasComposerVersionPicker({
       ref={containerRef}
       className="relative shrink-0"
     >
-      <button
+      <Action
         type="button"
         disabled={isDraftBusy}
         onClick={() => {
           onOpenChange(!isOpen);
         }}
         onPointerDownCapture={stopComposerEvent}
-        className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[var(--vh-text-3)] transition hover:bg-white/[0.06] hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex h-7 items-center gap-1 rounded-lg px-2 text-[11px] font-semibold text-[var(--vh-text-3)] transition hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] disabled:cursor-not-allowed disabled:opacity-60"
         aria-label={labels.historyLabel}
         aria-expanded={isOpen}
       >
         <History className="size-3.5" />
         <span>{outputs.length}</span>
-      </button>
+      </Action>
 
       {isOpen ? (
         <div
@@ -70,7 +71,7 @@ export function CreativeCanvasComposerVersionPicker({
             {outputs.map((output, index) => {
               const isActive = output.id === pinnedOutputId;
               return (
-                <button
+                <Action
                   key={output.id}
                   type="button"
                   disabled={isDraftBusy || (!output.url && !output.resultText)}
@@ -81,8 +82,8 @@ export function CreativeCanvasComposerVersionPicker({
                   className={cn(
                     'flex w-full items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-left transition-colors duration-150',
                     isActive
-                      ? 'bg-white/[0.08]'
-                      : 'hover:bg-white/[0.05]',
+                      ? 'bg-[var(--vh-control)]'
+                      : 'hover:bg-[var(--vh-control)]',
                     !output.url && !output.resultText && 'opacity-60'
                   )}
                 >
@@ -94,7 +95,7 @@ export function CreativeCanvasComposerVersionPicker({
                       className="size-10 shrink-0 rounded-md object-cover"
                     />
                   ) : (
-                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-white/[0.06] text-[11px] font-semibold text-[var(--vh-text-3)]">
+                    <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-md bg-[var(--vh-control)] text-[11px] font-semibold text-[var(--vh-text-3)]">
                       {outputs.length - index}
                     </span>
                   )}
@@ -112,7 +113,7 @@ export function CreativeCanvasComposerVersionPicker({
                           : labels.generatingStatusLabel}
                     </span>
                   </span>
-                </button>
+                </Action>
               );
             })}
           </div>

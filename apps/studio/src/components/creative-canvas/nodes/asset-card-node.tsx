@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   Handle,
   NodeResizer,
@@ -121,12 +122,12 @@ export function AssetCardNode({
           border: selected
             ? '2px solid var(--vh-graph)'
             : hasOuterChrome
-              ? '1px solid rgba(255, 255, 255, 0.10)'
+              ? '1px solid var(--vh-border)'
               : '1px solid transparent',
           boxShadow: selected
             ? '0 0 0 3px rgba(127,176,242,0.18)'
             : hasOuterChrome && thumbnailUrl
-              ? '0 14px 34px rgba(0,0,0,0.34)'
+              ? 'var(--shadow-float)'
               : 'none',
           overflow: 'hidden',
           position: 'relative',
@@ -156,12 +157,12 @@ export function AssetCardNode({
           <div className="flex size-full flex-col justify-between px-4 py-3">
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <p className="truncate text-[12px] font-semibold text-white">{title}</p>
-                <p className="mt-0.5 text-[10px] uppercase tracking-[0.12em] text-white/38">
+                <p className="truncate text-[12px] font-semibold text-[var(--vh-text-1)]">{title}</p>
+                <p className="mt-0.5 text-[10px] uppercase tracking-[0.12em] text-[var(--vh-text-2)]">
                   {audioRole?.replace('_', ' ') || 'audio'}
                 </p>
               </div>
-              <span className="font-mono text-[10px] tabular-nums text-white/45">
+              <span className="font-mono text-[10px] tabular-nums text-[var(--vh-text-2)]">
                 {typeof durationSec === 'number' ? `${durationSec.toFixed(2)}s` : '—'}
               </span>
             </div>
@@ -187,13 +188,13 @@ export function AssetCardNode({
             ) : null}
           </div>
         ) : cardMediaType === 'timeline' ? (
-          <button
+          <Action
             type="button"
             onClick={openTimelineEditor}
             onDoubleClick={openTimelineEditor}
             className="nodrag nopan flex size-full flex-col text-left"
           >
-            <div className="relative flex-1 overflow-hidden bg-black/45">
+            <div className="relative flex-1 overflow-hidden bg-[var(--vh-control)]">
               {thumbnailUrl ? (
                 <QueuedVideo
                   src={thumbnailUrl}
@@ -205,28 +206,28 @@ export function AssetCardNode({
                   onError={() => setMediaStatus('error')}
                 />
               ) : (
-                <div className="grid size-full place-items-center text-[11px] uppercase tracking-[0.18em] text-white/28">
+                <div className="grid size-full place-items-center text-[11px] uppercase tracking-[0.18em] text-[var(--vh-text-2)]">
                   Timeline
                 </div>
               )}
-              <span className="absolute left-3 top-3 rounded-md border border-white/10 bg-black/55 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-white/65">
+              <span className="absolute left-3 top-3 rounded-md border border-[var(--vh-border)] bg-[var(--vh-control)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--vh-text-2)]">
                 Timeline
               </span>
             </div>
-            <div className="border-t border-white/10 px-3 py-2.5">
+            <div className="border-t border-[var(--vh-border)] px-3 py-2.5">
               <div className="flex items-center justify-between gap-2">
-                <p className="truncate text-[12px] font-semibold text-white">{title}</p>
-                <span className="font-mono text-[10px] tabular-nums text-white/40">
+                <p className="truncate text-[12px] font-semibold text-[var(--vh-text-1)]">{title}</p>
+                <span className="font-mono text-[10px] tabular-nums text-[var(--vh-text-2)]">
                   {typeof durationSec === 'number' ? `${durationSec.toFixed(1)}s` : '0.0s'}
                 </span>
               </div>
-              <div className="mt-2 flex h-2 gap-1 rounded-sm bg-white/[0.04] p-px">
+              <div className="mt-2 flex h-2 gap-1 rounded-sm bg-[var(--vh-control)] p-px">
                 {Array.from({ length: Math.max(1, Math.min(8, clipCount ?? 1)) }, (_, index) => (
                   <span key={index} className="flex-1 rounded-[2px] bg-[var(--vh-graph)]/55" />
                 ))}
               </div>
             </div>
-          </button>
+          </Action>
         ) : thumbnailUrl && mediaStatus === 'error' ? (
           <div
             className="grid size-full place-items-center px-4 text-center text-xs text-[var(--vh-text-3)]"
@@ -262,19 +263,19 @@ export function AssetCardNode({
               }}
             />
             {mediaStatus === 'ready' ? (
-              <button
+              <Action
                 type="button"
                 aria-label={`${shapeCopy.viewResult}: ${
                   title || shapeCopy.video
                 }`}
-                className="nodrag nopan nowheel absolute left-1/2 top-1/2 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/65 text-lg text-white opacity-80 shadow-lg transition-[opacity,transform,background-color] hover:scale-105 hover:bg-black/80 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)] group-hover:opacity-100"
+                className="nodrag nopan nowheel absolute left-1/2 top-1/2 grid size-10 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-lg text-[var(--vh-text-1)] opacity-80 shadow-lg transition-[opacity,transform,background-color] hover:scale-105 hover:bg-[var(--vh-control)] hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)] group-hover:opacity-100"
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={handlePreviewMedia}
               >
                 <span aria-hidden="true" className="ml-0.5">
                   ▶
                 </span>
-              </button>
+              </Action>
             ) : null}
           </>
         ) : thumbnailUrl ? (
@@ -316,7 +317,7 @@ export function AssetCardNode({
         )}
         {thumbnailUrl && mediaStatus === 'loading' ? (
           <div
-            className="pointer-events-none absolute inset-0 grid place-items-center bg-black/25 px-3 text-center text-[11px] text-white/80"
+            className="pointer-events-none absolute inset-0 grid place-items-center bg-[var(--vh-control)] px-3 text-center text-[11px] text-[var(--vh-text-1)]"
             role="status"
           >
             {shapeCopy.previewLoading}

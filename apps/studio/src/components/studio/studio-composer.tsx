@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   ArrowUp,
   Film,
@@ -144,7 +145,7 @@ export function StudioComposer({
     value: option.value,
     label: option.label,
     leading: (
-      <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-white/90 ring-1 ring-black/10">
+      <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[var(--vh-control)] ring-1 ring-black/10">
         <img
           src={getModelIconPathByModelId(option.modelId) || '/logo.png'}
           alt=""
@@ -176,7 +177,7 @@ export function StudioComposer({
   ]);
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[#09090a] via-[#09090a]/96 to-transparent px-3 pb-3 pt-12 sm:px-6 sm:pb-5 sm:pt-14">
+    <div className="absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-[var(--vh-bg)] via-[var(--vh-bg)]/96 to-transparent px-3 pb-3 pt-12 sm:px-6 sm:pb-5 sm:pt-14">
       <div
         className={cn(
           'mx-auto w-full max-w-[1138px] p-2.5 sm:p-3.5',
@@ -187,33 +188,33 @@ export function StudioComposer({
         {referenceUrls.length > 0 ? (
           <div className="mb-2 flex flex-wrap gap-2">
             {referenceUrls.map((url) => (
-              <button
+              <Action
                 key={url}
                 type="button"
                 onClick={() => onRemoveReference?.(url)}
-                className="size-9 overflow-hidden rounded-[10px] border border-white/[0.1]"
+                className="size-9 overflow-hidden rounded-[10px] border border-[var(--vh-border)]"
               >
                 <img src={url} alt="" className="h-full w-full object-cover" />
-              </button>
+              </Action>
             ))}
           </div>
         ) : null}
         <div className="relative">
-          <button
+          <Action
             type="button"
             aria-label={isAnalysis ? t('uploadVideo') : labels.uploadImageLabel}
             title={isAnalysis ? t('uploadVideo') : t('referenceUploadSoon')}
             onClick={() => {
               if (isAnalysis) analysisFileInputRef.current?.click();
             }}
-            className="absolute left-0 top-0 z-10 flex size-9 rotate-[-5deg] items-center justify-center rounded-[10px] border border-dashed border-white/[0.13] bg-white/[0.03] text-[var(--vh-text-2)] shadow-[0_8px_20px_rgba(0,0,0,0.24)] transition hover:border-white/25 hover:bg-white/[0.06]"
+            className="absolute left-0 top-0 z-10 flex size-9 rotate-[-5deg] items-center justify-center rounded-[10px] border border-dashed border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] shadow-none transition hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]"
           >
             {isAnalysis ? (
               <Video className="size-3.5" />
             ) : (
               <ImagePlus className="size-3.5" />
             )}
-          </button>
+          </Action>
           <input
             ref={analysisFileInputRef}
             type="file"
@@ -244,7 +245,7 @@ export function StudioComposer({
                 : labels.imagePromptPlaceholder
             }
             disabled={isBusy}
-            className="h-[80px] min-h-[80px] w-full resize-none bg-transparent py-2 pl-[52px] pr-3 text-[14px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-white/35 sm:h-[92px] sm:min-h-[92px] sm:pl-[56px] sm:pr-16 sm:text-[15px]"
+            className="h-[80px] min-h-[80px] w-full resize-none bg-transparent py-2 pl-[52px] pr-3 text-[14px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-2)] sm:h-[92px] sm:min-h-[92px] sm:pl-[56px] sm:pr-16 sm:text-[15px]"
           />
         </div>
 
@@ -296,14 +297,14 @@ export function StudioComposer({
                   }
                 />
                 {analysisFileName ? (
-                  <button
+                  <Action
                     type="button"
                     onClick={onClearAnalysisFile}
-                    className="max-w-[220px] truncate rounded-full border border-white/[0.09] bg-white/[0.035] px-2.5 py-1 text-[11px] text-[var(--vh-text-2)]"
+                    className="max-w-[220px] truncate rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 py-1 text-[11px] text-[var(--vh-text-2)]"
                     title={t('removeVideo')}
                   >
                     {analysisFileName}
-                  </button>
+                  </Action>
                 ) : null}
               </>
             ) : (
@@ -315,7 +316,7 @@ export function StudioComposer({
                 value: model.id,
                 label: model.name,
                 leading: (
-                  <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-white/90 ring-1 ring-black/10">
+                  <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[var(--vh-control)] ring-1 ring-black/10">
                     <img
                       src={getModelIconPathByModelId(model.id) || '/logo.png'}
                       alt=""
@@ -397,7 +398,7 @@ export function StudioComposer({
             >
               {promptCharacterCount}/{promptCharacterLimit}
             </span>
-            <button
+            <Action
               type="button"
               onClick={onGenerate}
               disabled={
@@ -417,7 +418,7 @@ export function StudioComposer({
               ) : (
                 <ArrowUp className="size-3.5" />
               )}
-            </button>
+            </Action>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { cn } from '@/lib/utils';
 import { Download, DownloadIcon, Eye, Film, Sparkles } from 'lucide-react';
 
@@ -33,7 +34,7 @@ export function CreativeCanvasContextToolbar({
   onContinueVideo?: () => void;
 }) {
   const actionClassName =
-    'inline-flex h-8 items-center gap-1.5 rounded-[11px] px-2.5 text-[12px] font-semibold text-[var(--creative-canvas-ink-soft)] transition-all duration-150 hover:bg-black/[0.045] hover:text-[var(--creative-canvas-ink)]';
+    'inline-flex h-8 items-center gap-1.5 rounded-[11px] px-2.5 text-[12px] font-semibold text-[var(--creative-canvas-ink-soft)] transition-all duration-150 hover:bg-[var(--vh-control)] hover:text-[var(--creative-canvas-ink)]';
 
   return (
     <section
@@ -43,7 +44,7 @@ export function CreativeCanvasContextToolbar({
       )}
     >
       {downloadLabel ? (
-        <button
+        <Action
           type="button"
           className={cn(actionClassName, !canDownload && 'opacity-45')}
           onClick={onDownload}
@@ -55,10 +56,10 @@ export function CreativeCanvasContextToolbar({
             <Download className="size-4" strokeWidth={2.1} />
           )}
           <span>{downloadLabel}</span>
-        </button>
+        </Action>
       ) : null}
       {previewLabel ? (
-        <button
+        <Action
           type="button"
           className={cn(actionClassName, !canPreview && 'opacity-45')}
           onClick={onPreview}
@@ -66,10 +67,10 @@ export function CreativeCanvasContextToolbar({
         >
           <Eye className="size-4" strokeWidth={2.1} />
           <span>{previewLabel}</span>
-        </button>
+        </Action>
       ) : null}
       {continueVideoLabel ? (
-        <button
+        <Action
           type="button"
           className={cn(actionClassName, !canContinueVideo && 'opacity-45')}
           onClick={onContinueVideo}
@@ -77,10 +78,10 @@ export function CreativeCanvasContextToolbar({
         >
           <Sparkles className="size-4" strokeWidth={2.1} />
           <span>{continueVideoLabel}</span>
-        </button>
+        </Action>
       ) : null}
       {addToTimelineLabel ? (
-        <button
+        <Action
           type="button"
           className={cn(actionClassName, !canAddToTimeline && 'opacity-45')}
           onClick={onAddToTimeline}
@@ -88,7 +89,7 @@ export function CreativeCanvasContextToolbar({
         >
           <Film className="size-4" strokeWidth={2.1} />
           <span>{addToTimelineLabel}</span>
-        </button>
+        </Action>
       ) : null}
     </section>
   );

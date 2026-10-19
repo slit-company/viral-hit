@@ -1,3 +1,5 @@
+import { TextField } from '@seed-design/react';
+import { Action } from '@/components/base/action';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -60,66 +62,66 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     } catch (e) { setError(e instanceof Error ? e.message : 'Could not attach media'); }
   }
   return <Dialog open={open} onOpenChange={setOpen}>
-    <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs hover:bg-white/10" aria-label="Generation runs">
+    <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--vh-border)] px-2.5 text-xs hover:bg-[var(--vh-control)]" aria-label="Generation runs">
       <Activity size={14} /><span className="hidden lg:inline">Runs</span>
     </DialogTrigger>
-    <DialogContent className="max-h-[85vh] overflow-y-auto border border-white/10 bg-[#141719] text-white sm:max-w-3xl">
+    <DialogContent className="max-h-[85vh] overflow-y-auto border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl">
       <div className="pr-8">
-        <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[#c7f36b]">VIRAL HIT / EXECUTION</p>
+        <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
         <DialogTitle className="text-xl">Generation runs</DialogTitle>
-        <DialogDescription className="mt-2 text-sm text-white/60">Your project’s generation history. Closing this window keeps queued work in the local worker.</DialogDescription>
+        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">Your project’s generation history. Closing this window keeps queued work in the local worker.</DialogDescription>
       </div>
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
-        <section className="space-y-3 rounded-xl border border-white/10 p-4">
-          <label htmlFor="run-recipe" className="block text-xs text-white/70">Creative recipe</label>
-          <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; }} className="w-full rounded-lg border border-white/15 bg-[#1b1e20] p-2.5 text-sm">
+        <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">
+          <label htmlFor="run-recipe" className="block text-xs text-[var(--vh-text-2)]">Creative recipe</label>
+          <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; }} className="w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] p-2.5 text-sm">
             {!recipes.length && <option value="">No recipes available</option>}
             {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
           </select>
           {selected && <>
-            <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.filter(node => node.operation !== 'asset.materialize').length} generation · {selected.nodes.filter(node => node.operation === 'asset.materialize').length} local steps · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
+            <details className="text-xs text-[var(--vh-text-2)]"><summary className="cursor-pointer">{selected.nodes.filter(node => node.operation !== 'asset.materialize').length} generation · {selected.nodes.filter(node => node.operation === 'asset.materialize').length} local steps · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
             <div className="max-h-[28vh] sm:max-h-[min(28rem,calc(85vh-26rem))] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
             {selected.parameters.map(parameter => {
               const id = `recipe-${parameter.id}`;
               const value = values[parameter.id] ?? parameter.default ?? '';
               const change = (value: string | number | boolean) => { setValues(current => ({ ...current, [parameter.id]: value })); requestKey.current = ''; };
-              const fieldClass = 'w-full rounded-lg border border-white/15 bg-black/20 p-3 text-sm outline-none focus:border-[#c7f36b]';
-              return <div key={id} className="space-y-2"><label htmlFor={id} className="block text-xs text-white/70">{parameter.label}</label>
-                {parameter.type === 'string' && parameter.multiline === false ? <input id={id} type="text" value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className={fieldClass} />
-                  : parameter.type === 'string' ? <textarea id={id} value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className={`${fieldClass} min-h-28 resize-y`} />
-                  : parameter.type === 'number' ? <input id={id} type="number" value={String(value)} min={parameter.min} max={parameter.max} step={parameter.integer ? 1 : 'any'} onChange={e => change(e.target.value === '' ? '' : Number(e.target.value))} className={fieldClass} />
+              const fieldClass = 'w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-sm outline-none focus:border-[var(--vh-border-strong)]';
+              return <div key={id} className="space-y-2"><label htmlFor={id} className="block text-xs text-[var(--vh-text-2)]">{parameter.label}</label>
+                {parameter.type === 'string' && parameter.multiline === false ? <TextField.Root className="vh-field"><TextField.Input aria-label={parameter.label} id={id} type="text" value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} /></TextField.Root>
+                  : parameter.type === 'string' ? <TextField.Root className="vh-field"><TextField.Textarea aria-label={parameter.label} autoresize={false} id={id} value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className="resize-y" /></TextField.Root>
+                  : parameter.type === 'number' ? <TextField.Root className="vh-field"><TextField.Input aria-label={parameter.label} id={id} type="number" value={String(value)} min={parameter.min} max={parameter.max} step={parameter.integer ? 1 : 'any'} onChange={e => change(e.target.value === '' ? '' : Number(e.target.value))} /></TextField.Root>
                   : parameter.type === 'boolean' ? <input id={id} type="checkbox" checked={Boolean(value)} onChange={e => change(e.target.checked)} />
                   : <select id={id} value={String(value)} onChange={e => change(e.target.value)} className={fieldClass}><option value="" disabled>Select…</option>{parameter.options.map(option => <option key={option} value={option}>{option}</option>)}</select>}
-                {parameter.description && <p className="text-[11px] text-white/50">{parameter.description}</p>}
+                {parameter.description && <p className="text-[11px] text-[var(--vh-text-2)]">{parameter.description}</p>}
               </div>;
             })}
             </div>
           </>}
-          <p className="text-xs leading-relaxed text-white/60">{!needsGeneration ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? `Configure ${configurationMessage} in the server environment, then restart the studio.` : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
-          <button disabled={(needsGeneration && missingCapabilities.length > 0) || !ready || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">{needsGeneration ? 'Queue generation' : 'Queue import'} <ArrowUpRight size={15} /></button>
-          <p className="text-[11px] leading-relaxed text-white/50">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
+          <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!needsGeneration ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? `Configure ${configurationMessage} in the server environment, then restart the studio.` : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
+          <Action disabled={(needsGeneration && missingCapabilities.length > 0) || !ready || busy} onClick={() => void generate()} className="vh-primary w-full">{needsGeneration ? 'Queue generation' : 'Queue import'} <ArrowUpRight size={15} /></Action>
+          <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
         <section className="min-w-0 space-y-3">
-          <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">Recent runs</h3><button aria-label="Refresh runs" onClick={() => void refresh().catch(e => setError(String(e)))} className="rounded-md p-1.5 hover:bg-white/10"><RefreshCw size={14} /></button></div>
-          {data?.runs.length === 0 && <div className="rounded-xl border border-dashed border-white/15 px-5 py-10 text-center"><Activity className="mx-auto mb-3 text-white/30" size={24} /><p className="text-sm">No runs yet</p><p className="mt-2 text-xs leading-relaxed text-white/50">Queue a creative recipe to keep its progress and output history here.</p></div>}
-          {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-white/10 p-3">
-            <div className="mb-2 flex items-center justify-between text-[10px] text-white/50"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>
-            {run.jobs.map(job => <div key={job.id} className="my-2 rounded-lg bg-black/20 p-2.5 text-xs">
-              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[#c7f36b]' : 'text-white/60'}>{job.state === 'succeeded' ? job.operation === 'asset.materialize' ? 'Asset ready' : 'Receipt ready' : job.state}</span></div>
-              {job.cancel_requested === 1 && <p className="mt-1 text-amber-200">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
-              {job.error && <p className="mt-2 break-words text-amber-200">{job.error}</p>}
-              {job.operation === 'asset.materialize' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex gap-4"><button disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[#c7f36b]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</button><a href={`/assets/${projectId}`} className="text-white/60 underline">View assets</a></div>}
-              {job.output_json && <details className="mt-2 text-white/60"><summary className="cursor-pointer">{job.operation === 'asset.materialize' ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
+          <div className="flex items-center justify-between"><h3 className="text-sm font-semibold">Recent runs</h3><Action aria-label="Refresh runs" onClick={() => void refresh().catch(e => setError(String(e)))} className="rounded-md p-1.5 hover:bg-[var(--vh-control)]"><RefreshCw size={14} /></Action></div>
+          {data?.runs.length === 0 && <div className="rounded-xl border border-dashed border-[var(--vh-border)] px-5 py-10 text-center"><Activity className="mx-auto mb-3 text-[var(--vh-text-2)]" size={24} /><p className="text-sm">No runs yet</p><p className="mt-2 text-xs leading-relaxed text-[var(--vh-text-2)]">Queue a creative recipe to keep its progress and output history here.</p></div>}
+          {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-[var(--vh-border)] p-3">
+            <div className="mb-2 flex items-center justify-between text-[10px] text-[var(--vh-text-2)]"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>
+            {run.jobs.map(job => <div key={job.id} className="my-2 rounded-lg bg-[var(--vh-control)] p-2.5 text-xs">
+              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? job.operation === 'asset.materialize' ? 'Asset ready' : 'Receipt ready' : job.state}</span></div>
+              {job.cancel_requested === 1 && <p className="mt-1 text-amber-800">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
+              {job.error && <p className="mt-2 break-words text-amber-800">{job.error}</p>}
+              {job.operation === 'asset.materialize' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex gap-4"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
+              {job.output_json && <details className="mt-2 text-[var(--vh-text-2)]"><summary className="cursor-pointer">{job.operation === 'asset.materialize' ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
             </div>)}
             <div className="flex gap-3 text-xs">
-              {run.jobs.some(j => ['queued', 'submitting', 'running'].includes(j.state)) && <button disabled={busy} onClick={() => void act({ action: 'cancel', runId: run.id })} className="text-white/70 hover:text-white">Request cancel</button>}
-              {run.jobs.some(j => j.state === 'uncertain' && data.capabilities?.some(capability => capability.operation === j.operation && capability.reconciliation)) && <button disabled={busy} onClick={() => void act({ action: 'reconcile', runId: run.id })} className="text-[#c7f36b]">Find original job</button>}
-              {run.jobs.some(j => j.state === 'failed' && !j.cancel_requested) && <button disabled={busy} onClick={() => void act({ action: 'retry', runId: run.id })} className="text-[#c7f36b]">Retry failed work</button>}
+              {run.jobs.some(j => ['queued', 'submitting', 'running'].includes(j.state)) && <Action disabled={busy} onClick={() => void act({ action: 'cancel', runId: run.id })} className="text-[var(--vh-text-2)] hover:text-[var(--vh-text-1)]">Request cancel</Action>}
+              {run.jobs.some(j => j.state === 'uncertain' && data.capabilities?.some(capability => capability.operation === j.operation && capability.reconciliation)) && <Action disabled={busy} onClick={() => void act({ action: 'reconcile', runId: run.id })} className="text-[var(--color-lime-text)]">Find original job</Action>}
+              {run.jobs.some(j => j.state === 'failed' && !j.cancel_requested) && <Action disabled={busy} onClick={() => void act({ action: 'retry', runId: run.id })} className="text-[var(--color-lime-text)]">Retry failed work</Action>}
             </div>
           </article>)}
         </section>
       </div>
-      {error && <p role="alert" className="rounded-lg bg-red-500/10 p-3 text-sm text-red-200">{error}</p>}
+      {error && <p role="alert" className="rounded-lg bg-red-500/10 p-3 text-sm text-red-800">{error}</p>}
     </DialogContent>
   </Dialog>;
 }

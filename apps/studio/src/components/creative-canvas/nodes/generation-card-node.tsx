@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import {
   Handle,
   NodeResizer,
@@ -30,7 +31,7 @@ const CARD_RADIUS = 16;
 const CARD_BORDER_COLOR = 'var(--creative-canvas-line)';
 const FRAME_BACKGROUND =
   'linear-gradient(180deg, var(--vh-surface-2) 0%, var(--vh-surface) 100%)';
-const PLACEHOLDER_COLOR = 'rgba(255, 255, 255, 0.22)';
+const PLACEHOLDER_COLOR = 'var(--vh-text-3)';
 
 function StaticVideoPoster({
   src,
@@ -146,7 +147,7 @@ export function GenerationCardNode({
   const emptySlotBorder =
     cardMediaType === 'video'
       ? 'rgba(127, 176, 242, 0.62)'
-      : 'rgba(255, 122, 51, 0.62)';
+      : 'var(--vh-graph)';
   const emptySlotGlow =
     cardMediaType === 'video'
       ? 'inset 0 0 0 1px rgba(127, 176, 242, 0.14), 0 0 22px rgba(127, 176, 242, 0.12)'
@@ -276,7 +277,7 @@ export function GenerationCardNode({
               alignItems: 'center',
               justifyContent: 'center',
               boxShadow:
-                '0 12px 28px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3)',
+                'var(--shadow-float)',
               }}
             >
               <svg
@@ -320,7 +321,7 @@ export function GenerationCardNode({
                   ? emptySlotGlow
                   : isInsideGroup
                     ? 'inset 0 1px 0 rgba(255,255,255,0.05), 0 8px 18px rgba(0,0,0,0.22)'
-                    : '0 14px 32px rgba(0,0,0,0.3)',
+                    : 'var(--shadow-float)',
             }}
           >
             {isInsideGroup ? (
@@ -363,7 +364,7 @@ export function GenerationCardNode({
                 </div>
               ) : isAnalysis && analysisReportCount > 0 ? (
                 <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-                  <div className="grid size-12 place-items-center rounded-2xl border border-[rgba(127,176,242,0.28)] bg-[var(--vh-graph-soft)] text-[var(--vh-graph)] shadow-[0_10px_24px_rgba(0,0,0,0.24)]">
+                  <div className="grid size-12 place-items-center rounded-2xl border border-[rgba(127,176,242,0.28)] bg-[var(--vh-graph-soft)] text-[var(--vh-graph)] shadow-none">
                     <ScanSearch className="size-6" aria-hidden="true" />
                   </div>
                   <div>
@@ -466,10 +467,10 @@ export function GenerationCardNode({
             )}
 
             {hasResult && cardMediaType === 'video' && !isAnalysis ? (
-              <button
+              <Action
                 type="button"
                 aria-label={`${shapeCopy.viewResult}: ${displayLabel}`}
-                className="nodrag nopan nowheel absolute left-1/2 top-1/2 z-[3] grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-white/15 bg-black/65 text-xl text-white opacity-80 shadow-lg transition-[opacity,transform,background-color] hover:scale-105 hover:bg-black/80 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)] group-hover:opacity-100"
+                className="nodrag nopan nowheel absolute left-1/2 top-1/2 z-[3] grid size-11 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-xl text-[var(--vh-text-1)] opacity-80 shadow-lg transition-[opacity,transform,background-color] hover:scale-105 hover:bg-[var(--vh-control)] hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)] group-hover:opacity-100"
                 onPointerDown={(event) => event.stopPropagation()}
                 onClick={(event) => {
                   event.preventDefault();
@@ -480,7 +481,7 @@ export function GenerationCardNode({
                 <span aria-hidden="true" className="ml-0.5">
                   ▶
                 </span>
-              </button>
+              </Action>
             ) : null}
 
             {isBusy && (
@@ -540,7 +541,7 @@ export function GenerationCardNode({
               const isPending =
                 take.status === 'pending' || take.status === 'processing';
               return (
-                <button
+                <Action
                   key={take.id}
                   type="button"
                   disabled={!take.url}
@@ -562,7 +563,7 @@ export function GenerationCardNode({
                     background: 'var(--vh-surface)',
                     boxShadow: take.isPinned
                       ? '0 0 0 2px rgba(127,176,242,0.22)'
-                      : '0 6px 14px rgba(0,0,0,0.28)',
+                      : 'var(--shadow-float)',
                     padding: 0,
                     cursor: take.url ? 'pointer' : 'default',
                     opacity: take.status === 'failed' ? 0.55 : 1,
@@ -619,7 +620,7 @@ export function GenerationCardNode({
                   >
                     {take.takeNumber}
                   </span>
-                </button>
+                </Action>
               );
             })}
           </div>

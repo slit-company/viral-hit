@@ -232,7 +232,7 @@ export function StudioWorkspace({
 
   return (
     <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_112%,rgba(255,122,51,0.12),transparent_34%),linear-gradient(180deg,#08090a_0%,#0b0b0d_48%,#08090a_100%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[var(--vh-surface)]" />
       <div className="pointer-events-none absolute inset-x-[8%] top-0 h-[62%] opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.16)_0.75px,transparent_0.75px)] [background-size:18px_18px] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
 
       <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[220px] pt-8 sm:px-6 sm:pb-[210px]">

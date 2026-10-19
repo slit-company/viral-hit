@@ -1,5 +1,11 @@
+@layer theme, base, seed-base, seed-components, tokens, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "@seed-design/css/base.layered.css";
+@import "@seed-design/css/recipes/action-button.layered.css";
+@import "@seed-design/css/recipes/text-input.layered.css";
+@import "@seed-design/css/recipes/content-dialog.layered.css";
+@import "./theme.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -13,28 +19,14 @@ button[aria-disabled="true"] {
 }
 
 :root {
-  --font-noto-sans: "Figtree Variable", "Figtree", ui-sans-serif, system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  --font-noto-serif: "Figtree Variable", "Figtree", ui-sans-serif, system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+  --font-noto-sans: var(--font-ui);
+  --font-noto-serif: var(--font-ui);
   --font-noto-sans-mono: "Geist Mono Variable", "Geist Mono", ui-monospace,
     SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-bricolage-grotesque: "Figtree Variable", "Figtree", ui-sans-serif,
-    system-ui, sans-serif;
+  --font-bricolage-grotesque: var(--font-ui);
 }
 
-/*
- * Shared design tokens for Cloud API dark product surfaces (public shell, home,
- * and projects). One accent, three text levels, two radii —
- * components should reference these instead of inventing near-identical
- * greys/oranges.
- */
-/*
- * The --vh-* dark product tokens now live at :root (see the "Cloud API dark
- * product tokens" block below) so always-dark Studio/Canvas surfaces can
- * reference them anywhere. This scope only adds the typography layer.
- */
+/* SEED colors live in theme.css; --vh-* aliases keep imported surfaces compatible. */
 
 .vh-t1 {
   color: var(--vh-text-1);
@@ -54,12 +46,8 @@ button[aria-disabled="true"] {
  * the shared utility surfaces keep their existing typography.
  */
 .vh-product-shell {
-  --vh-font-ui: "Figtree Variable", "Figtree", "PingFang SC",
-    "Hiragino Sans GB", "Microsoft YaHei", ui-sans-serif, system-ui,
-    -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --vh-font-display: "Space Grotesk Variable", "Space Grotesk",
-    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", ui-sans-serif,
-    system-ui, sans-serif;
+  --vh-font-ui: var(--font-ui);
+  --vh-font-display: var(--font-ui);
   font-family: var(--vh-font-ui);
   font-feature-settings: "ss01" 1, "ss02" 1, "cv02" 1, "cv03" 1;
   letter-spacing: -0.005em;
@@ -73,10 +61,8 @@ button[aria-disabled="true"] {
 }
 
 .vh-product-shell:lang(zh) {
-  --vh-font-ui: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
-  --vh-font-display: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
-    "Noto Sans CJK SC", ui-sans-serif, system-ui, sans-serif;
+  --vh-font-ui: var(--font-ui);
+  --vh-font-display: var(--font-ui);
   font-feature-settings: normal;
   letter-spacing: 0;
 }
@@ -105,34 +91,6 @@ button[aria-disabled="true"] {
   isolation: isolate;
 }
 
-.vh-product-hero::before {
-  position: absolute;
-  z-index: -1;
-  top: -5rem;
-  left: 50%;
-  width: min(64rem, 100vw);
-  height: 34rem;
-  content: "";
-  pointer-events: none;
-  transform: translateX(-50%);
-  background-image:
-    radial-gradient(circle at 50% 44%, rgb(241 102 34 / 0.12), transparent 31%),
-    radial-gradient(circle, rgb(255 255 255 / 0.13) 0.75px, transparent 0.9px);
-  background-position: center, center;
-  background-size: auto, 8px 8px;
-  mask-image: radial-gradient(ellipse 58% 52% at center, black 8%, transparent 76%);
-  opacity: 0.72;
-}
-
-@media (max-width: 640px) {
-  .vh-product-hero::before {
-    top: -2rem;
-    height: 27rem;
-    background-size: auto, 9px 9px;
-    opacity: 0.5;
-  }
-}
-
 /*
  * Shared Cloud API composer vocabulary (Studio composer + Canvas composer).
  * The prompt textarea is a stock shadcn/ui Textarea reskinned through this
@@ -148,7 +106,7 @@ button[aria-disabled="true"] {
 }
 
 .vh-composer [data-slot="textarea"]::placeholder {
-  color: rgba(255, 255, 255, 0.34);
+  color: var(--color-text-secondary);
 }
 
 .vh-composer [data-slot="textarea"]:focus-visible {
@@ -157,7 +115,7 @@ button[aria-disabled="true"] {
 }
 
 /*
- * Shared popover / panel motion for the Cloud API dark product surfaces.
+ * Shared popover / panel motion for the light product surfaces.
  * Enter easing follows docs/DESIGN.md (cubic-bezier(.22,1,.36,1), 160ms).
  */
 @keyframes vh-pop-in {
@@ -268,7 +226,7 @@ button[aria-disabled="true"] {
   --font-sans: var(--font-noto-sans);
   --font-mono: var(--font-noto-sans-mono);
   --font-serif: var(--font-noto-serif);
-  --font-bricolage-grotesque: var(--font-bricolage-grotesque);
+  --font-bricolage-grotesque: var(--font-ui);
 
   /* animate */
   --animate-shiny-text: shiny-text 8s infinite;
@@ -388,25 +346,25 @@ button[aria-disabled="true"] {
 }
 
 :root {
-  --background: #f5f6f3;
-  --foreground: #171814;
-  --card: oklch(1 0 0);
-  --card-foreground: #171814;
-  --popover: oklch(1 0 0);
-  --popover-foreground: #171814;
-  --primary: #ff6b1a;
-  --primary-foreground: #ffffff;
-  --secondary: #f0f1ed;
-  --secondary-foreground: #343630;
-  --muted: #edeee9;
-  --muted-foreground: #5f625b;
-  --accent: #fff0e5;
-  --accent-foreground: #bd4705;
+  --background: var(--color-bg-app);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-bg-surface);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-bg-surface);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-ink);
+  --primary-foreground: #fff;
+  --secondary: var(--color-bg-subtle);
+  --secondary-foreground: var(--color-ink);
+  --muted: var(--color-bg-subtle);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: var(--color-brand-lime-soft);
+  --accent-foreground: var(--color-lime-text);
   --destructive: #c23b32;
   --destructive-foreground: #ffffff;
-  --border: #ddded8;
-  --input: #c7c9c0;
-  --ring: #ff6b1a;
+  --border: var(--color-line);
+  --input: #d7d9df;
+  --ring: var(--color-ink);
   --chart-1: #ff6b1a;
   --chart-2: #208a55;
   --chart-3: #2563a9;
@@ -438,30 +396,24 @@ button[aria-disabled="true"] {
     hsl(0 0% 0% / 0.1);
   --shadow-2xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.25);
 
-  /*
-   * Cloud API dark product tokens — the single source for the near-black
-   * product language shared by the marketing surfaces, Studio and Canvas.
-   * --vh-accent (orange) is reserved for brand ACTIONS (Generate, CTA);
-   * --vh-graph (cold blue, echoing the Start Here thumbnails) marks canvas
-   * GRAPH semantics — node selection, reference edges, minimap.
-   */
-  --vh-bg: #09090a;
-  --vh-text-1: #f4f4f5;
-  --vh-text-2: #a3a3ab;
-  --vh-text-3: #71717a;
-  --vh-surface: #131416;
-  --vh-surface-2: #19191c;
-  --vh-control: #1b1b1e;
-  --vh-border: rgba(255, 255, 255, 0.08);
-  --vh-border-strong: rgba(255, 255, 255, 0.16);
-  --vh-accent: #ff7a33;
-  --vh-accent-hover: #ff8a4d;
-  --vh-accent-ink: #1d1d1f;
-  --vh-radius: 20px;
+  /* Ink actions and lime graph selection, shared across every workspace. */
+  --vh-bg: var(--color-bg-app);
+  --vh-text-1: var(--color-ink);
+  --vh-text-2: #62666e;
+  --vh-text-3: #6b7280;
+  --vh-surface: var(--color-bg-surface);
+  --vh-surface-2: var(--color-bg-subtle);
+  --vh-control: var(--color-bg-subtle);
+  --vh-border: var(--color-line);
+  --vh-border-strong: #d7d9df;
+  --vh-accent: var(--color-ink);
+  --vh-accent-hover: #333;
+  --vh-accent-ink: #fff;
+  --vh-radius: 16px;
   --vh-radius-sm: 12px;
-  --vh-graph: #7fb0f2;
-  --vh-graph-strong: #a3c8f7;
-  --vh-graph-soft: rgba(127, 176, 242, 0.16);
+  --vh-graph: var(--color-lime-text);
+  --vh-graph-strong: #354b09;
+  --vh-graph-soft: var(--color-brand-lime-soft);
 
   /* Legacy Studio aliases — keep pointing at the shared tokens above. */
   --vh-studio-bg: var(--vh-bg);
@@ -477,86 +429,36 @@ button[aria-disabled="true"] {
   --vh-studio-accent-hover: var(--vh-accent-hover);
 
   /*
-   * ViralHit canvas tokens — re-aliased onto the shared dark product language.
+   * ViralHit canvas tokens — re-aliased onto the shared light product language.
    * The old purple accent became --vh-graph (cold blue); surfaces/ink map
    * to the shared neutral scale so panels and pickers match Studio.
    */
   --creative-canvas-canvas-bg: var(--vh-bg);
-  --creative-canvas-panel: rgba(19, 20, 22, 0.94);
+  --creative-canvas-panel: #ffffffed;
   --creative-canvas-panel-solid: var(--vh-surface);
   --creative-canvas-panel-muted: var(--vh-surface-2);
-  --creative-canvas-panel-hover: #242429;
-  --creative-canvas-panel-active: rgba(127, 176, 242, 0.14);
-  --creative-canvas-line: rgba(255, 255, 255, 0.1);
-  --creative-canvas-line-strong: rgba(255, 255, 255, 0.18);
-  --creative-canvas-line-soft: rgba(255, 255, 255, 0.06);
+  --creative-canvas-panel-hover: #eef0f2;
+  --creative-canvas-panel-active: var(--color-brand-lime-soft);
+  --creative-canvas-line: var(--color-line);
+  --creative-canvas-line-strong: #d7d9df;
+  --creative-canvas-line-soft: #eeeff2;
   --creative-canvas-ink: var(--vh-text-1);
   --creative-canvas-ink-soft: var(--vh-text-2);
   --creative-canvas-ink-faint: var(--vh-text-3);
   --creative-canvas-accent: var(--vh-graph);
   --creative-canvas-accent-hover: var(--vh-graph-strong);
   --creative-canvas-accent-soft: var(--vh-graph-soft);
-  --creative-canvas-success: #63d89b;
-  --creative-canvas-warning: #ffb65e;
-  --creative-canvas-error: #ff6b73;
-  --creative-canvas-processing: #8fbdf4;
-  --creative-canvas-shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.24);
-  --creative-canvas-shadow-md: 0 14px 36px rgba(0, 0, 0, 0.34);
-  --creative-canvas-shadow-lg: 0 22px 54px rgba(0, 0, 0, 0.42);
-  --creative-canvas-shadow-xl: 0 28px 80px rgba(0, 0, 0, 0.5);
+  --creative-canvas-success: #4f6b12;
+  --creative-canvas-warning: #8a5a00;
+  --creative-canvas-error: #b42336;
+  --creative-canvas-processing: #345d93;
+  --creative-canvas-shadow-sm: 0 2px 8px rgba(2,8,23,.04);
+  --creative-canvas-shadow-md: var(--shadow-float);
+  --creative-canvas-shadow-lg: 0 12px 36px rgba(2,8,23,.1);
+  --creative-canvas-shadow-xl: 0 24px 60px rgba(2,8,23,.14);
 }
 
-.dark {
-  --background: #171816;
-  --foreground: #f3f1e9;
-  --card: #20211e;
-  --card-foreground: #f3f1e9;
-  --popover: #20211e;
-  --popover-foreground: #f3f1e9;
-  --primary: #f87831;
-  --primary-foreground: #171814;
-  --secondary: #292a26;
-  --secondary-foreground: #f3f1e9;
-  --muted: #292a26;
-  --muted-foreground: #b4b6ae;
-  --accent: #39261d;
-  --accent-foreground: #ff9a61;
-  --destructive: #e06a62;
-  --destructive-foreground: #171814;
-  --border: #383a34;
-  --input: #4d5048;
-  --ring: #f87831;
-  --chart-1: #f87831;
-  --chart-2: #55b882;
-  --chart-3: #6ea1dd;
-  --chart-4: #d79a43;
-  --chart-5: #b4b6ae;
-  --sidebar: #1b1c19;
-  --sidebar-foreground: #b4b6ae;
-  --sidebar-primary: #f87831;
-  --sidebar-primary-foreground: #171814;
-  --sidebar-accent: #39261d;
-  --sidebar-accent-foreground: #ff9a61;
-  --sidebar-border: #383a34;
-  --sidebar-ring: #f87831;
-  --font-sans: var(--font-noto-sans);
-  --font-serif: var(--font-noto-serif);
-  --font-mono: var(--font-noto-sans-mono);
-  --radius: 0.5rem;
-  --shadow-2xs: 0px 4px 8px 0px hsl(0 0% 0% / 0.05);
-  --shadow-xs: 0px 4px 8px 0px hsl(0 0% 0% / 0.05);
-  --shadow-sm: 0px 4px 8px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px
-    hsl(0 0% 0% / 0.1);
-  --shadow: 0px 4px 8px 0px hsl(0 0% 0% / 0.1), 0px 1px 2px -1px
-    hsl(0 0% 0% / 0.1);
-  --shadow-md: 0px 4px 8px 0px hsl(0 0% 0% / 0.1), 0px 2px 4px -1px
-    hsl(0 0% 0% / 0.1);
-  --shadow-lg: 0px 4px 8px 0px hsl(0 0% 0% / 0.1), 0px 4px 6px -1px
-    hsl(0 0% 0% / 0.1);
-  --shadow-xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.1), 0px 8px 10px -1px
-    hsl(0 0% 0% / 0.1);
-  --shadow-2xl: 0px 4px 8px 0px hsl(0 0% 0% / 0.25);
-}
+
 
 /*
   The default border color has changed to `currentColor` in Tailwind CSS v4,

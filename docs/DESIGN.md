@@ -1,0 +1,23 @@
+# Viral Hit interface: SEED components
+
+The user rejected the imported dark interface on 2026-10-19 and requested a light SEED component system. The desktop creative workspace now uses that system: white/app surfaces, near-black ink primary actions, pale lime selection states, Pretendard and restrained separators. Editor media retains its original colors and caption styling.
+
+## Source and adaptation
+
+Reference: private `an earlier design system`, dev commit `6ae567fac92a963f462c3978a4564555e693438e`. Read `DESIGN.md`, `src/styles/tokens.css`, `src/styles/chrome.css`, `src/components/BackButton.tsx`, `src/components/AppPrompt.tsx`, `src/main.tsx` and Vite configuration. The research checkout remains ignored and unchanged.
+
+- `components/base/back-button.tsx` is the shared BackButton, with its Phosphor arrow and SEED ActionButton. Its owned CSS preserves the 44px circular target and hover/pressed/focus states.
+- `styles/theme.css` adapts the relevant SEED tokens/chrome. It excludes product, commerce, authentication and analytics code. The app keeps its wide editor layout instead of the consumer app's 470px shell.
+- `components/base/action.tsx` uses real SEED ActionButton across project, studio, canvas and editor controls. Component-owned defaults allow the existing dense utility sizing; native pointer and keyboard events are preserved.
+- Shared dialogs use SEED ContentDialog, including focus trapping, Escape, close actions and focus restoration. The backdrop lives inside the positioner below the dialog content.
+- Recipe text/number inputs use SEED TextField with a single outer focus border. Native file, range, color and geometry controls remain where the editing interaction requires them. Link navigation preserves links and aria-current.
+- Light mode is explicit even on a dark OS. Vite resolves `seed-layered` exports, following SEED, so SEED defaults cannot silently override component sizes and colors. The unlayered recipes caused clipped cards and tiny controls during the first migration attempt; actual browser inspection caught this.
+- `--vh-*` aliases remain for imported component compatibility, now referencing SEED colors. Existing white-on-dark literals were replaced at their owning components instead of a global button/article override.
+
+Pinned package versions match SEED: `@seed-design/react` 2.4.1, `@seed-design/css` 2.6.1, `@seed-design/vite-plugin` 2.1.0, `@phosphor-icons/react` 2.1.10 and Pretendard 1.3.9. SEED/Phosphor/font package licenses remain with the dependencies. SEED has no repository-wide open-source license; the requested company component reuse is recorded separately from the Apache-licensed upstream editor foundation. This repository remains private; the record does not claim that all of SEED is open source.
+
+## Validation
+
+Review actual routes at 1440×1000 and the project list/recipe modal at 390×844. Inspect the new logo at header size, controls and selected states, light canvas, modal stacking, field scrolling, queue visibility, keyboard focus and media colors. The frozen rubric and actual captures are under ignored `research/evidence/redesign/`. Earlier dark-UI self-review scores are historical functional-layout evidence, not acceptance of the rejected visual direction.
+
+No Higgsfield performance or model-quality parity is established by this redesign. See the validation ledger for functional tests and remaining benchmark gates. Logo source/prompt: [BRAND.md](BRAND.md).

@@ -37,7 +37,7 @@ test('asset video cards expose a clickable playback entry', () => {
 
   assert.match(
     source,
-    /mediaStatus === 'ready'[\s\S]*?<button[\s\S]*?onClick=\{handlePreviewMedia\}/
+    /mediaStatus === 'ready'[\s\S]*?<Action[\s\S]*?onClick=\{handlePreviewMedia\}/
   );
   assert.match(source, /className="nodrag nopan nowheel/);
   assert.match(source, /aria-label=\{`\$\{shapeCopy\.viewResult\}/);

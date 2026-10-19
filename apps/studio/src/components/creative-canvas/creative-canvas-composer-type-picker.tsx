@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import type { CanvasGenerationMode } from '@/core/creative-canvas/canvas-types';
 import { cn } from '@/lib/utils';
 import { Check, ChevronDown, ImageIcon, ScanSearch, Video } from 'lucide-react';
@@ -44,7 +45,7 @@ export function CreativeCanvasComposerTypePicker({
 
   return (
     <div ref={containerRef} className="relative shrink-0">
-      <button
+      <Action
         type="button"
         disabled={isDraftBusy}
         aria-label={labels.typeLabel}
@@ -54,22 +55,22 @@ export function CreativeCanvasComposerTypePicker({
         className={cn(composerFieldButtonClassName, 'w-fit')}
       >
         {selectedType === 'image' ? (
-          <ImageIcon className="size-3.5 shrink-0 text-white/70" />
+          <ImageIcon className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
         ) : selectedType === 'analysis' ? (
-          <ScanSearch className="size-3.5 shrink-0 text-white/70" />
+          <ScanSearch className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
         ) : (
-          <Video className="size-3.5 shrink-0 text-white/70" />
+          <Video className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
         )}
-        <span className="whitespace-nowrap text-[12px] font-semibold text-white">
+        <span className="whitespace-nowrap text-[12px] font-semibold text-[var(--vh-text-1)]">
           {selectedLabel}
         </span>
         <ChevronDown
           className={cn(
-            'pointer-events-none size-3.5 shrink-0 text-white/45 transition-transform duration-200',
+            'pointer-events-none size-3.5 shrink-0 text-[var(--vh-text-2)] transition-transform duration-200',
             isOpen ? 'rotate-180' : ''
           )}
         />
-      </button>
+      </Action>
 
       {isOpen ? (
         <div
@@ -90,7 +91,7 @@ export function CreativeCanvasComposerTypePicker({
                     : labels.videoModeLabel;
 
               return (
-                <button
+                <Action
                   key={taskType}
                   type="button"
                   disabled={isDraftBusy}
@@ -105,11 +106,11 @@ export function CreativeCanvasComposerTypePicker({
                   className={getComposerOptionRowClassName(isSelected)}
                 >
                   {taskType === 'image' ? (
-                    <ImageIcon className="size-3.5 shrink-0 text-white/60" />
+                    <ImageIcon className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
                   ) : taskType === 'analysis' ? (
-                    <ScanSearch className="size-3.5 shrink-0 text-white/60" />
+                    <ScanSearch className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
                   ) : (
-                    <Video className="size-3.5 shrink-0 text-white/60" />
+                    <Video className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
                   )}
                   <span className="flex-1 text-[12px] font-medium text-[var(--vh-text-1)]">
                     {label}
@@ -117,7 +118,7 @@ export function CreativeCanvasComposerTypePicker({
                   {isSelected ? (
                     <Check className="size-3.5 shrink-0 text-[var(--vh-accent)]" />
                   ) : null}
-                </button>
+                </Action>
               );
             })}
           </div>

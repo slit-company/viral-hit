@@ -11,11 +11,7 @@ import {
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 
-/**
- * In-product replacement for window.confirm — renders on the shadcn Dialog
- * primitive with two surface variants: `default` for light utility
- * dashboard, `compact` for the dark product skin.
- */
+/** SEED confirmation dialog. The compact variant keeps a tighter layout. */
 export function ConfirmDialog({
   open,
   onOpenChange,
@@ -48,7 +44,7 @@ export function ConfirmDialog({
         showCloseButton={false}
         className={
           variant === 'compact'
-            ? 'rounded-[22px] border border-white/10 bg-[#111214] p-6 text-[#f6f6f4] ring-0 shadow-[0_34px_110px_rgba(0,0,0,0.62)] sm:max-w-[420px] [&_[data-slot=dialog-close]]:text-white/45'
+            ? 'rounded-[22px] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-6 text-[var(--vh-text-1)] ring-0 shadow-none sm:max-w-[420px] [&_[data-slot=dialog-close]]:text-[var(--vh-text-2)]'
             : 'sm:max-w-[420px]'
         }
       >
@@ -56,7 +52,7 @@ export function ConfirmDialog({
           <DialogTitle
             className={
               variant === 'compact'
-                ? 'vh-product-display text-[17px] font-semibold tracking-[-0.02em] text-white'
+                ? 'vh-product-display text-[17px] font-semibold tracking-[-0.02em] text-[var(--vh-text-1)]'
                 : 'text-[15px] font-semibold text-foreground'
             }
           >
@@ -66,7 +62,7 @@ export function ConfirmDialog({
             <DialogDescription
               className={
                 variant === 'compact'
-                  ? 'text-[13px] leading-6 text-white/48'
+                  ? 'text-[13px] leading-6 text-[var(--vh-text-2)]'
                   : 'text-[13px] leading-6'
               }
             >
@@ -89,7 +85,7 @@ export function ConfirmDialog({
             onClick={() => onOpenChange(false)}
             className={
               variant === 'compact'
-                ? 'h-10 rounded-[var(--vh-radius-sm)] border-white/12 bg-transparent px-4 text-[13px] font-medium text-white/70 hover:bg-white/[0.06] hover:text-white'
+                ? 'h-10 rounded-[var(--vh-radius-sm)] border-[var(--vh-border)] bg-transparent px-4 text-[13px] font-medium text-[var(--vh-text-2)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
                 : 'h-10 px-4'
             }
           >
@@ -102,7 +98,7 @@ export function ConfirmDialog({
             className={cn(
               'h-10 px-4 text-[13px] font-semibold',
               variant === 'compact' &&
-                'rounded-[var(--vh-radius-sm)] bg-red-500 text-white shadow-[0_10px_28px_rgba(239,68,68,0.28)] hover:bg-red-600'
+                'rounded-[var(--vh-radius-sm)] bg-red-500 text-[var(--vh-text-1)] shadow-none hover:bg-red-600'
             )}
           >
             {loading ? (

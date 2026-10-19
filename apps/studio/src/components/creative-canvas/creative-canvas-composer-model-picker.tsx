@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import type { WorkspaceModelOption } from '@/core/effects/workspace-models';
 import { getModelIconPathByModelId } from '@/core/workspace-lib/model-icons';
 import { cn } from '@/lib/utils';
@@ -53,7 +54,7 @@ export function CreativeCanvasComposerModelPicker({
         isBatchTone && 'lg:max-w-none'
       )}
     >
-      <button
+      <Action
         type="button"
         disabled={modelOptions.length === 0 || isDraftBusy}
         onClick={() => {
@@ -71,7 +72,7 @@ export function CreativeCanvasComposerModelPicker({
           {selectedModelIconPath ? (
             <span
               className={cn(
-                'grid shrink-0 place-items-center rounded-[5px] bg-white/90 ring-1 ring-black/10',
+                'grid shrink-0 place-items-center rounded-[5px] bg-[var(--vh-control)] ring-1 ring-black/10',
                 isBatchTone ? 'size-8' : 'size-4'
               )}
             >
@@ -98,8 +99,8 @@ export function CreativeCanvasComposerModelPicker({
               className={cn(
                 'block line-clamp-1 min-w-0',
                 isBatchTone
-                  ? 'text-[18px] font-semibold tracking-[-0.04em] text-white'
-                  : 'text-[12px] font-semibold text-white'
+                  ? 'text-[18px] font-semibold tracking-[-0.04em] text-[var(--vh-text-1)]'
+                  : 'text-[12px] font-semibold text-[var(--vh-text-1)]'
               )}
             >
               {selectedModelLabel}
@@ -109,11 +110,11 @@ export function CreativeCanvasComposerModelPicker({
         <ChevronDown
           className={cn(
             'pointer-events-none size-3.5 shrink-0 transition-transform duration-200',
-            isBatchTone ? 'text-[var(--vh-text-2)]' : 'text-white/45',
+            isBatchTone ? 'text-[var(--vh-text-2)]' : 'text-[var(--vh-text-2)]',
             isOpen ? 'rotate-180' : ''
           )}
         />
-      </button>
+      </Action>
 
       {isOpen ? (
         <div
@@ -129,7 +130,7 @@ export function CreativeCanvasComposerModelPicker({
               const iconPath = getModelIconPathByModelId(model.id);
 
               return (
-                <button
+                <Action
                   key={model.id}
                   type="button"
                   disabled={model.available === false || isDraftBusy}
@@ -151,7 +152,7 @@ export function CreativeCanvasComposerModelPicker({
                   )}
                 >
                   {iconPath ? (
-                    <span className="grid size-5 shrink-0 place-items-center rounded-[5px] bg-white/90 ring-1 ring-black/10">
+                    <span className="grid size-5 shrink-0 place-items-center rounded-[5px] bg-[var(--vh-control)] ring-1 ring-black/10">
                       <img
                         alt=""
                         aria-hidden="true"
@@ -160,7 +161,7 @@ export function CreativeCanvasComposerModelPicker({
                       />
                     </span>
                   ) : (
-                    <Sparkles className="size-3.5 shrink-0 text-white/50" />
+                    <Sparkles className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
                   )}
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-[12px] font-medium text-[var(--vh-text-1)]">
@@ -170,7 +171,7 @@ export function CreativeCanvasComposerModelPicker({
                   {isSelected ? (
                     <Check className="size-3.5 shrink-0 text-[var(--vh-accent)]" />
                   ) : null}
-                </button>
+                </Action>
               );
             })}
           </div>

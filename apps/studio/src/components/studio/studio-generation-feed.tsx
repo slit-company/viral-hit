@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { Loader2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -14,7 +15,7 @@ import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import { cn } from '@/lib/utils';
 
 const chipClassName =
-  'inline-flex h-6 items-center rounded-full border border-white/[0.09] bg-white/[0.035] px-2 text-[11px] font-medium text-[var(--vh-text-1)]';
+  'inline-flex h-6 items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2 text-[11px] font-medium text-[var(--vh-text-1)]';
 
 function StudioHistoryItem({
   item,
@@ -33,7 +34,7 @@ function StudioHistoryItem({
 
   return (
     <article className="space-y-3">
-      <button
+      <Action
         type="button"
         onClick={onReuse}
         className="flex flex-wrap items-center gap-2 text-left"
@@ -47,14 +48,14 @@ function StudioHistoryItem({
         <span className="text-[12px] text-[var(--vh-text-3)]">
           {formatStudioHistoryDateTime(new Date(item.createdAt))}
         </span>
-      </button>
-      <button
+      </Action>
+      <Action
         type="button"
         onClick={onOpen}
         aria-label={t('openPreview')}
         className="block text-left"
       >
-        <div className="h-[240px] w-[min(100%,400px)] overflow-hidden rounded-[16px] bg-black/20">
+        <div className="h-[240px] w-[min(100%,400px)] overflow-hidden rounded-[16px] bg-[var(--vh-control)]">
           {isAnalysis && item.resultText ? (
             <div className="h-full overflow-hidden p-5">
               <p className="line-clamp-[8] whitespace-pre-wrap break-words text-[13px] leading-6 text-[var(--vh-text-2)]">
@@ -87,7 +88,7 @@ function StudioHistoryItem({
             </div>
           )}
         </div>
-      </button>
+      </Action>
     </article>
   );
 }
@@ -144,14 +145,14 @@ export function StudioGenerationFeed({
             <DialogTitle className="sr-only">
               {selected.modelName || t('result')}
             </DialogTitle>
-            <DialogClose className="absolute right-2 top-2 z-30 inline-flex size-10 items-center justify-center rounded-full border border-white/[0.09] bg-black/45 text-white/88 backdrop-blur-xl">
+            <DialogClose className="absolute right-2 top-2 z-30 inline-flex size-10 items-center justify-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-1)] backdrop-blur-xl">
               <X className="size-5" />
               <span className="sr-only">{t('closePreview')}</span>
             </DialogClose>
             <div className="grid h-full min-h-0 xl:grid-cols-[minmax(0,1.12fr)_420px]">
-              <div className="relative flex items-center justify-center overflow-hidden bg-black/40 px-6 py-6">
+              <div className="relative flex items-center justify-center overflow-hidden bg-[var(--vh-control)] px-6 py-6">
                 {selected.mediaType === 'analysis' ? (
-                  <div className="h-full w-full overflow-y-auto rounded-[var(--vh-radius-sm)] border border-white/[0.08] bg-white/[0.025] p-6 sm:p-8">
+                  <div className="h-full w-full overflow-y-auto rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-6 sm:p-8">
                     <p className="mb-4 text-xs font-medium uppercase tracking-[0.14em] text-[var(--vh-text-3)]">
                       {t('analysisResult')}
                     </p>
@@ -173,8 +174,8 @@ export function StudioGenerationFeed({
                   />
                 ) : null}
               </div>
-              <div className="flex min-h-0 flex-col border-t border-white/[0.08] xl:border-l xl:border-t-0">
-                <div className="flex flex-wrap items-center gap-1.5 border-b border-white/[0.08] px-6 py-5">
+              <div className="flex min-h-0 flex-col border-t border-[var(--vh-border)] xl:border-l xl:border-t-0">
+                <div className="flex flex-wrap items-center gap-1.5 border-b border-[var(--vh-border)] px-6 py-5">
                   <span className={chipClassName}>
                     {selected.mediaType === 'analysis'
                       ? t('analysis')
@@ -194,7 +195,7 @@ export function StudioGenerationFeed({
                   ) : null}
                 </div>
                 <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
-                  <div className="flex h-[min(260px,34vh)] min-h-[180px] flex-col rounded-[var(--vh-radius-sm)] border border-white/[0.09] bg-white/[0.03] p-4">
+                  <div className="flex h-[min(260px,34vh)] min-h-[180px] flex-col rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4">
                     <p className="shrink-0 text-[13px] text-[var(--vh-text-3)]">
                       {t('prompt')}
                     </p>
@@ -204,8 +205,8 @@ export function StudioGenerationFeed({
                       </p>
                     </div>
                   </div>
-                  <div className="rounded-[var(--vh-radius-sm)] border border-white/[0.09] bg-white/[0.03] px-4 py-1">
-                    <div className="flex items-start justify-between gap-6 border-b border-white/[0.08] py-3">
+                  <div className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] px-4 py-1">
+                    <div className="flex items-start justify-between gap-6 border-b border-[var(--vh-border)] py-3">
                       <span className="text-sm text-[var(--vh-text-3)]">
                         {t('model')}
                       </span>
@@ -224,7 +225,7 @@ export function StudioGenerationFeed({
                   </div>
                   {selected.referenceImages.length > 0 ||
                   selected.referenceVideos.length > 0 ? (
-                    <div className="rounded-[var(--vh-radius-sm)] border border-white/[0.09] bg-white/[0.03] p-4">
+                    <div className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4">
                       <p className="text-[13px] text-[var(--vh-text-3)]">
                         {t('references')}
                       </p>
@@ -235,7 +236,7 @@ export function StudioGenerationFeed({
                             href={url}
                             target="_blank"
                             rel="noreferrer"
-                            className="block size-16 overflow-hidden rounded-[10px] bg-black/30"
+                            className="block size-16 overflow-hidden rounded-[10px] bg-[var(--vh-control)]"
                           >
                             <img
                               src={url}
@@ -251,7 +252,7 @@ export function StudioGenerationFeed({
                             muted
                             playsInline
                             preload="metadata"
-                            className="size-16 rounded-[10px] bg-black/30 object-cover"
+                            className="size-16 rounded-[10px] bg-[var(--vh-control)] object-cover"
                           />
                         ))}
                       </div>

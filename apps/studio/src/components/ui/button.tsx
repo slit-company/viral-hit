@@ -1,4 +1,5 @@
-import { Button as ButtonPrimitive } from "@base-ui/react/button"
+import { ActionButton } from "@seed-design/react"
+import type { ComponentProps } from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
@@ -45,9 +46,9 @@ function Button({
   variant = "default",
   size = "default",
   ...props
-}: ButtonPrimitive.Props & VariantProps<typeof buttonVariants>) {
+}: Omit<ComponentProps<typeof ActionButton>, "variant" | "size"> & VariantProps<typeof buttonVariants>) {
   return (
-    <ButtonPrimitive
+    <ActionButton variant="ghost" size="small"
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}

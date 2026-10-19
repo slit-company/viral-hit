@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { Check, ChevronDown, Globe2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
@@ -54,7 +55,7 @@ export function LanguageSwitcher({
 
   return (
     <div ref={menuRef} className="relative">
-      <button
+      <Action
         type="button"
         aria-label={switchLanguageLabel}
         aria-expanded={open}
@@ -63,8 +64,8 @@ export function LanguageSwitcher({
         onClick={() => setOpen((value) => !value)}
         className={
           workspace
-            ? 'inline-flex h-9 items-center gap-1.5 rounded-xl border border-white/[0.09] bg-white/[0.035] px-2.5 text-xs font-medium text-[var(--vh-text-2)] transition hover:border-white/[0.16] hover:bg-white/[0.075] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70'
-            : 'inline-flex h-8 items-center gap-1 rounded-full px-2 text-[13px] font-medium text-white/45 transition hover:bg-white/[0.06] hover:text-white'
+            ? 'inline-flex h-9 items-center gap-1.5 rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 text-xs font-medium text-[var(--vh-text-2)] transition hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70'
+            : 'inline-flex h-8 items-center gap-1 rounded-full px-2 text-[13px] font-medium text-[var(--vh-text-2)] transition hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
         }
       >
         <Globe2 className="size-3.5" aria-hidden="true" />
@@ -73,25 +74,25 @@ export function LanguageSwitcher({
           aria-hidden="true"
           className={`size-3 opacity-70 transition-transform ${open ? 'rotate-180' : ''}`}
         />
-      </button>
+      </Action>
 
       {open ? (
         <div
           role="menu"
           aria-label={switchLanguageLabel}
-          className="absolute right-0 top-full z-50 mt-2 min-w-[140px] overflow-hidden rounded-[12px] border border-white/[0.08] bg-[#151517] p-1 shadow-[0_16px_40px_rgba(0,0,0,0.45)]"
+          className="absolute right-0 top-full z-50 mt-2 min-w-[140px] overflow-hidden rounded-[12px] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-1 shadow-none"
         >
           {supportedLocales.map((option) => (
-            <button
+            <Action
               key={option}
               type="button"
               role="menuitemradio"
               aria-checked={option === locale}
               onClick={() => switchLanguage(option)}
-              className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-left text-[13px] transition hover:bg-white/[0.06] ${
+              className={`flex w-full items-center justify-between rounded-[8px] px-2.5 py-2 text-left text-[13px] transition hover:bg-[var(--vh-control)] ${
                 option === locale
-                  ? 'text-white'
-                  : 'text-[var(--vh-text-2)] hover:text-white'
+                  ? 'text-[var(--vh-text-1)]'
+                  : 'text-[var(--vh-text-2)] hover:text-[var(--vh-text-1)]'
               }`}
             >
               {localeNames[option]}
@@ -101,7 +102,7 @@ export function LanguageSwitcher({
                   aria-hidden="true"
                 />
               ) : null}
-            </button>
+            </Action>
           ))}
         </div>
       ) : null}

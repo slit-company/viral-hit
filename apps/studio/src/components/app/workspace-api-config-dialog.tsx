@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { Cloud, Database } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -41,10 +42,10 @@ function PlugGlyph({ className }: { className?: string }) {
 }
 
 const inputClassName =
-  'h-11 w-full rounded-[12px] border border-white/[0.12] bg-white/[0.04] px-3.5 font-mono text-[13px] text-white outline-none transition placeholder:text-white/30 focus:border-[#ff7a33]/55 focus:ring-[3px] focus:ring-[#ff7a33]/15';
+  'h-11 w-full rounded-[12px] border border-[var(--vh-border)] bg-[var(--vh-control)] px-3.5 font-mono text-[13px] text-[var(--vh-text-1)] outline-none transition placeholder:text-[var(--vh-text-2)] focus:border-[var(--vh-border-strong)]/55 focus:ring-[3px] focus:ring-[#ff7a33]/15';
 
 const saveButtonClassName =
-  'h-11 w-full rounded-[12px] bg-[#ff7a33] text-[14px] font-semibold text-[#1d1d1f] shadow-[0_8px_24px_rgba(255,122,51,0.24)] transition hover:bg-[#ff8a4d] disabled:cursor-not-allowed disabled:opacity-60';
+  'h-11 w-full rounded-[12px] bg-[var(--vh-accent)] text-[14px] font-semibold text-[var(--vh-text-2)] shadow-none transition hover:bg-[var(--vh-accent)] disabled:cursor-not-allowed disabled:opacity-60';
 
 const configuredKeyMask = '••••••••••••••••••••••••';
 
@@ -114,9 +115,9 @@ function ApiConfigForm({
   return (
     <div className="space-y-4 px-5 py-5">
       <div className="flex items-center gap-2">
-        <p className="text-[13px] font-medium text-white">{providerLabel}</p>
+        <p className="text-[13px] font-medium text-[var(--vh-text-1)]">{providerLabel}</p>
         {isDefault ? (
-          <span className="rounded-full border border-[#ff7a33]/30 bg-[#ff7a33]/10 px-2 py-0.5 text-[11px] font-semibold tracking-[0.04em] text-[#ff9a62]">
+          <span className="rounded-full border border-[var(--vh-border-strong)]/30 bg-[var(--vh-accent)]/10 px-2 py-0.5 text-[11px] font-semibold tracking-[0.04em] text-[#ff9a62]">
             {t('defaultBadge')}
           </span>
         ) : null}
@@ -125,13 +126,13 @@ function ApiConfigForm({
       <div>
         <label
           htmlFor="cloud-api-key"
-          className="mb-2 block text-[12px] font-medium text-white/45"
+          className="mb-2 block text-[12px] font-medium text-[var(--vh-text-2)]"
         >
           {t('keyLabel')}
         </label>
         {!loaded ? (
           <div
-            className="h-11 animate-pulse rounded-[12px] border border-white/[0.08] bg-white/[0.04] motion-reduce:animate-none"
+            className="h-11 animate-pulse rounded-[12px] border border-[var(--vh-border)] bg-[var(--vh-control)] motion-reduce:animate-none"
             aria-label={t('loadingConnection')}
           />
         ) : (
@@ -159,14 +160,14 @@ function ApiConfigForm({
         )}
       </div>
 
-      <button
+      <Action
         type="button"
         disabled={!loaded || saving || !apiKey.trim()}
         onClick={() => void save()}
         className={saveButtonClassName}
       >
         {saving ? t('saving') : t('save')}
-      </button>
+      </Action>
 
       <a
         href="https://cloud.example/dashboard/apikeys"
@@ -264,8 +265,8 @@ function StorageConfigForm({ onSaved }: { onSaved: () => void }) {
 
   return (
     <div className="space-y-4 px-5 py-5">
-      <div className="grid grid-cols-2 gap-1 rounded-[12px] border border-white/[0.08] bg-black/20 p-1">
-        <button
+      <div className="grid grid-cols-2 gap-1 rounded-[12px] border border-[var(--vh-border)] bg-[var(--vh-control)] p-1">
+        <Action
           type="button"
           disabled={!state?.managedEligible}
           onClick={() => {
@@ -273,33 +274,33 @@ function StorageConfigForm({ onSaved }: { onSaved: () => void }) {
           }}
           className={`inline-flex h-10 items-center justify-center gap-2 rounded-[10px] text-[13px] font-semibold transition ${
             mode === 'cloud-api'
-              ? 'bg-white/[0.08] text-white'
-              : 'text-white/40 hover:text-white/70'
-          } disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:text-white/40`}
+              ? 'bg-[var(--vh-control)] text-[var(--vh-text-1)]'
+              : 'text-[var(--vh-text-2)] hover:text-[var(--vh-text-2)]'
+          } disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:text-[var(--vh-text-2)]`}
         >
           <Cloud
             className={`size-3.5 ${mode === 'cloud-api' ? 'text-[#ff8b4d]' : ''}`}
           />
           {t('managedTitle')}
-        </button>
-        <button
+        </Action>
+        <Action
           type="button"
           onClick={() => setMode('s3')}
           className={`inline-flex h-10 items-center justify-center gap-2 rounded-[10px] text-[13px] font-semibold transition ${
             mode === 's3'
-              ? 'bg-white/[0.08] text-white'
-              : 'text-white/40 hover:text-white/70'
+              ? 'bg-[var(--vh-control)] text-[var(--vh-text-1)]'
+              : 'text-[var(--vh-text-2)] hover:text-[var(--vh-text-2)]'
           }`}
         >
           <Database
             className={`size-3.5 ${mode === 's3' ? 'text-[#ff8b4d]' : ''}`}
           />
           {t('customTitle')}
-        </button>
+        </Action>
       </div>
 
       {mode === 'cloud-api' ? (
-        <p className="text-[12px] leading-5 text-white/40">{t('managedHint')}</p>
+        <p className="text-[12px] leading-5 text-[var(--vh-text-2)]">{t('managedHint')}</p>
       ) : (
         <div className="space-y-3">
           <div className="grid grid-cols-[110px_1fr] gap-3">
@@ -360,7 +361,7 @@ function StorageConfigForm({ onSaved }: { onSaved: () => void }) {
               className={inputClassName}
             />
           </div>
-          <label className="flex items-center gap-2 text-[12px] text-white/45">
+          <label className="flex items-center gap-2 text-[12px] text-[var(--vh-text-2)]">
             <input
               type="checkbox"
               checked={forcePathStyle}
@@ -372,14 +373,14 @@ function StorageConfigForm({ onSaved }: { onSaved: () => void }) {
         </div>
       )}
 
-      <button
+      <Action
         type="button"
         disabled={saving}
         onClick={() => void save()}
         className={saveButtonClassName}
       >
         {saving ? t('saving') : t('save')}
-      </button>
+      </Action>
     </div>
   );
 }
@@ -426,52 +427,52 @@ export function WorkspaceApiConfigDialog({
         title={
           providerConfigured ? t('triggerConfiguredLabel') : t('triggerLabel')
         }
-        className={`relative inline-flex size-9 shrink-0 items-center justify-center rounded-full border bg-white/[0.035] transition hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a33]/45 ${
+        className={`relative inline-flex size-9 shrink-0 items-center justify-center rounded-full border bg-[var(--vh-control)] transition hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a33]/45 ${
           providerConfigured
-            ? 'border-[#ff7a33]/35 text-[#ff8b4d]'
-            : 'border-white/[0.09] text-[#a0a1a8] hover:border-white/[0.18]'
+            ? 'border-[var(--vh-border-strong)]/35 text-[#ff8b4d]'
+            : 'border-[var(--vh-border)] text-[var(--vh-text-2)] hover:border-[var(--vh-border)]'
         }`}
       >
         <PlugGlyph className="size-[18px]" />
         {providerConfigured ? (
           <span
-            className="absolute right-0 top-0 size-2.5 rounded-full border-2 border-[#111214] bg-[#c7f36b]"
+            className="absolute right-0 top-0 size-2.5 rounded-full border-2 border-[#111214] bg-[var(--vh-accent)]"
             aria-hidden="true"
           />
         ) : null}
       </DialogTrigger>
 
-      <DialogContent className="vh-product-shell max-h-[88vh] overflow-y-auto rounded-[24px] border border-white/10 bg-[#111214] p-0 text-[#f5f5f7] shadow-[0_34px_110px_rgba(0,0,0,0.62)] ring-0 sm:max-w-[480px] [&_[data-slot=dialog-close]]:right-4 [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:text-white/45 [&_[data-slot=dialog-close]]:hover:bg-white/[0.07] [&_[data-slot=dialog-close]]:hover:text-white">
-        <div className="border-b border-white/[0.08] px-5 pb-4 pt-5">
+      <DialogContent className="vh-product-shell max-h-[88vh] overflow-y-auto rounded-[24px] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-0 text-[var(--vh-text-1)] shadow-none ring-0 sm:max-w-[480px] [&_[data-slot=dialog-close]]:right-4 [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:text-[var(--vh-text-2)] [&_[data-slot=dialog-close]]:hover:bg-[var(--vh-control)] [&_[data-slot=dialog-close]]:hover:text-[var(--vh-text-1)]">
+        <div className="border-b border-[var(--vh-border)] px-5 pb-4 pt-5">
           <div className="flex items-start gap-3 pr-8">
-            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-[#ff7a33]/25 bg-[#ff7a33]/10 text-[#ff8b4d]">
+            <span className="inline-flex size-9 shrink-0 items-center justify-center rounded-[12px] border border-[var(--vh-border-strong)]/25 bg-[var(--vh-accent)]/10 text-[#ff8b4d]">
               <PlugGlyph className="size-4" />
             </span>
             <DialogHeader className="gap-1 text-left">
-              <DialogTitle className="vh-product-display text-[17px] font-semibold tracking-[-0.02em] text-white">
+              <DialogTitle className="vh-product-display text-[17px] font-semibold tracking-[-0.02em] text-[var(--vh-text-1)]">
                 {t('title')}
               </DialogTitle>
-              <DialogDescription className="text-[12px] leading-5 text-white/45">
+              <DialogDescription className="text-[12px] leading-5 text-[var(--vh-text-2)]">
                 {section === 'provider' ? t('description') : t('storage.intro')}
               </DialogDescription>
             </DialogHeader>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 border-b border-white/[0.08] bg-black/10 p-1">
+        <div className="grid grid-cols-2 border-b border-[var(--vh-border)] bg-[var(--vh-control)] p-1">
           {(['provider', 'storage'] as const).map((item) => (
-            <button
+            <Action
               key={item}
               type="button"
               onClick={() => setSection(item)}
               className={`h-9 rounded-[10px] text-[13px] font-semibold transition ${
                 section === item
-                  ? 'bg-white/[0.08] text-white'
-                  : 'text-white/40 hover:text-white/70'
+                  ? 'bg-[var(--vh-control)] text-[var(--vh-text-1)]'
+                  : 'text-[var(--vh-text-2)] hover:text-[var(--vh-text-2)]'
               }`}
             >
               {item === 'provider' ? t('providerTab') : t('storageTab')}
-            </button>
+            </Action>
           ))}
         </div>
 

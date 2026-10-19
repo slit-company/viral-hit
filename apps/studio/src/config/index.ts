@@ -4,6 +4,7 @@ export const appConfig = {
   app_name: 'Viral Hit',
   app_description:
     'An open creative studio for images, films, sound and edits.',
-  app_logo: '/viral-hit.svg',
+  app_logo: '/brand/viral-hit-mark.png',
+  app_wordmark: '/brand/viral-hit-wordmark.png',
   database_url: 'file:data/local.db',
 } as const;

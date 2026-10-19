@@ -8,7 +8,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
 | Unit/integration tests | 461 passed | Includes seven native ComfyUI integration tests in addition to the prior 454 tests; SDK tests use fixtures |
-| Browser E2E | 8 passed | Local Chromium; provider credentials deliberately removed |
+| Browser E2E | 9 passed across two runs (8 existing + 1 theme/focus) | Local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
 | Captions | Passed | Remote edit visible without reload, local text edit persisted; desktop/mobile captures |
@@ -27,10 +27,19 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Recipe outputs → mixed timeline → MP4 | Passed | Browser attached both recipe assets, reload preserved video/audio tracks, MCP export decoded without errors: H.264 1920×1080, 90 frames, AAC, both streams 3.000s; procedural video/tone fixtures, not model-quality evidence |
 | Multimodal form/editor visual feedback | Passed, 4.28/5 | Fixed identifier textareas and clipped desktop controls; motion/speech forms and mixed editor reviewed at 1440×1000; existing mobile form checked at 390×844 |
 | Native ComfyUI workflow | Passed | Real model-free native server run; see [local ComfyUI](LOCAL-COMFYUI.md). No diffusion quality claim |
+| Light UI and generated branding | Passed, visual review 4.325/5 | Actual desktop 1440×1000 and mobile 390×844 captures; self-review is not user design acceptance |
 | Actual paid Comfy Router generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
 | Higgsfield comparative benchmark | Not run | Full feature/performance parity is not established |
 
 Reproduce with `pnpm build`, `pnpm typecheck`, `pnpm test`, and `pnpm --dir apps/studio test:e2e`. E2E creates an isolated temporary database and calls the real local UI/MCP/FFmpeg tools without provider keys. `test-results/verified-local-export.mp4` is the actual browser export, not a fake fixture labeled as generated output.
+
+## SEED design and Viral Hit branding
+
+The current UI uses SEED-based light tokens, Pretendard, SEED actions/dialogs/text fields and the adapted shared BackButton. See [design provenance](DESIGN.md) and [generated assets and prompts](BRAND.md). Both the transparent app symbol and the “Viral Hit” wordmark were generated with the built-in image_gen tool and integrated into the app.
+
+Typecheck, all 461 source tests, the existing eight browser tests, the new theme/focus browser test, and the production build passed. Browser rendering tests used `VIRAL_HIT_FFMPEG=/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg`; the default FFmpeg lacks drawtext. A production-server smoke test loaded home/editor, opened and dismissed Runs, and recorded no page errors. This is local validation, not a deployment.
+
+Visual evidence is under `research/evidence/redesign/`. Round 1 found a dialog obscured by its backdrop, residual dark panels and mobile overflow. After fixes, round 2 scored 4.325/5 with no hard failures. Home, projects, editor, studio, canvas and assets were inspected at 1440×1000; Runs and projects were also checked at 390×844. The browser test verifies light surfaces even under a dark OS preference, dialog keyboard focus containment, Escape and focus restoration, visible branding, and mobile bounds. Historical visual scores above describe earlier snapshots and do not imply user approval of the rejected dark design. Model quality and Higgsfield parity remain unmeasured.
 
 ## Quality and speed protocol
 

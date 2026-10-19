@@ -1,3 +1,4 @@
+import { Action } from '@/components/base/action';
 import { useQuery } from '@tanstack/react-query';
 import {
   AudioLines,
@@ -96,7 +97,7 @@ function AssetTile({
       onDragEnd={(event) => {
         if (event.dataTransfer.dropEffect === 'copy') onAdded();
       }}
-      className={`group relative overflow-hidden rounded-[14px] bg-white/[0.025] transition hover:-translate-y-0.5 ${
+      className={`group relative overflow-hidden rounded-[14px] bg-[var(--vh-control)] transition hover:-translate-y-0.5 ${
         mediaType === 'audio' ? 'h-[112px] w-[360px]' : 'h-[200px] w-fit'
       } ${
         canAddToCanvas ? 'cursor-grab active:cursor-grabbing' : ''
@@ -104,10 +105,10 @@ function AssetTile({
       title={asset.filename || addLabel}
     >
       {mediaType === 'audio' ? (
-        <div className="flex size-full flex-col justify-between border border-white/[0.08] px-4 py-3">
+        <div className="flex size-full flex-col justify-between border border-[var(--vh-border)] px-4 py-3">
           <div className="flex items-center gap-2">
             <AudioLines className="size-4 text-[var(--vh-graph)]" />
-            <p className="min-w-0 flex-1 truncate text-xs font-medium text-white/80">
+            <p className="min-w-0 flex-1 truncate text-xs font-medium text-[var(--vh-text-1)]">
               {asset.filename || asset.id}
             </p>
           </div>
@@ -135,12 +136,12 @@ function AssetTile({
         />
       )}
       {mediaType === 'video' ? (
-        <span className="pointer-events-none absolute bottom-2 left-2 grid size-7 place-items-center rounded-full border border-white/15 bg-black/65 text-white backdrop-blur">
+        <span className="pointer-events-none absolute bottom-2 left-2 grid size-7 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-1)] backdrop-blur">
           <Video className="size-3.5" />
         </span>
       ) : null}
       {badgeLabel ? (
-        <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-[#ff7a33]/25 bg-black/65 px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#ffad7e] backdrop-blur">
+        <span className="pointer-events-none absolute left-2 top-2 rounded-md border border-[var(--vh-border-strong)]/25 bg-[var(--vh-control)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#ffad7e] backdrop-blur">
           {badgeLabel}
         </span>
       ) : null}
@@ -148,18 +149,18 @@ function AssetTile({
       {canAddToCanvas || mediaType === 'image' || mediaType === 'video' || mediaType === 'audio' ? (
         <div className="absolute inset-0 flex items-end justify-center gap-1.5 bg-gradient-to-t from-black/85 via-black/10 to-transparent px-2 pb-2 opacity-0 transition duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
           {canAddToCanvas ? (
-            <button
+            <Action
               type="button"
               onClick={addToCanvas}
-              className="inline-flex h-7 items-center gap-1 rounded-full border border-white/15 bg-white/12 px-2.5 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md"
+              className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 text-[10px] font-semibold text-[var(--vh-text-1)] shadow-lg backdrop-blur-md"
               aria-label={`${addLabel}: ${asset.filename || asset.id}`}
             >
               <Plus className="size-3" />
               {addLabel}
-            </button>
+            </Action>
           ) : null}
           {mediaType === 'image' || mediaType === 'video' || mediaType === 'audio' ? (
-            <button
+            <Action
               type="button"
               disabled={isAddingToTimeline}
               onClick={() => {
@@ -170,7 +171,7 @@ function AssetTile({
                   .catch((error: Error) => toast.error(error.message))
                   .finally(() => setIsAddingToTimeline(false));
               }}
-              className="inline-flex h-7 items-center gap-1 rounded-full border border-white/15 bg-white/12 px-2.5 text-[10px] font-semibold text-white shadow-lg backdrop-blur-md disabled:cursor-wait disabled:opacity-55"
+              className="inline-flex h-7 items-center gap-1 rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 text-[10px] font-semibold text-[var(--vh-text-1)] shadow-lg backdrop-blur-md disabled:cursor-wait disabled:opacity-55"
               aria-label={`${addTimelineLabel}: ${asset.filename || asset.id}`}
             >
               {isAddingToTimeline ? (
@@ -181,7 +182,7 @@ function AssetTile({
                   <Video className="size-3" />
               )}
               {addTimelineLabel}
-            </button>
+            </Action>
           ) : null}
         </div>
       ) : mediaType === 'image' ? (
@@ -200,7 +201,7 @@ function AssetTile({
           target="_blank"
           rel="noreferrer"
           onClick={(event) => event.stopPropagation()}
-          className="absolute right-2 top-2 z-10 grid size-7 place-items-center rounded-full border border-white/15 bg-black/65 text-white/75 opacity-0 backdrop-blur transition hover:text-white group-hover:opacity-100 group-focus-within:opacity-100"
+          className="absolute right-2 top-2 z-10 grid size-7 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] opacity-0 backdrop-blur transition hover:text-[var(--vh-text-1)] group-hover:opacity-100 group-focus-within:opacity-100"
           aria-label={`${openLabel}: ${asset.filename || asset.id}`}
           title={openLabel}
         >
@@ -242,7 +243,7 @@ export function ProjectAssetsLibrary({
   return (
     <>
       {assetsQuery.isLoading ? (
-        <div className="flex min-h-52 items-center justify-center gap-2 text-[13px] text-white/45">
+        <div className="flex min-h-52 items-center justify-center gap-2 text-[13px] text-[var(--vh-text-2)]">
           <Loader2 className="size-4 animate-spin" />
           {t('loading')}
         </div>
@@ -256,10 +257,10 @@ export function ProjectAssetsLibrary({
 
       {!assetsQuery.isLoading && !assetsQuery.isError && total === 0 ? (
         <div className="flex min-h-52 flex-col items-center justify-center text-center">
-          <span className="grid size-12 place-items-center rounded-[15px] border border-white/[0.08] bg-white/[0.035] text-white/28">
+          <span className="grid size-12 place-items-center rounded-[15px] border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)]">
             <Images className="size-5" />
           </span>
-          <p className="mt-4 text-[14px] font-medium text-white/72">
+          <p className="mt-4 text-[14px] font-medium text-[var(--vh-text-2)]">
             {t('empty')}
           </p>
         </div>
@@ -359,7 +360,7 @@ export function ProjectAssetsDialog({
       <DialogTrigger
         aria-label={t('triggerLabel')}
         title={t('triggerLabel')}
-        className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full border border-white/[0.09] bg-white/[0.035] px-2.5 text-[#a0a1a8] transition hover:border-white/[0.18] hover:bg-white/[0.06] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a33]/45 sm:px-3"
+        className="inline-flex h-9 shrink-0 items-center gap-2 rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 text-[var(--vh-text-2)] transition hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7a33]/45 sm:px-3"
       >
         <Images className="size-[16px]" />
         <span className="hidden text-xs font-medium sm:inline">
@@ -369,20 +370,20 @@ export function ProjectAssetsDialog({
 
       <DialogContent
         showOverlay={false}
-        className="max-h-[82vh] overflow-hidden rounded-[28px] border border-white/10 bg-[#111214] p-0 text-[#f5f5f7] shadow-[0_34px_110px_rgba(0,0,0,0.62)] ring-0 sm:max-w-[760px] [&_[data-slot=dialog-close]]:right-4 [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:text-white/45 [&_[data-slot=dialog-close]]:hover:bg-white/[0.07] [&_[data-slot=dialog-close]]:hover:text-white"
+        className="max-h-[82vh] overflow-hidden rounded-[28px] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-0 text-[var(--vh-text-1)] shadow-none ring-0 sm:max-w-[760px] [&_[data-slot=dialog-close]]:right-4 [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:text-[var(--vh-text-2)] [&_[data-slot=dialog-close]]:hover:bg-[var(--vh-control)] [&_[data-slot=dialog-close]]:hover:text-[var(--vh-text-1)]"
       >
-        <DialogHeader className="border-b border-white/[0.08] px-6 pb-5 pt-6 text-left">
-          <span className="mb-2 grid size-10 place-items-center rounded-[13px] border border-[#ff7a33]/25 bg-[#ff7a33]/10 text-[#ff8b4d]">
+        <DialogHeader className="border-b border-[var(--vh-border)] px-6 pb-5 pt-6 text-left">
+          <span className="mb-2 grid size-10 place-items-center rounded-[13px] border border-[var(--vh-border-strong)]/25 bg-[var(--vh-accent)]/10 text-[#ff8b4d]">
             <FolderOpen className="size-[18px]" />
           </span>
-          <DialogTitle className="text-[21px] font-semibold tracking-[-0.03em] text-white">
+          <DialogTitle className="text-[21px] font-semibold tracking-[-0.03em] text-[var(--vh-text-1)]">
             {t('title')}
           </DialogTitle>
-          <DialogDescription className="max-w-xl text-[13px] leading-5 text-white/48">
+          <DialogDescription className="max-w-xl text-[13px] leading-5 text-[var(--vh-text-2)]">
             {t('description')}
           </DialogDescription>
           {canAddToCanvas ? (
-            <div className="mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-[#ff7a33]/18 bg-[#ff7a33]/[0.07] px-3 py-1.5 text-[11px] font-medium text-[#ffad7e]">
+            <div className="mt-2 inline-flex w-fit items-center gap-2 rounded-full border border-[var(--vh-border-strong)]/18 bg-[var(--vh-accent)]/[0.07] px-3 py-1.5 text-[11px] font-medium text-[#ffad7e]">
               <MousePointer2 className="size-3.5" />
               {t('canvasHint')}
             </div>
