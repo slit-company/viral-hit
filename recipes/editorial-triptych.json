@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "tags": [
+    "image",
+    "comfy-router"
+  ],
+  "id": "editorial-triptych",
+  "title": "Editorial triptych",
+  "description": "Three independently directed frames for an editorial sequence. Queues three separate generations; output consistency and assembly still require review.",
+  "category": "storyboard",
+  "parameters": [
+    {
+      "id": "opening",
+      "type": "string",
+      "label": "Opening \u00b7 establish the world",
+      "minLength": 3,
+      "maxLength": 16000
+    },
+    {
+      "id": "detail",
+      "type": "string",
+      "label": "Detail \u00b7 the visual idea",
+      "minLength": 3,
+      "maxLength": 16000
+    },
+    {
+      "id": "closing",
+      "type": "string",
+      "label": "Closing \u00b7 the final image",
+      "minLength": 3,
+      "maxLength": 16000
+    }
+  ],
+  "nodes": [
+    {
+      "id": "opening",
+      "operation": "comfy.router",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "model": "bfl/flux-2-pro",
+        "body": {
+          "prompt": ""
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "opening",
+          "target": "/body/prompt"
+        }
+      ]
+    },
+    {
+      "id": "detail",
+      "operation": "comfy.router",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "model": "bfl/flux-2-pro",
+        "body": {
+          "prompt": ""
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "detail",
+          "target": "/body/prompt"
+        }
+      ]
+    },
+    {
+      "id": "closing",
+      "operation": "comfy.router",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "model": "bfl/flux-2-pro",
+        "body": {
+          "prompt": ""
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "closing",
+          "target": "/body/prompt"
+        }
+      ]
+    }
+  ]
+}

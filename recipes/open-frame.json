@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "tags": [
+    "image",
+    "comfy-router"
+  ],
+  "id": "open-frame",
+  "title": "Open frame",
+  "description": "A general image recipe for illustration, photography, concept art or an original film frame. Uses your Comfy credits.",
+  "category": "general",
+  "parameters": [
+    {
+      "id": "prompt",
+      "type": "string",
+      "label": "Describe your frame",
+      "minLength": 3,
+      "maxLength": 16000
+    }
+  ],
+  "nodes": [
+    {
+      "id": "frame",
+      "operation": "comfy.router",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "model": "bfl/flux-2-pro",
+        "body": {
+          "prompt": ""
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "prompt",
+          "target": "/body/prompt"
+        }
+      ]
+    }
+  ]
+}

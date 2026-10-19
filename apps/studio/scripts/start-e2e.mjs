@@ -1,10 +1,16 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, cp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
 
 const directory = await mkdtemp(join(tmpdir(), 'viral-hit-e2e-'));
-const env = { ...process.env, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
+const recipes = join(directory, 'recipes');
+await cp('../../recipes', recipes, { recursive: true });
+const extension = JSON.parse(await readFile(join(recipes, 'open-frame.json'), 'utf8'));
+extension.id = 'community-fixture'; extension.title = 'Community fixture'; extension.author = 'External test author';
+extension.parameters[0].label = 'Community frame prompt';
+await writeFile(join(recipes, 'community-fixture.json'), JSON.stringify(extension));
+const env = { ...process.env, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
 delete env.COMFY_API_KEY;
 delete env.VIRAL_HIT_HARNESS_DB;
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });

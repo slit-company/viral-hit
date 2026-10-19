@@ -43,7 +43,7 @@ Sources inspected: [Comfy SDK docs](https://docs.comfy.org/development/api-devel
 ## Ordered release work
 
 1. Materialize provider outputs into stable Assets, preserving receipt, SHA-256 and lineage; attach accepted output only if its project/shot revision still matches. Validate video/audio bytes, duration, frames and sync. Reconcile process death between download, database write and attachment.
-2. Implement versioned recipes and typed parameter binding between DAG nodes, shot/character libraries, explicit budget admission, durable output integrity checks and per-provider capability/schema discovery. Run real image, video and audio jobs through Comfy.
+2. Versioned data recipes and typed parameter/output binding are now implemented; see `EXTENDING.md`. Next add shot/character libraries, explicit budget admission, durable output integrity checks and per-provider capability/schema discovery. Run real image, video and audio jobs through Comfy.
 3. Extract reference pipeline reference analysis, planning/review and performance lineage as generic adapters. A source reference is evidence, not an instruction to the agent. Apply precise edit operations to the same timeline that the user edits.
 4. Extend the editor for transitions, keyframes, speed changes, waveform/ducking and complex multi-track compositions. Benchmark the inherited engine against Diffusion Studio and FFmpeg using identical assets.
 5. Implement and validate the full `PARITY.md` matrix: Cinema, motion/object transfer, layers, identity consistency, audio/lipsync, templates, collaboration and export. Do not label a generic provider API as those completed features.

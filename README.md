@@ -30,4 +30,8 @@ pnpm dev
 
 Open `http://127.0.0.1:3808/projects`. Local import, editing and MP4 export need no generation key. Comfy execution requires your server-side `COMFY_API_KEY` and provider credits. Runs currently persist native provider receipts; automatic output import is not complete.
 
-Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extraction](docs/REFERENCE-PIPELINE.md), [validation evidence](docs/VALIDATION.md) and [full parity targets](docs/PARITY.md). Current checked results include 438 passing tests and 6 browser flows, including a decoded 1080p MP4 export. They do not establish Higgsfield generation quality or performance parity.
+Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extraction](docs/REFERENCE-PIPELINE.md), [validation evidence](docs/VALIDATION.md) and [full parity targets](docs/PARITY.md). Current checked results include 445 passing tests and 6 browser flows, including a decoded 1080p MP4 export. They do not establish Higgsfield generation quality or performance parity.
+
+## Extend it
+
+Install a versioned JSON recipe to add a workflow and its typed form without modifying the studio. UI and MCP discover the same recipes. [Extension guide](docs/EXTENDING.md) covers recipe authoring, output bindings, adapter contracts and current limits. Specialized recipes and general creative projects share the same core.

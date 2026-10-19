@@ -1,8 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
+import { bindOutputs, BindingError, validateBindings, type OutputBinding } from './bindings';
 
 export type Json = null | boolean | number | string | Json[] | { [key: string]: Json };
-export type NodeSpec = { id: string; operation: string; version: string; input: Json; dependsOn?: string[]; cache?: boolean };
+export type NodeSpec = { id: string; operation: string; version: string; input: Json; dependsOn?: string[]; cache?: boolean; bindings?: OutputBinding[] };
 export type Plan = { projectId: string; nodes: NodeSpec[] };
 export type State = 'queued' | 'submitting' | 'running' | 'succeeded' | 'failed' | 'uncertain' | 'canceled' | 'blocked';
 export type Job = {
@@ -11,6 +12,7 @@ export type Job = {
   idempotency_key: string; attempts: number; lease_token: string | null; lease_until: number;
   next_poll: number; cancel_requested: number; output_json: string | null; error: string | null;
   cacheable: number; cached_from: string | null;
+  bindings_json: string; execution_input_json: string | null;
 };
 export type Poll = { state: 'running' | 'succeeded' | 'failed' | 'canceled'; output?: Json; error?: string; retryAfterMs?: number };
 export interface Adapter {
@@ -38,6 +40,7 @@ export function compilePlan(plan: Plan) {
     if (!n.id?.trim() || !n.operation?.trim() || !n.version?.trim() || nodes.has(n.id)) throw new Error('Invalid or duplicate node');
     if (n.input === undefined || (n.dependsOn && new Set(n.dependsOn).size !== n.dependsOn.length)) throw new Error('Invalid node inputs');
     nodes.set(n.id, n);
+    validateBindings(n.input, n.dependsOn ?? [], n.bindings ?? []);
   }
   const visiting = new Set<string>(), hashes = new Map<string, string>();
   const visit = (id: string): string => {
@@ -47,7 +50,7 @@ export function compilePlan(plan: Plan) {
     if (visiting.has(id)) throw new Error(`Cycle at ${id}`);
     visiting.add(id);
     const deps = Object.fromEntries([...(n.dependsOn ?? [])].sort().map(d => [d, visit(d)]));
-    const hash = fingerprint({ operation: n.operation, version: n.version, input: n.input, dependencies: deps });
+    const hash = fingerprint({ operation: n.operation, version: n.version, input: n.input, dependencies: deps, bindings: (n.bindings ?? []) as unknown as Json });
     visiting.delete(id); hashes.set(id, hash); return hash;
   };
   for (const n of plan.nodes) visit(n.id);
@@ -70,6 +73,11 @@ export class DurableHarness {
         cacheable INTEGER NOT NULL DEFAULT 0, cached_from TEXT, UNIQUE(run_id,node_id));
       CREATE INDEX IF NOT EXISTS vh_jobs_fingerprint ON vh_jobs(fingerprint,state);
       CREATE TABLE IF NOT EXISTS vh_events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,run_id TEXT NOT NULL,job_id TEXT NOT NULL,at INTEGER NOT NULL,event TEXT NOT NULL,detail TEXT NOT NULL);`);
+    this.transaction(() => {
+      const columns = this.db.prepare('PRAGMA table_info(vh_jobs)').all().map(column => column.name);
+      if (!columns.includes('bindings_json')) this.db.exec("ALTER TABLE vh_jobs ADD COLUMN bindings_json TEXT NOT NULL DEFAULT '[]'");
+      if (!columns.includes('execution_input_json')) this.db.exec('ALTER TABLE vh_jobs ADD COLUMN execution_input_json TEXT');
+    });
   }
   close() { this.db.close(); }
   private transaction<T>(fn: () => T): T {
@@ -104,8 +112,8 @@ export class DurableHarness {
         const cached = canCache ? this.db.prepare(`SELECT j.id,j.output_json FROM vh_jobs j JOIN vh_runs r ON r.id=j.run_id
           WHERE r.project_id=? AND j.fingerprint=? AND j.state='succeeded' AND j.cacheable=1 AND j.cancel_requested=0 ORDER BY r.created_at DESC LIMIT 1`).get(plan.projectId, hashes.get(node.id)!) as { id: string; output_json: string } | undefined : undefined;
         const id = randomUUID();
-        this.db.prepare(`INSERT INTO vh_jobs(id,run_id,node_id,operation,fingerprint,input_json,dependencies_json,state,idempotency_key,output_json,cacheable,cached_from)
-          VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, runId, node.id, node.operation, hashes.get(node.id)!, JSON.stringify(node.input), JSON.stringify(node.dependsOn ?? []), cached ? 'succeeded' : 'queued', randomUUID(), cached?.output_json ?? null, canCache ? 1 : 0, cached?.id ?? null);
+        this.db.prepare(`INSERT INTO vh_jobs(id,run_id,node_id,operation,fingerprint,input_json,dependencies_json,state,idempotency_key,output_json,cacheable,cached_from,bindings_json)
+          VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?)`).run(id, runId, node.id, node.operation, hashes.get(node.id)!, JSON.stringify(node.input), JSON.stringify(node.dependsOn ?? []), cached ? 'succeeded' : 'queued', randomUUID(), cached?.output_json ?? null, canCache ? 1 : 0, cached?.id ?? null, JSON.stringify(node.bindings ?? []));
         this.event({ id, run_id: runId }, cached ? 'cache_hit' : 'queued', { node: node.id });
       }
       return runId;
@@ -162,16 +170,17 @@ export class DurableHarness {
     const job = this.claim(runId); if (!job) return false;
     const adapter = adapters[job.operation];
     if (!adapter) { this.transition(job, 'failed', { error: `No adapter for ${job.operation}` }); return true; }
-    const input = JSON.parse(job.input_json) as Json;
+    let input = JSON.parse(job.execution_input_json ?? job.input_json) as Json;
     const signal = AbortSignal.timeout(60_000);
     try {
       if (!job.provider_id) {
         if (job.state === 'submitting' && adapter.recovery === 'manual') {
           this.transition(job, 'uncertain', { error: 'Submission outcome unknown. Reconcile the provider job before retrying.' }); return true;
         }
-        const submitting = this.db.prepare("UPDATE vh_jobs SET state='submitting',attempts=attempts+1 WHERE id=? AND lease_token=? AND cancel_requested=0").run(job.id, job.lease_token);
-        if (!submitting.changes) { this.transition(job, job.state === 'queued' ? 'canceled' : 'uncertain', { error: 'Canceled before submission; reconcile an earlier ambiguous attempt if present' }); return true; }
         const dependencies = Object.fromEntries(this.jobs(runId).filter(d => (JSON.parse(job.dependencies_json) as string[]).includes(d.node_id)).map(d => [d.node_id, JSON.parse(d.output_json ?? 'null') as Json]));
+        if (!job.execution_input_json) input = bindOutputs(input, dependencies, JSON.parse(job.bindings_json) as OutputBinding[]);
+        const submitting = this.db.prepare("UPDATE vh_jobs SET state='submitting',attempts=attempts+1,execution_input_json=COALESCE(execution_input_json,?) WHERE id=? AND lease_token=? AND cancel_requested=0").run(JSON.stringify(input), job.id, job.lease_token);
+        if (!submitting.changes) { this.transition(job, job.state === 'queued' ? 'canceled' : 'uncertain', { error: 'Canceled before submission; reconcile an earlier ambiguous attempt if present' }); return true; }
         const submitted = await adapter.submit(input, { key: job.idempotency_key, dependencies, signal });
         if (!submitted.id) throw new Error('Provider accepted without a recoverable job ID');
         this.transition(job, 'running', { providerId: submitted.id });
@@ -188,7 +197,7 @@ export class DurableHarness {
       this.transition(job, result.state, { output: result.output, error: result.error, nextPoll: result.state === 'running' ? this.now() + Math.max(100, result.retryAfterMs ?? 2000) : 0 });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      if (error instanceof RejectedSubmission) this.transition(job, 'failed', { error: detail });
+      if (error instanceof RejectedSubmission || error instanceof BindingError) this.transition(job, 'failed', { error: detail });
       else if (job.provider_id) this.transition(job, 'running', { error: detail, nextPoll: this.now() + 5000 });
       else this.transition(job, adapter.recovery === 'manual' || job.attempts >= 2 ? 'uncertain' : 'submitting', { error: detail, nextPoll: this.now() + 2000 });
     }

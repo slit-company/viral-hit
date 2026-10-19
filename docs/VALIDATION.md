@@ -6,7 +6,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 |---|---|---|
 | Production build | Passed | Local build; not public deployment |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 438 passed | Includes 21 new harness/Router contract tests; SDK tests use fixtures |
+| Unit/integration tests | 445 passed | Includes 28 new harness/Router/recipe contract tests; SDK tests use fixtures |
 | Browser E2E | 6 passed | Local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
@@ -15,6 +15,8 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Worker recovery | Passed in deterministic tests | Restart, same-key replay, uncertain outcome, lease fencing, dependency invalidation and cancellation races; not an actual provider outage test |
 | Video/audio/caption server render | Passed | Original 3s motion split into two shots, rendered through MCP to project-owned H.264/AAC MP4: 1920×1080, 90 video frames, both streams 3.000s; requires full FFmpeg with drawtext |
 | Visual feedback loop | Passed, 4.205/5 | Actual editor at 1440×1000; not a rating of generation quality |
+| Extensible recipes | Passed | Separate manifest directory, dynamically rendered third-party form, MCP discovery, offline compile and persisted output binding/restart tests; no live generation |
+| Recipe visual feedback | Passed, 4.15/5 | Fixed long-form action clipping after real desktop/mobile inspection |
 | Actual Comfy generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
 | Higgsfield comparative benchmark | Not run | Full feature/performance parity is not established |
 

@@ -3,6 +3,7 @@ import { getActiveProject } from '@/core/projects/projects';
 import { openHarness } from '@/core/harness/store';
 import { runRequest } from '@/core/harness/requests';
 import { isComfyConfigured } from '@/core/harness/comfy-router';
+import { prepareRecipePlan } from '@/core/harness/recipe-plan';
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
 
@@ -24,9 +25,10 @@ async function POST({ params, request }: Context) {
   catch (error) { return Response.json({ error: 'Invalid run request' }, { status: error instanceof RequestBodyTooLargeError ? 413 : 400 }); }
   const h = openHarness();
   try {
-    if (body.action === 'enqueue') {
+    if (body.action === 'enqueue' || body.action === 'recipe') {
+      const plan = body.action === 'recipe' ? await prepareRecipePlan(body.recipeId, body.values, params.projectId) : { projectId: params.projectId, nodes: body.nodes };
       if (!isComfyConfigured()) return Response.json({ error: 'Comfy API key is not configured on this server' }, { status: 503 });
-      const runId = h.enqueue({ projectId: params.projectId, nodes: body.nodes }, body.requestKey);
+      const runId = h.enqueue(plan, body.requestKey);
       return Response.json({ runId }, { status: 202 });
     }
     if (!h.runs(params.projectId).some(run => run.id === body.runId)) return Response.json({ error: 'Run not found' }, { status: 404 });

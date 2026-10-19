@@ -30,6 +30,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_editor_history',
   'viral_hit_runs_list',
   'viral_hit_runs_change',
+  'viral_hit_recipes_list',
 ] as const;
 
 export type ViralHitMcpToolName = (typeof VIRAL_HIT_MCP_TOOL_NAMES)[number];

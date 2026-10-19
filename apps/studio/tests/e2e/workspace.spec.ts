@@ -100,6 +100,9 @@ test('generation run panel checks configuration and rejects malformed and untrus
   expect((await state.json()).runs).toEqual([]);
   const agentRuns = await mcp(request, 'viral_hit_runs_list', { projectId: id });
   expect(JSON.stringify(agentRuns)).toContain('"runs":[]');
+  const catalog = await mcp(request, 'viral_hit_recipes_list', {});
+  expect(catalog.structuredContent.result.recipes.some((r: { id: string }) => r.id === 'community-fixture')).toBe(true);
+  expect((await request.post(url, { headers, data: { action: 'recipe', recipeId: 'community-fixture', values: { prompt: 'A new frame' }, requestKey: 'community-no-key' } })).status()).toBe(503);
   expect((await request.post(url, { data: { action: 'cancel', runId: 'not-a-uuid' } })).status()).toBe(403);
   expect((await request.post(url, { headers, data: { action: 'enqueue', nodes: [] } })).status()).toBe(400);
   expect((await request.post(url, { headers, data: { action: 'cancel', runId: '00000000-0000-4000-8000-000000000000' } })).status()).toBe(404);
@@ -109,6 +112,17 @@ test('generation run panel checks configuration and rejects malformed and untrus
   await page.getByLabel('Describe your frame').fill('A paper observatory');
   // E2E deliberately runs without provider credentials; never submit paid work.
   await expect(page.getByRole('button', { name: 'Queue generation' })).toBeDisabled();
+  await page.getByLabel('Creative recipe').selectOption('community-fixture');
+  await expect(page.getByLabel('Community frame prompt')).toBeVisible();
+  await page.getByText('1 generation step · Recipe details', { exact: true }).click();
+  await expect(page.getByText(/External test author/)).toBeVisible();
+  await page.getByText('1 generation step · Recipe details', { exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('editorial-triptych');
+  await expect(page.getByLabel('Opening · establish the world')).toBeVisible();
+  await expect(page.getByLabel('Detail · the visual idea')).toBeVisible();
+  await expect(page.getByLabel('Closing · the final image')).toBeVisible();
+  await page.getByLabel('Creative recipe').selectOption('open-frame');
+  await page.getByLabel('Describe your frame').fill('A paper observatory');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.screenshot({ path: 'test-results/harness-desktop.png' });
   await page.setViewportSize({ width: 390, height: 844 });

@@ -3,6 +3,7 @@ import { Activity, ArrowUpRight, RefreshCw } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { Job } from '@/core/harness/durable';
+import type { Recipe } from '@/core/harness/recipes';
 
 type Run = { id: string; created_at: number; jobs: Job[]; events: { sequence: number; event: string; at: number }[] };
 type Result = { configured: boolean; runs: Run[] };
@@ -11,7 +12,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [data, setData] = useState<Result>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [prompt, setPrompt] = useState('');
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [recipeId, setRecipeId] = useState('open-frame');
+  const [values, setValues] = useState<Record<string, string | number | boolean>>({});
+  const selected = recipes.find(recipe => recipe.id === recipeId) ?? recipes[0];
+  const ready = selected?.parameters.every(parameter => values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
   async function refresh() { setData(await apiJsonGet<Result>(endpoint)); }
@@ -25,6 +30,12 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     void load(); const interval = setInterval(() => void load(), 2500);
     return () => { active = false; clearInterval(interval); };
   }, [open, endpoint]);
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    void apiJsonGet<{ recipes: Recipe[] }>('/api/app/recipes').then(result => { if (active) setRecipes(result.recipes); }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
+    return () => { active = false; };
+  }, [open]);
   async function act(body: unknown) {
     setBusy(true); setError('');
     try { await apiJsonPost(endpoint, body); await refresh(); return true; }
@@ -32,11 +43,9 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     finally { setBusy(false); }
   }
   async function generate() {
+    if (!selected) return;
     requestKey.current ||= crypto.randomUUID();
-    if (await act({ action: 'enqueue', requestKey: requestKey.current, nodes: [{
-      id: 'image', operation: 'comfy.router', version: '1', cache: false,
-      input: { model: 'bfl/flux-2-pro', body: { prompt: prompt.trim() } },
-    }] })) { setPrompt(''); requestKey.current = ''; }
+    if (await act({ action: 'recipe', recipeId: selected.id, values, requestKey: requestKey.current })) { setValues({}); requestKey.current = ''; }
   }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-white/10 px-2.5 text-xs hover:bg-white/10" aria-label="Generation runs">
@@ -50,11 +59,31 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       </div>
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-white/10 p-4">
-          <div className="flex items-center justify-between gap-2"><h3 className="text-sm font-semibold">Create an image</h3><span className="rounded-md bg-white/5 px-2 py-1 text-[10px] text-white/60">FLUX.2 Pro</span></div>
-          <label htmlFor="comfy-prompt" className="block text-xs text-white/70">Describe your frame</label>
-          <textarea id="comfy-prompt" value={prompt} onChange={e => { setPrompt(e.target.value); requestKey.current = ''; }} maxLength={16000} placeholder="A paper observatory on a volcanic island at sunrise…" className="min-h-36 w-full resize-y rounded-lg border border-white/15 bg-black/20 p-3 text-sm outline-none focus:border-[#c7f36b]" />
+          <label htmlFor="run-recipe" className="block text-xs text-white/70">Creative recipe</label>
+          <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; }} className="w-full rounded-lg border border-white/15 bg-[#1b1e20] p-2.5 text-sm">
+            {!recipes.length && <option value="">No recipes available</option>}
+            {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
+          </select>
+          {selected && <>
+            <details className="text-xs text-white/60"><summary className="cursor-pointer">{selected.nodes.length} generation step{selected.nodes.length === 1 ? '' : 's'} · Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>
+            <div className="max-h-[28vh] space-y-4 overflow-y-auto pr-1" aria-label="Recipe parameters">
+            {selected.parameters.map(parameter => {
+              const id = `recipe-${parameter.id}`;
+              const value = values[parameter.id] ?? parameter.default ?? '';
+              const change = (value: string | number | boolean) => { setValues(current => ({ ...current, [parameter.id]: value })); requestKey.current = ''; };
+              const fieldClass = 'w-full rounded-lg border border-white/15 bg-black/20 p-3 text-sm outline-none focus:border-[#c7f36b]';
+              return <div key={id} className="space-y-2"><label htmlFor={id} className="block text-xs text-white/70">{parameter.label}</label>
+                {parameter.type === 'string' ? <textarea id={id} value={String(value)} onChange={e => change(e.target.value)} maxLength={parameter.maxLength ?? 16000} className={`${fieldClass} min-h-28 resize-y`} />
+                  : parameter.type === 'number' ? <input id={id} type="number" value={String(value)} min={parameter.min} max={parameter.max} step={parameter.integer ? 1 : 'any'} onChange={e => change(e.target.value === '' ? '' : Number(e.target.value))} className={fieldClass} />
+                  : parameter.type === 'boolean' ? <input id={id} type="checkbox" checked={Boolean(value)} onChange={e => change(e.target.checked)} />
+                  : <select id={id} value={String(value)} onChange={e => change(e.target.value)} className={fieldClass}><option value="" disabled>Select…</option>{parameter.options.map(option => <option key={option} value={option}>{option}</option>)}</select>}
+                {parameter.description && <p className="text-[11px] text-white/50">{parameter.description}</p>}
+              </div>;
+            })}
+            </div>
+          </>}
           <p className="text-xs leading-relaxed text-white/60">{data ? data.configured ? 'Uses your Comfy credits. Final usage appears on the provider receipt.' : 'Connect Comfy with COMFY_API_KEY in the server environment, then restart the studio.' : 'Checking Comfy connection…'}</p>
-          <button disabled={!data?.configured || !prompt.trim() || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">Queue generation <ArrowUpRight size={15} /></button>
+          <button disabled={!data?.configured || !ready || busy} onClick={() => void generate()} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#c7f36b] px-4 py-2.5 text-sm font-semibold text-black disabled:cursor-not-allowed disabled:opacity-40">Queue generation <ArrowUpRight size={15} /></button>
           <p className="text-[11px] leading-relaxed text-amber-200/80">Preview integration: this route saves the provider receipt. Automatic media import into Assets is still being built.</p>
         </section>
         <section className="min-w-0 space-y-3">

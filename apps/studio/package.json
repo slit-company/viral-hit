@@ -43,7 +43,8 @@
     "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
     "db:studio": "drizzle-kit studio --config=drizzle.config.ts",
     "harness": "tsx scripts/harness.ts",
-    "worker": "tsx scripts/harness-worker.ts"
+    "worker": "tsx scripts/harness-worker.ts",
+    "recipe": "tsx scripts/recipe.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

@@ -12,7 +12,7 @@ const hasRunningWorkspace = async () => {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 1_000);
   try {
-    const response = await fetch('http://127.0.0.1:3020/api/ping', {
+    const response = await fetch('http://127.0.0.1:3808/api/ping', {
       signal: controller.signal,
     });
     if (!response.ok) return false;
@@ -28,7 +28,7 @@ const hasRunningWorkspace = async () => {
 const workspaceAlreadyRunning = await hasRunningWorkspace();
 if (workspaceAlreadyRunning) {
   console.error(
-    'ViralHit is already running at http://127.0.0.1:3020; starting MCP only.'
+    'Viral Hit is already running at http://127.0.0.1:3808; starting MCP only.'
   );
 }
 
@@ -56,7 +56,7 @@ for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
 
 for (const child of children) {
   child.on('error', (error) => {
-    console.error(`ViralHit Agent runtime failed to start: ${error.message}`);
+    console.error(`Viral Hit Agent runtime failed to start: ${error.message}`);
     stopAll();
     process.exitCode = 1;
   });
@@ -64,7 +64,7 @@ for (const child of children) {
     if (stopping) return;
     if (code !== 0 || signal) {
       console.error(
-        `A ViralHit Agent process stopped unexpectedly (${signal ?? `exit ${code}`}).`
+        `A Viral Hit Agent process stopped unexpectedly (${signal ?? `exit ${code}`}).`
       );
     }
     process.exitCode = code ?? 1;
