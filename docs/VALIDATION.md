@@ -1,5 +1,9 @@
 # Validation ledger — 2026-10-19
 
+## YouTube transport milestone — 2026-10-20
+
+Ten new transport/contract tests pass, bringing the source suite to 524. The actual local HTTP fixture transfers bytes through partial receipt and lost-final-response scenarios, recovers the same session/video identity and verifies received SHA-256 with exactly one session creation. It also distinguishes uploaded/private from processed/public, validates channel identity with a pinned credential, rechecks scheduling after lookup, bounds JSON and refuses redirects/foreign session URLs. Typecheck and architecture pass (313 source modules, 150 browser-reachable, zero cycles). No browser runtime changed and no external account was contacted. Publishing application/store/approval/worker integration and real YouTube verification remain pending; see [publishing status](PUBLISHING.md).
+
 ## Optional local-media milestone
 
 The separately installed music2 0.4.0/vid2 0.6.0 bridge passes nine extension tests, the architecture gate, production footprint gate, TypeScript and all 514 studio source tests. Actual engine execution passed the data-URL adapter loader, durable queue, binary receipt, materializer, revision-checked timeline attachment and server export. Both jobs submitted once. The mixed H.264/AAC output has 120 decoded video frames and exactly 4.000s video/audio. This is synthesized music/procedural motion, not model-quality evidence.

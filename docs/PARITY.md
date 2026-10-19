@@ -19,7 +19,7 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 | Agent | Supercomputer: projects, skills, connectors, memory, ask-before-generation mode | Same project operations as UI; durable jobs; revisions, retries, cancellation, budget ledger | Target |
 | Templates | VFX, UGC, explainers, marketing, photography | Versioned, forkable workflows with editable parameters and actual execution | Target |
 | Extensibility | MCP, CLI and API | Versioned APIs, MCP, local/server providers, capability discovery | Target |
-| Publishing | Additional requested scope: Meta/Instagram and YouTube | Generic destination connectors, export identity, approval/schedule, remote receipt and reconciliation | Source audit only; connectors not implemented |
+| Publishing | Additional requested scope: Meta/Instagram and YouTube | Generic destination connectors, export identity, approval/schedule, remote receipt and reconciliation | YouTube transport fixture-tested; durable intents/account connection/UI/worker and Meta remain pending |
 | Measurement | Additional requested scope: creative performance feedback | Versioned metrics linked to published creative, partial collection states and analysis | Source audit only; not implemented |
 | Collaboration | Team/project sharing and community | Shared projects, comments, permissions, reproducible remix packages | Target |
 
@@ -33,7 +33,7 @@ Independently installed `ext.*` execution adapters now share discovery, typed in
 
 ## Performance gates
 
-Optional music2 and vid2 adapters now execute authored scores/procedural timelines through the real harness, produce WAV/MP4 assets, attach to the editor and export together. This is a bounded subset of Audio/Editor/Templates, not full-row completion. ima2 is inspected but not integrated; Meta/YouTube publishing remains source-audit/design work. See [source coverage](LOCAL-MEDIA-SOURCES.md) and [measured performance/bundle budgets](PERFORMANCE.md).
+Optional music2 and vid2 adapters now execute authored scores/procedural timelines through the real harness, produce WAV/MP4 assets, attach to the editor and export together. This is a bounded subset of Audio/Editor/Templates, not full-row completion. ima2 is inspected but not integrated. [Publishing](PUBLISHING.md) has a fixture-tested YouTube transport but no operational account/approval/worker/UI flow. See [source coverage](LOCAL-MEDIA-SOURCES.md) and [measured performance/bundle budgets](PERFORMANCE.md).
 
 Measure cold and warm runs separately on fixed machine/browser/model versions. Report p50/p95, failures, external generation cost and number of rerun nodes. Never compare different providers as if only the harness changed.
 
