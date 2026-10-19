@@ -1,3 +1,4 @@
+import { externalOperation } from './external-catalog';
 import { z } from 'zod';
 import { workflowInput } from './comfy-workflow';
 import { routerInput } from './comfy-router';
@@ -11,12 +12,13 @@ const nodeBase = {
   // Cache integrity checks across runs are not implemented yet.
   cache: z.literal(false).optional(),
 };
-export const runtimeNodeSchema = z.discriminatedUnion('operation', [
+const builtinNodeSchema = z.discriminatedUnion('operation', [
   z.object({ ...nodeBase, operation: z.literal('comfy.upload'), input: uploadInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.router'), input: routerInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.workflow'), input: workflowInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('asset.materialize'), input: materializeInput }).strict(),
 ]);
+export const runtimeNodeSchema = z.union([builtinNodeSchema, z.object({ ...nodeBase, operation: externalOperation, input: z.json() }).strict()]);
 export const runRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('enqueue'), requestKey: z.string().trim().min(1).max(200), nodes: z.array(runtimeNodeSchema).min(1).max(256) }).strict(),
   z.object({ action: z.literal('recipe'), recipeId: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/), requestKey: z.string().trim().min(1).max(200), values: z.record(z.string(), z.json()) }).strict(),

@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "id": "procedural-tone",
+  "version": "1.0.0",
+  "title": "Procedural tone",
+  "description": "Create a quiet calibration tone using an independently installed adapter. No AI model or paid provider is called.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "audio",
+  "parameters": [
+    {
+      "id": "frequency",
+      "label": "Frequency (Hz)",
+      "type": "number",
+      "default": 440,
+      "min": 20,
+      "max": 2000
+    },
+    {
+      "id": "duration",
+      "label": "Duration (seconds)",
+      "type": "number",
+      "default": 2,
+      "min": 0.1,
+      "max": 10
+    }
+  ],
+  "nodes": [
+    {
+      "id": "tone",
+      "operation": "ext.example-tone",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "frequency": 440,
+        "duration": 2
+      },
+      "parameters": [
+        {
+          "parameter": "frequency",
+          "target": "/frequency"
+        },
+        {
+          "parameter": "duration",
+          "target": "/duration"
+        }
+      ]
+    },
+    {
+      "id": "audio",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "audio",
+        "label": "Procedural calibration tone"
+      },
+      "dependsOn": [
+        "tone"
+      ],
+      "bindings": [
+        {
+          "node": "tone",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}

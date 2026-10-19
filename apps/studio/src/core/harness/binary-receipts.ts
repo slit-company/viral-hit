@@ -11,7 +11,8 @@ export const binaryReference = z.object({ jobId: z.string().uuid(), sha256: z.st
 export type ReceiptContext = { projectId: string; jobId: string };
 const receiptSchema = z.object({
   schemaVersion: z.literal(1), projectId: z.string(), jobId: z.string().uuid(),
-  provider: z.enum(['comfy-router', 'comfy-workflow']), model: z.string(), providerJobId: z.string(),
+  provider: z.enum(['comfy-router', 'comfy-workflow', 'external-adapter']), model: z.string(), providerJobId: z.string(),
+  adapterDigest: z.string().regex(/^[a-f0-9]{64}$/).optional(),
   requestId: z.string().nullable(), contentType: z.string().max(1000),
   creditsUsed: z.string().nullable(), servingProvider: z.string().nullable(),
   droppedParams: z.array(z.string()).nullable(),
@@ -62,7 +63,7 @@ export async function saveBinaryReceipt(context: ReceiptContext, details: Omit<B
     catch (error) { if (!['EEXIST', 'ENOTEMPTY'].includes((error as NodeJS.ErrnoException).code ?? '')) throw error; }
   } finally { await rm(temporary, { recursive: true, force: true }); }
   const saved = await readBinaryReceipt(context, signal);
-  if (!saved || saved.receipt.sha256 !== receipt.sha256 || saved.receipt.providerJobId !== receipt.providerJobId || saved.receipt.model !== receipt.model) throw new ReceiptIntegrityError('Provider replay differs from its saved receipt; original bytes retained');
+  if (!saved || saved.receipt.sha256 !== receipt.sha256 || saved.receipt.providerJobId !== receipt.providerJobId || saved.receipt.model !== receipt.model || saved.receipt.provider !== receipt.provider || saved.receipt.adapterDigest !== receipt.adapterDigest) throw new ReceiptIntegrityError('Provider replay differs from its saved receipt; original bytes retained');
   return saved.receipt;
 }
 

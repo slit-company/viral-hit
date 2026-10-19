@@ -1,0 +1,131 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "operation": {
+      "type": "string",
+      "pattern": "^ext\\.[a-z][a-z0-9_.-]{0,119}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9._-]{1,80}$"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "entry": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\\.mjs$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "recovery": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "replay",
+        "reconcile"
+      ]
+    },
+    "generation": {
+      "type": "boolean"
+    },
+    "configuration": {
+      "default": [],
+      "maxItems": 32,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,100}$"
+          },
+          "required": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "required"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "inputSchema": {
+      "type": "object",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "$ref": "#/$defs/__schema0"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "operation",
+    "version",
+    "label",
+    "author",
+    "license",
+    "entry",
+    "sha256",
+    "recovery",
+    "generation",
+    "configuration",
+    "inputSchema"
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "__schema0": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/__schema0"
+          }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/__schema0"
+          }
+        }
+      ]
+    }
+  }
+}

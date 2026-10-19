@@ -777,3 +777,37 @@ test('edits made during conflict recovery do not silently overwrite a concurrent
   const draft = await page.evaluate(prefix => JSON.parse(localStorage.getItem(Object.keys(localStorage).find(key => key.startsWith(prefix))!)!), `viral-hit:timeline-draft:v1:${id}:`);
   expect(draft.document.tracks.flatMap((t: any) => t.clips).find((c: any) => c.id === 'caption-b').text).toBe('New local B');
 });
+
+test('installed external adapter is discovered through UI and MCP and queues a pinned plan', async ({ page, request }) => {
+  const id = await project(request, 'External adapter UI QA');
+  const catalog = await (await request.get('/api/app/recipes')).json();
+  const capability = catalog.capabilities.find((c: any) => c.operation === 'ext.example-tone');
+  expect(capability).toMatchObject({ configured: true, external: true, version: '1', generation: false, author: 'Viral Hit contributors', license: 'Apache-2.0' });
+  const discovered = await mcp(request, 'viral_hit_recipes_list', {});
+  expect(discovered.structuredContent.result.capabilities).toContainEqual(capability);
+  const unknown = await request.post(`/api/app/projects/${id}/runs`, { headers, data: { action: 'enqueue', requestKey: 'unknown-external', nodes: [{ id: 'unknown', operation: 'ext.not-installed', version: '1', input: {} }] } });
+  expect(unknown.status()).toBe(503);
+  const invalid = await request.post(`/api/app/projects/${id}/runs`, { headers, data: { action: 'enqueue', requestKey: 'invalid-external', nodes: [{ id: 'tone', operation: 'ext.example-tone', version: '1', input: { frequency: 440, duration: 100 } }] } });
+  expect(invalid.ok()).toBe(false); expect((await invalid.json()).error).toContain('Invalid ext.example-tone input');
+  await page.goto(`/editor/${id}`); await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('procedural-tone');
+  await page.getByLabel('Frequency (Hz)', { exact: true }).fill('660');
+  await page.getByLabel('Duration (seconds)', { exact: true }).fill('1.5');
+  await expect(page.getByText('Uses installed adapters:', { exact: false })).toContainText('Procedural tone example v1');
+  await expect(page.getByText('Uses your Comfy credits.', { exact: false })).toHaveCount(0);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.screenshot({ path: 'test-results/external-adapter-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const queue = page.getByRole('button', { name: 'Queue workflow', exact: true });
+  await queue.scrollIntoViewIfNeeded();
+  const modal = await page.getByRole('dialog').boundingBox(), action = await queue.boundingBox();
+  expect(action!.y + action!.height).toBeLessThanOrEqual(modal!.y + modal!.height);
+  expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/external-adapter-mobile.png' });
+  await queue.click();
+  await expect.poll(async () => (await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs.length).toBe(1);
+  const run = (await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs[0];
+  const input = JSON.parse(run.jobs.find((job: any) => job.operation === 'ext.example-tone').input_json);
+  expect(input.payload).toEqual({ frequency: 660, duration: 1.5 }); expect(input.adapter.digest).toMatch(/^[a-f0-9]{64}$/);
+  const same = await mcp(request, 'viral_hit_runs_list', { projectId: id });
+  expect(same.structuredContent.result.runs[0].id).toBe(run.id);
+});

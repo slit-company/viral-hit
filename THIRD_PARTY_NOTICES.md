@@ -12,3 +12,7 @@ Viral Hit adds the MIT-licensed `ipaddr.js` dependency, pinned at 2.5.0, for IPv
 ## Interface components
 
 The actual controls use `@seed-design/react` 2.4.1 and `@seed-design/css` 2.6.1 (Apache-2.0), Phosphor React 2.1.10 (MIT), and Pretendard 1.3.9 (SIL Open Font License). Installed dependencies retain their license files. Viral Hit's generated mark and wordmark are separately documented in `docs/BRAND.md`.
+
+## Ajv
+
+Viral Hit uses Ajv 8.20.0 (MIT, copyright 2015–2021 Evgeny Poberezkin) to validate installed adapter input schemas. The installed package retains its license. See [upstream source and license](https://github.com/ajv-validator/ajv).

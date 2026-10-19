@@ -27,6 +27,8 @@ Local asset import, canvas/UI/MCP state sharing, multitrack timeline foundation,
 
 Interrupted timeline edits now have browser-local draft recovery, exact-snapshot JSON download, disjoint merge, conflict preservation and undoable restoration. In-flight saves preserve newer edits and check their rebase conflicts. This is not cloud synchronization, per-field conflict resolution or a portable project/media archive; see [recovery limits](EDITING-RECOVERY.md).
 
+Independently installed `ext.*` execution adapters now share discovery, typed input schemas, pinned plan admission and the durable worker. Code/configuration fingerprints fence old jobs; scoped binary receipts flow through media import and timeline attachment. The procedural WAV example has executed on the production build and exported with a visual clip. This proves extension plumbing and a real local processor, not third-party model quality, isolated plugin execution or a marketplace. See [external adapters](EXTERNAL-ADAPTERS.md).
+
 ## Performance gates
 
 Measure cold and warm runs separately on fixed machine/browser/model versions. Report p50/p95, failures, external generation cost and number of rerun nodes. Never compare different providers as if only the harness changed.

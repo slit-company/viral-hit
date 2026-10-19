@@ -78,7 +78,7 @@ import { runtimeCapabilities, assertRuntimeConfigured, reconciliableOperations }
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan, prepareRecipeCheck, recipeCheckRequest } from '@/core/harness/recipe-plan';
 import { preflightComfyPlan } from '@/core/harness/comfy-preflight';
-import { pinProjectInputs } from '@/core/harness/comfy-upload';
+import { pinRuntimePlan } from '@/core/harness/runtime-plan';
 import { attachMaterializedJob } from '@/core/harness/attach-asset';
 import { loadRecipes } from '@/core/harness/recipe-registry';
 import { changeRecipeLibrary, recipeLibraryRequest } from '@/core/harness/recipe-library';
@@ -1342,7 +1342,7 @@ export function createViralHitMcpServer() {
         if (request.action === 'enqueue' || request.action === 'recipe') {
           const plan = request.action === 'recipe' ? await prepareRecipePlan(request.recipeId, request.values, project.id) : { projectId: project.id, nodes: request.nodes };
           assertRuntimeConfigured(plan.nodes);
-          return { runId: h.enqueue(await pinProjectInputs(plan), request.requestKey) };
+          return { runId: h.enqueue(await pinRuntimePlan(plan), request.requestKey) };
         }
         if (!h.runs(project.id).some(run => run.id === request.runId)) throw new Error('Run not found in this project');
         if (request.action === 'attach' || request.action === 'take') {
@@ -1350,7 +1350,7 @@ export function createViralHitMcpServer() {
           if (!result.ok) throw new ViralHitMcpToolError(result.code === 'REVISION_CONFLICT' ? 409 : 400, { error: result.message, revision: result.revision });
           return result;
         }
-        if (request.action === 'cancel') h.cancel(request.runId); else if (request.action === 'reconcile') h.requestReconciliation(request.runId, reconciliableOperations); else h.retry(request.runId);
+        if (request.action === 'cancel') h.cancel(request.runId); else if (request.action === 'reconcile') h.requestReconciliation(request.runId, reconciliableOperations()); else h.retry(request.runId);
         return { runId: request.runId };
       } finally { h.close(); }
     })

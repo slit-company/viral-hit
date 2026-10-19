@@ -31,7 +31,7 @@ export async function inspectRecipe(raw: unknown) {
   const collision = base.some(item => item.id === recipe.id) ? 'reserved'
     : existing ? recipeDigest(existing) === digest ? 'same' : 'different' : 'none';
   const operations = [...new Set(recipe.nodes.map(node => node.operation))];
-  return { recipe, digest, collision, operations, unavailableOperations: operations.filter(operation => !supportedOperations.has(operation)),
+  return { recipe, digest, collision, operations, unavailableOperations: operations.filter(operation => !supportedOperations().has(operation)),
     parameterCount: recipe.parameters.length, nodeCount: recipe.nodes.length };
 }
 

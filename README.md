@@ -41,3 +41,5 @@ Native, self-hosted ComfyUI graphs are also supported through `comfy.workflow`: 
 The interface now uses [SEED components and a light theme](docs/DESIGN.md), with an original [Viral Hit mark and wordmark](docs/BRAND.md). For local query debugging only, set `VITE_QUERY_DEVTOOLS=true`; the debug launcher is hidden by default.
 
 Unsaved timeline edits are backed up in the current browser. **Drafts** reviews and restores interrupted edits while preserving concurrent saved changes; see [editing recovery and storage limits](docs/EDITING-RECOVERY.md).
+
+Install a new execution engine without editing the app: [external adapters](docs/EXTERNAL-ADAPTERS.md) share typed input discovery, pinned jobs, binary output receipts and editor integration. A standalone procedural WAV example is included; executable modules are enabled only by an operator-configured directory.

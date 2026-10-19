@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "operation": "ext.example-tone",
+  "version": "1",
+  "label": "Procedural tone example",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "entry": "tone.mjs",
+  "sha256": "308b462699421b562743a37ba1fa32556f0ebfbcb9ca51098e9a34666a5de298",
+  "recovery": "replay",
+  "generation": false,
+  "configuration": [],
+  "inputSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "frequency",
+      "duration"
+    ],
+    "properties": {
+      "frequency": {
+        "type": "number",
+        "minimum": 20,
+        "maximum": 2000
+      },
+      "duration": {
+        "type": "number",
+        "minimum": 0.1,
+        "maximum": 10
+      }
+    }
+  }
+}

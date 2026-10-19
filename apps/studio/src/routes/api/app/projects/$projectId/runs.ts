@@ -5,7 +5,7 @@ import { runRequest } from '@/core/harness/requests';
 import { runtimeCapabilities, assertRuntimeConfigured, reconciliableOperations } from '@/core/harness/capabilities';
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan } from '@/core/harness/recipe-plan';
-import { pinProjectInputs } from '@/core/harness/comfy-upload';
+import { pinRuntimePlan } from '@/core/harness/runtime-plan';
 import { attachMaterializedJob } from '@/core/harness/attach-asset';
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
@@ -31,7 +31,7 @@ async function POST({ params, request }: Context) {
     if (body.action === 'enqueue' || body.action === 'recipe') {
       const plan = body.action === 'recipe' ? await prepareRecipePlan(body.recipeId, body.values, params.projectId) : { projectId: params.projectId, nodes: body.nodes };
       try { assertRuntimeConfigured(plan.nodes); } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Runtime unavailable' }, { status: 503 }); }
-      const runId = h.enqueue(await pinProjectInputs(plan), body.requestKey);
+      const runId = h.enqueue(await pinRuntimePlan(plan), body.requestKey);
       return Response.json({ runId }, { status: 202 });
     }
     if (!h.runs(params.projectId).some(run => run.id === body.runId)) return Response.json({ error: 'Run not found' }, { status: 404 });
@@ -40,7 +40,7 @@ async function POST({ params, request }: Context) {
       return Response.json(result.ok ? result : { ...result, error: result.message }, { status: result.ok ? 200 : result.code === 'REVISION_CONFLICT' ? 409 : 400 });
     }
     if (body.action === 'cancel') h.cancel(body.runId);
-    else if (body.action === 'reconcile') h.requestReconciliation(body.runId, reconciliableOperations);
+    else if (body.action === 'reconcile') h.requestReconciliation(body.runId, reconciliableOperations());
     else h.retry(body.runId);
     return Response.json({ runId: body.runId });
   } catch (error) {

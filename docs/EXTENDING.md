@@ -1,6 +1,6 @@
 # Extending Viral Hit
 
-The core must support both general creative work and specialized workflows. A new use case must not require forking the editor or inheriting advertising-specific assumptions. There are two extension levels: **data recipes** (implemented) and **execution adapters** (a TypeScript interface implemented in source; dynamic package installation is pending).
+The core must support both general creative work and specialized workflows. A new use case must not require forking the editor or inheriting advertising-specific assumptions. There are two extension levels: **data recipes** (implemented) and **execution adapters** (explicitly installed, versioned server modules shared by the UI, MCP and worker).
 
 ## Add a recipe without editing application code
 
@@ -8,7 +8,7 @@ A recipe is a versioned JSON file with identity, author/license, category, typed
 
 The shipped `open-frame`, `open-motion` and `spoken-line` recipes cover general image, video and speech workflows. `remote-media-import` imports public HTTPS image/video/audio media without a generation key. `editorial-triptych` specializes the same machinery for three directed frames. It does not promise character continuity or automatic film assembly. Add product photography, storyboards, animation keyframes or other recipes without changing core UI components. Each recipe must describe real operation coverage accurately.
 
-Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router`, `comfy.workflow`, `comfy.upload` and `asset.materialize`. An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. The shipped video recipe maps the Kling task-list result at `/data/data/0/outputs/0/url`; other result shapes need their own mapping. It does not currently fall back to a watermark URL. Each other model requires its own declared output mapping.
+Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router`, `comfy.workflow`, `comfy.upload`, `asset.materialize` and explicitly installed `ext.*` adapters. See [external runtime installation](EXTERNAL-ADAPTERS.md). An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. The shipped video recipe maps the Kling task-list result at `/data/data/0/outputs/0/url`; other result shapes need their own mapping. It does not currently fall back to a watermark URL. Each other model requires its own declared output mapping.
 
 The [JSON Schema](schemas/recipe.schema.json) supports editor tooling. The runtime compiler additionally verifies graph cycles, parameter types/ranges, duplicate identifiers, pointer safety, dependency membership and overlapping bindings. Root `schemaVersion` versions the manifest format; recipe `version` versions the author's behavior. Node operation version and recipe identity/version enter the execution fingerprint.
 
@@ -116,13 +116,13 @@ For multi-stage processing, `bindings` select output JSON from an explicitly dec
 
 Once dependencies succeed, the worker resolves the pointers and persists the exact execution input **before** submission. Restart, replay, polling and cancellation reuse that frozen input. Missing fields fail before any dependent provider call. JSON pointer escaping follows `~0` and `~1`; array entries are indexed explicitly. Bindings may replace existing values, not create prototype properties or expand arrays. Cache invalidation includes upstream inputs and binding definitions. Generated media caching remains disabled until durable files are verified.
 
-## Add an execution adapter in source
+## Add an execution adapter
 
-Implement `Adapter` in `apps/studio/src/core/harness/durable.ts`: `submit`, `poll`, optional `cancel`, and a truthful `recovery` mode. Register it in the worker and define its validated request policy. `submit` receives a persisted idempotency key, dependency outputs and an AbortSignal. It must return the real external job ID. `poll` returns actual running/succeeded/failed/canceled status; cancellation must not invent provider confirmation.
+Prefer a separate module and descriptor following [external adapters](EXTERNAL-ADAPTERS.md); no application-source change is required. A procedural WAV example verifies the complete binary-output/materializer path. For a built-in source contribution, implement `Adapter` in `apps/studio/src/core/harness/durable.ts`: `submit`, `poll`, optional `cancel`, and a truthful `recovery` mode. Register it in the worker and define its validated request policy. `submit` receives a persisted idempotency key, dependency outputs and an AbortSignal. It must return the real external job ID. `poll` returns actual running/succeeded/failed/canceled status; cancellation must not invent provider confirmation.
 
 Use `recovery: "replay"` only if repeated submission with the same key is guaranteed to recover the original job. Otherwise use `manual`, leaving ambiguous outcomes uncertain. Persist provider identity, model/version, actual cost (or null), output metadata and provenance. Do not return success merely because an HTTP request was accepted.
 
-Third-party executable adapters run with local process privileges; a future installer must make that explicit and must not auto-install code from a recipe. Signed packages, an adapter capability registry, isolated workers and schema-driven model discovery remain planned. Today this is a reviewed source contribution, not a plugin marketplace.
+Third-party executable adapters run with local process privileges. Operators explicitly configure their directory; recipes cannot install code. The shared capability catalog includes installed operations, configuration availability, version, attribution, recovery mode and input schema. Signed packages, isolated workers, automatic model discovery and a hosted plugin marketplace remain planned.
 
 ## Contributing
 

@@ -1,13 +1,15 @@
+import { externalCatalog, externalConfigured } from './external-catalog';
 import type { NodeSpec } from './durable';
 import { isComfyConfigured } from './comfy-router';
 import { comfyWorkflowUrl } from './comfy-workflow';
 
-export const supportedOperations = new Set(['comfy.router', 'comfy.workflow', 'comfy.upload', 'asset.materialize']);
-export const reconciliableOperations = ['comfy.workflow'] as const;
+export const supportedOperations = () => new Set(['comfy.router', 'comfy.workflow', 'comfy.upload', 'asset.materialize', ...externalCatalog().map(entry => entry.descriptor.operation)]);
+export const reconciliableOperations = () => ['comfy.workflow', ...externalCatalog().filter(entry => entry.descriptor.recovery === 'reconcile').map(entry => entry.descriptor.operation)];
 export function runtimeCapabilities() {
   let workflow = false;
   try { workflow = Boolean(comfyWorkflowUrl()); } catch { /* Invalid server configuration stays unavailable. */ }
   return [
+    ...externalCatalog().map(entry => ({ operation: entry.descriptor.operation, configured: externalConfigured(entry), label: entry.descriptor.label, configuration: entry.descriptor.configuration.filter(item => item.required).map(item => item.name).join(', ') || null, generation: entry.descriptor.generation, reconciliation: entry.descriptor.recovery === 'reconcile', external: true, version: entry.descriptor.version, author: entry.descriptor.author, license: entry.descriptor.license, recovery: entry.descriptor.recovery, inputSchema: entry.descriptor.inputSchema })),
     { operation: 'comfy.upload', configured: workflow, label: 'ComfyUI image inputs', configuration: 'VIRAL_HIT_COMFYUI_URL', generation: false, reconciliation: false },
     { operation: 'comfy.router', configured: isComfyConfigured(), label: 'Comfy Router', configuration: 'COMFY_API_KEY', generation: true, reconciliation: false },
     { operation: 'comfy.workflow', configured: workflow, label: 'Your ComfyUI server', configuration: 'VIRAL_HIT_COMFYUI_URL', generation: true, reconciliation: true },
