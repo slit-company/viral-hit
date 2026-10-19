@@ -41,3 +41,8 @@ Both received full hashes matched their sources. Garbage-collection timing and s
 After reference workflow UI/HTTP/MCP integration, the production public build contains 173 files totaling 8,396,833 bytes. JavaScript totals 1,835,764 bytes raw and 536,671 bytes gzip, an increase of 686 gzip bytes over the prior intake-only build. The existing 10 MB public-assets / 600 KB gzip-JS gates pass. .NET/YoutubeExplode remain separately installed; no new default studio dependency was added.
 
 The new frame selector inspects bounded timestamp windows with ffprobe (2 MiB response cap per sample) before extraction, rather than assuming a fractional duration always identifies an existing frame. Individual probes and extractions retain their 15-second limits; the complete reference operation has a four-minute execution budget and a five-minute lease. These are cancellation/recovery bounds, not measured p95 latency or total-host resource quotas.
+
+
+## Browser account connections — 2026-10-20
+
+The account page adds no runtime package. The production public output contains 177 files and 8,407,661 bytes; JavaScript totals 1,845,842 raw bytes and 541,210 summed gzip bytes, an increase of 4,539 gzip bytes from the preceding reference-recipes build. The route is a separate lazy page. OAuth, hashing, credential storage and the account database remain outside browser imports. This is a bundle observation, not a publishing throughput or app-wide memory benchmark. Account management opens/closes the existing SQLite/vault service per request and uses the existing bounded OAuth network operations.

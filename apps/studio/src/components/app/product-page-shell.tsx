@@ -2,7 +2,7 @@ import { BackButton } from '@/components/base/back-button';
 import { useRouter } from '@/core/i18n/navigation';
 import type { ReactNode } from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Images, LayoutPanelTop, Scissors, Workflow } from 'lucide-react';
+import { Images, LayoutPanelTop, Link2, Scissors, Workflow } from 'lucide-react';
 
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
 import { HarnessDialog } from '@/components/app/harness-dialog';
@@ -111,7 +111,7 @@ export function ProductPageShell({
     </span>
   );
   const workspaceTabClassName = (isActive: boolean) =>
-    `inline-flex h-7 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-medium transition sm:px-3 ${
+    `inline-flex h-7 items-center justify-center gap-1.5 rounded-xl px-2 text-xs font-medium transition max-sm:flex-1 sm:px-3 ${
       isActive
         ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]'
         : 'text-[var(--vh-text-2)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
@@ -119,7 +119,7 @@ export function ProductPageShell({
 
   return (
     <div className="vh-product-shell flex h-screen min-h-screen flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
-      <header className="pointer-events-auto sticky top-0 z-40 shrink-0 border-b border-[var(--vh-border)] bg-[var(--vh-surface)]/96 text-[var(--vh-text-1)] backdrop-blur-xl">
+      <header className={`pointer-events-auto sticky top-0 z-40 shrink-0 border-b border-[var(--vh-border)] bg-[var(--vh-surface)]/96 text-[var(--vh-text-1)] backdrop-blur-xl ${projectId && workspaceMode ? 'pb-10 sm:pb-0' : ''}`}>
           <div className="flex h-14 items-center gap-3 px-4 lg:px-5">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <BackButton label={t('header.backHome')} onClick={() => router.push('/')} />
@@ -133,7 +133,7 @@ export function ProductPageShell({
               {projectId && <HarnessDialog key={projectId} projectId={projectId} />}
               {projectId && workspaceMode ? (
                 <nav
-                  className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1"
+                  className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1 max-sm:absolute max-sm:inset-x-4 max-sm:top-14"
                   aria-label={t('header.workspaceView')}
                 >
                   <Link
@@ -143,7 +143,7 @@ export function ProductPageShell({
                     className={workspaceTabClassName(workspaceMode === 'studio')}
                   >
                     <LayoutPanelTop className="size-3.5" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('header.studio')}</span>
+                    <span>{t('header.studio')}</span>
                   </Link>
                   <Link
                     href={`/canvas/${projectId}`}
@@ -152,7 +152,7 @@ export function ProductPageShell({
                     className={workspaceTabClassName(workspaceMode === 'canvas')}
                   >
                     <Workflow className="size-3.5" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('header.canvas')}</span>
+                    <span>{t('header.canvas')}</span>
                   </Link>
                   <Link
                     href={`/editor/${projectId}`}
@@ -161,7 +161,7 @@ export function ProductPageShell({
                     className={workspaceTabClassName(workspaceMode === 'editor')}
                   >
                     <Scissors className="size-3.5" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('header.editor')}</span>
+                    <span>{t('header.editor')}</span>
                   </Link>
                   <Link
                     href={`/assets/${projectId}`}
@@ -170,11 +170,12 @@ export function ProductPageShell({
                     className={workspaceTabClassName(workspaceMode === 'assets')}
                   >
                     <Images className="size-3.5" aria-hidden="true" />
-                    <span className="hidden sm:inline">{t('header.assets')}</span>
+                    <span>{t('header.assets')}</span>
                   </Link>
                 </nav>
               ) : null}
               <LanguageSwitcher variant="workspace" />
+              <Link href="/connections" aria-label="Publishing connections" title="Publishing connections" className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>
               <WorkspaceApiConfigDialog
                 providerId={ACTIVE_GENERATION_PROVIDER_ID}
               />

@@ -45,3 +45,5 @@ Unsaved timeline edits are backed up in the current browser. **Drafts** reviews 
 Install a new execution engine without editing the app: [external adapters](docs/EXTERNAL-ADAPTERS.md) share typed input discovery, pinned jobs, binary output receipts and editor integration. A standalone procedural WAV example is included; executable modules are enabled only by an operator-configured directory.
 
 Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE.md). Runs includes portable YouTube collection and project-video sampling recipes, with five frame previews and timeline attachment. CLI also accepts explicit Instagram direct-video items. Independent adapters can consume the resulting project video; automatic Instagram inbox collection remains pending.
+
+Manage optional YouTube connections from the workspace header or `/connections`. Operator-configured Google OAuth uses server-side encrypted credentials. Connecting does not publish; the approval/delivery UI and scheduler remain in progress. See [publishing setup and status](docs/PUBLISHING.md).

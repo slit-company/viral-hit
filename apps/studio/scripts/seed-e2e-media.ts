@@ -88,3 +88,17 @@ try {
 const { mkdir, writeFile } = await import('node:fs/promises');
 await mkdir('../../research/evidence/reference-recipes', { recursive: true });
 await writeFile('../../research/evidence/reference-recipes/fixture.json', JSON.stringify({ projectId: referenceProject.id }));
+
+// Account fixture uses the real encrypted store and application service with a bounded protocol fixture.
+const { openYouTubeAccounts } = await import('../src/core/publishing/youtube-accounts.server');
+const { YOUTUBE_OAUTH_SCOPES } = await import('../src/core/publishing/google-oauth.server');
+const accounts = openYouTubeAccounts({ fetch: async (url) => {
+  if (String(url) === 'https://oauth2.googleapis.com/token') return Response.json({ access_token: 'e2e-token', refresh_token: 'e2e-refresh', token_type: 'Bearer', expires_in: 3600, scope: YOUTUBE_OAUTH_SCOPES.join(' ') });
+  if (String(url).startsWith('https://www.googleapis.com/youtube/v3/channels?')) return Response.json({ items: [{ id: 'e2e-channel', snippet: { title: 'Open Studio · Stories, experiments and creative projects' } }] });
+  throw new Error('Unexpected account fixture network request');
+} });
+try {
+  const binding = 'e'.repeat(43), flow = await accounts.begin(binding), callback = new URL(process.env.VIRAL_HIT_GOOGLE_REDIRECT_URI!);
+  callback.search = new URLSearchParams({ state: new URL(flow.authorizationUrl).searchParams.get('state')!, code: 'fixture-code', iss: 'https://accounts.google.com' }).toString();
+  await accounts.complete(callback, binding, AbortSignal.timeout(10000));
+} finally { accounts.close(); }

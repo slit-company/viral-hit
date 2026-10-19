@@ -2,7 +2,7 @@
 
 `openProjectPublicationMedia()` is the shared server application boundary for publication media. `pin(projectId, assetId, signal)` accepts project-owned IDs, resolves the active project/local asset, verifies its recorded MIME type, size and SHA-256, and retains a separate copy. It returns only `{assetId, sha256, sizeBytes, contentType}`. Account credentials, host paths and temporary filenames do not belong in that public identity. HTTP/MCP/UI admission must use this boundary rather than accepting caller-invented file paths or hashes.
 
-The returned `validateAssets` and `read` methods implement the media half of `PublicationRuntime`. A worker checks active project status and retained identity/availability before session creation, then verifies each requested byte range before transmission. The generic implementation supports image, audio and video; destination connectors enforce their own media constraints. This boundary is integrated with the actual project database and tested with the YouTube executor, but a production account/approval UI and scheduling loop are not yet connected.
+The returned `validateAssets` and `read` methods implement the media half of `PublicationRuntime`. A worker checks active project status and retained identity/availability before session creation, then verifies each requested byte range before transmission. The generic implementation supports image, audio and video; destination connectors enforce their own media constraints. This boundary is integrated with the actual project database and tested with the YouTube executor, but publication approval/delivery UI and the scheduling loop are not yet connected. Browser account connection management is implemented separately.
 
 ## Persistence and integrity
 

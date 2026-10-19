@@ -41,3 +41,6 @@ Inspected upstream `SectionHeading.tsx`, `PageHeader.tsx` and `LoadingPlaceholde
 ### Reference workflow results
 
 Reference recipes reuse the existing Runs dialog, SEED-backed recipe fields, SEED actions and project-asset picker. The new result component uses semantic figures with uncropped frame previews and selected timestamps, five columns on desktop and three on narrow screens. It introduces no alternate control system. Actual 1440×1000 and 390×844 captures and the fixed self-review scorecard are retained locally under `research/evidence/reference-recipes/visual/`.
+
+
+The publishing connections page uses the shared SEED-backed Button, existing light surface/text/border tokens and the workspace shell; it does not introduce a second control system or claim direct SEED source reuse. Long channel names wrap, account status stays explicit, and disconnect presents inline confirmation with the remote-video/schedule consequence. At phone widths, project mode navigation now occupies a separate header row with text labels, keeping Back, Runs, language, connections and configuration reachable. This fixes a real pointer interception found after adding the connections entry point; horizontal overflow alone did not detect that overlap.

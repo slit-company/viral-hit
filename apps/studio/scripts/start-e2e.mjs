@@ -19,6 +19,11 @@ const env = { ...process.env, VIRAL_HIT_FFMPEG: process.env.VIRAL_HIT_FFMPEG || 
 delete env.COMFY_API_KEY;
 delete env.VIRAL_HIT_COMFYUI_URL;
 delete env.VIRAL_HIT_HARNESS_DB;
+// Browser consent navigation is intercepted by tests; these credentials never reach Google.
+env.VIRAL_HIT_GOOGLE_CLIENT_ID = 'fixture.apps.googleusercontent.com';
+env.VIRAL_HIT_GOOGLE_CLIENT_SECRET = 'fixture-only-secret';
+env.VIRAL_HIT_GOOGLE_REDIRECT_URI = 'http://127.0.0.1:3042/api/app/publishing/youtube/callback';
+delete env.VIRAL_HIT_PUBLISHING_KEY;
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });
 execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-media.ts'], { env, stdio: 'inherit' });
 const children = [
