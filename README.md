@@ -10,8 +10,8 @@ Image/video/audio generation, cinematic direction, consistent characters, motion
 
 ## Repository
 
-- `apps/studio/`: visual canvas, shared assets, timeline, preview and export (foundation under evaluation).
-- `packages/`: durable execution and provider integrations.
+- `apps/studio/`: visual canvas, shared assets, timeline, preview and export.
+- `apps/studio/src/core/harness/`: new durable execution queue and Comfy Router adapter.
 - `research/upstream-lock.json`: inspected repositories with exact commits and source URLs.
 - `research/upstream/`: ignored, unmodified local research checkouts, including private reference pipeline material.
 - `research/evidence/`: ignored browser evidence. Logged-in browser details are never published.
@@ -19,3 +19,15 @@ Image/video/audio generation, cinematic direction, consistent characters, motion
 
 Do not copy brand assets, private data or credentials into the public product.
 `Viral Hit` is a working title.
+## Run
+
+Requires Node 24+, pnpm 10, and FFmpeg/ffprobe. From this directory:
+
+```sh
+pnpm setup
+pnpm dev
+```
+
+Open `http://127.0.0.1:3808/projects`. Local import, editing and MP4 export need no generation key. Comfy execution requires your server-side `COMFY_API_KEY` and provider credits. Runs currently persist native provider receipts; automatic output import is not complete.
+
+Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extraction](docs/REFERENCE-PIPELINE.md), [validation evidence](docs/VALIDATION.md) and [full parity targets](docs/PARITY.md). Current checked results include 438 passing tests and 6 browser flows, including a decoded 1080p MP4 export. They do not establish Higgsfield generation quality or performance parity.

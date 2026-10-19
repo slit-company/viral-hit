@@ -21,6 +21,10 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 | Extensibility | MCP, CLI and API | Versioned APIs, MCP, local/server providers, capability discovery | Target |
 | Collaboration | Team/project sharing and community | Shared projects, comments, permissions, reproducible remix packages | Target |
 
+## Verified subset (not full-row completion)
+
+Local asset import, canvas/UI/MCP state sharing, multitrack timeline foundation, clip split, caption persistence, actual browser and server MP4 export, durable job recovery tests, project-scoped Runs UI/API/MCP and the SDK Router adapter are implemented. See `VALIDATION.md` for evidence and limits. Actual Comfy output import and live model generation remain open; no entire area above is marked complete.
+
 ## Performance gates
 
 Measure cold and warm runs separately on fixed machine/browser/model versions. Report p50/p95, failures, external generation cost and number of rerun nodes. Never compare different providers as if only the harness changed.

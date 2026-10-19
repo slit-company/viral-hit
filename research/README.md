@@ -49,6 +49,15 @@ Exact URLs, commits, clone status and observed license metadata are in `upstream
 | HBAI-Ltd/Toonflow-web | Historical web frontend | Archived; Apache root license but stale AGPL badge; use current monorepo instead |
 | WeftCut/WeftCut | Desktop NLE operated through MCP | MIT; pre-1.0 development |
 | poseljacob/agentic-video-editor | Planning, cut refinement, render/review | MIT; CLI supported, web UI explicitly work in progress |
+| ncounterspecialist/twick | Video editing SDK | Actual Sustainable Use License restricts standalone resale/rebrand/hosted products; exclude from reusable product source |
+| itsjwill/vanta | AI video workspace | Root MIT plus third-party/model conditions; integrations not fully license-audited |
+| heygen-com/hyperframes | HTML-based video composition | Apache-2.0; candidate for motion graphics, separate from model generation |
+| Comfy-Org/comfy-typescript-sdk | Router and Cloud provider client | MIT; actual pinned SDK now used by Viral Hit; Router and Cloud retry semantics differ |
+| Comfy-Org/comfy-python-sdk | Python provider client | MIT; potential Python worker adapter |
+| Comfy-Org/comfy-api-proxy | Self-hosted endpoint bridge | MIT; requires a running backend; not bundled weights or free compute |
+| Comfy-Org/ComfyUI | Open-weight workflow execution | GPL-3.0; keep its service boundary and license obligations explicit |
+
+The public repositories above are cloned at pinned commits. Cloning a reference is not evidence of a successful runtime test or permission to redistribute it.
 
 ## Current conclusion
 

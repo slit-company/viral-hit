@@ -9,3 +9,5 @@ dist/
 artifacts/
 __pycache__/
 .venv/
+
+.agent-lessons/
