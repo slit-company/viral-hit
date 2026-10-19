@@ -1,6 +1,6 @@
 # 009: Instagram container upload and final publication
 
-Status: server transport/connector and shared executor implemented and fixture-tested. Account onboarding, application admission, UI exposure and authorized live publishing remain pending.
+Status: server transport/connector and shared executor implemented and fixture-tested. Browser account onboarding is implemented in decision 010; publication application admission, UI exposure and authorized live publishing remain pending.
 
 ## Ownership and API contract
 
@@ -39,4 +39,4 @@ Polling uses a 60-second delay. The current general queue does not enforce Meta'
 
 Tests cover exact request bodies, a real local HTTP streaming upload with a nonzero offset, 8 MiB read bounds, cancellation while reading, account/URI/status mismatches, lost upload and publish replies, process restart from a persisted SQLite publishing fence, stop/late-response quarantine and read-only multi-poll reconciliation. The actual Instagram connector is exercised with the real store/executor against HTTP fixtures. These are not evidence of a live Instagram upload.
 
-The default runtime and shared create schema remain YouTube-only. Do not expose an Instagram selector until encrypted account management, media admission, retained preview, safe public receipt projection and shared HTTP/MCP/CLI operations are integrated and tested. No account sessions, private brand data or marketing policy are copied from the research repositories.
+The default runtime and shared create schema remain YouTube-only. Do not expose an Instagram selector until media admission, retained preview, safe public receipt projection and shared HTTP/MCP/CLI publication operations are integrated and tested. Encrypted account management is implemented in decision 010. No account sessions, private brand data or marketing policy are copied from the research repositories.

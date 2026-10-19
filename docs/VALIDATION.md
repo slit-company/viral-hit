@@ -273,3 +273,18 @@ The new server connector supports local MP4 Reels/video Stories through Facebook
 - The main local server was restarted after confirming nine completed generation jobs and no pending publication jobs. Aside verified the production publication screen with its existing project videos; the production root returned HTTP 200. No visual layout changed in this milestone.
 
 Ignored evidence: `research/evidence/instagram-publishing/` contains inspected official documentation, source/browser test logs, architecture, typecheck, i18n, build and performance results. Provider fixtures establish failure-handling behavior, not real Meta permissions, app review, encoding acceptance, or publication success.
+
+## Instagram account connections — 2026-10-20
+
+Browser-bound Meta code exchange, encrypted temporary Page choices, explicit destination selection, pinned reconnection and revision-checked local disconnect are implemented. Tokens are verified against the configured app and required scopes. Late token errors carry the original account revision and cannot invalidate renewed access. [Decision 010](architecture/010-instagram-accounts.md) records setup, storage and rollout boundaries.
+
+- 644 source tests passed. New coverage includes candidate privacy, SQLite reopen, wrong browser/app/scopes, callback replay, selection expiry, repeated/malicious paging cursors, Page revalidation, disconnect during verification, stale credential rejection and finite/non-expiring Page grants.
+- 33 browser tests passed in the full regression run. Two Instagram browser tests then passed again after adjusting only the disconnect capture's scroll position. They exercise actual application routes, cookies, account storage and UI with an isolated Meta HTTP response fixture; no real consent, upload or post occurs.
+- TypeScript, production build, translation and architecture checks passed. Architecture: 380 modules, 165 browser-reachable modules, zero cycles, 23 unchanged existing size allowances. No runtime dependency added.
+- Production assets: 180 files / 8,452,457 bytes; JavaScript 1,890,291 bytes / 554,751 gzip bytes. The gzip increase is 2,145 bytes, within existing limits.
+- Visual rubric: 4.35/5 pass at desktop 1440×1000 and mobile 390×844, with the preserved mobile choice capture as the primary artifact. This is self-review, not user acceptance or a provider-quality benchmark.
+- The production server was restarted after confirming nine completed generation jobs and no publication queue. Aside checked the actual Connections page. Automated production capture reported HTTP 200, no page errors, no horizontal overflow and Instagram Connect disabled because Meta configuration is absent.
+
+Evidence: `research/evidence/instagram-accounts/`. The initial browser startup failed because Nitro's child process could not resolve the TypeScript fixture preload dependency. A plain-ESM test-only preload fixed it; production exposes no mock-provider setting. An initial visual record also stopped because a URL was supplied for a file-backed capture; `visual-verified/` binds the unchanged screenshot file and frozen rubric correctly. Both failed attempts are preserved.
+
+Instagram publication admission, safe delivery presentation, poll budgets and actual operator-authorized Meta publishing remain open. Google and Meta live consent have not been validated on this workspace. The new account UI does not claim that Instagram delivery is available in Publish.

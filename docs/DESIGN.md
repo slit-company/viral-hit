@@ -47,3 +47,9 @@ The publishing connections page uses the shared SEED-backed Button, existing lig
 
 
 The project Publish page composes the same light shell and SEED-backed Button with shared Input/Textarea and a shared NativeSelect using input tokens. Native video, date/time and checkbox controls preserve browser media, keyboard and mobile behavior. This is primitive/token reuse, not a claim of copied SEED source. Preparation and review are separate columns on desktop and stacked on phones. The retained preview, destination and visibility remain in the review card; only confirmed reviewed revisions can be queued. Status distinguishes local approval from provider observation. The project Publish entry uses its own header icon, preserving the existing four mode tabs.
+
+## Instagram account connections
+
+The Instagram provider card, Page/Instagram selection and account lifecycle reuse the existing shared Button and NativeSelect, ProductPageShell, SEED-based tokens and light surface treatment. These are shared-control/token adaptations, not a new assertion of direct SEED source reuse. Full Page names and both destination IDs remain visible below the native select on mobile. No provider SDK or new browser dependency is introduced.
+
+Real account UI captures at 1440×1000 and 390×844 passed the frozen visual rubric at 4.35/5 (self-review). The flow used real application routes and encrypted account storage with an isolated Meta response fixture, not a real Meta consent/account. Production captures separately show unconfigured Google/Meta controls disabled. Evidence is under `research/evidence/instagram-accounts/`; the failed URL/file evidence-binding attempt is retained, with the corrected binding in `visual-verified/`.

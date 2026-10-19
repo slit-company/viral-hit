@@ -5,7 +5,7 @@ import { InstagramTransportError } from './instagram-http.server';
 import type { JsonValue } from '../../lib/canonical-json';
 
 export const INSTAGRAM_CONNECTOR_VERSION = '1';
-type Options = { credential: (accountId: string, signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch };
+type Options = { credential: (accountId: string, signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch; invalidateCredential?: (accountId: string, token: string, revision?: number) => Promise<void> };
 export function validateInstagramPublication(spec: PublicationSpec) {
   if (spec.connector !== 'instagram' || spec.connectorVersion !== INSTAGRAM_CONNECTOR_VERSION || spec.assets.length !== 1 || spec.assets[0].contentType !== 'video/mp4') throw new Error('Instagram requires one MP4 video and a supported connector');
   return { instagramId: instagramIdSchema.parse(spec.destinationId), sizeBytes: spec.assets[0].sizeBytes, metadata: instagramMetadataSchema.parse(spec.metadata) };
@@ -13,7 +13,7 @@ export function validateInstagramPublication(spec: PublicationSpec) {
 
 /** Facebook Login for Business, local Reels/Stories videos. No public media hosting required. */
 export function createInstagramConnector(options: Options): PublicationConnector {
-  const transport = (spec: PublicationSpec) => createInstagramTransport({ credential: signal => options.credential(spec.accountId, signal), fetch: options.fetch });
+  const transport = (spec: PublicationSpec) => createInstagramTransport({ credential: signal => options.credential(spec.accountId, signal), fetch: options.fetch, invalidateCredential: credential => options.invalidateCredential?.(spec.accountId, credential.accessToken, credential.revision) ?? Promise.resolve() });
   function target(spec: PublicationSpec, raw: JsonValue, receipt = false) {
     const input = validateInstagramPublication(spec);
     const identity = receipt ? instagramReceiptSchema.parse(raw) : instagramCheckpointSchema.parse(raw);

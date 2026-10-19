@@ -1,0 +1,51 @@
+import { test, expect } from '@playwright/test';
+const endpoint = '/api/app/publishing/instagram/accounts', headers = { 'x-viral-hit-workspace-request': '1' };
+
+test('browser Meta consent stages choices, explicitly selects a Page and disconnects the stored account', async ({ page, context, request }) => {
+  await page.route('https://www.facebook.com/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Meta consent navigation fixture</h1>' }));
+  expect((await request.get(endpoint)).status()).toBe(403);
+  await page.goto('/connections'); await page.getByRole('button', { name: 'Connect Instagram', exact: true }).click();
+  await expect(page).toHaveURL(/^https:\/\/www.facebook.com\/v26\.0\/dialog\/oauth\?/);
+  const consent = new URL(page.url()), state = consent.searchParams.get('state')!;
+  expect(consent.searchParams.get('config_id')).toBe('456'); expect(consent.searchParams.get('response_type')).toBe('code');
+  const cookies = (await context.cookies('http://127.0.0.1:3042/api/app/publishing/instagram/callback')).filter(c => c.name.startsWith('vh-publishing-instagram-'));
+  expect(cookies).toHaveLength(1); expect(cookies[0].httpOnly).toBe(true); expect(cookies[0].sameSite).toBe('Lax');
+  await page.goto(`http://127.0.0.1:3042/api/app/publishing/instagram/callback?state=${state}&code=fixture-code`);
+  await expect(page).toHaveURL(new RegExp(`/connections\\?instagram=select&instagramState=${state}$`));
+  const choices = page.getByRole('region', { name: 'Choose Instagram destination' });
+  await expect(choices.getByRole('button', { name: 'Connect this account', exact: true })).toBeDisabled();
+  expect((await (await request.get(endpoint, { headers })).json()).accounts).toHaveLength(0);
+  await choices.getByLabel('Page and Instagram account', { exact: true }).selectOption('111');
+  await expect(choices.getByText('ID 222', { exact: true })).toBeVisible(); await expect(choices.getByText('ID 111', { exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 1440, height: 1000 }); await choices.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/instagram-selection-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 }); await choices.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/instagram-selection-mobile.png' });
+  await choices.getByRole('button', { name: 'Connect this account', exact: true }).click();
+  await expect(page).toHaveURL('http://127.0.0.1:3042/connections');
+  const card = page.getByRole('article', { name: 'Instagram account open_studio', exact: true });
+  await expect(card.getByText('Connected', { exact: true })).toBeVisible();
+  expect((await context.cookies()).some(c => c.name.startsWith('vh-publishing-instagram-'))).toBe(false);
+  const snapshot = await (await request.get(endpoint, { headers })).json(); expect(snapshot.accounts).toHaveLength(1); expect(snapshot.accounts[0].instagramId).toBe('222');
+  expect(JSON.stringify(snapshot)).not.toMatch(/fixture-meta|accessToken|credential|private/);
+  await page.reload(); await expect(card.getByText('Connected', { exact: true })).toBeVisible();
+  await card.getByRole('button', { name: 'Disconnect', exact: true }).click();
+  await expect(card.getByText('Existing posts stay on Instagram.', { exact: false })).toBeVisible();
+  await card.getByRole('button', { name: 'Confirm disconnect', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/instagram-disconnect-mobile.png' });
+  await card.getByRole('button', { name: 'Confirm disconnect', exact: true }).click();
+  await expect(card.getByText('Disconnected', { exact: true })).toBeVisible();
+  expect((await request.post(endpoint, { headers, data: { action: 'disconnect', accountId: snapshot.accounts[0].id, revision: snapshot.accounts[0].revision } })).status()).toBe(409);
+});
+
+test('declined Meta consent returns a safe message and clears its browser binding', async ({ page, context }) => {
+  await page.route('https://www.facebook.com/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Meta consent fixture</h1>' }));
+  await page.goto('/connections'); await page.getByRole('button', { name: 'Connect Instagram', exact: true }).click();
+  await expect(page).toHaveURL(/^https:\/\/www.facebook.com\//); const state = new URL(page.url()).searchParams.get('state')!;
+  await page.goto(`http://127.0.0.1:3042/api/app/publishing/instagram/callback?state=${state}&error=access_denied&error_description=private-provider-text`);
+  await expect(page).toHaveURL('http://127.0.0.1:3042/connections?instagram=denied');
+  await expect(page.getByRole('status').filter({ hasText: 'Meta access was declined.' })).toBeVisible();
+  expect(await page.locator('body').innerText()).not.toContain('private-provider-text');
+  expect((await context.cookies()).some(c => c.name.startsWith('vh-publishing-instagram-'))).toBe(false);
+});

@@ -3,12 +3,12 @@ import { PublicationAssetError } from './contracts';
 import { instagramIdSchema, type InstagramContainer, type InstagramMetadata } from './instagram-contract';
 import { instagramJson, InstagramTransportError } from './instagram-http.server';
 
-export type InstagramCredential = { pageId: string; instagramId: string; accessToken: string };
-type Options = { credential: (signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch };
+export type InstagramCredential = { pageId: string; instagramId: string; accessToken: string; revision?: number };
+type Options = { credential: (signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch; invalidateCredential?: (credential: InstagramCredential) => Promise<void> };
 // Pinned protocol revision, not an implicit latest version. Changes require a connector version bump.
 export const INSTAGRAM_GRAPH_VERSION = 'v26.0';
 export const INSTAGRAM_READ_BYTES = 8 * 1024 * 1024;
-const credentialSchema = z.object({ pageId: instagramIdSchema, instagramId: instagramIdSchema, accessToken: z.string().min(1).max(16384).regex(/^[^\r\n]+$/) });
+const credentialSchema = z.object({ pageId: instagramIdSchema, instagramId: instagramIdSchema, accessToken: z.string().min(1).max(16384).regex(/^[^\r\n]+$/), revision: z.number().int().positive().optional() });
 const pageSchema = z.object({ id: instagramIdSchema, instagram_business_account: z.object({ id: instagramIdSchema }) });
 const containerSchema = z.object({
   id: instagramIdSchema, status_code: z.enum(['IN_PROGRESS', 'FINISHED', 'PUBLISHED', 'ERROR', 'EXPIRED']),
@@ -30,7 +30,10 @@ export function createInstagramTransport(options: Options) {
         headers: { authorization: `Bearer ${credential.accessToken}`, ...(body ? { 'content-type': 'application/json' } : {}) },
         ...(body ? { body: JSON.stringify(body) } : {}),
       }), signal);
-    } catch { throw new InstagramTransportError('unknown'); }
+    } catch (error) {
+      if (error instanceof InstagramTransportError && error.credentialRejected) await options.invalidateCredential?.(credential);
+      throw new InstagramTransportError('unknown');
+    }
   }
   /** Pin one credential across the identity check and its subsequent write. */
   async function authorize(instagramId: string, pageId: string | undefined, signal: AbortSignal) {
@@ -98,7 +101,10 @@ export function createInstagramTransport(options: Options) {
         const result = z.object({ success: z.literal(true) }).parse(await instagramJson(await request(uploadUrl(target.containerId), init), signal));
         if (!result.success) throw new InstagramTransportError('unknown');
         return await statusWith(credential, target.containerId, target.sizeBytes, signal);
-      } catch { throw new InstagramTransportError('unknown'); }
+      } catch (error) {
+        if (error instanceof InstagramTransportError && error.credentialRejected) await options.invalidateCredential?.(credential);
+        throw new InstagramTransportError('unknown');
+      }
       finally { stopped = true; if (!body.locked) await body.cancel().catch(() => undefined); }
     },
     async publish(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number }, signal: AbortSignal) {

@@ -1,10 +1,11 @@
 import { useState } from 'react';
+import { InstagramAccountsSection } from './instagram-accounts-section';
 import { ExternalLink, Link2, RefreshCw, Youtube } from 'lucide-react';
 import { ProductPageShell } from '@/components/app/product-page-shell';
 import { Button } from '@/components/ui/button';
 import { accountErrorMessage, usePublishingAccounts } from './use-publishing-accounts';
 
-export function PublishingAccountsPage({ callbackIssue }: { callbackIssue?: string }) {
+export function PublishingAccountsPage({ callbackIssue, instagramIssue, instagramState, onInstagramSelectionDone }: { callbackIssue?: string; instagramIssue?: string; instagramState?: string; onInstagramSelectionDone: () => void }) {
   const { snapshot, loading, pending, error, refresh, connect, disconnect } = usePublishingAccounts();
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const ready = snapshot?.youtube === 'ready', disabled = pending || loading;
@@ -44,6 +45,7 @@ export function PublishingAccountsPage({ callbackIssue }: { callbackIssue?: stri
             </div> : <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={disabled || !ready} onClick={() => void connect(account)}>{account.status === 'connected' ? 'Renew access' : 'Reconnect'}</Button>{account.status !== 'disconnected' && <Button variant="ghost" disabled={disabled} onClick={() => setConfirmId(account.id)}>Disconnect</Button>}</div>}
           </article>)}
         </section>
+        <InstagramAccountsSection issue={instagramIssue} state={instagramState} onSelectionDone={onInstagramSelectionDone} />
       </div>
     </div>
   </ProductPageShell>;
