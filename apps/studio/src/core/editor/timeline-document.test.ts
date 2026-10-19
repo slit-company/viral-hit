@@ -61,7 +61,7 @@ test('version 1 timelines migrate with empty Take and render state', () => {
   delete (legacy as Partial<typeof current>).captionStyle;
 
   const migrated = normalizeTimelineDocument(legacy, 'project-1');
-  assert.equal(migrated.schemaVersion, 5);
+  assert.equal(migrated.schemaVersion, 6);
   assert.equal(migrated.lastRenderAssetId, null);
   assert.equal(migrated.captionStyle, 'classic');
   assert.ok(migrated.tracks.some((track) => track.kind === 'overlay'));
@@ -87,7 +87,7 @@ test('version 2 timelines migrate the visual track without losing clips', () => 
     })),
   };
   const migrated = normalizeTimelineDocument(legacy, 'project-1');
-  assert.equal(migrated.schemaVersion, 5);
+  assert.equal(migrated.schemaVersion, 6);
   assert.equal(migrated.tracks[0]?.name, 'Visual 1');
   assert.equal(migrated.tracks[0]?.clips.length, 1);
 });

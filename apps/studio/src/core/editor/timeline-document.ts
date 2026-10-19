@@ -8,8 +8,9 @@
  */
 
 import { z } from 'zod';
+import { overlayMotionSchema, overlayTransformSchema, overlayTransformAt, patchOverlayClip, type OverlayMotion, type OverlayPatch } from './overlay-motion';
 
-export const TIMELINE_SCHEMA_VERSION = 5 as const;
+export const TIMELINE_SCHEMA_VERSION = 6 as const;
 
 export type TimelineTrackKind = 'video' | 'overlay' | 'audio' | 'caption';
 export type TimelineAudioRole = 'music' | 'voice' | 'sfx' | 'source';
@@ -75,6 +76,7 @@ export type TimelineClip = {
   text?: string;
   audioRole?: TimelineAudioRole;
   overlay: TimelineOverlayTransform | null;
+  motion?: OverlayMotion;
   caption: TimelineCaptionTransform | null;
   takes: TimelineTake[];
   activeTakeId: string | null;
@@ -131,17 +133,8 @@ const timelineClipSchema = z.object({
   fadeOut: z.number().finite().min(0).max(86_400).default(0),
   text: z.string().max(4_000).default(''),
   audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(),
-  overlay: z
-    .object({
-      x: z.number().finite().min(0).max(1),
-      y: z.number().finite().min(0).max(1),
-      width: z.number().finite().min(0.05).max(2),
-      opacity: z.number().finite().min(0).max(1),
-      rotation: z.number().finite().min(-180).max(180),
-    })
-    .strict()
-    .nullable()
-    .default(null),
+  overlay: overlayTransformSchema.nullable().default(null),
+  motion: overlayMotionSchema.optional(),
   caption: z
     .object({
       fontScale: z.number().finite().min(0.015).max(0.12),
@@ -438,7 +431,7 @@ export function normalizeTimelineDocument(
       : null;
   const legacyDocument = value as Record<string, unknown>;
   const migrated =
-    version === 1 || version === 2 || version === 3 || version === 4
+    version === 1 || version === 2 || version === 3 || version === 4 || version === 5
       ? {
           ...legacyDocument,
           schemaVersion: TIMELINE_SCHEMA_VERSION,
@@ -472,10 +465,11 @@ export function normalizeTimelineDocument(
                                       : ((clip as { activeTakeId?: unknown })
                                           .activeTakeId ?? null),
                                   overlay:
-                                    version === 4
+                                    (version === 4 || version === 5)
                                       ? ((clip as { overlay?: unknown }).overlay ?? null)
                                       : null,
-                                  caption: null,
+                                  caption: version === 5 ? ((clip as { caption?: unknown }).caption ?? null) : null,
+                                  motion: undefined,
                                 }
                               : clip
                           )
@@ -500,6 +494,7 @@ export function normalizeTimelineDocument(
   }
   for (const track of parsed.tracks) {
     for (const clip of track.clips) {
+      if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || clip.sourceType !== 'image')) throw new TimelineDocumentValidationError('Motion needs an image overlay.');
       if (clip.trackId !== track.id) {
         throw new TimelineDocumentValidationError(
           'Timeline clip points to a different track.'
@@ -625,66 +620,29 @@ export function overlayOpacityAt(clip: TimelineClip, timelineTime: number) {
       : 1;
   return Math.max(
     0,
-    Math.min(1, clip.overlay.opacity * Math.min(fadeIn, fadeOut))
+    Math.min(1, overlayTransformAt(clip, timelineTime)!.opacity * Math.min(fadeIn, fadeOut))
   );
 }
 
-export function updateTimelineOverlay(
-  document: TimelineDocument,
-  clipId: string,
-  patch: Partial<TimelineOverlayTransform> & {
-    fadeIn?: number;
-    fadeOut?: number;
-  }
-) {
+export function updateTimelineOverlay(document: TimelineDocument, clipId: string, patch: OverlayPatch, atTime?: number) {
   const clip = findTimelineClip(document, clipId);
-  if (!clip?.overlay || !isOverlayClip(document, clipId)) return document;
-  const clamp = (value: number, min: number, max: number) =>
-    Math.max(min, Math.min(max, value));
-  return withUpdatedTracks(
-    document,
-    document.tracks.map((track) => ({
-      ...track,
-      clips: track.clips.map((candidate) =>
-        candidate.id === clipId
-          ? {
-              ...candidate,
-              fadeIn:
-                typeof patch.fadeIn === 'number'
-                  ? clamp(patch.fadeIn, 0, candidate.duration)
-                  : candidate.fadeIn,
-              fadeOut:
-                typeof patch.fadeOut === 'number'
-                  ? clamp(patch.fadeOut, 0, candidate.duration)
-                  : candidate.fadeOut,
-              overlay: {
-                ...candidate.overlay!,
-                x:
-                  typeof patch.x === 'number'
-                    ? clamp(patch.x, 0, 1)
-                    : candidate.overlay!.x,
-                y:
-                  typeof patch.y === 'number'
-                    ? clamp(patch.y, 0, 1)
-                    : candidate.overlay!.y,
-                width:
-                  typeof patch.width === 'number'
-                    ? clamp(patch.width, 0.05, 2)
-                    : candidate.overlay!.width,
-                opacity:
-                  typeof patch.opacity === 'number'
-                    ? clamp(patch.opacity, 0, 1)
-                    : candidate.overlay!.opacity,
-                rotation:
-                  typeof patch.rotation === 'number'
-                    ? clamp(patch.rotation, -180, 180)
-                    : candidate.overlay!.rotation,
-              },
-            }
-          : candidate
-      ),
-    }))
-  );
+  if (!clip?.overlay || !isOverlayClip(document, clipId) || document.tracks.some(track => track.id === clip.trackId && track.locked)) return document;
+  return withUpdatedTracks(document, document.tracks.map(track => ({ ...track,
+    clips: track.clips.map(candidate => candidate.id === clipId ? patchOverlayClip(candidate, patch, atTime) : candidate),
+  })));
+}
+
+export function setTimelineOverlayMotion(document: TimelineDocument, clipId: string, motion: OverlayMotion | null) {
+  const clip = findTimelineClip(document, clipId);
+  if (!clip?.overlay || !isOverlayClip(document, clipId) || document.tracks.some(track => track.id === clip.trackId && track.locked)) return document;
+  const parsed = motion === null ? undefined : overlayMotionSchema.parse(motion);
+  return withUpdatedTracks(document, document.tracks.map(track => ({ ...track,
+    clips: track.clips.map(candidate => {
+      if (candidate.id !== clipId) return candidate;
+      const { motion: _old, ...rest } = candidate;
+      return parsed ? { ...rest, motion: parsed } : rest;
+    }),
+  })));
 }
 
 export function replaceTimelineOverlayAsset(
@@ -893,9 +851,9 @@ export function resizeTimelineClip(
           ? {
               ...candidate,
               duration,
-              inPoint: 0,
-              outPoint: duration,
-              sourceDuration: duration,
+              inPoint: candidate.motion ? candidate.inPoint : 0,
+              outPoint: (candidate.motion ? candidate.inPoint : 0) + duration,
+              sourceDuration: candidate.motion ? Math.max(candidate.sourceDuration, candidate.inPoint + duration) : duration,
             }
           : candidate
       ),

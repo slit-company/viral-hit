@@ -85,6 +85,14 @@ function mergeValue({
         })
       );
     }
+    if (path.endsWith('.motion.keyframes')) {
+      const frames = merged as Array<Record<string, unknown>>;
+      frames.sort((a, b) => Number(a.time) - Number(b.time));
+      if (frames.some((frame, index) => index > 0 && frame.time === frames[index - 1].time)) {
+        conflicts.push({ path });
+        return local;
+      }
+    }
     return merged;
   }
 

@@ -61,3 +61,5 @@ Publish composes separate YouTube and Instagram forms around one destination sel
 
 
 Instagram scheduling adds the existing shared Input with a native datetime-local control. Drafts retain the browser-local edit value while reviewed metadata stores an explicit UTC instant. The review card repeats the scheduled time/zone and uses a distinct Approve schedule action and Scheduled in studio waiting label. The existing queue, preview and shared light controls remain the same; no calendar library is added.
+
+Overlay motion uses the shared SEED Action controls and existing native range/select inputs. On screens below 640 px, the same Inspector content opens in the shared SEED dialog with focus management, Escape and focus return; desktop keeps its side panel. This is an adaptation of shared primitives, not a copy of SEED product content.

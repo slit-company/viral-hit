@@ -1,3 +1,5 @@
+import { timelineOutputFrame } from './output-frame';
+import { overlayTransformAt } from './overlay-motion';
 import { findCaptionAtTime, getResolvedCaptionStyle } from './captions';
 import {
   getTimelineClipSource,
@@ -222,22 +224,17 @@ export function drawImageOverlay(
   width: number,
   height: number
 ) {
-  if (!clip.overlay) return;
+  const pose = overlayTransformAt(clip, timelineTime);
+  if (!pose) return;
   const opacity = overlayOpacityAt(clip, timelineTime);
   if (opacity <= 0) return;
-  const drawWidth = width * clip.overlay.width;
+  const drawWidth = width * pose.width;
   const drawHeight = drawWidth * (imageHeight / imageWidth);
   context.save();
   context.globalAlpha = opacity;
-  context.translate(width * clip.overlay.x, height * clip.overlay.y);
-  context.rotate((clip.overlay.rotation * Math.PI) / 180);
-  context.drawImage(
-    image,
-    -drawWidth / 2,
-    -drawHeight / 2,
-    drawWidth,
-    drawHeight
-  );
+  context.translate(width * pose.x, height * pose.y);
+  context.rotate((pose.rotation * Math.PI) / 180);
+  context.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
   context.restore();
 }
 
@@ -423,10 +420,7 @@ export async function exportTimelineMp4({
     firstVisual.videoTrack?.displayWidth ?? firstVisual.imageBitmap?.width ?? 1920;
   const visualHeight =
     firstVisual.videoTrack?.displayHeight ?? firstVisual.imageBitmap?.height ?? 1080;
-  const portrait =
-    visualHeight > visualWidth;
-  const width = portrait ? 1080 : 1920;
-  const height = portrait ? 1920 : 1080;
+  const { width, height } = timelineOutputFrame(visualWidth, visualHeight);
   const frameRate = 30;
   const frameDuration = 1 / frameRate;
   const sampleRate = 48_000;

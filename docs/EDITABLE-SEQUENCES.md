@@ -64,6 +64,6 @@ pnpm --dir apps/studio harness attach <project-id> <run-id> <job-id> <expected-r
 
 Acceptance rechecks the originals and appends tracks after the current timeline duration. Stale revisions fail without changing anything. Existing edits and locked tracks are preserved. Successful command receipts recover repeated requests, and stable clip/track IDs refuse a second copy still present in the timeline. Receipts have the existing bounded retention; this is not a permanent publication/acceptance ledger. A sequence cannot be applied as a single clip's take.
 
-This contract does not yet import arbitrary native vid2 layers, keyframes, transitions, masks or foreign timeline formats. Those need explicit converters that preserve supported semantics and report unsupported ones. Actual vid2 flattening remains an independent optional rendering path.
+Image overlays can carry the shared [keyframe motion contract](OVERLAY-MOTION.md); `animated-image-story` is a forkable example. This contract does not import arbitrary native vid2 layers, foreign keyframes, transitions, masks or foreign timeline formats. Those need explicit converters that preserve supported semantics and report unsupported ones. Actual vid2 flattening remains an independent optional rendering path.
 
 Empty, visible, unmuted and unlocked tracks of the matching kind are reused on acceptance, so new clips are visible in an empty editor. Existing track names, IDs and settings are retained; occupied, hidden, muted and locked tracks stay untouched. Additional tracks are appended only when needed.

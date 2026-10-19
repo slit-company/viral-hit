@@ -1,3 +1,7 @@
+import { useTimelineFrame } from './use-timeline-frame';
+import { EditorInspectorPanel, useInspectorPanel } from './editor-inspector-panel';
+import { OverlayInspector } from './overlay-inspector';
+import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
 import {
@@ -210,10 +214,8 @@ export function VideoEditorWorkspace({
   const [isTimelineHydrated, setIsTimelineHydrated] = useState(false);
   const [sourceUrl, setSourceUrl] = useState<string | null>(null);
   const [metadata, setMetadata] = useState<LocalMediaMetadata | null>(null);
-  const [previewDimensions, setPreviewDimensions] = useState({
-    width: 16,
-    height: 9,
-  });
+  const previewDimensions = useTimelineFrame(document);
+
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [timelineCursorTime, setTimelineCursorTime] = useState(0);
@@ -226,7 +228,7 @@ export function VideoEditorWorkspace({
   } | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [exactControlsOpen, setExactControlsOpen] = useState(false);
-  const [isInspectorOpen, setInspectorOpen] = useState(true);
+  const { open: isInspectorOpen, setOpen: setInspectorOpen, narrow: isInspectorNarrow } = useInspectorPanel();
   const [isInspecting, setIsInspecting] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
@@ -273,7 +275,7 @@ export function VideoEditorWorkspace({
     0.001
   );
   const primaryVisualClip = document.tracks
-    .filter((track) => track.kind === 'video').flatMap(track => track.clips)
+    .filter((track) => track.kind === 'video' && !track.hidden && !track.muted).flatMap(track => track.clips)
     .find(
       (clip) => clip.sourceType === 'image' || clip.sourceType === 'video'
     );
@@ -341,7 +343,8 @@ export function VideoEditorWorkspace({
     event: ReactPointerEvent<HTMLButtonElement>,
     overlay: TimelineClip
   ) => {
-    if (!overlay.overlay || event.button !== 0) return;
+    if (!overlay.overlay || event.button !== 0 || !canEditOverlayPose(overlay, timelineCurrentTime)) return;
+    const pose = overlayTransformAt(overlay, timelineCurrentTime)!;
     const frame = previewFrameRef.current?.getBoundingClientRect();
     if (!frame) return;
     event.preventDefault();
@@ -353,17 +356,17 @@ export function VideoEditorWorkspace({
       pointerId: event.pointerId,
       originClientX: event.clientX,
       originClientY: event.clientY,
-      originX: overlay.overlay.x,
-      originY: overlay.overlay.y,
+      originX: pose.x,
+      originY: pose.y,
       frameWidth: frame.width,
       frameHeight: frame.height,
-      x: overlay.overlay.x,
-      y: overlay.overlay.y,
+      x: pose.x,
+      y: pose.y,
     };
     setOverlayDragPreview({
       clipId: overlay.id,
-      x: overlay.overlay.x,
-      y: overlay.overlay.y,
+      x: pose.x,
+      y: pose.y,
     });
   };
 
@@ -396,6 +399,7 @@ export function VideoEditorWorkspace({
         {
           type: 'update_overlay',
           clipId: session.clipId,
+          atTime: timelineCurrentTime,
           patch: { x: session.x, y: session.y },
         },
       ]).document
@@ -406,7 +410,8 @@ export function VideoEditorWorkspace({
     event: ReactKeyboardEvent<HTMLButtonElement>,
     overlay: TimelineClip
   ) => {
-    if (!overlay.overlay) return;
+    if (!overlay.overlay || !canEditOverlayPose(overlay, timelineCurrentTime)) return;
+    const pose = overlayTransformAt(overlay, timelineCurrentTime)!;
     const step = event.shiftKey ? 0.05 : 0.01;
     const delta =
       event.key === 'ArrowLeft'
@@ -425,9 +430,10 @@ export function VideoEditorWorkspace({
         {
           type: 'update_overlay',
           clipId: overlay.id,
+          atTime: timelineCurrentTime,
           patch: {
-            x: overlay.overlay!.x + delta.x,
-            y: overlay.overlay!.y + delta.y,
+            x: pose.x + delta.x,
+            y: pose.y + delta.y,
           },
         },
       ]).document
@@ -1794,7 +1800,7 @@ export function VideoEditorWorkspace({
               <Action
                 type="button"
                 onClick={() => setInspectorOpen((current) => !current)}
-                className={`hidden size-8 place-items-center rounded-lg border transition sm:grid ${
+                className={`grid size-8 place-items-center rounded-lg border transition ${
                   isInspectorOpen
                     ? 'border-[var(--vh-accent)]/35 bg-[var(--vh-accent)]/10 text-[var(--vh-accent)]'
                     : 'border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
@@ -1835,13 +1841,14 @@ export function VideoEditorWorkspace({
             {t('player.title')}
           </div>
 
-          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[var(--vh-control)] p-4 sm:p-8">
+          <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[var(--vh-control)] p-4 sm:p-8 [container-type:size]">
             {sourceUrl && previewClip ? (
               <div
                 ref={previewFrameRef}
-                className="relative h-full max-h-full max-w-full overflow-hidden rounded-xl bg-black shadow-lg [container-type:size]"
+                className="relative shrink-0 overflow-hidden rounded-xl bg-black shadow-lg [container-type:size]"
                 style={{
                   aspectRatio: `${previewDimensions.width} / ${previewDimensions.height}`,
+                  width: `min(100cqw, calc(100cqh * ${previewDimensions.width / previewDimensions.height}))`,
                 }}
               >
               {previewClip.sourceType === 'image' ? (
@@ -1849,12 +1856,7 @@ export function VideoEditorWorkspace({
                   src={sourceUrl}
                   alt={previewClip.name}
                   className="size-full object-contain"
-                  onLoad={(event) =>
-                    setPreviewDimensions({
-                      width: event.currentTarget.naturalWidth || 16,
-                      height: event.currentTarget.naturalHeight || 9,
-                    })
-                  }
+
                 />
               ) : (
                 <video
@@ -1864,10 +1866,7 @@ export function VideoEditorWorkspace({
                 className="size-full object-contain"
                 onLoadedMetadata={(event) => {
                   if (!previewClip || !previewSource) return;
-                  setPreviewDimensions({
-                    width: event.currentTarget.videoWidth || 16,
-                    height: event.currentTarget.videoHeight || 9,
-                  });
+
                   const target = Math.max(
                     previewSource.inPoint,
                     Math.min(previewSource.outPoint, currentTime)
@@ -1917,14 +1916,16 @@ export function VideoEditorWorkspace({
               />
               )}
               {activeOverlays.map((overlay) => {
+                const pose = overlayTransformAt(overlay, timelineCurrentTime)!;
                 const position =
                   overlayDragPreview?.clipId === overlay.id
                     ? overlayDragPreview
-                    : overlay.overlay!;
+                    : pose;
                 const selected = selectedClipId === overlay.id;
                 return (
                   <Action
                     key={overlay.id}
+                    disabled={document.tracks.some(track => track.id === overlay.trackId && track.locked)}
                     type="button"
                     aria-label={`${t('overlay.dragLabel')}: ${overlay.name}`}
                     title={t('overlay.dragHint')}
@@ -1941,9 +1942,9 @@ export function VideoEditorWorkspace({
                     style={{
                       left: `${position.x * 100}%`,
                       top: `${position.y * 100}%`,
-                      width: `${overlay.overlay!.width * 100}%`,
+                      width: `${pose.width * 100}%`,
                       opacity: overlayOpacityAt(overlay, timelineCurrentTime),
-                      transform: `translate(-50%, -50%) rotate(${overlay.overlay!.rotation}deg)`,
+                      transform: `translate(-50%, -50%) rotate(${pose.rotation}deg)`,
                     }}
                   >
                     <img
@@ -2303,13 +2304,7 @@ export function VideoEditorWorkspace({
           </div>
         </section>
 
-        <aside
-          className={
-            isInspectorOpen
-              ? 'hidden w-[300px] shrink-0 flex-col border-l border-[var(--vh-border)] bg-[var(--vh-surface)] sm:flex xl:w-[336px]'
-              : 'hidden'
-          }
-        >
+        <EditorInspectorPanel open={isInspectorOpen} narrow={isInspectorNarrow} setOpen={setInspectorOpen} title={t('panel.title')}>
           <div className="flex h-12 items-center justify-between border-b border-[var(--vh-border)] px-4">
             <div className="flex items-center gap-2 text-sm font-[600] text-[var(--vh-text-1)]">
               <SlidersHorizontal className="size-4 text-[var(--vh-text-2)]" />
@@ -2534,47 +2529,8 @@ export function VideoEditorWorkspace({
                     </div>
                   ) : selectedIsOverlay && selectedClip.overlay ? (
                     <div className="space-y-4 rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3.5">
-                      {([
-                        ['x', 0, 1, 0.01, selectedClip.overlay.x],
-                        ['y', 0, 1, 0.01, selectedClip.overlay.y],
-                        ['width', 0.05, 2, 0.01, selectedClip.overlay.width],
-                        ['opacity', 0, 1, 0.01, selectedClip.overlay.opacity],
-                        ['rotation', -180, 180, 1, selectedClip.overlay.rotation],
-                        ['fadeIn', 0, selectedClip.duration, 0.01, selectedClip.fadeIn],
-                        ['fadeOut', 0, selectedClip.duration, 0.01, selectedClip.fadeOut],
-                      ] as const).map(([field, min, max, step, value]) => (
-                        <label key={field} className="block">
-                          <span className="mb-2 flex items-center justify-between text-[10px] font-[520] text-[var(--vh-text-2)]">
-                            <span>{t(`overlay.${field}`)}</span>
-                            <span className="tabular-nums text-[var(--vh-text-2)]">
-                              {field === 'fadeIn' || field === 'fadeOut'
-                                ? `${value.toFixed(2)}s`
-                                : field === 'rotation'
-                                  ? `${Math.round(value)}°`
-                                  : `${Math.round(value * 100)}%`}
-                            </span>
-                          </span>
-                          <input
-                            type="range"
-                            min={min}
-                            max={max}
-                            step={step}
-                            value={value}
-                            onChange={(event) =>
-                              commitDocument((current) =>
-                                applyEditorOperations(current, [
-                                  {
-                                    type: 'update_overlay',
-                                    clipId: selectedClip.id,
-                                    patch: { [field]: Number(event.target.value) },
-                                  },
-                                ]).document
-                              )
-                            }
-                            className="h-1 w-full accent-[var(--vh-graph)]"
-                          />
-                        </label>
-                      ))}
+                      <OverlayInspector locked={document.tracks.some(track => track.id === selectedClip.trackId && track.locked)} clip={selectedClip} time={timelineCurrentTime} onSeek={seekTimeline}
+                        onEdit={operation => commitDocument(current => applyEditorOperations(current, [operation]).document)} />
                       <div className="grid grid-cols-2 gap-2 border-t border-[var(--vh-border)] pt-3">
                         <label className="block">
                           <span className="mb-2 block text-[10px] text-[var(--vh-text-2)]">
@@ -2832,7 +2788,7 @@ export function VideoEditorWorkspace({
               {t('actions.addTimelineToCanvas')}
             </Action>
           </div>
-        </aside>
+        </EditorInspectorPanel>
       </div>
 
       {error ? (

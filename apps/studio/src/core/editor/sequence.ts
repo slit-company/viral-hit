@@ -1,3 +1,4 @@
+import { overlayMotionSchema } from './overlay-motion';
 import { z } from 'zod';
 import { createTimelineDocument, normalizeTimelineDocument, type TimelineDocument, type TimelineClip } from './timeline-document';
 import { diagnoseTimeline } from './timeline-diagnostics';
@@ -9,7 +10,7 @@ const common = { id, startTime: time, duration };
 const overlay = z.object({ x: z.number().min(0).max(1), y: z.number().min(0).max(1), width: z.number().min(0.05).max(2), opacity: z.number().min(0).max(1), rotation: z.number().min(-180).max(180) }).strict();
 const caption = z.object({ fontScale: z.number().min(0.015).max(0.12), maxWidth: z.number().min(0.25).max(0.98), bottomOffset: z.number().min(0.02).max(0.9) }).strict();
 const clip = z.discriminatedUnion('type', [
-  z.object({ ...common, type: z.literal('media'), source: id, inPoint: time.default(0), volume: z.number().min(0).max(4).default(1), muted: z.boolean().default(false), fadeIn: time.default(0), fadeOut: time.default(0), audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(), overlay: overlay.optional() }).strict(),
+  z.object({ ...common, type: z.literal('media'), source: id, inPoint: time.default(0), volume: z.number().min(0).max(4).default(1), muted: z.boolean().default(false), fadeIn: time.default(0), fadeOut: time.default(0), audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(), overlay: overlay.optional(), motion: overlayMotionSchema.optional() }).strict(),
   z.object({ ...common, type: z.literal('caption'), text: z.string().trim().min(1).max(4000), caption: caption.optional() }).strict(),
 ]);
 /** Portable edit intent: project asset IDs, never paths, URLs, code or whole-document replacement. */
@@ -33,7 +34,7 @@ export const sequenceSchema = z.object({
       }
       const source = sequence.assets[clip.source];
       if (!source || (track.kind === 'audio' ? source.kind !== 'audio' : track.kind === 'overlay' ? source.kind !== 'image' : track.kind === 'video' ? source.kind === 'audio' : true)) ctx.addIssue({ code: 'custom', message: 'Media kind does not match the sequence track' });
-      if (clip.overlay && track.kind !== 'overlay') ctx.addIssue({ code: 'custom', message: 'Overlay transform needs an overlay track' });
+      if ((clip.overlay || clip.motion) && track.kind !== 'overlay') ctx.addIssue({ code: 'custom', message: 'Overlay transform needs an overlay track' });
       if (source?.kind === 'image' && clip.inPoint !== 0) ctx.addIssue({ code: 'custom', message: 'Images have no source in-point' });
       if (clip.fadeIn > clip.duration || clip.fadeOut > clip.duration) ctx.addIssue({ code: 'custom', message: 'Fade exceeds clip duration' });
     }
@@ -57,7 +58,7 @@ export function appendSequence(source: TimelineDocument, sequence: EditableSeque
       if (!sourceDuration || clip.inPoint + clip.duration > sourceDuration) throw Error(`Sequence clip ${clip.id} exceeds its source duration`);
       return { ...base, assetId: asset.assetId, sourceUrl: asset.publicUrl, name: asset.name, sourceType: asset.kind,
         sourceDuration, inPoint: clip.inPoint, outPoint: clip.inPoint + clip.duration, volume: clip.volume, muted: clip.muted,
-        fadeIn: clip.fadeIn, fadeOut: clip.fadeOut, audioRole: clip.audioRole,
+        fadeIn: clip.fadeIn, fadeOut: clip.fadeOut, audioRole: clip.audioRole, ...(clip.motion ? { motion: clip.motion } : {}),
         overlay: track.kind === 'overlay' ? clip.overlay ?? { x: 0.5, y: 0.25, width: 0.7, opacity: 1, rotation: 0 } : null };
     });
     return { id: trackId, kind: track.kind, name: `${sequence.title} · ${track.name}`.slice(0, 120), locked: false, hidden: false, muted: false, clips };

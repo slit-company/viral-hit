@@ -1,3 +1,4 @@
+import type { OverlayMotion } from '@/core/editor/overlay-motion';
 import {
   applySrtToTimeline,
   setCaptionStyle,
@@ -20,6 +21,7 @@ import {
   trimTimelineClip,
   updateTimelineAudioClip,
   updateTimelineOverlay,
+  setTimelineOverlayMotion,
   type TimelineAudioRole,
   type CaptionStylePreset,
   type TimelineDocument,
@@ -28,6 +30,7 @@ import {
 import { ViralHitCommandError } from './contracts';
 
 export type EditorOperation =
+  | { type: 'set_overlay_motion'; clipId: string; motion: OverlayMotion | null }
   | {
       type: 'add_clip';
       assetId: string;
@@ -78,6 +81,7 @@ export type EditorOperation =
   | {
       type: 'update_overlay';
       clipId: string;
+      atTime?: number;
       patch: {
         x?: number;
         y?: number;
@@ -237,6 +241,8 @@ export function applyEditorOperations(
         throw new ViralHitCommandError('NOT_FOUND', `Audio clip ${operation.clipId} was not found.`);
       }
       next = updateTimelineAudioClip(document, operation.clipId, operation.patch);
+    } else if (operation.type === 'set_overlay_motion') {
+      next = setTimelineOverlayMotion(document, operation.clipId, operation.motion);
     } else if (operation.type === 'update_overlay') {
       const clip = findTimelineClip(document, operation.clipId);
       if (!clip?.overlay) {
@@ -245,7 +251,7 @@ export function applyEditorOperations(
           `Overlay clip ${operation.clipId} was not found.`
         );
       }
-      next = updateTimelineOverlay(document, operation.clipId, operation.patch);
+      next = updateTimelineOverlay(document, operation.clipId, operation.patch, operation.atTime);
     } else if (operation.type === 'replace_overlay_asset') {
       const clip = findTimelineClip(document, operation.clipId);
       if (!clip?.overlay) {

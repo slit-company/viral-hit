@@ -57,3 +57,5 @@ Measure cold and warm runs separately on fixed machine/browser/model versions. R
 - [ ] Public social demo with required tag, then submission
 
 Registering, social posting, and submitting are not performed by creating this repository.
+
+Image overlays now have a shared [keyframe contract](OVERLAY-MOTION.md) for position, width, opacity and rotation, with source-time split/trim semantics and portable recipe support. This is bounded image-overlay animation, not general motion graphics or completion of the editor row.

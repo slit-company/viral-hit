@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit contributors",
+  "category": "editing",
+  "tags": [
+    "editable",
+    "local",
+    "animation"
+  ],
+  "id": "animated-image-story",
+  "title": "Animate an editable image story",
+  "description": "Prepare a background, animated image overlay and editable title. Keyframes remain editable in the inspector and through MCP.",
+  "parameters": [
+    {
+      "id": "image",
+      "label": "Project image",
+      "type": "asset",
+      "kind": "image"
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "string",
+      "multiline": false,
+      "default": "MAKE IT YOURS",
+      "maxLength": 80
+    },
+    {
+      "id": "duration",
+      "label": "Duration (seconds)",
+      "type": "number",
+      "default": 3,
+      "min": 0.1,
+      "max": 60
+    },
+    {
+      "id": "overlay",
+      "label": "Overlay image",
+      "type": "asset",
+      "kind": "image"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "edit",
+      "operation": "editor.sequence",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "title": "Animated story",
+        "assets": {
+          "image": {
+            "assetId": "select-image",
+            "kind": "image"
+          },
+          "overlay": {
+            "assetId": "select-overlay",
+            "kind": "image"
+          }
+        },
+        "tracks": [
+          {
+            "id": "visual",
+            "name": "Visual",
+            "kind": "video",
+            "clips": [
+              {
+                "id": "visual",
+                "type": "media",
+                "source": "image",
+                "startTime": 0,
+                "duration": 3
+              }
+            ]
+          },
+          {
+            "id": "title",
+            "name": "Title",
+            "kind": "caption",
+            "clips": [
+              {
+                "id": "title",
+                "type": "caption",
+                "startTime": 0,
+                "duration": 3,
+                "text": "MAKE IT YOURS"
+              }
+            ]
+          },
+          {
+            "id": "overlay",
+            "name": "Animated overlay",
+            "kind": "overlay",
+            "clips": [
+              {
+                "id": "mark",
+                "type": "media",
+                "source": "overlay",
+                "startTime": 0,
+                "duration": 3,
+                "motion": {
+                  "version": 1,
+                  "keyframes": [
+                    {
+                      "id": "start",
+                      "time": 0,
+                      "x": 0.25,
+                      "y": 0.3,
+                      "width": 0.2,
+                      "opacity": 0.25,
+                      "rotation": -15,
+                      "easing": "ease-in-out"
+                    },
+                    {
+                      "id": "finish",
+                      "time": 3,
+                      "x": 0.7,
+                      "y": 0.45,
+                      "width": 0.4,
+                      "opacity": 1,
+                      "rotation": 15,
+                      "easing": "linear"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "parameter": "image",
+          "target": "/assets/image/assetId"
+        },
+        {
+          "parameter": "title",
+          "target": "/tracks/1/clips/0/text"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/0/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/1/clips/0/duration"
+        },
+        {
+          "parameter": "overlay",
+          "target": "/assets/overlay/assetId"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/2/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/2/clips/0/motion/keyframes/1/time"
+        }
+      ]
+    }
+  ]
+}

@@ -555,7 +555,22 @@
         "opacity": "不透明度",
         "rotation": "回転",
         "fadeIn": "フェードイン",
-        "fadeOut": "フェードアウト"
+        "fadeOut": "フェードアウト",
+        "animation": "アニメーション",
+        "enable": "動きを追加",
+        "disable": "動きを削除",
+        "addKeyframe": "キーフレームを追加",
+        "removeKeyframe": "キーフレームを削除",
+        "keyframes": "キーフレーム一覧",
+        "keyframe": "キーフレーム",
+        "easing": "次のキーフレームへの補間",
+        "linear": "リニア",
+        "ease-in": "イーズイン",
+        "ease-out": "イーズアウト",
+        "ease-in-out": "イーズインアウト",
+        "cursor": "クリップ時間",
+        "animatedHint": "再生位置で変形を調整します。トリミングしても元の動きを維持します。",
+        "staticHint": "キーフレームで位置・サイズ・回転・不透明度を動かします。"
       },
       "panel": {
         "title": "インスペクター",

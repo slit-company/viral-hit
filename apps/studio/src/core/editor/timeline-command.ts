@@ -30,6 +30,9 @@ export function buildTimelineEditCommand(base: TimelineDocument | null, next: Ti
       if (clip.startTime !== previous.startTime) {
         operations.push({ type: 'move_clip', clipId: id, startTime: clip.startTime });
       }
+      if (!equal(clip.motion, previous.motion)) {
+        operations.push({ type: 'set_overlay_motion', clipId: id, motion: clip.motion ?? null });
+      }
       if (clip.overlay && !equal(clip.overlay, previous.overlay)) {
         operations.push({ type: 'update_overlay', clipId: id, patch: clip.overlay });
       }

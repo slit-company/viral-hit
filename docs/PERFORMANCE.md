@@ -46,3 +46,8 @@ The new frame selector inspects bounded timestamp windows with ffprobe (2 MiB re
 ## Browser account connections — 2026-10-20
 
 The account page adds no runtime package. The production public output contains 177 files and 8,407,661 bytes; JavaScript totals 1,845,842 raw bytes and 541,210 summed gzip bytes, an increase of 4,539 gzip bytes from the preceding reference-recipes build. The route is a separate lazy page. OAuth, hashing, credential storage and the account database remain outside browser imports. This is a bundle observation, not a publishing throughput or app-wide memory benchmark. Account management opens/closes the existing SQLite/vault service per request and uses the existing bounded OAuth network operations.
+
+
+## Editable image motion — 2026-10-20
+
+Production public assets: 180 files / 8,472,832 bytes; JavaScript 1,909,899 raw bytes / 559,829 summed gzip bytes, +3,237 gzip bytes over the preceding editable-sequence build. Existing 10 MB asset / 600 KB gzip-JS gates pass. No runtime package was added. The contract bounds each overlay to 32 keyframes and server rotation rejects working canvases above 64 megapixels. Constant opacity uses a static filter; varying opacity/fades use FFmpeg expressions. These bounds are not a measured host memory limit, timeline throughput result, or competitor performance comparison. Real browser/server export frames are covered in the [validation ledger](VALIDATION.md).

@@ -555,7 +555,22 @@
         "opacity": "Opacity",
         "rotation": "Rotation",
         "fadeIn": "Fade in",
-        "fadeOut": "Fade out"
+        "fadeOut": "Fade out",
+        "animation": "Animation",
+        "enable": "Animate",
+        "disable": "Remove animation",
+        "addKeyframe": "Add keyframe",
+        "removeKeyframe": "Delete keyframe",
+        "keyframes": "Keyframes",
+        "keyframe": "Keyframe",
+        "easing": "Easing to next keyframe",
+        "linear": "Linear",
+        "ease-in": "Ease in",
+        "ease-out": "Ease out",
+        "ease-in-out": "Ease in and out",
+        "cursor": "Clip time",
+        "animatedHint": "Adjust a pose at the playhead. Trimming keeps the original motion.",
+        "staticHint": "Add keyframes to animate position, size, rotation and opacity."
       },
       "panel": {
         "title": "Inspector",

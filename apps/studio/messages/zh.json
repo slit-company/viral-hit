@@ -555,7 +555,22 @@
         "opacity": "透明度",
         "rotation": "旋转",
         "fadeIn": "淡入",
-        "fadeOut": "淡出"
+        "fadeOut": "淡出",
+        "animation": "动画",
+        "enable": "添加动画",
+        "disable": "移除动画",
+        "addKeyframe": "添加关键帧",
+        "removeKeyframe": "删除关键帧",
+        "keyframes": "关键帧列表",
+        "keyframe": "关键帧",
+        "easing": "到下一关键帧的缓动",
+        "linear": "线性",
+        "ease-in": "缓入",
+        "ease-out": "缓出",
+        "ease-in-out": "缓入缓出",
+        "cursor": "片段时间",
+        "animatedHint": "在播放头位置调整变换。裁剪会保留原有运动。",
+        "staticHint": "通过关键帧为位置、大小、旋转和不透明度添加动画。"
       },
       "panel": {
         "title": "属性检查器",

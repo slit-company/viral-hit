@@ -1,3 +1,5 @@
+import { timelineOutputFrame } from './output-frame';
+import { buildOverlayFilters } from './overlay-render.server';
 import { spawn } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -200,10 +202,7 @@ async function buildFfmpegArgs({
     (input) => input.trackKind === 'video' && input.probe.hasVideo
   );
   if (!firstVisual) throw new Error('The timeline has no readable visual clip.');
-  const portrait =
-    (firstVisual.probe.height ?? 0) > (firstVisual.probe.width ?? 0);
-  const width = portrait ? 1080 : 1920;
-  const height = portrait ? 1920 : 1080;
+  const { width, height } = timelineOutputFrame(firstVisual.probe.width ?? 0, firstVisual.probe.height ?? 0);
   const args = [
     '-hide_banner',
     '-loglevel',
@@ -256,38 +255,11 @@ async function buildFfmpegArgs({
   for (const input of inputs.filter((item) => item.trackKind === 'overlay')) {
     if (!input.clip.overlay) continue;
     overlayIndex += 1;
-    const preparedLabel = `overlay${overlayIndex}`;
-    const nextLabel = `withoverlay${overlayIndex}`;
-    const overlay = input.clip.overlay;
-    const overlayWidth = Math.max(1, Math.round(width * overlay.width));
-    const steps = [
-      `trim=duration=${time(input.clip.duration)}`,
-      `setpts=PTS-STARTPTS+${time(input.clip.startTime)}/TB`,
-      `scale=${overlayWidth}:-1`,
-      'format=rgba',
-      `colorchannelmixer=aa=${overlay.opacity.toFixed(3)}`,
-    ];
-    if (input.clip.fadeIn > 0) {
-      steps.push(`fade=t=in:st=0:d=${time(input.clip.fadeIn)}:alpha=1`);
-    }
-    if (input.clip.fadeOut > 0) {
-      steps.push(
-        `fade=t=out:st=${time(input.clip.duration - input.clip.fadeOut)}:d=${time(input.clip.fadeOut)}:alpha=1`
-      );
-    }
-    if (overlay.rotation !== 0) {
-      steps.push(
-        `rotate=${(overlay.rotation * Math.PI / 180).toFixed(6)}:ow=rotw(iw):oh=roth(ih):c=none`
-      );
-    }
-    filters.push(`[${input.inputIndex}:v]${steps.join(',')}[${preparedLabel}]`);
-    filters.push(
-      `[${visualLabel}][${preparedLabel}]overlay=` +
-        `x=${Math.round(width * overlay.x)}-overlay_w/2:` +
-        `y=${Math.round(height * overlay.y)}-overlay_h/2:eof_action=pass:` +
-        `enable='between(t,${time(input.clip.startTime)},${time(input.clip.startTime + input.clip.duration)})'[${nextLabel}]`
-    );
-    visualLabel = nextLabel;
+    const overlay = buildOverlayFilters({ clip: input.clip, inputIndex: input.inputIndex,
+      inputWidth: input.probe.width ?? 1, inputHeight: input.probe.height ?? 1,
+      width, height, visualLabel, index: overlayIndex });
+    filters.push(...overlay.filters);
+    visualLabel = overlay.output;
   }
 
   const captionClips = document.tracks.filter(track => track.kind === 'caption' && !track.hidden && !track.muted).flatMap(track => track.clips);

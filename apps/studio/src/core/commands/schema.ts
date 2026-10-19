@@ -1,3 +1,4 @@
+import { setOverlayMotionSchema, updateOverlaySchema } from './overlay-schema';
 import { z } from 'zod';
 
 import type { CanvasCard } from '@/core/creative-canvas/canvas-types';
@@ -340,26 +341,8 @@ export const editorOperationSchema = z.discriminatedUnion('type', [
         }),
     })
     .strict(),
-  z
-    .object({
-      type: z.literal('update_overlay'),
-      clipId: commandIdSchema,
-      patch: z
-        .object({
-          x: z.number().finite().min(0).max(1).optional(),
-          y: z.number().finite().min(0).max(1).optional(),
-          width: z.number().finite().min(0.05).max(2).optional(),
-          opacity: z.number().finite().min(0).max(1).optional(),
-          rotation: z.number().finite().min(-180).max(180).optional(),
-          fadeIn: finiteTimeSchema.optional(),
-          fadeOut: finiteTimeSchema.optional(),
-        })
-        .strict()
-        .refine((value) => Object.keys(value).length > 0, {
-          message: 'Overlay update must include at least one field.',
-        }),
-    })
-    .strict(),
+  updateOverlaySchema,
+  setOverlayMotionSchema,
   z
     .object({
       type: z.literal('replace_overlay_asset'),

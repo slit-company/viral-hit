@@ -170,6 +170,85 @@
                         "rotation"
                       ],
                       "additionalProperties": false
+                    },
+                    "motion": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "number",
+                          "const": 1
+                        },
+                        "keyframes": {
+                          "minItems": 1,
+                          "maxItems": 32,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "x": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "y": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "width": {
+                                "type": "number",
+                                "minimum": 0.05,
+                                "maximum": 2
+                              },
+                              "opacity": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
+                              },
+                              "rotation": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "id": {
+                                "type": "string",
+                                "minLength": 1,
+                                "maxLength": 160
+                              },
+                              "time": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 86400
+                              },
+                              "easing": {
+                                "type": "string",
+                                "enum": [
+                                  "linear",
+                                  "ease-in",
+                                  "ease-out",
+                                  "ease-in-out"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "x",
+                              "y",
+                              "width",
+                              "opacity",
+                              "rotation",
+                              "id",
+                              "time",
+                              "easing"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "keyframes"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [
