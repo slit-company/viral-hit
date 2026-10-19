@@ -1,3 +1,4 @@
+import { RecipeLibrary } from './recipe-library';
 import { TextField } from '@seed-design/react';
 import { Action } from '@/components/base/action';
 import { useEffect, useRef, useState } from 'react';
@@ -15,6 +16,8 @@ type Result = { configured: boolean; capabilities: Capability[]; runs: Run[] };
 type InputAsset = { id: string; type: string; storageProvider: string; filename: string | null; publicUrl: string; mimeType: string | null; sizeBytes: number | null };
 export function HarnessDialog({ projectId }: { projectId: string }) {
   const [open, setOpen] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryNotice, setLibraryNotice] = useState('');
   const [data, setData] = useState<Result>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -40,7 +43,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? inputAssets.some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
-  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); }, [open, projectId]);
+  useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); setLibraryOpen(false); setLibraryNotice(''); }, [open, projectId]);
   async function checkServer() {
     if (!selected) return;
     const epoch = ++checkEpoch.current; setChecking(true); setCheck(undefined); setError('');
@@ -109,6 +112,12 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       setTakeTarget(undefined); setTakeNotice('Take applied. Close this window and use Clip take in the editor to restore the original.');
     }
   }
+  async function recipeInstalled(recipe: Recipe) {
+    const result = await apiJsonGet<{ recipes: Recipe[] }>('/api/app/recipes');
+    setRecipes(result.recipes); setRecipeId(recipe.id); setValues({}); requestKey.current = ''; invalidateCheck();
+    setLibraryOpen(false); setLibraryNotice(`${recipe.title} is ready in this local library. No jobs started.`);
+    dialogBody.current?.scrollTo({ top: 0 });
+  }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--vh-border)] px-2.5 text-xs hover:bg-[var(--vh-control)]" aria-label="Generation runs">
       <Activity size={14} /><span className="hidden lg:inline">Runs</span>
@@ -116,13 +125,15 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     <DialogContent ref={dialogContent} className="max-h-[85vh] overflow-hidden border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl grid-rows-[auto_minmax(0,1fr)]">
       <div className="pr-8">
         <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
-        <DialogTitle className="text-xl">Generation runs</DialogTitle>
-        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">Your project’s generation history. Closing this window keeps queued work in the local worker.</DialogDescription>
+        <DialogTitle className="text-xl">{libraryOpen ? 'Recipe library' : 'Generation runs'}</DialogTitle>
+        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{libraryOpen ? 'Bring your own workflow, make a separate copy, and share its JSON. Installation does not run it.' : 'Your project’s generation history. Closing this window keeps queued work in the local worker.'}</DialogDescription>
       </div>
       <div ref={dialogBody} className="min-h-0 overflow-y-auto" data-testid="runs-body">
+      {libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipeInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
+      {libraryNotice && <p role="status" className="mb-3 rounded-lg bg-[var(--vh-control)] p-3 text-xs">{libraryNotice}</p>}
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">
-          <label htmlFor="run-recipe" className="block text-xs text-[var(--vh-text-2)]">Creative recipe</label>
+          <div className="flex items-center justify-between gap-2"><label htmlFor="run-recipe" className="block text-xs text-[var(--vh-text-2)]">Creative recipe</label><Action onClick={() => { setLibraryOpen(true); setError(''); dialogBody.current?.scrollTo({ top: 0 }); }} className="text-xs text-[var(--color-lime-text)]">Recipe library</Action></div>
           <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; invalidateCheck(); setChecking(false); }} className="w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] p-2.5 text-sm">
             {!recipes.length && <option value="">No recipes available</option>}
             {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
@@ -192,6 +203,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       </div>
       {takeNotice && <p role="status" className="rounded-lg bg-[var(--vh-control)] p-3 text-sm">{takeNotice}</p>}
       {error && <p role="alert" className="mt-3 rounded-lg bg-red-500/10 p-3 text-sm text-red-800">{error}</p>}
+      </>}
       </div>
     </DialogContent>
   </Dialog>;

@@ -436,3 +436,82 @@ test('a harness result replaces only a selected scene, exports its real pixels, 
   expect(restored.document.tracks.flatMap((t: { clips: any[] }) => t.clips).find((c: { id: string }) => c.id === 'take-target').takes).toHaveLength(1);
   expect(errors).toEqual([]);
 });
+
+test('recipe library imports, reviews, exports and forks portable JSON without creating runs', async ({ page, request }) => {
+  const id = await project(request, 'Recipe library QA');
+  const catalog = await (await request.get('/api/app/recipes')).json();
+  const original = catalog.recipes.find((r: { id: string }) => r.id === 'local-canvas');
+  const manifest = { ...original, id: 'portable-test-canvas', title: 'Portable color study', author: 'Community fixture', license: 'MIT' };
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('local-canvas');
+  await page.getByRole('button', { name: 'Recipe library', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Recipe library', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Install recipe', exact: true })).toBeDisabled();
+  await page.getByLabel('Import recipe file').setInputFiles({ name: 'portable.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(manifest, null, 2)) });
+  await page.getByRole('button', { name: 'Inspect JSON', exact: true }).click();
+  const review = page.getByRole('region', { name: 'Recipe inspection', exact: true });
+  await expect(review).toContainText('Community fixture · MIT');
+  await expect(review).toContainText('Ready to install as a new local recipe.');
+  await expect.poll(async () => { const r = await review.boundingBox(), a = await page.getByRole('button', { name: 'Install recipe', exact: true }).boundingBox(); return Boolean(r && a && r.y + r.height <= a.y); }).toBe(true);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.getByRole('button', { name: 'Install recipe', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/recipe-library-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await review.scrollIntoViewIfNeeded();
+  const modal = await page.getByRole('dialog').boundingBox();
+  for (const name of ['Install recipe', 'Close']) {
+    const box = await page.getByRole('button', { name, exact: true }).boundingBox();
+    expect(box!.y).toBeGreaterThanOrEqual(modal!.y); expect(box!.y + box!.height).toBeLessThanOrEqual(modal!.y + modal!.height + 1);
+  }
+  expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/recipe-library-mobile.png' });
+  const download = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download reviewed JSON', exact: true }).click();
+  const exported = JSON.parse(await readFile((await (await download).path())!, 'utf8'));
+  expect(exported).toEqual(manifest);
+  expect((await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs).toHaveLength(0);
+  await page.getByRole('button', { name: 'Install recipe', exact: true }).click();
+  await expect(page.getByLabel('Creative recipe')).toHaveValue(manifest.id);
+  await expect(page.getByRole('status').filter({ hasText: 'No jobs started.' })).toBeVisible();
+  await expect(page.getByLabel('Width', { exact: true })).toHaveValue('512');
+  // API and MCP read the same persistent local library.
+  const listed = await mcp(request, 'viral_hit_recipes_list', {});
+  expect(listed.structuredContent.result.recipes.some((r: { id: string }) => r.id === manifest.id)).toBe(true);
+  const inspected = await mcp(request, 'viral_hit_recipe_library', { request: { action: 'inspect', manifest: exported } });
+  expect(inspected.structuredContent.result.collision).toBe('same');
+  const replay = await mcp(request, 'viral_hit_recipe_library', { request: { action: 'install', manifest: exported, expectedDigest: inspected.structuredContent.result.digest } });
+  expect(replay.structuredContent.result.installed).toBe(false);
+  await page.reload();
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption(manifest.id);
+  await page.getByRole('button', { name: 'Recipe library', exact: true }).click();
+  await page.getByRole('button', { name: 'Duplicate & edit', exact: true }).click();
+  const fork = JSON.parse(await page.getByLabel('Recipe JSON', { exact: true }).inputValue());
+  expect(fork.id).not.toBe(manifest.id); expect(fork.author).toBe(manifest.author); expect(fork.license).toBe(manifest.license); expect(fork.nodes).toEqual(manifest.nodes);
+  await page.getByRole('button', { name: 'Inspect JSON', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Install recipe', exact: true })).toBeEnabled();
+  await page.getByLabel('Recipe JSON', { exact: true }).fill(JSON.stringify({ ...fork, title: 'Changed after review' }));
+  await expect(page.getByRole('button', { name: 'Install recipe', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Inspect JSON', exact: true }).click();
+  await page.getByRole('button', { name: 'Install recipe', exact: true }).click();
+  await expect(page.getByLabel('Creative recipe')).toHaveValue(fork.id);
+  const final = await (await request.get('/api/app/recipes')).json();
+  expect(final.recipes.find((r: { id: string }) => r.id === 'local-canvas')).toEqual(original);
+  expect(final.recipes.filter((r: { id: string }) => r.id === manifest.id)).toHaveLength(1);
+  expect((await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs).toHaveLength(0);
+  expect(errors).toEqual([]);
+});
+
+test('recipe library HTTP rejects untrusted, oversized and stale installation requests', async ({ request }) => {
+  const manifest = (await (await request.get('/api/app/recipes')).json()).recipes[0];
+  const url = '/api/app/recipes';
+  expect((await request.post(url, { data: { action: 'inspect', manifest } })).status()).toBe(403);
+  expect((await request.post(url, { headers: { ...headers, origin: 'https://example.org' }, data: { action: 'inspect', manifest } })).status()).toBe(403);
+  expect((await request.post(url, { headers, data: { action: 'inspect', manifest: { ...manifest, description: 'x'.repeat(133_000) } } })).status()).toBe(413);
+  const copy = { ...manifest, id: 'stale-library-review' };
+  const report = await (await request.post(url, { headers, data: { action: 'inspect', manifest: copy } })).json();
+  expect((await request.post(url, { headers, data: { action: 'install', manifest: { ...copy, title: 'Changed' }, expectedDigest: report.digest } })).status()).toBe(409);
+  expect((await (await request.get(url)).json()).recipes.some((r: { id: string }) => r.id === copy.id)).toBe(false);
+});

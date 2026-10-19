@@ -4,7 +4,7 @@ The core must support both general creative work and specialized workflows. A ne
 
 ## Add a recipe without editing application code
 
-A recipe is a versioned JSON file with identity, author/license, category, typed parameters, nodes and bindings. Put a manifest in `recipes/`, or point `VIRAL_HIT_RECIPES_DIR` to your own manifest directory before starting the app/MCP server. The studio reads the catalog and builds the input form from each manifest. Agents discover the same catalog through `viral_hit_recipes_list`; `viral_hit_runs_change` accepts `action: "recipe"`, `recipeId`, `values` and a stable `requestKey`.
+A recipe is a versioned JSON file with identity, author/license, category, typed parameters, nodes and bindings. Import a manifest through **Runs → Recipe library**, put one in `recipes/`, or point `VIRAL_HIT_RECIPES_DIR` to your own file catalog before starting the app/MCP server. The configured directory replaces the shipped file catalog; the workspace’s separate local library is appended without shadowing file-catalog IDs. The studio reads the catalog and builds the input form from each manifest. Agents discover the same catalog through `viral_hit_recipes_list`; `viral_hit_runs_change` accepts `action: "recipe"`, `recipeId`, `values` and a stable `requestKey`.
 
 The shipped `open-frame`, `open-motion` and `spoken-line` recipes cover general image, video and speech workflows. `remote-media-import` imports public HTTPS image/video/audio media without a generation key. `editorial-triptych` specializes the same machinery for three directed frames. It does not promise character continuity or automatic film assembly. Add product photography, storyboards, animation keyframes or other recipes without changing core UI components. Each recipe must describe real operation coverage accurately.
 
@@ -19,6 +19,24 @@ pnpm --silent --dir apps/studio recipe compile ../../recipes/open-frame.json ../
 pnpm --dir apps/studio harness enqueue /tmp/viral-hit-plan.json stable-request-key
 ```
 
+## Import, fork and share recipes in the studio
+
+Open **Runs → Recipe library**. **Import JSON file** accepts a Viral Hit recipe manifest up to 128,000 bytes; the JSON editor also accepts pasted content. **Duplicate & edit** copies the selected recipe into a new ID and resets its version to `1.0.0`, preserving its author, license, graph and parameters. Edit the JSON to specialize it, then **Inspect JSON**. The report shows identity, attribution, node/input counts, required operations and ID collisions. It validates the manifest, defaults, dependency graph and binding pointers offline. It does not call a provider, upload inputs, install code/models or submit a workflow.
+
+**Install recipe** binds the write to the inspected content digest. Editing the JSON clears that review. Installed recipes immediately appear in the same Runs dropdown, generated input form, HTTP catalog and MCP catalog; queueing remains a separate action. Use **Check server** for native node/model choices before a real run. Missing runtime adapters are reported during inspection: a portable manifest can be retained for another runtime, while this runtime still rejects unsupported operations before enqueueing.
+
+**Export selected JSON** and **Download reviewed JSON** produce portable manifests. These contain graph inputs, prompts, filenames and defaults already present in the recipe. They do not package media files or run history. Preserve source attribution when redistributing a fork. API-format ComfyUI graphs must first be converted using the importer below; this editor accepts recipe manifests, not ComfyUI canvas-layout JSON.
+
+Local installations live in `recipe-library.sqlite` under `VIRAL_HIT_DATA_DIR` (the normal studio data directory by default), shared across projects in that local workspace. File-catalog recipes are never overwritten. Installation is immutable by ID: an identical replay returns the same recipe; different contents under that ID require a new ID. This includes revisions, even when the manifest version changes. Automatic updates, an in-place version history, removal UI, package signatures and a hosted community marketplace are not implemented. Up to 200 local recipes are admitted in a SQLite transaction, including concurrent app/MCP installation; the separate file catalog retains its own 200-file bound. Back up the normal data directory and export JSON for sharing.
+
+The same operations are exposed as `POST /api/app/recipes` with the trusted workspace mutation header, or MCP `viral_hit_recipe_library`:
+
+```json
+{ "request": { "action": "inspect", "manifest": { "schemaVersion": 1, "...": "complete recipe fields" } } }
+```
+
+Pass that report’s `digest` with the same complete manifest to `{ "request": { "action": "install", "manifest": { "...": "complete recipe fields" }, "expectedDigest": "64-character report digest" } }`. HTTP takes the inner request object directly. The abbreviated objects here illustrate the envelope; they are not complete recipes. The library never installs execution adapters or treats text in a manifest as agent instructions.
+
 ## Import your own ComfyUI graph
 
 The CLI can turn an existing **API-format graph** into a portable recipe with a typed input form and durable media stage. This does not require editing the studio or manually adding the output-download node. Canvas layout JSON (`nodes`/`links`) is not the API graph; export the map of node IDs to `class_type` and `inputs` from ComfyUI.
@@ -30,7 +48,7 @@ pnpm --silent --dir apps/studio recipe inspect-comfy ../../examples/comfy-api-ca
 pnpm --silent --dir apps/studio recipe import-comfy ../../examples/comfy-api-canvas.json ../../examples/comfy-canvas-definition.json ../../recipes/my-imported-canvas.json
 ```
 
-Open Runs and select **My imported canvas**. The catalog is read on request; reopen Runs to refresh it. With the [native server configured](LOCAL-COMFYUI.md), queue the workflow, then use **Add to timeline** after materialization succeeds. If `VIRAL_HIT_RECIPES_DIR` points elsewhere, write the generated manifest to that directory instead. It replaces the default catalog location, rather than merging it. The shipped example is a solid-color canvas without model weights; replace the graph and definition with your own workflow to use installed models or custom nodes.
+Open Runs and select **My imported canvas**. The catalog is read on request; reopen Runs to refresh it. With the [native server configured](LOCAL-COMFYUI.md), queue the workflow, then use **Add to timeline** after materialization succeeds. If `VIRAL_HIT_RECIPES_DIR` points elsewhere, write the generated manifest to that directory instead. It replaces the default file-catalog location; locally installed library recipes remain available alongside it. The shipped example is a solid-color canvas without model weights; replace the graph and definition with your own workflow to use installed models or custom nodes.
 
 The [definition example](../examples/comfy-canvas-definition.json) supplies identity, version, author, license, output selection and exposed inputs. A [definition JSON Schema](schemas/comfy-recipe-definition.schema.json) supports editors. Each entry contains a normal recipe `parameter` plus one or more `targets` with `nodeId` and input name. One parameter can drive several native nodes—for example, a shared prompt. For scalar parameters, an omitted default comes from the first target; explicit defaults take precedence, including `false`, `0` and empty strings (the latter require `minLength: 0`). The first target's default is applied to every target during compilation. Unexposed inputs and all node connections are retained.
 

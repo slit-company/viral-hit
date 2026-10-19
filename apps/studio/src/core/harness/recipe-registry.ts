@@ -1,8 +1,9 @@
 import { lstat, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { readInstalledRecipes } from './recipe-storage';
 import { recipeSchema, type Recipe } from './recipes';
 
-export async function loadRecipes(directory = process.env.VIRAL_HIT_RECIPES_DIR || resolve(process.cwd(), '../../recipes')): Promise<Recipe[]> {
+export async function loadRecipeDirectory(directory = process.env.VIRAL_HIT_RECIPES_DIR || resolve(process.cwd(), '../../recipes')): Promise<Recipe[]> {
   const entries = await readdir(directory, { withFileTypes: true });
   const paths = entries.filter(e => e.isFile() && e.name.endsWith('.json')).map(e => resolve(directory, e.name));
   if (paths.length > 200) throw new Error('Recipe directory contains too many manifests');
@@ -18,4 +19,17 @@ export async function loadRecipes(directory = process.env.VIRAL_HIT_RECIPES_DIR 
     ids.add(recipe.id); result.push(recipe);
   }
   return result;
+}
+
+/** Explicit directories retain the offline/file-only contract used by CLI tooling. */
+export async function loadRecipes(directory?: string): Promise<Recipe[]> {
+  const base = await loadRecipeDirectory(directory);
+  if (directory !== undefined) return base;
+  const installed = readInstalledRecipes();
+  const ids = new Set(base.map(recipe => recipe.id));
+  for (const recipe of installed) {
+    if (ids.has(recipe.id)) throw new Error(`Duplicate recipe id: ${recipe.id}`);
+    ids.add(recipe.id);
+  }
+  return [...base, ...installed];
 }
