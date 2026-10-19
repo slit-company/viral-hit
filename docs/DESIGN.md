@@ -37,3 +37,7 @@ The current implementation is not mostly copied SEED source components. It combi
 | Timeline, media preview, connected canvas | Editor-specific composition | Product-specific components |
 
 Inspected upstream `SectionHeading.tsx`, `PageHeader.tsx` and `LoadingPlaceholder.tsx` are further reusable candidates. They are not integrated merely by appearing in this table. Prefer the actual SEED heading/header and skeleton pattern when replacing corresponding surfaces; the consumer phone shell and Saju commerce/chat components are not appropriate editor primitives. New shared controls must follow [structure rules](architecture/STRUCTURE.md), with feature behavior kept outside the common UI layer.
+
+### Reference workflow results
+
+Reference recipes reuse the existing Runs dialog, SEED-backed recipe fields, SEED actions and project-asset picker. The new result component uses semantic figures with uncropped frame previews and selected timestamps, five columns on desktop and three on narrow screens. It introduces no alternate control system. Actual 1440×1000 and 390×844 captures and the fixed self-review scorecard are retained locally under `research/evidence/reference-recipes/visual/`.

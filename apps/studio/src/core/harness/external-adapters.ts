@@ -59,6 +59,7 @@ export function createExternalAdapter(entry: ExternalEntry): Adapter {
   }
   return {
     recovery: entry.descriptor.recovery,
+    execution: entry.descriptor.execution,
     async submit(raw, context) {
       const envelope = payload(raw), media = mediaContext(context, context.signal, envelope);
       // Verify every declared original before any external submission; ordinary errors preserve ambiguity on replay.

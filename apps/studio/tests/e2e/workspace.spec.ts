@@ -863,3 +863,62 @@ test('portable video asset parameters render a playable preview without enabling
   await expect.poll(() => video.evaluate((el: HTMLVideoElement) => el.readyState)).toBeGreaterThanOrEqual(1);
   await expect(page.getByRole('button', { name: 'Queue generation', exact: true })).toBeDisabled();
 });
+
+test('reference recipes share HTTP/MCP admission, project-scoped video inputs and bounded responsive forms', async ({ page, request }) => {
+  createDemoMedia('test-results/reference-input.mp4');
+  const id = await project(request, 'Reference recipe form'), other = await project(request, 'Foreign reference');
+  const bytes = await readFile('test-results/reference-input.mp4');
+  const upload = async (projectId: string, name: string) => {
+    const response = await request.post(`/api/app/projects/${projectId}/assets`, { headers, multipart: { file: { name, mimeType: 'video/mp4', buffer: bytes } } });
+    expect(response.ok()).toBe(true); return (await response.json()).asset;
+  };
+  const mine = await upload(id, 'my-source.mp4'); await upload(other, 'foreign-source.mp4');
+  const body = { action: 'recipe', recipeId: 'project-video-reference', values: { source: mine.id }, requestKey: 'reference-mcp' };
+  expect((await request.post(`/api/app/projects/${id}/runs`, { data: body })).status()).toBe(403);
+  const submitted = await mcp(request, 'viral_hit_runs_change', { projectId: id, request: body });
+  const replay = await request.post(`/api/app/projects/${id}/runs`, { headers, data: body });
+  expect((await replay.json()).runId).toBe(submitted.structuredContent.result.runId);
+  const run = (await (await request.get(`/api/app/projects/${id}/runs`)).json()).runs[0];
+  const pinned = JSON.parse(run.jobs[0].input_json);
+  expect(pinned.pin.projectId).toBe(id); expect(pinned.pin.assetId).toBe(mine.id); expect(pinned.pin.sha256).toMatch(/^[a-f0-9]{64}$/);
+  await page.goto(`/editor/${id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('project-video-reference');
+  const source = page.getByLabel('Source video', { exact: true });
+  await expect(source.locator('option', { hasText: 'foreign-source.mp4' })).toHaveCount(0);
+  await source.selectOption(mine.id);
+  await expect(page.getByRole('button', { name: 'Queue workflow', exact: true })).toBeEnabled();
+  for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    const dialog = await page.getByRole('dialog').boundingBox(), action = await page.getByRole('button', { name: 'Queue workflow', exact: true }).boundingBox();
+    expect(action!.y).toBeGreaterThanOrEqual(dialog!.y); expect(action!.y + action!.height).toBeLessThanOrEqual(dialog!.y + dialog!.height);
+    expect(await page.locator('body').evaluate(node => node.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: `../../research/evidence/reference-recipes/form-${viewport.width}.png` });
+  }
+  const queued = page.waitForResponse(response => response.request().method() === 'POST' && response.url().endsWith(`/projects/${id}/runs`));
+  await page.getByRole('button', { name: 'Queue workflow', exact: true }).click(); expect((await queued).status()).toBe(202);
+  await page.getByLabel('Creative recipe').selectOption('youtube-reference');
+  await expect(page.getByLabel('YouTube video ID', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Queue workflow', exact: true })).toBeDisabled();
+});
+
+test('completed reference recipe displays real sampled frames and attaches its original video', async ({ page, request }) => {
+  const fixture = JSON.parse(await readFile('../../research/evidence/reference-recipes/fixture.json', 'utf8'));
+  const project = { id: fixture.projectId };
+  expect(project).toBeTruthy();
+  await page.goto(`/editor/${project.id}`);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByLabel('Creative recipe').selectOption('project-video-reference');
+  const section = page.getByRole('region', { name: 'Reference frames', exact: true });
+  await section.scrollIntoViewIfNeeded();
+  await expect(section.getByRole('img')).toHaveCount(5);
+  await expect.poll(() => section.locator('img').evaluateAll(images => images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0))).toBe(true);
+  for (const viewport of [{ width: 1440, height: 1000 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport); await section.scrollIntoViewIfNeeded();
+    await page.screenshot({ path: `../../research/evidence/reference-recipes/results-${viewport.width}.png` });
+  }
+  await page.getByRole('button', { name: 'Add to timeline', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Added to timeline', exact: true })).toBeVisible();
+  const timeline = await (await request.get(`/api/app/projects/${project.id}/timeline`)).json();
+  expect(timeline.timeline.document.tracks[0].clips[0].sourceType).toBe('video');
+});

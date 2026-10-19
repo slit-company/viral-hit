@@ -44,4 +44,4 @@ Unsaved timeline edits are backed up in the current browser. **Drafts** reviews 
 
 Install a new execution engine without editing the app: [external adapters](docs/EXTERNAL-ADAPTERS.md) share typed input discovery, pinned jobs, binary output receipts and editor integration. A standalone procedural WAV example is included; executable modules are enabled only by an operator-configured directory.
 
-Bring source videos into a project with the [reference intake CLI](docs/REFERENCE-INTAKE.md): local files, an optional YoutubeExplode engine, or explicit Instagram direct-video items. Originals and sampled frames become project assets. Automatic inbox collection and a source-import UI are still pending.
+Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE.md). Runs includes portable YouTube collection and project-video sampling recipes, with five frame previews and timeline attachment. CLI also accepts explicit Instagram direct-video items. Independent adapters can consume the resulting project video; automatic Instagram inbox collection remains pending.

@@ -10,12 +10,12 @@ import { fileHash } from '../harness/media-files';
 import { downloadMedia } from '../harness/download-media';
 import { instagramMediaUrl, selectInstagramVideo } from './instagram-item.server';
 import { runYouTubeEngine } from './youtube-engine.server';
+import { referenceFrameTimes } from './frame-times.server';
 import { REFERENCE_MAX_BYTES, referenceFile, referenceIdentity, registerReference, retainedReference,
   type ReferenceSource } from './reference-assets.server';
 
 const execute = promisify(execFile);
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
-const SAMPLE_FRACTIONS = [0, 0.25, 0.5, 0.75, 0.95];
 
 export async function acquireVideoReference({ projectId, source, sourceKey, acquire, signal: callerSignal }: {
   projectId: string; source: ReferenceSource; sourceKey: string;
@@ -35,9 +35,10 @@ export async function acquireVideoReference({ projectId, source, sourceKey, acqu
     if (!previous && !retained) await acquire(inputFile, signal);
     const original = await registerReference({ projectId, source, sourceKey, role: 'original', kind: 'video', inputFile, signal });
     const file = referenceFile(projectId, assetId).path, samples = [];
-    for (const [index, fraction] of SAMPLE_FRACTIONS.entries()) {
+    const times = await referenceFrameTimes(file, original.durationMs!, signal);
+    for (const [index, sampleAtMs] of times.entries()) {
       signal.throwIfAborted();
-      const sampleAtMs = Math.floor(original.durationMs! * fraction), role = `frame-${original.sha256}-${index}`;
+      const role = `frame-v2-${original.sha256}-${index}-${sampleAtMs}`;
       const sampleId = referenceIdentity(projectId, source, sourceKey, role);
       const existing = await retainedReference(projectId, sampleId, signal);
       const frame = join(work, `frame-${index}.png`);

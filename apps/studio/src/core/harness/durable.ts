@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
+import { executionTimeout, type ExecutionPolicy } from './execution-policy';
 import { DatabaseSync } from 'node:sqlite';
 import { bindOutputs, BindingError, validateBindings, type OutputBinding } from './bindings';
 import { canonicalJson } from '../../lib/canonical-json';
@@ -17,6 +18,7 @@ export type Job = {
 };
 export type Poll = { state: 'running' | 'succeeded' | 'failed' | 'canceled' | 'uncertain'; output?: Json; error?: string; retryAfterMs?: number };
 export interface Adapter {
+  execution?: ExecutionPolicy;
   /** replay: repeated submission with the SAME key returns the same paid job. */
   recovery: 'replay' | 'manual' | 'reconcile';
   submit(input: Json, context: { key: string; dependencies: Record<string, Json>; signal: AbortSignal; projectId?: string; runId?: string; jobId?: string }): Promise<{ id: string }>;
@@ -158,7 +160,7 @@ export class DurableHarness {
       }
     });
   }
-  private claim(runId: string, pausedOperations: readonly string[] = []): Job | undefined {
+  private claim(runId: string, pausedOperations: readonly string[], adapters: Record<string, Adapter>): Job | undefined {
     return this.transaction(() => {
       const jobs = this.jobs(runId), byId = new Map(jobs.map(j => [j.node_id, j]));
       for (const job of jobs) {
@@ -171,25 +173,35 @@ export class DurableHarness {
         }
         if (deps.some(d => d.state !== 'succeeded')) continue;
         const token = randomUUID();
-        this.db.prepare('UPDATE vh_jobs SET lease_token=?,lease_until=? WHERE id=?').run(token, this.now() + 120_000, job.id);
-        return { ...job, lease_token: token, lease_until: this.now() + 120_000 };
+        const until = this.now() + executionTimeout(adapters[job.operation]?.execution) + 60_000;
+        this.db.prepare('UPDATE vh_jobs SET lease_token=?,lease_until=? WHERE id=?').run(token, until, job.id);
+        return { ...job, lease_token: token, lease_until: until };
       }
     });
   }
   private transition(job: Job, state: State, patch: { providerId?: string; output?: Json; error?: string; nextPoll?: number } = {}) {
     return this.transaction(() => {
-      const result = this.db.prepare(`UPDATE vh_jobs SET state=?, provider_id=COALESCE(?,provider_id), output_json=COALESCE(?,output_json),error=?,next_poll=?,lease_until=0,lease_token=NULL WHERE id=? AND lease_token=?`)
-        .run(state, patch.providerId ?? null, patch.output === undefined ? null : JSON.stringify(patch.output), patch.error ?? null, patch.nextPoll ?? 0, job.id, job.lease_token);
+      const result = this.db.prepare(`UPDATE vh_jobs SET state=?, provider_id=COALESCE(?,provider_id), output_json=COALESCE(?,output_json),error=?,next_poll=?,lease_until=0,lease_token=NULL WHERE id=? AND lease_token=? AND lease_until>?`)
+        .run(state, patch.providerId ?? null, patch.output === undefined ? null : JSON.stringify(patch.output), patch.error ?? null, patch.nextPoll ?? 0, job.id, job.lease_token, this.now());
       if (result.changes) this.event(job, state, { providerId: patch.providerId ?? job.provider_id, error: patch.error ?? null });
       return Number(result.changes) === 1;
     });
   }
   async step(runId: string, adapters: Record<string, Adapter>, pausedOperations: readonly string[] = []): Promise<boolean> {
-    const job = this.claim(runId, pausedOperations); if (!job) return false;
+    const job = this.claim(runId, pausedOperations, adapters); if (!job) return false;
     const adapter = adapters[job.operation];
     if (!adapter) { this.transition(job, 'failed', { error: `No adapter for ${job.operation}` }); return true; }
     let input = JSON.parse(job.execution_input_json ?? job.input_json) as Json;
-    const signal = AbortSignal.timeout(60_000);
+    const controller = new AbortController();
+    const signal = AbortSignal.any([controller.signal, AbortSignal.timeout(executionTimeout(adapter.execution))]);
+    let canceledLocally = false;
+    const monitor = adapter.execution?.abortOnCancel && !job.provider_id ? setInterval(() => {
+      try {
+        const current = this.db.prepare('SELECT lease_token,lease_until,cancel_requested FROM vh_jobs WHERE id=?').get(job.id);
+        if (!current || current.lease_token !== job.lease_token || Number(current.lease_until) <= this.now()) controller.abort();
+        else if (current.cancel_requested) { canceledLocally = true; controller.abort(); }
+      } catch { controller.abort(); }
+    }, 250) : undefined;
     try {
       if (!job.provider_id) {
         if (job.state === 'submitting' && adapter.recovery === 'reconcile') {
@@ -204,7 +216,12 @@ export class DurableHarness {
         const dependencies = Object.fromEntries(this.jobs(runId).filter(d => (JSON.parse(job.dependencies_json) as string[]).includes(d.node_id)).map(d => [d.node_id, JSON.parse(d.output_json ?? 'null') as Json]));
         if (!job.execution_input_json) input = bindOutputs(input, dependencies, JSON.parse(job.bindings_json) as OutputBinding[]);
         const submitting = this.db.prepare("UPDATE vh_jobs SET state='submitting',attempts=attempts+1,execution_input_json=COALESCE(execution_input_json,?) WHERE id=? AND lease_token=? AND cancel_requested=0").run(JSON.stringify(input), job.id, job.lease_token);
-        if (!submitting.changes) { this.transition(job, job.state === 'queued' ? 'canceled' : 'uncertain', { error: 'Canceled before submission; reconcile an earlier ambiguous attempt if present' }); return true; }
+        if (!submitting.changes) {
+          const local = adapter.execution?.abortOnCancel;
+          this.transition(job, job.state === 'queued' || local ? 'canceled' : 'uncertain', {
+            error: local ? 'Canceled before local execution; any retained assets remain in the project' : 'Canceled before submission; reconcile an earlier ambiguous attempt if present',
+          }); return true;
+        }
         const run = this.db.prepare('SELECT project_id FROM vh_runs WHERE id=?').get(runId)!;
         const submitted = await adapter.submit(input, { key: job.idempotency_key, dependencies, signal, projectId: String(run.project_id), runId, jobId: job.id });
         if (!submitted.id) throw new Error('Provider accepted without a recoverable job ID');
@@ -223,10 +240,11 @@ export class DurableHarness {
       this.transition(job, result.state, { output: result.output, error: result.error, nextPoll: result.state === 'running' ? this.now() + Math.max(100, result.retryAfterMs ?? 2000) : 0 });
     } catch (error) {
       const detail = error instanceof Error ? error.message : String(error);
-      if (error instanceof RejectedSubmission || error instanceof BindingError) this.transition(job, 'failed', { error: detail });
+      if (canceledLocally) this.transition(job, 'canceled', { error: 'Local work stopped; any retained assets remain in the project' });
+      else if (error instanceof RejectedSubmission || error instanceof BindingError) this.transition(job, 'failed', { error: detail });
       else if (job.provider_id) this.transition(job, 'running', { error: detail, nextPoll: this.now() + 5000 });
       else this.transition(job, adapter.recovery === 'manual' || (adapter.recovery === 'reconcile' && job.state === 'submitting') || job.attempts >= 2 ? 'uncertain' : 'submitting', { error: detail, nextPoll: this.now() + 2000 });
-    }
+    } finally { clearInterval(monitor); }
     return true;
   }
 }

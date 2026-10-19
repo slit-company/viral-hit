@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1, "id": "project-video-reference", "version": "1.0.0",
+  "title": "Sample a project video",
+  "description": "Keep an original reference copy and extract five frames at 0, 25, 50, 75 and 95% of the video. Samples support reference work; they are not full motion, speech or scene-cut analysis. Works with local uploads and imported engine outputs. Up to one hour and 256 MiB.",
+  "license": "Apache-2.0", "author": "Viral Hit", "category": "references", "tags": ["video", "reference", "local"],
+  "parameters": [
+    { "id": "source", "label": "Source video", "type": "asset", "kind": "video", "description": "Choose a local video in this project. The original identity is checked before execution." }
+  ],
+  "nodes": [
+    { "id": "reference", "operation": "reference.sample", "version": "1", "cache": false,
+      "input": { "assetId": "" }, "parameters": [{ "parameter": "source", "target": "/assetId" }]
+    }
+  ]
+}

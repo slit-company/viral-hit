@@ -1,0 +1,11 @@
+# 006: Bounded adapter execution and reference recipes
+
+Adapters can declare a step execution budget of at most five minutes; the default remains 60 seconds. The harness claims a lease lasting the budget plus a 60-second quarantine margin before invoking the adapter. A recipe cannot select its own timeout. External adapter descriptors pin the declared policy along with code/configuration identity. Adapters must honor AbortSignal and await child shutdown before settling; this is a cooperative execution contract, not an OS sandbox.
+
+Only adapters that explicitly declare local abort semantics are interrupted by a cancellation request during submission. The opt-in promises that abortion does not leave an unknown remote side effect requiring a receipt. Remote paid adapters keep their existing receipt/reconciliation behavior. Local cancellation may leave verified project assets; those are not automatically attached or used by descendants. The caller waits for the adapter to settle rather than racing a timeout and releasing a lease with I/O still running.
+
+Reference acquisition and sampling are replay-safe local operations under this contract. YouTube plans pin installed engine assemblies and configured tool paths. Project-video plans pin project/asset/hash/size; dependency bindings carry the complete identity from a verified asset-producing node. No arbitrary host file or signed Instagram URL enters a recipe/job plan. Instagram authenticated input remains the explicit private CLI boundary until a session-aware inbox connector exists.
+
+Both operations emit verified local media records compatible with timeline attachment and downstream declared asset inputs. Recipes remain editable data: a specific YouTube collector and a general project-video sampler are examples, not a new hard-coded campaign workflow. HTTP, MCP and UI use the existing shared plan admission/worker service.
+
+Tests must cover extended lease exclusion, stale completion, cancellation settlement, unchanged remote ambiguity rules, pin mutation/rejection, project isolation, dependency identity propagation, replay without another fetch, and actual source-to-timeline operation. Inspect the generated recipe UI at 1440×1000 and 390×844 with a fixed visual rubric after functional checks.

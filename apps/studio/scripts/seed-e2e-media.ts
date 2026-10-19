@@ -70,3 +70,21 @@ try {
     }
   }
 } finally { takeLedger.close(); }
+
+// Real reference sampling; no remote download or paid generation in the browser fixture.
+const { importLocalProjectAsset } = await import('../src/core/projects/import-local-asset');
+const { pinRuntimePlan } = await import('../src/core/harness/runtime-plan');
+const { createReferenceAdapter } = await import('../src/core/references/recipe-adapters.server');
+const referenceProject = await createProject({ name: 'Reference samples E2E fixture' });
+const referenceSource = await importLocalProjectAsset({ projectId: referenceProject.id, filePath: video });
+const referenceHarness = openHarness();
+try {
+  const plan = await pinRuntimePlan({ projectId: referenceProject.id, nodes: [{ id: 'reference', operation: 'reference.sample', version: '1', input: { assetId: referenceSource.id } }] });
+  const run = referenceHarness.enqueue(plan, 'reference-fixture'), adapters = { 'reference.sample': createReferenceAdapter('reference.sample') };
+  await referenceHarness.step(run, adapters); await referenceHarness.step(run, adapters);
+  if (referenceHarness.jobs(run)[0].state !== 'succeeded') throw new Error('Reference fixture failed');
+} finally { referenceHarness.close(); }
+
+const { mkdir, writeFile } = await import('node:fs/promises');
+await mkdir('../../research/evidence/reference-recipes', { recursive: true });
+await writeFile('../../research/evidence/reference-recipes/fixture.json', JSON.stringify({ projectId: referenceProject.id }));

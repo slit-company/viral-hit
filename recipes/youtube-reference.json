@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1, "id": "youtube-reference", "version": "1.0.0",
+  "title": "Collect a YouTube reference",
+  "description": "Retain the selected video with audio and five sampled frames in this project. Requires the optional YoutubeExplode engine. This collects a reference; it does not generate or publish a video. Up to one hour and 256 MiB.",
+  "license": "Apache-2.0", "author": "Viral Hit", "category": "references", "tags": ["video", "reference", "youtube"],
+  "parameters": [
+    { "id": "video-id", "label": "YouTube video ID", "type": "string", "multiline": false, "minLength": 11, "maxLength": 11, "description": "The 11-character ID from the video link. Public videos only; no account cookies are used." },
+    { "id": "height", "label": "Maximum height", "type": "number", "integer": true, "min": 144, "max": 1080, "default": 720, "description": "Select the highest available MP4 rendition within this height. Lower heights use less bandwidth." }
+  ],
+  "nodes": [
+    { "id": "reference", "operation": "reference.youtube", "version": "1", "cache": false,
+      "input": { "videoId": "", "height": 720 },
+      "parameters": [{ "parameter": "video-id", "target": "/videoId" }, { "parameter": "height", "target": "/height" }]
+    }
+  ]
+}

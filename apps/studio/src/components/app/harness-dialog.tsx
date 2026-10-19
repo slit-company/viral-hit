@@ -1,3 +1,5 @@
+import { isAssetOperation } from '@/core/harness/asset-operations';
+import { ReferenceResult } from './reference-result';
 import { eligibleRecipeAssets, type RecipeInputAsset, type AssetCapability } from '@/core/harness/recipe-assets';
 import { ComfyConnectionSettings } from './comfy-connection-settings';
 import { RecipeLibrary } from './recipe-library';
@@ -42,12 +44,13 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const generationOperations = remoteOperations.filter(operation => data?.capabilities?.find(capability => capability.operation === operation)?.generation ?? operation !== 'comfy.upload');
   const externalCapabilities = data?.capabilities.filter(capability => capability.external && remoteOperations.includes(capability.operation)) ?? [];
   const needsGeneration = generationOperations.length > 0;
+  const hasReferences = remoteOperations.some(operation => operation === 'reference.youtube' || operation === 'reference.sample');
   const missingCapabilities = remoteOperations.filter(operation => !data?.capabilities?.some(capability => capability.operation === operation && capability.configured));
   const configurationMessage = missingCapabilities.map(operation => data?.capabilities?.find(capability => capability.operation === operation)?.configuration ?? operation).join(', ');
   const ready = selected?.parameters.every(parameter => parameter.type === 'asset' ? eligibleRecipeAssets(selected, parameter, inputAssets, data?.capabilities ?? []).some(asset => asset.id === (values[parameter.id] ?? parameter.default)) : values[parameter.id] !== undefined ? parameter.type !== 'string' || String(values[parameter.id]).trim().length >= (parameter.minLength ?? 1) : parameter.default !== undefined);
   const requestKey = useRef('');
   const endpoint = `/api/app/projects/${projectId}/runs`;
-  const materializedInputs = data?.runs.flatMap(run => run.jobs).filter(job => job.operation === 'asset.materialize' && job.state === 'succeeded').map(job => job.id).sort().join(',') ?? '';
+  const materializedInputs = data?.runs.flatMap(run => run.jobs).filter(job => isAssetOperation(job.operation) && job.state === 'succeeded').map(job => job.id).sort().join(',') ?? '';
 
   useEffect(() => { checkEpoch.current++; setCheck(undefined); setChecking(false); setTakeTarget(undefined); setTakeNotice(''); setLibraryOpen(false); setConnectionsOpen(false); setLibraryNotice(''); }, [open, projectId]);
   async function checkServer() {
@@ -131,8 +134,8 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     <DialogContent ref={dialogContent} className="max-h-[85vh] overflow-hidden border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)] sm:max-w-3xl grid-rows-[auto_minmax(0,1fr)]">
       <div className="pr-8">
         <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
-        <DialogTitle className="text-xl">{connectionsOpen ? 'Connections' : libraryOpen ? 'Recipe library' : 'Generation runs'}</DialogTitle>
-        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{connectionsOpen ? 'Choose where your native workflows run.' : libraryOpen ? 'Bring your own workflow, make a separate copy, and share its JSON. Installation does not run it.' : 'Your project’s generation history. Closing this window keeps queued work in the local worker.'}</DialogDescription>
+        <DialogTitle className="text-xl">{connectionsOpen ? 'Connections' : libraryOpen ? 'Recipe library' : 'Project runs'}</DialogTitle>
+        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{connectionsOpen ? 'Choose where your native workflows run.' : libraryOpen ? 'Bring your own workflow, make a separate copy, and share its JSON. Installation does not run it.' : 'Your project’s workflows and source imports. Closing this window keeps queued work in the local worker.'}</DialogDescription>
       </div>
       <div ref={dialogBody} className="min-h-0 overflow-y-auto" data-testid="runs-body">
       {connectionsOpen ? <ComfyConnectionSettings onBack={() => { setConnectionsOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} onChanged={async () => { invalidateCheck(); setChecking(false); requestKey.current = ''; await refresh(); }} /> : libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipeInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
@@ -155,7 +158,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
               }}
             />
           </>}
-          <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? missingCapabilities.every(operation => operation === 'comfy.workflow' || operation === 'comfy.upload') ? 'Choose your ComfyUI server in Connections to run this recipe.' : `Configure ${configurationMessage} in the server environment, then restart the studio.` : externalCapabilities.length ? `Uses installed adapters: ${externalCapabilities.map(capability => `${capability.label} v${capability.version}`).join(', ')}. Compute and provider charges depend on these adapters.` : !needsGeneration ? 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
+          <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? missingCapabilities.every(operation => operation === 'comfy.workflow' || operation === 'comfy.upload') ? 'Choose your ComfyUI server in Connections to run this recipe.' : `Configure ${configurationMessage} in the server environment, then restart the studio.` : externalCapabilities.length ? `Uses installed adapters: ${externalCapabilities.map(capability => `${capability.label} v${capability.version}`).join(', ')}. Compute and provider charges depend on these adapters.` : !needsGeneration ? hasReferences ? 'Collects source media and reference frames locally. No generation or publishing is started.' : 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
           {check && <div role="status" aria-label="Server check result" className="max-h-28 sm:max-h-44 space-y-2 overflow-y-auto rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-xs">
             <p className="font-semibold">{check.status === 'issues' ? 'Server check: needs attention' : check.status === 'unavailable' ? 'Server check: unavailable' : check.status === 'not-applicable' ? 'No native workflow to check' : 'Server check: no reported issues'}</p>
             <p className="text-[var(--vh-text-2)]">{check.classes.filter(item => item.status === 'available').length} node types available · {check.issues.filter(item => item.severity === 'deferred').length} checks deferred</p>
@@ -165,7 +168,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           </div>}
           <div className="sticky bottom-0 z-10 flex gap-2 bg-[var(--vh-surface)] py-3 sm:static sm:py-0">
           {generationOperations.includes('comfy.workflow') && <Action disabled={busy || checking} onClick={() => void checkServer()} className="h-11 min-w-0 flex-1 rounded-lg border border-[var(--vh-border)] px-3 text-xs">{checking ? 'Checking server…' : 'Check server'}</Action>}
-          <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
+          <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length || hasReferences ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
@@ -175,10 +178,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-[var(--vh-border)] p-3">
             <div className="mb-2 flex items-center justify-between text-[10px] text-[var(--vh-text-2)]"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>
             {run.jobs.map(job => <div key={job.id} className="my-2 rounded-lg bg-[var(--vh-control)] p-2.5 text-xs">
-              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? job.operation === 'asset.materialize' ? 'Asset ready' : job.operation === 'comfy.upload' ? 'Input ready' : 'Receipt ready' : job.state}</span></div>
+              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? isAssetOperation(job.operation) ? 'Asset ready' : job.operation === 'comfy.upload' ? 'Input ready' : 'Receipt ready' : job.state}</span></div>
               {job.cancel_requested === 1 && <p className="mt-1 text-amber-800">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
               {job.error && <p className="mt-2 break-words text-amber-800">{job.error}</p>}
-              {job.operation === 'asset.materialize' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><Action disabled={busy} onClick={() => void chooseTake(job)} className="text-[var(--color-lime-text)]">Use as take</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
+              {job.state === 'succeeded' && <ReferenceResult projectId={projectId} output={job.output_json} />}
+              {isAssetOperation(job.operation) && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><Action disabled={busy} onClick={() => void chooseTake(job)} className="text-[var(--color-lime-text)]">Use as take</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
               {takeTarget?.jobId === job.id && <div className="mt-3 space-y-2 border-t border-[var(--vh-border)] pt-3">
                 <label className="block" htmlFor={`take-${job.id}`}>Target clip</label>
                 <select id={`take-${job.id}`} value={takeTarget.clipId} onChange={event => setTakeTarget({ ...takeTarget, clipId: event.target.value })} className="h-10 w-full min-w-0 rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] px-2">
@@ -188,7 +192,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
                 <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Keeps timing, effects and the original. The new take starts at source time zero. Audio and video must cover the full clip.</p>
                 <div className="flex gap-2"><Action disabled={busy || !takeTarget.clipId} onClick={() => void applyTake(run.id)} className="vh-primary flex-1 text-xs">Apply take</Action><Action disabled={busy} onClick={() => setTakeTarget(undefined)} className="px-2">Cancel</Action></div>
               </div>}
-              {job.output_json && <details className="mt-2 text-[var(--vh-text-2)]"><summary className="cursor-pointer">{job.operation === 'asset.materialize' ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
+              {job.output_json && <details className="mt-2 text-[var(--vh-text-2)]"><summary className="cursor-pointer">{isAssetOperation(job.operation) ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
             </div>)}
             <div className="flex gap-3 text-xs">
               {run.jobs.some(j => ['queued', 'submitting', 'running'].includes(j.state)) && <Action disabled={busy} onClick={() => void act({ action: 'cancel', runId: run.id })} className="text-[var(--vh-text-2)] hover:text-[var(--vh-text-1)]">Request cancel</Action>}

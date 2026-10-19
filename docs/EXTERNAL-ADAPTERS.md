@@ -104,3 +104,11 @@ Import an audio file into a project, then select **Runs → Audio gain**. Select
 Adapter isolation, streaming inputs, hot upgrades and automatic environment repair remain separate work.
 
 The implementation follows [Ajv's draft-07 schema contract](https://ajv.js.org/json-schema.html#draft-07-default) and [Node's data URL module loading rules](https://nodejs.org/api/esm.html#data-imports). See [validation evidence](VALIDATION.md) for tested behavior and limitations.
+
+## Bounded long local execution
+
+An adapter descriptor may declare `execution: { "timeoutMs": 240000, "abortOnCancel": true }`. The step budget is 1,000–300,000 ms; omitting it preserves 60,000 ms. The harness claims a lease for the step budget plus 60 seconds. This policy is part of the pinned descriptor identity and cannot be supplied by recipe input. The module's own execution-policy field is not trusted over the descriptor.
+
+`abortOnCancel` is an explicit promise that interrupting submission leaves no unknown remote side effect. Use it for local processing/read-only acquisition whose subprocesses honor AbortSignal and are awaited until shutdown. Do not opt paid/remote submission into this behavior merely to make cancellation look immediate; preserve its original receipt/reconciliation contract. The harness waits for the adapter to settle instead of releasing a lease while it may still be doing I/O. This is cooperative cancellation, not a sandbox or an enforcement mechanism for non-cooperating code.
+
+Declared video inputs may now bind to successful `reference.youtube`/`reference.sample` root `/assetId` outputs as well as `asset.materialize`. The host binds project/kind/hash/size and checks the actual bytes before the extension runs. The original and sample assets remain available independently of any particular downstream recipe.

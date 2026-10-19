@@ -1,3 +1,4 @@
+import { sampleReferenceInput, youtubeReferenceInput } from '../references/recipe-contract';
 import { externalOperation } from './external-catalog';
 import { z } from 'zod';
 import { workflowInput } from './comfy-workflow';
@@ -13,6 +14,8 @@ const nodeBase = {
   cache: z.literal(false).optional(),
 };
 const builtinNodeSchema = z.discriminatedUnion('operation', [
+  z.object({ ...nodeBase, operation: z.literal('reference.youtube'), input: youtubeReferenceInput }).strict(),
+  z.object({ ...nodeBase, operation: z.literal('reference.sample'), input: sampleReferenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.upload'), input: uploadInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.router'), input: routerInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.workflow'), input: workflowInput }).strict(),

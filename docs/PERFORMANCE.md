@@ -35,3 +35,9 @@ Two fresh Node 24.19.0 processes on the local macOS host measured synthetic byte
 | 1 GiB + 137 bytes | 1,228 / 1,008 ms | 56.9 MiB | 67,254,627 |
 
 Both received full hashes matched their sources. Garbage-collection timing and sampling can make larger-file RSS observations lower rather than monotonically greater. Reports: `research/evidence/publishing/media-256/report.json` and `media-1024/report.json`. Reproduce with the script in [retained media](PUBLICATION-MEDIA.md). This excludes network/OAuth/provider processing, rendering, UI/browser memory and the cost of initially importing an export into the project library. No end-to-end publishing or Higgsfield performance comparison is implied.
+
+### Reference recipes and result previews
+
+After reference workflow UI/HTTP/MCP integration, the production public build contains 173 files totaling 8,396,833 bytes. JavaScript totals 1,835,764 bytes raw and 536,671 bytes gzip, an increase of 686 gzip bytes over the prior intake-only build. The existing 10 MB public-assets / 600 KB gzip-JS gates pass. .NET/YoutubeExplode remain separately installed; no new default studio dependency was added.
+
+The new frame selector inspects bounded timestamp windows with ffprobe (2 MiB response cap per sample) before extraction, rather than assuming a fractional duration always identifies an existing frame. Individual probes and extractions retain their 15-second limits; the complete reference operation has a four-minute execution budget and a five-minute lease. These are cancellation/recovery bounds, not measured p95 latency or total-host resource quotas.

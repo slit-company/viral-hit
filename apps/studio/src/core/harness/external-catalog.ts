@@ -1,4 +1,5 @@
 import { pointerParts } from './bindings';
+import { executionPolicy } from './execution-policy';
 import { MAX_ADAPTER_INPUT_BYTES, projectMediaPin } from './project-media-input-schema';
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -14,6 +15,7 @@ export const externalDescriptor = z.object({
   author: z.string().min(1).max(200), license: z.string().min(1).max(100),
   entry: z.string().regex(/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.mjs$/), sha256: z.string().regex(/^[a-f0-9]{64}$/),
   recovery: z.enum(['manual', 'replay', 'reconcile']), generation: z.boolean(),
+  execution: executionPolicy.optional(),
   configuration: z.array(z.object({ name: z.string().regex(/^[A-Z][A-Z0-9_]{0,100}$/), required: z.boolean() }).strict()).max(32).default([]),
   assetInputs: z.array(z.object({ id: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).refine(id => !['constructor', 'prototype'].includes(id)), pointer: z.string().min(1).max(1024), kind: z.enum(['image', 'video', 'audio']), maxBytes: z.number().int().positive().max(MAX_ADAPTER_INPUT_BYTES).default(32 * 1024 * 1024) }).strict()).min(1).max(16).optional(),
   inputSchema: z.record(z.string(), z.json()),
