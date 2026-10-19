@@ -8,7 +8,7 @@ import { createYouTubeTransport, YOUTUBE_CHUNK_BYTES } from './youtube-transport
 export const YOUTUBE_CONNECTOR_VERSION = '1';
 const checkpointSchema = z.object({ sessionUrl: z.string(), nextByte: z.number().int().nonnegative() }).strict();
 const receiptIdentitySchema = z.object({ videoId: z.string().regex(/^[a-zA-Z0-9_-]{11}$/), channelId: z.string() });
-type Options = { accessToken: (accountId: string, signal: AbortSignal) => Promise<string>; fetch?: typeof fetch; now?: () => number };
+type Options = { accessToken: (accountId: string, signal: AbortSignal) => Promise<string>; invalidateAccessToken?: (accountId: string, token: string) => Promise<void>; fetch?: typeof fetch; now?: () => number };
 
 export function validateYouTubePublication(spec: PublicationSpec) {
   if (spec.connector !== 'youtube' || spec.connectorVersion !== YOUTUBE_CONNECTOR_VERSION) throw new Error('Unsupported YouTube connector version');
@@ -19,7 +19,8 @@ export function validateYouTubePublication(spec: PublicationSpec) {
 
 export function createYouTubeConnector(options: Options): PublicationConnector {
   const transport = (spec: PublicationSpec) => createYouTubeTransport({
-    accessToken: signal => options.accessToken(spec.accountId, signal), fetch: options.fetch, now: options.now,
+    accessToken: signal => options.accessToken(spec.accountId, signal),
+    invalidateAccessToken: token => options.invalidateAccessToken?.(spec.accountId, token) ?? Promise.resolve(), fetch: options.fetch, now: options.now,
   });
   function identity(spec: PublicationSpec, raw: JsonValue) {
     const input = validateYouTubePublication(spec), checkpoint = checkpointSchema.parse(raw);

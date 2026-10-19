@@ -5,7 +5,7 @@ import { boundedJson, parseReceipt, retryAfter, uploadResponse, uploadSessionUrl
 export const YOUTUBE_CHUNK_BYTES = 8 * 1024 * 1024;
 const base = 'https://www.googleapis.com';
 const channelsSchema = z.object({ items: z.array(z.object({ id: z.string().min(1).max(128), snippet: z.object({ title: z.string().max(1000) }) })).max(50), nextPageToken: z.string().optional() });
-type Options = { accessToken: (signal: AbortSignal) => Promise<string>; fetch?: typeof fetch; now?: () => number };
+type Options = { accessToken: (signal: AbortSignal) => Promise<string>; invalidateAccessToken?: (token: string) => Promise<void>; fetch?: typeof fetch; now?: () => number };
 type UploadIdentity = { sessionUrl: string; channelId: string; sizeBytes: number; contentType: 'video/mp4' | 'video/webm' };
 function size(value: number) {
   if (!Number.isSafeInteger(value) || value < 1 || value > 256 * 1024 ** 3) throw new Error('Invalid YouTube upload byte size');
@@ -29,8 +29,13 @@ export function createYouTubeTransport(options: Options) {
     const boundedSignal = AbortSignal.any([signal, AbortSignal.timeout(30000)]);
     try {
       boundedSignal.throwIfAborted();
-      return await request(url, { ...init, headers: { ...init.headers, authorization: `Bearer ${token}` }, redirect: 'manual', credentials: 'omit', signal: boundedSignal });
-    } catch { throw new YouTubeTransportError('YouTube request ended without a confirmed response', outcome); }
+      const response = await request(url, { ...init, headers: { ...init.headers, authorization: `Bearer ${token}` }, redirect: 'manual', credentials: 'omit', signal: boundedSignal });
+      if (response.status === 401 && options.invalidateAccessToken) {
+        try { await options.invalidateAccessToken(token); }
+        catch { await response.body?.cancel(); throw new YouTubeTransportError('YouTube credential invalidation is unavailable', init.method === 'POST' ? 'rejected' : 'unavailable'); }
+      }
+      return response;
+    } catch (error) { if (error instanceof YouTubeTransportError) throw error; throw new YouTubeTransportError('YouTube request ended without a confirmed response', outcome); }
   }
   async function ownedChannels(signal: AbortSignal, pinnedToken?: string) {
     const response = await authorized(`${base}/youtube/v3/channels?part=snippet&mine=true&maxResults=50`, { method: 'GET' }, signal, 'unavailable', pinnedToken);
