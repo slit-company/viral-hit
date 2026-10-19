@@ -30,6 +30,7 @@ export async function pinExternalMediaInputs(plan: Plan, entries: ExternalEntry[
         }
       } else {
         const id = readPointer(envelope.payload, input.pointer);
+        if (input.optional && id === null) { envelope.assetPins[input.id] = null; continue; }
         if (typeof id !== 'string') throw new Error('Select a project asset for the declared adapter input');
         const { bytes: _, mimeType: __, filename: ___, ...pin } = await readProjectMediaInput({ projectId: plan.projectId, assetId: id, kind: input.kind, maxBytes: input.maxBytes, signal });
         envelope.assetPins[input.id] = pin;

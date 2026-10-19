@@ -5,8 +5,8 @@ import { mkdtemp, readFile, writeFile, rm, copyFile, symlink } from 'node:fs/pro
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createHash } from 'node:crypto';
-import { DurableHarness, type Plan } from './durable';
-import { readExternalCatalog, pinExternalAdapters } from './external-catalog';
+import { DurableHarness, type Plan, type Json } from './durable';
+import { readExternalCatalog, pinExternalAdapters, externalEnvelope } from './external-catalog';
 import { pinExternalMediaInputs } from './external-media-inputs';
 import { readProjectMediaInput } from './project-media-input';
 import { createExternalAdapter } from './external-adapters';
@@ -32,6 +32,24 @@ execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:
 execFileSync('ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'color=c=green:s=64x64:d=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', video]);
 const signal = () => AbortSignal.timeout(20_000);
 const pin = (plan: Plan, entries = [gain]) => pinExternalMediaInputs(pinExternalAdapters(plan, entries), entries);
+async function optionalEntry(optional = true) {
+  const folder = await mkdtemp(join(directory, 'optional-'));
+  const source = `export default { recovery:'replay', async submit(input, context) {
+    if (input.sourceAssetId === null) {
+      try { await context.readAsset('source'); throw Error('Unexpected readable empty slot'); }
+      catch (error) { if (!error.message.includes('unpinned')) throw error; }
+    } else await context.readAsset('source');
+    return { id: context.key };
+  }, async poll(){return {state:'running'}} };`;
+  await writeFile(join(folder, 'audio-gain.mjs'), source);
+  await writeFile(join(folder, 'audio-gain.json'), JSON.stringify({ ...gain.descriptor,
+    sha256: createHash('sha256').update(source).digest('hex'),
+    assetInputs: gain.descriptor.assetInputs!.map(item => ({ ...item, optional })),
+    inputSchema: { type: 'object', required: ['sourceAssetId'], additionalProperties: false,
+      properties: { sourceAssetId: { type: ['string', 'null'] } } },
+  }));
+  return readExternalCatalog(folder)[0];
+}
 async function sourceProject() {
   const project = await createProject({ name: 'Media processor' });
   const asset = await importLocalProjectAsset({ projectId: project.id, filePath: wav });
@@ -41,6 +59,44 @@ async function fileFor(projectId: string, assetId: string) {
   const asset = await getProjectAssetById({ projectId, assetId }); assert.ok(asset);
   return resolveLocalProjectAssetPath({ objectKey: asset.objectKey });
 }
+
+test('optional media pins explicit absence, never treating empty strings or missing fields as absent', async () => {
+  const project = await createProject({ name: 'Optional media' }), entry = await optionalEntry();
+  const raw: Plan = { projectId: project.id, nodes: [{ id: 'optional', operation: entry.descriptor.operation, version: '1', input: { sourceAssetId: null } }] };
+  const plan = await pin(raw, [entry]);
+  assert.equal(externalEnvelope.parse(plan.nodes[0].input).assetPins?.source, null);
+  const adapter = createExternalAdapter(entry);
+  const context = { key: 'optional', projectId: project.id, jobId: 'optional', dependencies: {}, signal: signal() };
+  assert.deepEqual(await adapter.submit(plan.nodes[0].input, context), { id: 'optional' });
+  for (const value of ['', 'missing-asset']) {
+    const changed = structuredClone(raw); changed.nodes[0].input = { sourceAssetId: value };
+    await assert.rejects(pin(changed, [entry]));
+  }
+  const missing = structuredClone(raw); missing.nodes[0].input = {};
+  await assert.rejects(async () => pin(missing, [entry]));
+  const required = await optionalEntry(false);
+  await assert.rejects(pin(raw, [required]), /Select a project asset/);
+  const tampered = structuredClone(plan.nodes[0].input) as { assetPins: Record<string, Json> };
+  delete tampered.assetPins.source;
+  await assert.rejects(adapter.submit(tampered, context), /unpinned/);
+});
+
+test('present optional media retains project ownership, content identity and replay fencing', async () => {
+  const { project, asset } = await sourceProject(), entry = await optionalEntry();
+  const raw: Plan = { projectId: project.id, nodes: [{ id: 'optional', operation: entry.descriptor.operation, version: '1', input: { sourceAssetId: asset.id } }] };
+  const plan = await pin(raw, [entry]), input = plan.nodes[0].input;
+  assert.equal(externalEnvelope.parse(input).assetPins?.source?.assetId, asset.id);
+  const adapter = createExternalAdapter(entry);
+  const context = { key: 'optional-present', projectId: project.id, jobId: 'optional-present', dependencies: {}, signal: signal() };
+  assert.deepEqual(await adapter.submit(input, context), { id: 'optional-present' });
+  const foreign = await createProject({ name: 'Different owner' });
+  await assert.rejects(pin({ ...raw, projectId: foreign.id }, [entry]), /project|asset/i);
+  const tampered = structuredClone(input) as { assetPins: Record<string, Json> }; tampered.assetPins.source = null;
+  await assert.rejects(adapter.submit(tampered, context), /unpinned/);
+  const file = await fileFor(project.id, asset.id), bytes = await readFile(file);
+  bytes[bytes.length - 1] ^= 1; await writeFile(file, bytes);
+  await assert.rejects(adapter.submit(input, context), /content changed/);
+});
 
 test('declared reader verifies actual image, video and audio bytes without exposing paths', async () => {
   const project = await createProject({ name: 'All media kinds' });

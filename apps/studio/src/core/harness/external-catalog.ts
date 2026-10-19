@@ -17,7 +17,7 @@ export const externalDescriptor = z.object({
   recovery: z.enum(['manual', 'replay', 'reconcile']), generation: z.boolean(),
   execution: executionPolicy.optional(),
   configuration: z.array(z.object({ name: z.string().regex(/^[A-Z][A-Z0-9_]{0,100}$/), required: z.boolean() }).strict()).max(32).default([]),
-  assetInputs: z.array(z.object({ id: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).refine(id => !['constructor', 'prototype'].includes(id)), pointer: z.string().min(1).max(1024), kind: z.enum(['image', 'video', 'audio']), maxBytes: z.number().int().positive().max(MAX_ADAPTER_INPUT_BYTES).default(32 * 1024 * 1024) }).strict()).min(1).max(16).optional(),
+  assetInputs: z.array(z.object({ id: z.string().regex(/^[a-z][a-z0-9-]{0,79}$/).refine(id => !['constructor', 'prototype'].includes(id)), pointer: z.string().min(1).max(1024), kind: z.enum(['image', 'video', 'audio']), maxBytes: z.number().int().positive().max(MAX_ADAPTER_INPUT_BYTES).default(32 * 1024 * 1024), optional: z.boolean().optional() }).strict()).min(1).max(16).optional(),
   inputSchema: z.record(z.string(), z.json()),
 }).strict();
 export type ExternalDescriptor = z.infer<typeof externalDescriptor>;
@@ -74,7 +74,7 @@ export function validateExternalInput(entry: ExternalEntry, value: Json) {
 export const externalEnvelope = z.object({
   adapter: z.object({ digest: z.string().regex(/^[a-f0-9]{64}$/), configuration: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   payload: z.json(),
-  assetPins: z.record(z.string(), z.union([projectMediaPin, z.object({ projectId: z.null(), assetId: z.null(), kind: z.null(), sha256: z.null(), sizeBytes: z.null() }).strict()])).optional(),
+  assetPins: z.record(z.string(), z.union([projectMediaPin, z.null(), z.object({ projectId: z.null(), assetId: z.null(), kind: z.null(), sha256: z.null(), sizeBytes: z.null() }).strict()])).optional(),
 }).strict();
 export function pinExternalAdapters(plan: Plan, entries = externalCatalog()): Plan {
   return { ...plan, nodes: plan.nodes.map(node => {

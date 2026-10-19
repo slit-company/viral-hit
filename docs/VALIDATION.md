@@ -1,5 +1,19 @@
 # Validation ledger — 2026-10-19
 
+## Project media composition — 2026-10-20
+
+The optional vid2 composition adapter accepts pinned project images, video and audio through six named slots. The generic adapter contract now supports explicit null for optional inputs; present inputs retain membership/hash checks and materializer dependency identity. Existing descriptor digests remain unchanged when the new flag is omitted.
+
+All 660 studio source tests, 14 local-media extension tests and 35 browser tests pass, along with architecture (386 modules, 169 browser-reachable, zero cycles, unchanged 23 size allowances), typecheck, translation, production build and footprint gates. Browser JavaScript remains 556,405 gzip bytes. Actual legacy music2/vid2 rendering still passes after the shared render-path change.
+
+Actual music2 → project audio and image → vid2 motion outputs feed a later composition through materializer bindings. The final verifier (`research/evidence/media-compose/run-a8VMhl`) checks 720×1280 and 1280×720 H.264 outputs, each exactly four seconds/120 frames; the mixed output has AAC audio, detectable 880 Hz narration test input and nonzero mix energy. Both retained originals keep their hashes. The final video attaches to a project timeline and exports through the editor. This validates local media composition, not generated speech or AI quality. Native vid2 layers still render into one video asset.
+
+A separate production build at an isolated port rendered a user-selected composition from the real browser form: run `9b2a3c5b…` retained the custom title `A REUSABLE SCENE`, with both jobs succeeded and one submission each. Existing SEED controls expose video/image/music/narration selectors and mix controls. At 1440×1000 and 390×844, the queue action remains visible and enabled after valid selection, with no document overflow or page errors. Short titles use single-line inputs.
+
+Actual 0.5/2/3.5s frames were reviewed at native output sizes. Replacing black padding and a cropping zoom with blur fill, a light background and bounded zoom improved the frozen visual rubric from 3.725 to 4.29/5. Evidence includes frames, media, immutable review hashes, UI captures and logs under `research/evidence/media-compose/`; the first controller invocation incorrectly used a video as a still capture source and was discarded in favor of the exact extracted frame. See [extension setup](../extensions/local-media/README.md#compose-project-media).
+
+The main production studio on port 3808 was restarted with its existing configuration after confirming nine completed generation jobs and an empty publication queue. Both recipes were inspected and installed through the digest-checked recipe API without catalog collisions. The composition adapter reports configured; Aside verified its real project-scoped selectors and single-line title. Submission remains disabled in the existing reference project until its missing audio inputs are selected. The production root returns HTTP 200.
+
 ## Optional ima2 image bridge — 2026-10-20
 
 The dependency-free optional extension passes 18 HTTP contract tests and the unchanged studio passes all 658 source tests, architecture, typecheck and translation checks. Two recipes require explicit provider/model selection and use the existing project image input, durable harness, binary receipts, materialization and timeline boundaries. No browser runtime dependency was added. Production build and footprint checks pass with the unchanged 556,405-byte gzip JavaScript total.

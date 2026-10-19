@@ -10,7 +10,8 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test test/*.test.mjs",
-    "test:live": "node ../../apps/studio/node_modules/tsx/dist/cli.mjs --tsconfig ../../apps/studio/tsconfig.json ../../apps/studio/scripts/verify-local-media.ts"
+    "test:live": "node ../../apps/studio/node_modules/tsx/dist/cli.mjs --tsconfig ../../apps/studio/tsconfig.json ../../apps/studio/scripts/verify-local-media.ts",
+    "test:compose": "node ../../apps/studio/node_modules/tsx/dist/cli.mjs --tsconfig ../../apps/studio/tsconfig.json ../../apps/studio/scripts/verify-media-compose.ts"
   },
   "dependencies": {
     "music2-gen": "0.4.0",

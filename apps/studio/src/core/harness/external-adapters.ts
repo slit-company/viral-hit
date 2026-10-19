@@ -63,7 +63,10 @@ export function createExternalAdapter(entry: ExternalEntry): Adapter {
     async submit(raw, context) {
       const envelope = payload(raw), media = mediaContext(context, context.signal, envelope);
       // Verify every declared original before any external submission; ordinary errors preserve ambiguity on replay.
-      for (const input of entry.descriptor.assetInputs ?? []) await media.readAsset(input.id);
+      for (const input of entry.descriptor.assetInputs ?? []) {
+        if (input.optional && readPointer(envelope.payload, input.pointer) === null && envelope.assetPins?.[input.id] === null) continue;
+        await media.readAsset(input.id);
+      }
       const adapter = await implementation();
       return z.object({ id: z.string().min(1).max(16_000) }).strict().parse(await adapter.submit(envelope.payload, { ...context, ...media }));
     },

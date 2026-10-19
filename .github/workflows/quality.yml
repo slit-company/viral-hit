@@ -51,3 +51,8 @@ jobs:
         env:
           VIRAL_HIT_FFMPEG: /usr/bin/ffmpeg
           VIRAL_HIT_FFPROBE: /usr/bin/ffprobe
+      - run: npm run test:compose -- "$RUNNER_TEMP/viral-hit-media-compose"
+        working-directory: extensions/local-media
+        env:
+          VIRAL_HIT_FFMPEG: /usr/bin/ffmpeg
+          VIRAL_HIT_FFPROBE: /usr/bin/ffprobe

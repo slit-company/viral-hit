@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "id": "vid2-narrated-scene",
+  "version": "1.0.0",
+  "title": "Compose a narrated scene",
+  "description": "Combine a video, detail image, music and narration. Adjust the title, duration and mix; retain the original assets and edit the rendered result in the timeline.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "video",
+  "parameters": [
+    {
+      "id": "video",
+      "label": "Scene video",
+      "type": "asset",
+      "kind": "video"
+    },
+    {
+      "id": "image",
+      "label": "Detail image",
+      "type": "asset",
+      "kind": "image"
+    },
+    {
+      "id": "music",
+      "label": "Background music",
+      "type": "asset",
+      "kind": "audio"
+    },
+    {
+      "id": "voice",
+      "label": "Narration",
+      "type": "asset",
+      "kind": "audio"
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "string",
+      "default": "A CLOSER LOOK",
+      "minLength": 1,
+      "maxLength": 60,
+      "multiline": false
+    },
+    {
+      "id": "duration",
+      "label": "Duration (seconds)",
+      "type": "number",
+      "default": 4,
+      "min": 1,
+      "max": 15
+    },
+    {
+      "id": "music-volume",
+      "label": "Music volume",
+      "type": "number",
+      "default": 0.22,
+      "min": 0,
+      "max": 1
+    },
+    {
+      "id": "voice-volume",
+      "label": "Voice volume",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 2
+    }
+  ],
+  "nodes": [
+    {
+      "id": "compose",
+      "operation": "ext.vid2-compose",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "timeline": {
+          "version": 1,
+          "output": {
+            "width": 1280,
+            "height": 720,
+            "fps": 30,
+            "container": "mp4",
+            "videoCodec": "h264",
+            "quality": "standard"
+          },
+          "sources": {
+            "clip": {
+              "type": "video",
+              "path": "asset:video-1",
+              "muted": true
+            },
+            "detail": {
+              "type": "image",
+              "path": "asset:image-1"
+            },
+            "score": {
+              "type": "audio",
+              "path": "asset:audio-1"
+            },
+            "voice": {
+              "type": "audio",
+              "path": "asset:audio-2"
+            }
+          },
+          "scenes": [
+            {
+              "id": "scene",
+              "duration": 4,
+              "background": "#F7F6F2",
+              "layers": [
+                {
+                  "type": "media",
+                  "source": "clip",
+                  "fit": "blurfill",
+                  "window": {
+                    "x": 32,
+                    "y": 32,
+                    "width": 870,
+                    "height": 656,
+                    "radius": 20,
+                    "shadow": false,
+                    "border": false
+                  }
+                },
+                {
+                  "type": "media",
+                  "source": "detail",
+                  "fit": "blurfill",
+                  "window": {
+                    "x": 934,
+                    "y": 32,
+                    "width": 314,
+                    "height": 418,
+                    "radius": 20,
+                    "shadow": false,
+                    "border": false
+                  }
+                },
+                {
+                  "type": "text",
+                  "text": "A CLOSER LOOK",
+                  "size": 30,
+                  "color": "#191919",
+                  "x": 1091,
+                  "y": 510,
+                  "maxWidth": 290,
+                  "animation": "fade"
+                }
+              ]
+            }
+          ],
+          "audio": {
+            "music": {
+              "source": "score",
+              "volume": 0.22,
+              "fadeOut": 0.4
+            },
+            "voice": [
+              {
+                "source": "voice",
+                "at": 0,
+                "volume": 1
+              }
+            ],
+            "duckMusicUnderVoice": true,
+            "loudness": {
+              "target": -16,
+              "truePeak": -1
+            }
+          }
+        },
+        "assets": {
+          "image-1": null,
+          "image-2": null,
+          "video-1": null,
+          "video-2": null,
+          "audio-1": null,
+          "audio-2": null
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "video",
+          "target": "/assets/video-1"
+        },
+        {
+          "parameter": "image",
+          "target": "/assets/image-1"
+        },
+        {
+          "parameter": "music",
+          "target": "/assets/audio-1"
+        },
+        {
+          "parameter": "voice",
+          "target": "/assets/audio-2"
+        },
+        {
+          "parameter": "title",
+          "target": "/timeline/scenes/0/layers/2/text"
+        },
+        {
+          "parameter": "duration",
+          "target": "/timeline/scenes/0/duration"
+        },
+        {
+          "parameter": "music-volume",
+          "target": "/timeline/audio/music/volume"
+        },
+        {
+          "parameter": "voice-volume",
+          "target": "/timeline/audio/voice/0/volume"
+        }
+      ]
+    },
+    {
+      "id": "asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "video",
+        "label": "Compose a narrated scene"
+      },
+      "dependsOn": [
+        "compose"
+      ],
+      "bindings": [
+        {
+          "node": "compose",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}

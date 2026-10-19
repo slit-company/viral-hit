@@ -1,0 +1,179 @@
+{
+  "schemaVersion": 1,
+  "id": "vid2-image-motion",
+  "version": "1.0.0",
+  "title": "Animate a project image",
+  "description": "Create a portrait motion frame from a retained image, with editable title, camera motion and duration. Local rendering; no model generation.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "video",
+  "parameters": [
+    {
+      "id": "image",
+      "label": "Source image",
+      "type": "asset",
+      "kind": "image"
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "string",
+      "default": "A NEW PERSPECTIVE",
+      "minLength": 1,
+      "maxLength": 60,
+      "multiline": false
+    },
+    {
+      "id": "duration",
+      "label": "Duration (seconds)",
+      "type": "number",
+      "default": 4,
+      "min": 1,
+      "max": 15
+    },
+    {
+      "id": "start-zoom",
+      "label": "Starting zoom",
+      "type": "number",
+      "default": 0.9,
+      "min": 0.5,
+      "max": 1
+    }
+  ],
+  "nodes": [
+    {
+      "id": "compose",
+      "operation": "ext.vid2-compose",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "timeline": {
+          "version": 1,
+          "output": {
+            "width": 720,
+            "height": 1280,
+            "fps": 30,
+            "container": "mp4",
+            "videoCodec": "h264",
+            "quality": "standard"
+          },
+          "sources": {
+            "hero": {
+              "type": "image",
+              "path": "asset:image-1"
+            }
+          },
+          "scenes": [
+            {
+              "id": "frame",
+              "duration": 4,
+              "background": "#F7F6F2",
+              "layers": [
+                {
+                  "type": "media",
+                  "source": "hero",
+                  "fit": "blurfill",
+                  "motion": "none",
+                  "window": {
+                    "x": 48,
+                    "y": 160,
+                    "width": 624,
+                    "height": 832,
+                    "radius": 24,
+                    "shadow": false,
+                    "border": false
+                  },
+                  "camera": [
+                    {
+                      "at": 0,
+                      "zoom": 0.9,
+                      "x": 0.5,
+                      "y": 0.5,
+                      "ease": "inout"
+                    },
+                    {
+                      "at": 4,
+                      "zoom": 1,
+                      "x": 0.5,
+                      "y": 0.5,
+                      "ease": "inout"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "text": "ONE FRAME. NEW MOTION.",
+                  "size": 22,
+                  "color": "#6B6862",
+                  "y": 80,
+                  "font": "mono",
+                  "animation": "fade"
+                },
+                {
+                  "type": "text",
+                  "text": "A NEW PERSPECTIVE",
+                  "size": 45,
+                  "color": "#191919",
+                  "y": 1090,
+                  "maxWidth": 624,
+                  "animation": "rise"
+                }
+              ]
+            }
+          ]
+        },
+        "assets": {
+          "image-1": null,
+          "image-2": null,
+          "video-1": null,
+          "video-2": null,
+          "audio-1": null,
+          "audio-2": null
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "image",
+          "target": "/assets/image-1"
+        },
+        {
+          "parameter": "title",
+          "target": "/timeline/scenes/0/layers/2/text"
+        },
+        {
+          "parameter": "duration",
+          "target": "/timeline/scenes/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/timeline/scenes/0/layers/0/camera/1/at"
+        },
+        {
+          "parameter": "start-zoom",
+          "target": "/timeline/scenes/0/layers/0/camera/0/zoom"
+        }
+      ]
+    },
+    {
+      "id": "asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "video",
+        "label": "Animate a project image"
+      },
+      "dependsOn": [
+        "compose"
+      ],
+      "bindings": [
+        {
+          "node": "compose",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}

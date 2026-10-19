@@ -91,4 +91,5 @@ test('media declarations reject unsafe pointers, overlapping IDs and aggregate o
   }
   const { entry } = await catalog(source, { assetInputs: [{ id: 'source', pointer: '/source', kind: 'audio' }] });
   assert.equal(entry.descriptor.assetInputs![0].maxBytes, 32 * 1024 * 1024);
+  assert.equal(Object.hasOwn(entry.descriptor.assetInputs![0], 'optional'), false, 'legacy descriptors retain their original digest shape');
 });
