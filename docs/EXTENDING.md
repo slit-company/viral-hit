@@ -8,7 +8,7 @@ A recipe is a versioned JSON file with identity, author/license, category, typed
 
 The shipped `open-frame`, `open-motion` and `spoken-line` recipes cover general image, video and speech workflows. `remote-media-import` imports public HTTPS image/video/audio media without a generation key. `editorial-triptych` specializes the same machinery for three directed frames. It does not promise character continuity or automatic film assembly. Add product photography, storyboards, animation keyframes or other recipes without changing core UI components. Each recipe must describe real operation coverage accurately.
 
-Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router` and `asset.materialize`. An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. The shipped video recipe maps the Kling task-list result at `/data/data/0/outputs/0/url`; other result shapes need their own mapping. It does not currently fall back to a watermark URL. Each other model requires its own declared output mapping.
+Manifests do not execute JavaScript, shell commands, environment expressions or agent instructions. Required operations must exist in the installed runtime. The current web worker supports `comfy.router`, `comfy.workflow` and `asset.materialize`. An unknown operation fails before submission. Model schemas and costs still require provider validation; a new model name in JSON is not a verified integration. Native Router output URLs remain temporary; an explicit `asset.materialize` node saves persistent local bytes. The shipped image recipes declare the FLUX response URL at `/data/result/sample`, following the official Comfy cinematic example. The shipped video recipe maps the Kling task-list result at `/data/data/0/outputs/0/url`; other result shapes need their own mapping. It does not currently fall back to a watermark URL. Each other model requires its own declared output mapping.
 
 The [JSON Schema](schemas/recipe.schema.json) supports editor tooling. The runtime compiler additionally verifies graph cycles, parameter types/ranges, duplicate identifiers, pointer safety, dependency membership and overlapping bindings. Root `schemaVersion` versions the manifest format; recipe `version` versions the author's behavior. Node operation version and recipe identity/version enter the execution fingerprint.
 
@@ -18,6 +18,25 @@ pnpm --silent --dir apps/studio recipe compile ../../recipes/open-frame.json ../
 # Inspect the plan before using the harness enqueue command.
 pnpm --dir apps/studio harness enqueue /tmp/viral-hit-plan.json stable-request-key
 ```
+
+## Import your own ComfyUI graph
+
+The CLI can turn an existing **API-format graph** into a portable recipe with a typed input form and durable media stage. This does not require editing the studio or manually adding the output-download node. Canvas layout JSON (`nodes`/`links`) is not the API graph; export the map of node IDs to `class_type` and `inputs` from ComfyUI.
+
+```sh
+# Inspect node IDs, classes and inputs locally; no server or provider call.
+pnpm --silent --dir apps/studio recipe inspect-comfy ../../examples/comfy-api-canvas.json
+# Install the example recipe into the default catalog; refuses to overwrite an existing file.
+pnpm --silent --dir apps/studio recipe import-comfy ../../examples/comfy-api-canvas.json ../../examples/comfy-canvas-definition.json ../../recipes/my-imported-canvas.json
+```
+
+Open Runs and select **My imported canvas**. The catalog is read on request; reopen Runs to refresh it. With the [native server configured](LOCAL-COMFYUI.md), queue the workflow, then use **Add to timeline** after materialization succeeds. If `VIRAL_HIT_RECIPES_DIR` points elsewhere, write the generated manifest to that directory instead. It replaces the default catalog location, rather than merging it. The shipped example is a solid-color canvas without model weights; replace the graph and definition with your own workflow to use installed models or custom nodes.
+
+The [definition example](../examples/comfy-canvas-definition.json) supplies identity, version, author, license, output selection and exposed inputs. A [definition JSON Schema](schemas/comfy-recipe-definition.schema.json) supports editors. Each entry contains a normal recipe `parameter` plus one or more `targets` with `nodeId` and input name. One parameter can drive several native nodes—for example, a shared prompt. An omitted default comes from the first target; explicit defaults take precedence, including `false`, `0` and empty strings (the latter require `minLength: 0`). The first target's default is applied to every target during compilation. Unexposed inputs and all node connections are retained.
+
+Only existing scalar string, number and boolean inputs can be exposed; enums bind string inputs. The importer rejects connection arrays, structured inputs, mismatched types, duplicate/overlapping bindings, invalid defaults and manifests exceeding the catalog's 128 KB limit. It preserves supported node title metadata and treats text as literal data. Failed validation creates no manifest. Existing destination files, including a source graph passed accidentally as the destination, are never overwritten.
+
+Select the actual output node, output array (`images`, `audio`, `gifs` or `videos`), zero-based index and expected media `kind`. Import does not discover server node contracts, install nodes/models, upload input files, or establish that a custom node produces that output. Native ComfyUI validates its installed-node requirements at submission; the existing materializer checks returned media. Imported workflows keep their author's license—do not relabel third-party graphs as Viral Hit code. Review graph content before sharing a recipe, including embedded prompts and filenames.
 
 ## Typed parameter and output binding
 

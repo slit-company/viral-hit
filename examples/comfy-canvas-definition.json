@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "imported-canvas",
+  "version": "1.0.0",
+  "title": "My imported canvas",
+  "description": "An API-format graph imported as an editable recipe. Produces a solid-color image, without model weights or AI generation.",
+  "license": "Apache-2.0",
+  "author": "Viral Hit",
+  "category": "self-hosted",
+  "tags": ["comfyui", "image"],
+  "output": { "nodeId": "2", "field": "images", "index": 0, "kind": "image" },
+  "parameters": [
+    {
+      "parameter": { "id": "width", "label": "Width", "type": "number", "integer": true, "min": 64, "max": 4096 },
+      "targets": [{ "nodeId": "1", "input": "width" }]
+    },
+    {
+      "parameter": { "id": "height", "label": "Height", "type": "number", "integer": true, "min": 64, "max": 4096 },
+      "targets": [{ "nodeId": "1", "input": "height" }]
+    },
+    {
+      "parameter": { "id": "color", "label": "RGB color as an integer", "type": "number", "integer": true, "min": 0, "max": 16777215 },
+      "targets": [{ "nodeId": "1", "input": "color" }]
+    }
+  ]
+}

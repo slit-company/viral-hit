@@ -7,7 +7,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Production build | Passed | Local build; not public deployment |
 | Clean checkout setup/build | Passed | Fresh local clone at `29672cd`, no preexisting node_modules or database; `pnpm run setup` and `pnpm build` both passed and tracked files remained clean |
 | TypeScript and translation key check | Passed | New Runs panel currently English only |
-| Unit/integration tests | 461 passed | Includes seven native ComfyUI integration tests in addition to the prior 454 tests; SDK tests use fixtures |
+| Unit/integration tests | 467 passed | Includes six workflow-import tests and seven native ComfyUI integration tests; SDK tests use fixtures |
 | Browser E2E | 9 passed across two runs (8 existing + 1 theme/focus) | Local Chromium; provider credentials deliberately removed |
 | Shared UI/MCP editing | Passed | Canvas drag alongside MCP prompt revision; no lost prompt change; persisted after reload |
 | Imported image → timeline → MP4 download | Passed | Actual H.264 1920×1080, 30 fps, 60 decoded frames, 2.000 s, 46,381 bytes; still-image fixture, not a video quality benchmark |
@@ -27,6 +27,7 @@ Local machine: macOS arm64, Node 24.19.0, pnpm 10.32.1. Source tests and browser
 | Recipe outputs → mixed timeline → MP4 | Passed | Browser attached both recipe assets, reload preserved video/audio tracks, MCP export decoded without errors: H.264 1920×1080, 90 frames, AAC, both streams 3.000s; procedural video/tone fixtures, not model-quality evidence |
 | Multimodal form/editor visual feedback | Passed, 4.28/5 | Fixed identifier textareas and clipped desktop controls; motion/speech forms and mixed editor reviewed at 1440×1000; existing mobile form checked at 390×844 |
 | Native ComfyUI workflow | Passed | Real model-free native server run; see [local ComfyUI](LOCAL-COMFYUI.md). No diffusion quality claim |
+| User graph → portable recipe → native execution → editor | Passed | Offline CLI import, external recipe directory, UI parameter edits, real ComfyUI 720×480 PNG, durable import and timeline reload; model-free graph |
 | Light UI and generated branding | Passed, visual review 4.325/5 | Actual desktop 1440×1000 and mobile 390×844 captures; self-review is not user design acceptance |
 | Actual paid Comfy Router generation | Not run | Server `COMFY_API_KEY` absent; no quality/latency/cost claim |
 | Higgsfield comparative benchmark | Not run | Full feature/performance parity is not established |
@@ -40,6 +41,10 @@ The current UI uses SEED-based light tokens, Pretendard, SEED actions/dialogs/te
 Typecheck, all 461 source tests, the existing eight browser tests, the new theme/focus browser test, and the production build passed. Browser rendering tests used `VIRAL_HIT_FFMPEG=/opt/homebrew/opt/ffmpeg-full/bin/ffmpeg`; the default FFmpeg lacks drawtext. A production-server smoke test loaded home/editor, opened and dismissed Runs, and recorded no page errors. This is local validation, not a deployment.
 
 Visual evidence is under `research/evidence/redesign/`. Round 1 found a dialog obscured by its backdrop, residual dark panels and mobile overflow. After fixes, round 2 scored 4.325/5 with no hard failures. Home, projects, editor, studio, canvas and assets were inspected at 1440×1000; Runs and projects were also checked at 390×844. The browser test verifies light surfaces even under a dark OS preference, dialog keyboard focus containment, Escape and focus restoration, visible branding, and mobile bounds. Historical visual scores above describe earlier snapshots and do not imply user approval of the rejected dark design. Model quality and Higgsfield parity remain unmeasured.
+
+## Imported workflow evidence
+
+Workflow importer evidence: `research/evidence/comfy-import/` contains CLI inspection, the generated manifest, 467-test log, desktop captures and the actual run receipt. The source graph and definition are committed examples under `examples/comfy-*`. A separate server and database discovered only the imported recipe through `VIRAL_HIT_RECIPES_DIR`. Browser edits changed width/height from 512×512 to 720×480; the native ComfyUI 0.42.0 server returned a 2,409-byte PNG with SHA-256 `f8b98ac2dc429c516bce2a4423504630f4b0ea00be9a5e6c3bc9c14fc986d546`. Both execution and materialization succeeded. The browser added one three-second image clip and verified persistence after hydration on reload. No provider key, paid call or model weights were used. The importer does not validate arbitrary custom-node semantics or install their dependencies.
 
 ## Quality and speed protocol
 
