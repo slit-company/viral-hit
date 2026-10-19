@@ -1,5 +1,13 @@
 # Validation ledger — 2026-10-19
 
+## Optional ima2 image bridge — 2026-10-20
+
+The dependency-free optional extension passes 18 HTTP contract tests and the unchanged studio passes all 658 source tests, architecture, typecheck and translation checks. Two recipes require explicit provider/model selection and use the existing project image input, durable harness, binary receipts, materialization and timeline boundaries. No browser runtime dependency was added. Production build and footprint checks pass with the unchanged 556,405-byte gzip JavaScript total.
+
+The opt-in verifier ran the actual npm ima2-gen 3.26.3 application and storage with isolated HOME/config/data and synthetic outbound AI responses. Both prompt generation and reference-guided generation produced decoded 96×64 PNG project assets and attached to a timeline. A forced interruption after the first remote acceptance recovered by read-only lookup with exactly one submission attempt. Across both recipes there were exactly two upstream fixture calls, one carrying the original reference. Long prompts are verified against ima2’s 500-character active-job preview and full saved history. Unknown cost remains null. This is actual integration evidence, not paid provider or image-quality evidence.
+
+Evidence: `research/evidence/ima2/`, final runtime run `run-ZFzw4Z`; the first recovery assertion incorrectly counted read-only recovery as a submission attempt and was corrected to observe reconciliation separately. The production ima2 endpoint is not configured by this verifier. Installation and remaining scope are in the [extension guide](../extensions/ima2/README.md).
+
 ## YouTube transport milestone — 2026-10-20
 
 Ten new transport/contract tests pass, bringing the source suite to 524. The actual local HTTP fixture transfers bytes through partial receipt and lost-final-response scenarios, recovers the same session/video identity and verifies received SHA-256 with exactly one session creation. It also distinguishes uploaded/private from processed/public, validates channel identity with a pinned credential, rechecks scheduling after lookup, bounds JSON and refuses redirects/foreign session URLs. Typecheck and architecture pass (313 source modules, 150 browser-reachable, zero cycles). No browser runtime changed and no external account was contacted. Publishing application/store/approval/worker integration and real YouTube verification remain pending; see [publishing status](PUBLISHING.md).

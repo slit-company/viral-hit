@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "id": "ima2-reference",
+  "version": "1.0.0",
+  "title": "Reimagine a project image",
+  "description": "Use your separately configured ima2 server and explicit provider/model. One image is retained in this project; generation may incur provider charges. The selected original remains unchanged. This is reference-guided generation, without a mask.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "image",
+  "parameters": [
+    {
+      "id": "source",
+      "label": "Source image",
+      "type": "asset",
+      "kind": "image"
+    },
+    {
+      "id": "provider",
+      "label": "Provider lane",
+      "type": "enum",
+      "options": [
+        "api",
+        "oauth",
+        "grok-api",
+        "gemini-api",
+        "atlascloud",
+        "minimax",
+        "comfy"
+      ]
+    },
+    {
+      "id": "model",
+      "label": "Exact model ID from ima2",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 140
+    },
+    {
+      "id": "prompt",
+      "label": "Image direction",
+      "type": "string",
+      "multiline": true,
+      "minLength": 1,
+      "maxLength": 16000
+    },
+    {
+      "id": "quality",
+      "label": "Quality",
+      "type": "enum",
+      "options": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    {
+      "id": "size",
+      "label": "Image size",
+      "type": "enum",
+      "options": [
+        "1024x1024",
+        "1536x1024",
+        "1024x1536"
+      ],
+      "default": "1024x1024"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "generate",
+      "operation": "ext.ima2-reference",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "source": "",
+        "provider": "",
+        "model": "",
+        "prompt": "",
+        "quality": "medium",
+        "size": "1024x1024"
+      },
+      "parameters": [
+        {
+          "parameter": "source",
+          "target": "/source"
+        },
+        {
+          "parameter": "provider",
+          "target": "/provider"
+        },
+        {
+          "parameter": "model",
+          "target": "/model"
+        },
+        {
+          "parameter": "prompt",
+          "target": "/prompt"
+        },
+        {
+          "parameter": "quality",
+          "target": "/quality"
+        },
+        {
+          "parameter": "size",
+          "target": "/size"
+        }
+      ]
+    },
+    {
+      "id": "asset",
+      "operation": "asset.materialize",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "receipt": null,
+        "kind": "image",
+        "label": "Reimagine a project image"
+      },
+      "dependsOn": [
+        "generate"
+      ],
+      "bindings": [
+        {
+          "node": "generate",
+          "pointer": "/binaryReceipt",
+          "target": "/receipt"
+        }
+      ]
+    }
+  ]
+}
