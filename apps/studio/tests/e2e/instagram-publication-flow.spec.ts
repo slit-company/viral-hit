@@ -61,3 +61,58 @@ test('Instagram draft selects a destination, plays retained media, revises to St
   // No publication worker runs in E2E; this is real admission/UI with isolated consent responses.
   await card.getByRole('button', { name: 'Cancel delivery', exact: true }).click(); await expect(card.getByText('Canceled', { exact: true })).toBeVisible();
 });
+
+test('scheduled Instagram review preserves local time, invalidates changed approval and cancels a waiting reservation', async ({ page, request }) => {
+  await page.route('https://www.facebook.com/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Meta consent fixture</h1>' }));
+  await page.goto('/connections'); await page.getByRole('button', { name: 'Connect Instagram', exact: true }).click();
+  await expect(page).toHaveURL(/^https:\/\/www.facebook.com\//);
+  const state = new URL(page.url()).searchParams.get('state')!;
+  await page.goto(`http://127.0.0.1:3042/api/app/publishing/instagram/callback?state=${state}&code=fixture-code`);
+  await page.getByLabel('Page and Instagram account', { exact: true }).selectOption('112');
+  await page.getByRole('button', { name: 'Connect this account', exact: true }).click();
+  await expect(page).toHaveURL('http://127.0.0.1:3042/connections');
+  const account = (await (await request.get('/api/app/publishing/instagram/accounts', { headers })).json()).accounts.find((value: { instagramId: string; status: string }) => value.instagramId === '223' && value.status === 'connected');
+  await mkdir('test-results', { recursive: true }); createDemoMedia('test-results/instagram-scheduled-source.mp4');
+  const created = await request.post('/api/app/projects', { headers, data: { name: 'Field Notes · Scheduled release' } }); expect(created.ok()).toBe(true); const { id } = await created.json();
+  const uploaded = await request.post(`/api/app/projects/${id}/assets`, { headers, multipart: { file: { name: 'scheduled-motion.mp4', mimeType: 'video/mp4', buffer: await readFile('test-results/instagram-scheduled-source.mp4') } } }); expect(uploaded.ok()).toBe(true); const asset = (await uploaded.json()).asset;
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto(`/publish/${id}`);
+  await page.getByRole('combobox', { name: 'Destination', exact: true }).selectOption('instagram');
+  await page.getByRole('combobox', { name: 'Instagram account', exact: true }).selectOption(account.id);
+  await page.getByRole('combobox', { name: 'Project video', exact: true }).selectOption(asset.id);
+  await page.getByRole('combobox', { name: 'AI-generated content?', exact: true }).selectOption('true');
+  await page.getByRole('textbox', { name: 'Caption', exact: true }).fill('The next chapter, at the right time.');
+  const times = await page.evaluate(() => {
+    const local = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    const first = local(new Date(Date.now() + 2 * 86400000)), second = local(new Date(Date.now() + 3 * 86400000));
+    return { first, second, instant: new Date(second).toISOString() };
+  });
+  await page.getByLabel('Scheduled publication', { exact: true }).fill(times.first);
+  await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+  const card = page.getByRole('article', { name: 'Publication Instagram Reel', exact: true }); await expect(card).toBeVisible();
+  const endpoint = `/api/app/projects/${id}/publications`, draft = (await (await request.get(endpoint, { headers })).json()).publications[0];
+  await card.getByRole('button', { name: 'Edit draft', exact: true }).click();
+  await expect(page.getByLabel('Scheduled publication', { exact: true })).toHaveValue(times.first);
+  await page.getByLabel('Scheduled publication', { exact: true }).fill(times.second);
+  await page.getByRole('button', { name: 'Save new revision', exact: true }).click();
+  await expect(card.locator('time')).toHaveAttribute('datetime', times.instant);
+  await expect(card.getByRole('button', { name: 'Approve schedule', exact: true })).toBeDisabled();
+  const revised = (await (await request.get(endpoint, { headers })).json()).publications[0];
+  expect(revised.instagramMetadata.publishAt).toBe(times.instant); expect(revised.digest).not.toBe(draft.digest);
+  expect((await request.post(endpoint, { headers, data: { action: 'approve', publicationId: draft.id, expectedRevision: 2, expectedDigest: draft.digest, confirmed: true } })).status()).toBe(409);
+  await expect(card.locator('time')).toHaveAttribute('datetime', times.instant);
+  await card.locator('video').evaluate(async (video: HTMLVideoElement) => { video.muted = true; await video.play(); });
+  await expect.poll(() => card.locator('video').evaluate((video: HTMLVideoElement) => video.currentTime)).toBeGreaterThan(0.5);
+  await card.locator('video').evaluate((video: HTMLVideoElement) => video.pause());
+  await card.getByRole('checkbox').check();
+  const approve = card.getByRole('button', { name: 'Approve schedule', exact: true }); await expect(approve).toBeEnabled();
+  await approve.evaluate(async node => { await Promise.all(node.getAnimations().map(animation => animation.finished)); });
+  await page.screenshot({ path: 'test-results/instagram-schedule-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 }); await card.evaluate(node => node.scrollIntoView({ block: 'start' }));
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/instagram-schedule-mobile.png' });
+  await approve.click(); await expect(card.getByText('Scheduled in studio', { exact: true })).toBeVisible();
+  await page.reload(); await expect(card.getByText('Scheduled in studio', { exact: true })).toBeVisible();
+  await expect(card.locator('time')).toHaveAttribute('datetime', times.instant);
+  const waiting = (await (await request.get(endpoint, { headers })).json()).publications[0]; expect(waiting.state).toBe('approved'); expect(waiting.instagramDelivery).toBeNull();
+  await card.getByRole('button', { name: 'Cancel delivery', exact: true }).click(); await expect(card.getByText('Canceled', { exact: true })).toBeVisible();
+});

@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react';
 import { Link } from '@/core/i18n/navigation';
+import { Input } from '@/components/ui/input';
+import { localPublicationDate } from './publication-time';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { NativeSelect } from '@/components/ui/native-select';
@@ -15,6 +17,7 @@ export function InstagramPublicationForm({ projectId, accounts, videos, pending,
   const original = editing?.instagramMetadata;
   const [accountId, setAccount] = useState(editing?.accountId ?? ''), [assetId, setAsset] = useState(editing?.asset?.assetId ?? '');
   const [kind, setKind] = useState<'reel' | 'story'>(original?.kind ?? 'reel');
+  const [schedule, setSchedule] = useState(localPublicationDate(original?.publishAt));
   const [caption, setCaption] = useState(original?.kind === 'reel' ? original.caption : '');
   const [synthetic, setSynthetic] = useState(original ? String(original.isAiGenerated) : '');
   const [error, setError] = useState<string | null>(null), identity = useRef({ body: '', key: '' });
@@ -23,7 +26,8 @@ export function InstagramPublicationForm({ projectId, accounts, videos, pending,
   async function submit() {
     setError(null);
     if (!synthetic) { setError('Choose the AI disclosure before saving.'); return; }
-    const fields = { connector: 'instagram', accountId, assetId, metadata: { kind, isAiGenerated: synthetic === 'true', ...(kind === 'reel' ? { caption } : {}) } };
+    if (schedule && (!Number.isFinite(Date.parse(schedule)) || Date.parse(schedule) <= Date.now())) { setError('Choose a future scheduled publication time.'); return; }
+    const fields = { connector: 'instagram', accountId, assetId, metadata: { kind, isAiGenerated: synthetic === 'true', ...(schedule ? { publishAt: new Date(schedule).toISOString() } : {}), ...(kind === 'reel' ? { caption } : {}) } };
     const body = JSON.stringify(fields);
     if (identity.current.body !== body) identity.current = { body, key: crypto.randomUUID() };
     const parsed = publicationRequest.safeParse(editing ? { ...fields, action: 'revise', publicationId: editing.id, expectedRevision: editing.revision } : { ...fields, action: 'create', requestKey: identity.current.key });
@@ -44,7 +48,8 @@ export function InstagramPublicationForm({ projectId, accounts, videos, pending,
         <p className="text-xs leading-5 text-[var(--vh-text-2)]">{kind === 'story' ? '3–60 seconds · up to 100 MB' : '3 seconds–15 minutes · up to 300 MB'} · H.264 or HEVC · 23–60 FPS. Portrait 9:16 is recommended. Video specifications are checked when you save.</p>
         {kind === 'reel' && <label className="block space-y-2 text-sm font-medium"><span>Caption</span><Textarea aria-label="Caption" rows={4} value={caption} onChange={event => setCaption(event.target.value)} maxLength={2200} /><span className="block text-xs font-normal text-[var(--vh-text-2)]">{caption.length}/2,200 characters</span></label>}
         <label className="block space-y-2 text-sm font-medium"><span>AI-generated content?</span><NativeSelect aria-label="AI-generated content?" value={synthetic} onChange={event => setSynthetic(event.target.value)} required><option value="">Choose disclosure</option><option value="true">Yes</option><option value="false">No</option></NativeSelect></label>
-        <p className="rounded-xl bg-[var(--vh-control)] p-3 text-sm leading-6">Publishes after approval and processing. Instagram scheduling is not available yet.</p>
+        <label className="block space-y-2 text-sm font-medium"><span>Scheduled publication</span><Input aria-label="Scheduled publication" type="datetime-local" value={schedule} onChange={event => setSchedule(event.target.value)} /><span className="block text-xs font-normal text-[var(--vh-text-2)]">Optional · {Intl.DateTimeFormat().resolvedOptions().timeZone}. Leave empty to publish after approval and processing.</span></label>
+        {schedule && <p className="rounded-xl bg-[var(--vh-control)] p-3 text-sm leading-6">Keep the studio running. Upload preparation starts up to 10 minutes before your chosen time. Publishes at or after that time; processing or downtime can delay delivery. You can edit the schedule until uploading starts.</p>}
       </fieldset>
       {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
       <div className="flex flex-wrap gap-2"><Button type="submit" size="lg" disabled={pending || !available.length || !media.length}>{pending ? 'Checking video…' : editing ? 'Save new revision' : 'Save draft'}</Button>{editing && <Button type="button" variant="outline" disabled={pending} onClick={done}>Cancel edit</Button>}</div>

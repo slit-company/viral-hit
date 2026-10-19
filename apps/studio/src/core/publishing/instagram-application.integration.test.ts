@@ -41,7 +41,8 @@ test('Instagram admission probes retained bytes, isolates accounts and rejects i
   const f = await fixture(), foreign = await createProject({ name: 'Foreign' });
   await assert.rejects(changePublication(foreign.id, f.request, 'mcp'), fails('media-unavailable'));
   await assert.rejects(changePublication(f.projectId, { ...f.request, pageId: '112' }, 'cli'), fails('invalid-input'));
-  await assert.rejects(changePublication(f.projectId, { ...f.request, metadata: { ...f.request.metadata, publishAt: '2030-01-01T00:00:00Z' } }, 'ui'), fails('invalid-input'));
+  await assert.rejects(changePublication(f.projectId, { ...f.request, metadata: { ...f.request.metadata, schedule: '2030-01-01T00:00:00Z' } }, 'ui'), fails('invalid-input'));
+  await assert.rejects(changePublication(f.projectId, { ...f.request, metadata: { ...f.request.metadata, publishAt: '2020-01-01T00:00:00Z' } }, 'ui'), fails('invalid-input'));
   const shortAsset = await importLocalProjectAsset({ projectId: f.projectId, filePath: short });
   await assert.rejects(changePublication(f.projectId, { ...f.request, assetId: shortAsset.id }, 'ui'), error => fails('media-unavailable')(error) && /3–900/.test((error as Error).message));
   const draft = await changePublication(f.projectId, f.request, 'cli');
@@ -117,4 +118,18 @@ test('video admission enforces format-specific durations, codec, FPS, size and a
   ]) assert.throws(() => validateInstagramVideo(bad, 1000, story), InstagramVideoError);
   assert.throws(() => validateInstagramVideo(probe, 100000001, story), /100 MB/);
   validateInstagramVideo({ ...probe, format: { ...probe.format, duration: 900 } }, 300000000, { kind: 'reel', caption: '', isAiGenerated: true });
+});
+
+test('scheduled admission binds its exact time and refuses approval after that time passes', async () => {
+  const f = await fixture(), due = Date.now() + 3600000, publishAt = new Date(due).toISOString();
+  const request = { ...f.request, metadata: { ...f.request.metadata, publishAt } };
+  const draft = await changePublication(f.projectId, request, 'cli');
+  assert.equal(draft.instagramMetadata?.publishAt, publishAt);
+  const realNow = Date.now;
+  try {
+    Date.now = () => due;
+    await assert.rejects(changePublication(f.projectId, { action: 'approve', publicationId: draft.id, expectedRevision: 1, expectedDigest: draft.digest, confirmed: true }, 'mcp'), fails('invalid-input'));
+    assert.equal((await changePublication(f.projectId, request, 'cli')).id, draft.id);
+    const store = openPublications(); try { assert.equal(store.get(f.projectId, draft.id)?.state, 'draft'); } finally { store.close(); }
+  } finally { Date.now = realNow; }
 });

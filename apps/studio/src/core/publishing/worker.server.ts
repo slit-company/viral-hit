@@ -1,4 +1,4 @@
-import { PublicationInspectionPaused, PublicationAssetError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
+import { PublicationDeferred, PublicationInspectionPaused, PublicationAssetError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
 import type { PublicationStore } from './store.server';
 
 export type PublicationRuntime = {
@@ -43,6 +43,12 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
     });
   };
   try {
+    const phase = claim.state === 'approved' ? 'start' : claim.state === 'staged' ? 'publish' : null;
+    const until = phase ? connector.notBefore?.(claim.spec, phase) : null;
+    if (until !== null && until !== undefined) {
+      if (!Number.isSafeInteger(until) || until < 0) throw new Error('Invalid publication time');
+      if (Date.now() < until) throw new PublicationDeferred(until);
+    }
     if (claim.state === 'approved') {
       try { await runtime.validateAssets(claim.spec, signal); }
       catch { throw new PublicationAssetError(); }
@@ -81,7 +87,8 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
       transferred(await connector.transfer(claim.spec, claim.checkpoint, read, signal));
     } else finish(claim, 'uncertain', { issue: 'upload-unknown' });
   } catch (error) {
-    if (error instanceof PublicationInspectionPaused && !publishing && !starting) finish(claim, 'uncertain', { issue: 'processing-timeout', receipt: error.receipt });
+    if (error instanceof PublicationDeferred) finish(claim, publishing ? 'staged' : starting ? 'approved' : claim.state, { delayMs: Math.max(0, error.until - Date.now()) });
+    else if (error instanceof PublicationInspectionPaused && !publishing && !starting) finish(claim, 'uncertain', { issue: 'processing-timeout', receipt: error.receipt });
     else if (publishing) {
       if (error instanceof PublicationPublishError) finish(claim, error.outcome === 'rejected' ? 'failed' : 'staged', {
         issue: error.outcome === 'rejected' ? 'remote-rejected' : 'runtime-unavailable', delayMs: error.retryAfterMs,

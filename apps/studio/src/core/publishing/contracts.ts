@@ -39,6 +39,13 @@ export type RemoteObservation = { state: 'processing' | 'staged' | 'ready' | 'sc
 export class PublicationInspectionPaused extends Error {
   constructor(readonly receipt: JsonValue) { super('Remote processing still needs confirmation'); }
 }
+/** Only throw before a non-idempotent write; the durable worker can safely defer the same phase. */
+export class PublicationDeferred extends Error {
+  constructor(readonly until: number) {
+    super('Publication is waiting for its approved time');
+    if (!Number.isSafeInteger(until) || until < 0) throw new Error('Invalid publication deferral');
+  }
+}
 /** Only use rejected/unavailable when no remote creation can have succeeded. */
 export class PublicationStartError extends Error {
   constructor(readonly outcome: 'rejected' | 'unavailable', readonly retryAfterMs = 30000) { super('Publication start could not proceed'); }
@@ -52,6 +59,8 @@ export class PublicationPublishError extends Error {
 }
 export interface PublicationConnector {
   id: string; version: string;
+  /** Pure UTC millisecond gate. Provider-specific preparation policy stays in the connector. */
+  notBefore?(spec: PublicationSpec, phase: 'start' | 'publish'): number | null;
   start(spec: PublicationSpec, signal: AbortSignal): Promise<JsonValue>;
   transfer(spec: PublicationSpec, checkpoint: JsonValue, read: (asset: number, offset: number, length: number) => Promise<Uint8Array>, signal: AbortSignal): Promise<TransferObservation>;
   reconcile(spec: PublicationSpec, checkpoint: JsonValue, signal: AbortSignal): Promise<TransferObservation>;

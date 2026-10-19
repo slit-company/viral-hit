@@ -3,6 +3,8 @@ import { canonicalJson } from '../../lib/canonical-json';
 import { getActiveProject } from '../projects/projects';
 import { openPublications } from './publication-files.server';
 import { openProjectPublicationMedia } from './project-media.server';
+import { instagramMetadataSchema } from './instagram-contract';
+import { validateInstagramSchedule } from './instagram-schedule';
 import { youtubeResource } from './youtube-contract';
 import { publicationView } from './public-view';
 import { publicationProjectId, publicationRequest, PublicationRequestError, type PublicationDraftRequest } from './requests';
@@ -18,7 +20,7 @@ async function requireProject(projectId: string, signal: AbortSignal) {
   return project;
 }
 async function prepare(projectId: string, input: PublicationDraftRequest, signal: AbortSignal): Promise<PublicationSpec> {
-  if (input.connector === 'youtube') validateSchedule(input.metadata);
+  validateSchedule(input.metadata, input.connector);
   const destination = publicationDestination(input.connector, input.accountId), media = openProjectPublicationMedia();
   try {
     const asset = await media.pin(projectId, input.assetId, signal);
@@ -28,7 +30,7 @@ async function prepare(projectId: string, input: PublicationDraftRequest, signal
     if (input.connector === 'instagram') validateInstagramVideo(await media.inspectVideo(spec, signal), asset.sizeBytes, input.metadata);
     const current = publicationDestination(input.connector, destination.id);
     if (current.destinationId !== destination.destinationId || current.pageId !== destination.pageId) throw new PublicationRequestError('account-unavailable', 'The destination changed while preparing this publication');
-    await requireProject(projectId, signal); if (input.connector === 'youtube') validateSchedule(input.metadata);
+    await requireProject(projectId, signal); validateSchedule(input.metadata, input.connector);
     return spec;
   } catch (error) {
     if (error instanceof PublicationRequestError) throw error;
@@ -36,8 +38,8 @@ async function prepare(projectId: string, input: PublicationDraftRequest, signal
     throw new PublicationRequestError('media-unavailable', 'Select an unchanged local MP4 or WebM video in this project');
   } finally { media.close(); }
 }
-function validateSchedule(metadata: unknown) {
-  try { youtubeResource(metadata); }
+function validateSchedule(metadata: unknown, connector: string) {
+  try { if (connector === 'instagram') validateInstagramSchedule(instagramMetadataSchema.parse(metadata)); else youtubeResource(metadata); }
   catch { throw new PublicationRequestError('invalid-input', 'Review the video metadata and choose a future publication time'); }
 }
 export async function listPublications(projectId: string, signal = AbortSignal.timeout(30000)) {
@@ -79,7 +81,7 @@ export async function changePublication(projectId: string, raw: unknown, actor: 
       finally { media.close(); }
       signal.throwIfAborted();
       // Resuming transfers bytes to the original session; its metadata is already remote.
-      if (input.action === 'approve' && prior.spec.connector === 'youtube') validateSchedule(prior.spec.metadata);
+      if (input.action === 'approve') validateSchedule(prior.spec.metadata, prior.spec.connector);
       return publicationView(input.action === 'approve' ? store.approve(projectId, prior.id, input.expectedRevision, input.expectedDigest, actor) : store.resume(projectId, prior.id, input.expectedRevision));
     }
     return publicationView(input.action === 'stop' ? store.stop(projectId, prior.id, input.expectedRevision) : store.reconcile(projectId, prior.id, input.expectedRevision));

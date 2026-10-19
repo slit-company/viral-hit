@@ -85,7 +85,7 @@ export class PublicationStore {
     return this.transaction(() => {
       const prior = this.require(projectId, id, expectedRevision);
       if (!['draft', 'approved'].includes(prior.state) || prior.leaseUntil > this.now()) throw new Error('Started publication is immutable');
-      this.db.prepare("UPDATE publications SET spec_json=?,digest=?,revision=revision+1,state='draft',approval_json=NULL,issue=NULL,updated_at=? WHERE id=?").run(bounded(spec), digest(spec), this.now(), id);
+      this.db.prepare("UPDATE publications SET spec_json=?,digest=?,revision=revision+1,state='draft',approval_json=NULL,issue=NULL,next_poll=0,lease_token=NULL,lease_until=0,updated_at=? WHERE id=?").run(bounded(spec), digest(spec), this.now(), id);
       this.event(id, 'draft'); return this.get(projectId, id)!;
     });
   }
@@ -97,7 +97,7 @@ export class PublicationStore {
       if (prior.state === 'approved' && prior.approval?.digest === expectedDigest) return prior;
       if (prior.state !== 'draft') throw new Error('Only a draft can be approved');
       const approval = { digest: prior.digest, revision: prior.revision, actor, at: this.now() };
-      this.db.prepare("UPDATE publications SET state='approved',approval_json=?,updated_at=? WHERE id=?").run(bounded(approval), this.now(), id);
+      this.db.prepare("UPDATE publications SET state='approved',approval_json=?,next_poll=0,updated_at=? WHERE id=?").run(bounded(approval), this.now(), id);
       this.event(id, 'approved'); return this.get(projectId, id)!;
     });
   }

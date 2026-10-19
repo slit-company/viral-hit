@@ -9,11 +9,7 @@ import type { PublicationView } from '@/core/publishing/public-view';
 import type { PublicationAccount } from '@/core/publishing/account-contract';
 import type { PublicationVideo } from './use-publications';
 
-function localDate(value?: string) {
-  if (!value) return '';
-  const date = new Date(value);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-}
+import { localPublicationDate } from './publication-time';
 
 export function YouTubePublicationForm({ projectId, accounts, videos, pending, editing, change, done }: {
   projectId: string; accounts: PublicationAccount[]; videos: PublicationVideo[]; pending: boolean; editing?: PublicationView;
@@ -25,7 +21,7 @@ export function YouTubePublicationForm({ projectId, accounts, videos, pending, e
   const [privacy, setPrivacy] = useState(original?.privacy ?? 'private'), [tags, setTags] = useState(original?.tags.join(', ') ?? '');
   const [category, setCategory] = useState(original?.categoryId ?? '22');
   const [kids, setKids] = useState(original ? String(original.madeForKids) : ''), [synthetic, setSynthetic] = useState(original ? String(original.containsSyntheticMedia) : '');
-  const [notify, setNotify] = useState(original?.notifySubscribers ?? false), [schedule, setSchedule] = useState(localDate(original?.publishAt));
+  const [notify, setNotify] = useState(original?.notifySubscribers ?? false), [schedule, setSchedule] = useState(localPublicationDate(original?.publishAt));
   const [error, setError] = useState<string | null>(null);
   const identity = useRef({ body: '', key: '' });
   const available = accounts.filter(account => account.status === 'connected');

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { PublicationAssetError } from './contracts';
+import { instagramNotBefore } from './instagram-schedule';
+import { PublicationAssetError, PublicationDeferred } from './contracts';
 import { instagramIdSchema, type InstagramContainer, type InstagramMetadata } from './instagram-contract';
 import { instagramJson, InstagramTransportError } from './instagram-http.server';
 
@@ -20,6 +21,10 @@ const idResponse = z.object({ id: instagramIdSchema });
 const graph = (path: string) => `https://graph.facebook.com/${INSTAGRAM_GRAPH_VERSION}/${path}`;
 const uploadUrl = (id: string) => `https://rupload.facebook.com/ig-api-upload/${INSTAGRAM_GRAPH_VERSION}/${instagramIdSchema.parse(id)}`;
 
+function enforceTime(metadata: { publishAt?: string }, phase: 'start' | 'publish') {
+  const until = instagramNotBefore(metadata, phase);
+  if (until !== null && Date.now() < until) throw new PublicationDeferred(until);
+}
 export function createInstagramTransport(options: Options) {
   const request = options.fetch ?? fetch;
   async function json(url: string, credential: InstagramCredential, signal: AbortSignal, body?: Record<string, unknown>) {
@@ -57,7 +62,9 @@ export function createInstagramTransport(options: Options) {
   }
   return {
     async create(instagramId: string, metadata: InstagramMetadata, signal: AbortSignal) {
+      enforceTime(metadata, 'start');
       const credential = await authorize(instagramId, undefined, signal);
+      enforceTime(metadata, 'start');
       const raw = await json(graph(`${instagramIdSchema.parse(instagramId)}/media`), credential, signal, {
         media_type: metadata.kind === 'reel' ? 'REELS' : 'STORIES', upload_type: 'resumable',
         is_ai_generated: metadata.isAiGenerated, ...(metadata.kind === 'reel' ? { caption: metadata.caption } : {}),
@@ -107,12 +114,13 @@ export function createInstagramTransport(options: Options) {
       }
       finally { stopped = true; if (!body.locked) await body.cancel().catch(() => undefined); }
     },
-    async publish(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number }, signal: AbortSignal) {
+    async publish(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number; publishAt?: string }, signal: AbortSignal) {
       const credential = await authorize(target.instagramId, target.pageId, signal);
       let before: InstagramContainer;
       try { before = await statusWith(credential, target.containerId, target.sizeBytes, signal); }
       catch { throw new InstagramTransportError('unavailable'); }
       if (before.status !== 'FINISHED') return { container: before };
+      enforceTime(target, 'publish');
       const media = idResponse.parse(await json(graph(`${target.instagramId}/media_publish`), credential, signal, { creation_id: target.containerId }));
       return { container: { ...before, status: 'PUBLISHED' as const }, mediaId: media.id };
     },

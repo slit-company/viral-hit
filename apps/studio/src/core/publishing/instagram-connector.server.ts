@@ -1,3 +1,4 @@
+import { instagramNotBefore } from './instagram-schedule';
 import { PublicationInspectionPaused, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation, type RemoteObservation } from './contracts';
 import { instagramCheckpointSchema, instagramIdSchema, instagramMetadataSchema, instagramReceiptSchema, type InstagramCheckpoint, type InstagramContainer } from './instagram-contract';
 import { createInstagramTransport, type InstagramCredential } from './instagram-transport.server';
@@ -18,7 +19,7 @@ export function createInstagramConnector(options: Options): PublicationConnector
     const input = validateInstagramPublication(spec);
     const identity = receipt ? instagramReceiptSchema.parse(raw) : instagramCheckpointSchema.parse(raw);
     if (identity.instagramId !== input.instagramId || ('nextByte' in identity && identity.nextByte > input.sizeBytes)) throw new Error('Instagram checkpoint identity changed');
-    return { containerId: identity.containerId, pageId: identity.pageId, instagramId: input.instagramId, sizeBytes: input.sizeBytes };
+    return { containerId: identity.containerId, pageId: identity.pageId, instagramId: input.instagramId, sizeBytes: input.sizeBytes, ...(input.metadata.publishAt ? { publishAt: input.metadata.publishAt } : {}) };
   }
   function receipt(identity: { containerId: string; instagramId: string; pageId: string }, status: InstagramContainer['status'], mediaId?: string) {
     return { containerId: identity.containerId, instagramId: identity.instagramId, pageId: identity.pageId, status, ...(mediaId ? { mediaId } : {}) };
@@ -31,10 +32,11 @@ export function createInstagramConnector(options: Options): PublicationConnector
   }
   function observed(identity: { containerId: string; instagramId: string; pageId: string }, result: InstagramContainer, mediaId?: string): RemoteObservation {
     const state = result.status === 'PUBLISHED' ? 'published' : (['ERROR', 'EXPIRED'].includes(result.status) || result.upload?.status === 'error') ? 'failed' : result.status === 'FINISHED' ? 'staged' : 'processing';
-    return { state, receipt: receipt(identity, result.status, mediaId), retryAfterMs: 60000 };
+    return { state, receipt: receipt(identity, result.status, mediaId), retryAfterMs: state === 'staged' ? 0 : 60000 };
   }
   return {
     id: 'instagram', version: INSTAGRAM_CONNECTOR_VERSION,
+    notBefore: (spec, phase) => instagramNotBefore(validateInstagramPublication(spec).metadata, phase),
     async start(spec, signal) {
       let input: ReturnType<typeof validateInstagramPublication>;
       try { input = validateInstagramPublication(spec); } catch { throw new PublicationStartError('rejected'); }

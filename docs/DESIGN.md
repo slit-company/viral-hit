@@ -58,3 +58,6 @@ Real account UI captures at 1440×1000 and 390×844 passed the frozen visual rub
 ## Instagram publication review
 
 Publish composes separate YouTube and Instagram forms around one destination selector and delivery queue. The Instagram form/card reuse shared NativeSelect, Textarea, Button and the existing light SEED surface tokens. Reel/Story-specific caption and disclosure fields stay in the publishing feature; metadata validation, video inspection and provider calls stay in its server domain. Retained playback and revision-bound approval reuse the established review control. This adds no UI library or direct-source-reuse percentage claim.
+
+
+Instagram scheduling adds the existing shared Input with a native datetime-local control. Drafts retain the browser-local edit value while reviewed metadata stores an explicit UTC instant. The review card repeats the scheduled time/zone and uses a distinct Approve schedule action and Scheduled in studio waiting label. The existing queue, preview and shared light controls remain the same; no calendar library is added.
