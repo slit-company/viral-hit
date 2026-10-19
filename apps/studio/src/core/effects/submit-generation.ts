@@ -2,7 +2,7 @@ import { createAdapter } from '@/core/adapters/adapter-factory';
 import { getEffectById } from '@/core/effects/effects';
 import { getWorkspaceEffectRegistryEntryByEffectId } from '@/core/effects/effect-registry';
 import { VIDEO_ANALYSIS_MODEL_ID } from '@/core/effects/video-analysis';
-import { getGenerationModelBindingByEffectId } from '@/core/generation-providers';
+import { getGenerationModelBindingByEffectId } from '@/core/generation-providers/catalog';
 import {
   resolveGenerationSubmitTransition,
   resolveProviderTaskId,

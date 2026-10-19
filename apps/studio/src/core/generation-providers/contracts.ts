@@ -27,3 +27,6 @@ export type GenerationProviderDefinition = {
 export type GenerationProviderRegistrar = (
   provider: GenerationProviderDefinition
 ) => void;
+
+/** Browser-safe capabilities. Executable adapters and credential checks are server-only. */
+export type GenerationProviderMetadata = Pick<GenerationProviderDefinition, 'id' | 'label' | 'supports' | 'modelBindings'>;

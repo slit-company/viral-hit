@@ -1,7 +1,7 @@
 import {
   getGenerationModelBindingByEffectId,
   resolveProviderUpstreamModel,
-} from '@/core/generation-providers/registry';
+} from '@/core/generation-providers/catalog';
 
 export type WorkspaceRegistryType = 'ai-video' | 'ai-image';
 

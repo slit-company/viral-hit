@@ -1,14 +1,15 @@
 import {
-  ACTIVE_GENERATION_PROVIDER_ID,
   registerProjectGenerationProviders,
 } from '@/config/generation-providers';
 import { MockAdapter } from '@/core/adapters/mock-adapter';
 
-import { cloudApiGenerationProvider, CLOUD_API_PROVIDER_ID } from './cloud-api-provider';
+import { cloudApiGenerationProvider } from './cloud-api-provider';
 import type {
   GenerationProviderDefinition,
-  GenerationProviderModelBinding,
 } from './contracts';
+
+import { getActiveGenerationProviderId, getGenerationProviderMetadata } from './catalog';
+export { getActiveGenerationProviderId, getGenerationModelBinding, getGenerationModelBindingByEffectId, resolveProviderUpstreamModel } from './catalog';
 
 const providers = new Map<string, GenerationProviderDefinition>();
 let initialized = false;
@@ -30,6 +31,10 @@ function addProvider(provider: GenerationProviderDefinition) {
     }
     modelIds.add(binding.modelId);
     effectIds.add(binding.effectId);
+  }
+  const metadata = getGenerationProviderMetadata(id);
+  if (!metadata || JSON.stringify([metadata.label, metadata.supports, metadata.modelBindings]) !== JSON.stringify([provider.label, provider.supports, provider.modelBindings])) {
+    throw new Error(`Provider ${id} must have matching public metadata in src/config/generation-catalog.ts.`);
   }
   providers.set(id, { ...provider, id });
 }
@@ -60,56 +65,9 @@ export function getGenerationProvider(providerId: string) {
   return providers.get(providerId) ?? null;
 }
 
-export function getActiveGenerationProviderId() {
-  ensureProvidersRegistered();
-  const requested = ACTIVE_GENERATION_PROVIDER_ID.trim() || CLOUD_API_PROVIDER_ID;
-  if (!providers.has(requested)) {
-    throw new Error(
-      `Generation provider ${requested} is not registered. Register it and select it in src/config/generation-providers.ts.`
-    );
-  }
-  return requested;
-}
-
 export function getActiveGenerationProvider() {
   const providerId = getActiveGenerationProviderId();
   const provider = getGenerationProvider(providerId);
   if (!provider) throw new Error(`Generation provider ${providerId} is not registered.`);
   return provider;
-}
-
-export function getGenerationModelBinding({
-  modelId,
-  providerId = getActiveGenerationProviderId(),
-}: {
-  modelId: string;
-  providerId?: string;
-}): GenerationProviderModelBinding | null {
-  const provider = getGenerationProvider(providerId);
-  return provider?.modelBindings.find((binding) => binding.modelId === modelId) ?? null;
-}
-
-export function getGenerationModelBindingByEffectId({
-  effectId,
-  providerId = getActiveGenerationProviderId(),
-}: {
-  effectId: number;
-  providerId?: string;
-}): GenerationProviderModelBinding | null {
-  const provider = getGenerationProvider(providerId);
-  return provider?.modelBindings.find((binding) => binding.effectId === effectId) ?? null;
-}
-
-export function resolveProviderUpstreamModel({
-  modelId,
-  variant,
-  providerId,
-}: {
-  modelId: string;
-  variant?: string | null;
-  providerId?: string;
-}) {
-  const binding = getGenerationModelBinding({ modelId, providerId });
-  if (!binding) return modelId;
-  return (variant && binding.upstreamModelByVariant?.[variant]) || binding.upstreamModelId;
 }

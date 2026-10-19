@@ -3,12 +3,15 @@
   "version": "0.1.0",
   "private": true,
   "license": "Apache-2.0",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "pnpm --dir apps/studio dev",
     "build": "pnpm --dir apps/studio build",
     "test": "pnpm --dir apps/studio test",
     "typecheck": "pnpm --dir apps/studio typecheck",
-    "setup": "pnpm --dir apps/studio install --frozen-lockfile && pnpm --dir apps/studio db:setup && pnpm --dir apps/studio db:push"
+    "setup": "pnpm --dir apps/studio install --frozen-lockfile && pnpm --dir apps/studio db:setup && pnpm --dir apps/studio db:push",
+    "architecture:check": "node scripts/check-architecture.mjs && node --test scripts/check-architecture.test.mjs"
   }
 }

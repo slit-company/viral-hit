@@ -1,11 +1,11 @@
+import type { GenerationProviderModelBinding } from '@/core/generation-providers/contracts';
 import type { EffectRecord } from '@/core/adapters/base-adapter';
 import {
-  getActiveGenerationProvider,
+  getActiveGenerationProviderMetadata as getActiveGenerationProvider,
   getActiveGenerationProviderId,
-  getGenerationProvider,
+  getGenerationProviderMetadata as getGenerationProvider,
   getGenerationModelBindingByEffectId,
-  type GenerationProviderModelBinding,
-} from '@/core/generation-providers';
+} from '@/core/generation-providers/catalog';
 
 import {
   type WorkspaceEffectRegistryEntry,

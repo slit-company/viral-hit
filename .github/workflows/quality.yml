@@ -11,7 +11,10 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: apps/studio
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
@@ -20,14 +23,16 @@ jobs:
           run_install: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: 22
+          node-version: 24
           cache: pnpm
+          cache-dependency-path: apps/studio/pnpm-lock.yaml
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: pnpm install --frozen-lockfile
-      # The MCP stdio probe exercises real Project queries, so CI needs the
-      # same local SQLite schema created by the documented quick-start flow.
-      - run: pnpm db:push
-      # The Vite build generates the gitignored Paraglide and TanStack Router
-      # artifacts that TypeScript needs in a clean checkout.
+      - run: pnpm architecture:check
+        working-directory: .
+      - run: pnpm db:setup && pnpm db:push
+      # Generate ignored Paraglide/router files before typechecking a fresh clone.
+      # Build and browser tests must run sequentially: both generate these files.
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test

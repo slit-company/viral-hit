@@ -1,4 +1,4 @@
-import { getGenerationProvider } from '@/core/generation-providers';
+import { getGenerationProvider } from '@/core/generation-providers/registry';
 import type { EffectRecord } from './base-adapter';
 
 export const createAdapter = (effect: EffectRecord) => {

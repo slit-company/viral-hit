@@ -10,3 +10,5 @@ Raw browser evidence is local-only and ignored because logged-in pages may conta
 Distinguish observed UI, upstream claims, inspected implementation, tested behavior, and proposed functionality. Never claim competition wins, full feature parity, performance superiority, or real model generation from a mock response.
 
 Use visual-feedback-loop for actual UI work after functional checks. Provider keys stay server-side. Generation receipts must retain provider job IDs, inputs, outputs, cost information and status.
+
+Before implementation, read `docs/architecture/STRUCTURE.md`. Follow its ownership and dependency rules, use the shared SEED UI layer, and keep feature-specific behavior out of generic execution contracts. Run `pnpm architecture:check` with normal validation. Do not increase the structural baseline to hide new debt; introduce an explicit reviewed architectural decision for a genuine exception.

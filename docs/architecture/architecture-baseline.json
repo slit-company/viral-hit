@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "rationale": "Pre-existing module sizes; no growth allowed. Reduce these allowances when splitting responsibilities. No cycle or browser/server exemptions.",
+  "oversized": {
+    "src/components/app/workspace-api-config-dialog.tsx": 476,
+    "src/components/creative-canvas/creative-canvas-card-connector-overlay.tsx": 417,
+    "src/components/creative-canvas/creative-canvas-composer-parameter-picker.tsx": 432,
+    "src/components/creative-canvas/creative-canvas-front-layer.tsx": 1053,
+    "src/components/creative-canvas/creative-canvas-shell.tsx": 1623,
+    "src/components/creative-canvas/nodes/generation-card-node.tsx": 619,
+    "src/components/creative-canvas/react-flow/react-flow-editor.tsx": 837,
+    "src/components/creative-canvas/use-creative-canvas-react-flow-adapter.ts": 1741,
+    "src/components/creative-canvas/use-creative-canvas-upload-actions.ts": 657,
+    "src/components/creative-canvas/use-project-snapshot-lifecycle.ts": 525,
+    "src/components/editor/video-editor-workspace.tsx": 2762,
+    "src/components/studio/studio-composer.tsx": 419,
+    "src/core/adapters/cloud-api-adapter.ts": 736,
+    "src/core/commands/persist.ts": 416,
+    "src/core/commands/schema.ts": 468,
+    "src/core/creative-canvas/composer.ts": 424,
+    "src/core/creative-canvas/generation-controller.ts": 749,
+    "src/core/editor/media-export.ts": 591,
+    "src/core/editor/render-project-timeline.ts": 491,
+    "src/core/editor/timeline-document.ts": 1009,
+    "src/core/effects/effect-registry.ts": 591,
+    "src/core/effects/generation-upload-intent.ts": 524,
+    "src/mcp/server.ts": 1353
+  },
+  "cycles": []
+}

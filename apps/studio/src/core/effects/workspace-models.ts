@@ -2,7 +2,7 @@ import { buildCreateProjectPath } from '@/core/projects/project-entry';
 import {
   getActiveGenerationProviderId,
   getGenerationModelBinding,
-} from '@/core/generation-providers/registry';
+} from '@/core/generation-providers/catalog';
 import {
   WORKSPACE_EFFECT_REGISTRY,
   type WorkspaceAspectRatio,
