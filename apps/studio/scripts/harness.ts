@@ -1,3 +1,4 @@
+import { attachRunResult } from '../src/core/harness/attach-result';
 import { readFileSync } from 'node:fs';
 import { openHarness } from '../src/core/harness/store';
 import { type Plan } from '../src/core/harness/durable';
@@ -7,7 +8,7 @@ import { runtimeNodeSchema } from '../src/core/harness/requests';
 import { pinRuntimePlan } from '../src/core/harness/runtime-plan';
 
 
-const [command, first, second] = process.argv.slice(2);
+const [command, first, second, third, fourth] = process.argv.slice(2);
 const h = openHarness();
 const adapters = createRuntimeAdapters();
 try {
@@ -17,6 +18,11 @@ try {
     plan.nodes = plan.nodes.map(node => runtimeNodeSchema.parse(node));
     assertRuntimeConfigured(plan.nodes);
     console.log(JSON.stringify({ runId: h.enqueue(await pinRuntimePlan(plan), second) }));
+  } else if (command === 'attach') {
+    const revision = Number(fourth);
+    if (!first || !second || !third || fourth === undefined || !Number.isSafeInteger(revision) || revision < 0) throw new Error('Usage: harness attach <project-id> <run-id> <job-id> <expected-revision>');
+    const result = await attachRunResult(h, first, second, third, revision);
+    console.log(JSON.stringify(result)); if (!result.ok) process.exitCode = 1;
   } else if (command === 'inspect' && first) {
     console.log(JSON.stringify({ jobs: h.jobs(first), events: h.events(first) }, null, 2));
   } else if (command === 'list' && first) {
@@ -37,7 +43,7 @@ try {
       if (!progressed) await new Promise(r => setTimeout(r, 1000));
     }
     console.log(JSON.stringify(h.jobs(first), null, 2));
-  } else throw new Error('Usage: harness enqueue <plan> <request-key> | inspect/list/cancel/reconcile/tick/worker <run-or-project-id>');
+  } else throw new Error('Usage: harness enqueue <plan> <request-key> | attach <project-id> <run-id> <job-id> <expected-revision> | inspect/list/cancel/reconcile/tick/worker <run-or-project-id>');
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Harness failed'); process.exitCode = 1;
 } finally { h.close(); }

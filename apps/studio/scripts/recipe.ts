@@ -1,3 +1,4 @@
+import { sequenceSchema } from '../src/core/editor/sequence';
 import { closeSync, fstatSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 import { compileRecipe, compileRecipeForCheck, recipeSchema } from '../src/core/harness/recipes';
@@ -16,6 +17,7 @@ function readJson(path: string): unknown {
 }
 try {
   if (command === 'schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(recipeSchema), null, 2) + '\n');
+  else if (command === 'sequence-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(sequenceSchema), null, 2) + '\n');
   else if (command === 'comfy-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(comfyRecipeDefinitionSchema), null, 2) + '\n');
   else if (command === 'inspect-comfy' && file) console.log(JSON.stringify(inspectComfyGraph(readJson(file)), null, 2));
   else if (command === 'import-comfy' && file && values && projectId) {
@@ -32,5 +34,5 @@ try {
       const report = await preflightComfyPlan(plan, { deferredInputs }); console.log(JSON.stringify(report, null, 2));
       process.exitCode = report.status === 'issues' ? 2 : report.status === 'unavailable' ? 3 : 0;
     } else console.log(JSON.stringify(compileRecipe(raw, supplied, projectId), null, 2));
-  } else throw new Error('Usage: recipe schema|comfy-schema <output.json> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
+  } else throw new Error('Usage: recipe schema|sequence-schema|comfy-schema <output.json> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
 } catch (error) { console.error(error instanceof Error ? error.message : 'Recipe failed'); process.exitCode = 1; }

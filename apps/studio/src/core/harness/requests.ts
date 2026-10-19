@@ -1,3 +1,4 @@
+import { sequenceInput } from './sequence-adapter';
 import { sampleReferenceInput, youtubeReferenceInput } from '../references/recipe-contract';
 import { externalOperation } from './external-catalog';
 import { z } from 'zod';
@@ -14,6 +15,7 @@ const nodeBase = {
   cache: z.literal(false).optional(),
 };
 const builtinNodeSchema = z.discriminatedUnion('operation', [
+  z.object({ ...nodeBase, operation: z.literal('editor.sequence'), input: sequenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('reference.youtube'), input: youtubeReferenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('reference.sample'), input: sampleReferenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.upload'), input: uploadInput }).strict(),

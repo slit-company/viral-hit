@@ -6,7 +6,7 @@ import { runtimeCapabilities, assertRuntimeConfigured, reconciliableOperations }
 import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan } from '@/core/harness/recipe-plan';
 import { pinRuntimePlan } from '@/core/harness/runtime-plan';
-import { attachMaterializedJob } from '@/core/harness/attach-asset';
+import { attachRunResult } from '@/core/harness/attach-result';
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
 
@@ -36,7 +36,7 @@ async function POST({ params, request }: Context) {
     }
     if (!h.runs(params.projectId).some(run => run.id === body.runId)) return Response.json({ error: 'Run not found' }, { status: 404 });
     if (body.action === 'attach' || body.action === 'take') {
-      const result = await attachMaterializedJob(h, params.projectId, body.runId, body.jobId, body.expectedRevision, body.action === 'take' ? body.clipId : undefined);
+      const result = await attachRunResult(h, params.projectId, body.runId, body.jobId, body.expectedRevision, body.action === 'take' ? body.clipId : undefined);
       return Response.json(result.ok ? result : { ...result, error: result.message }, { status: result.ok ? 200 : result.code === 'REVISION_CONFLICT' ? 409 : 400 });
     }
     if (body.action === 'cancel') h.cancel(body.runId);

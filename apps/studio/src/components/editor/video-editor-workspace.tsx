@@ -273,8 +273,8 @@ export function VideoEditorWorkspace({
     0.001
   );
   const primaryVisualClip = document.tracks
-    .find((track) => track.kind === 'video')
-    ?.clips.find(
+    .filter((track) => track.kind === 'video').flatMap(track => track.clips)
+    .find(
       (clip) => clip.sourceType === 'image' || clip.sourceType === 'video'
     );
   const activeCaption = findCaptionAtTime(document, timelineCurrentTime);

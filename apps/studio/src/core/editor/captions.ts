@@ -137,8 +137,8 @@ export function updateCaptionTransform(
   patch: Partial<TimelineCaptionTransform>
 ) {
   const clip = document.tracks
-    .find((track) => track.kind === 'caption')
-    ?.clips.find((candidate) => candidate.id === clipId);
+    .filter((track) => track.kind === 'caption').flatMap(track => track.clips)
+    .find((candidate) => candidate.id === clipId);
   if (!clip || clip.sourceType !== 'caption') return document;
   const current = getResolvedCaptionStyle(document, clip);
   const clamp = (value: number, min: number, max: number) =>
@@ -321,7 +321,8 @@ export function upsertCaptionCue(
   cue: ParsedCaptionCue & { clipId: string }
 ) {
   const next = ensureCaptionTrack(document);
-  const track = next.tracks.find((item) => item.kind === 'caption');
+  const track = next.tracks.find(item => item.kind === 'caption' && item.clips.some(clip => clip.id === cue.clipId))
+    ?? next.tracks.find(item => item.kind === 'caption');
   if (!track) return document;
   const existing = track.clips.find((candidate) => candidate.id === cue.clipId);
   const clip = captionClip({
@@ -374,13 +375,6 @@ export function applySrtToTimeline(
 }
 
 export function findCaptionAtTime(document: TimelineDocument, time: number) {
-  const track = document.tracks.find(
-    (item) => item.kind === 'caption' && !item.hidden && !item.muted
-  );
-  if (!track) return null;
-  return (
-    track.clips.find(
-      (clip) => time >= clip.startTime && time < clip.startTime + clip.duration
-    ) ?? null
-  );
+  return document.tracks.filter(track => track.kind === 'caption' && !track.hidden && !track.muted)
+    .flatMap(track => track.clips).find(clip => !clip.muted && time >= clip.startTime && time < clip.startTime + clip.duration) ?? null;
 }

@@ -40,10 +40,11 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [recipeId, setRecipeId] = useState('open-frame');
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const selected = recipes.find(recipe => recipe.id === recipeId) ?? recipes[0];
-  const remoteOperations = [...new Set(selected?.nodes.filter(node => node.operation !== 'asset.materialize').map(node => node.operation) ?? [])];
+  const remoteOperations = [...new Set(selected?.nodes.filter(node => !['asset.materialize', 'editor.sequence'].includes(node.operation)).map(node => node.operation) ?? [])];
   const generationOperations = remoteOperations.filter(operation => data?.capabilities?.find(capability => capability.operation === operation)?.generation ?? operation !== 'comfy.upload');
   const externalCapabilities = data?.capabilities.filter(capability => capability.external && remoteOperations.includes(capability.operation)) ?? [];
   const needsGeneration = generationOperations.length > 0;
+  const hasSequence = selected?.nodes.some(node => node.operation === 'editor.sequence');
   const hasReferences = remoteOperations.some(operation => operation === 'reference.youtube' || operation === 'reference.sample');
   const missingCapabilities = remoteOperations.filter(operation => !data?.capabilities?.some(capability => capability.operation === operation && capability.configured));
   const configurationMessage = missingCapabilities.map(operation => data?.capabilities?.find(capability => capability.operation === operation)?.configuration ?? operation).join(', ');
@@ -168,7 +169,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           </div>}
           <div className="sticky bottom-0 z-10 flex gap-2 bg-[var(--vh-surface)] py-3 sm:static sm:py-0">
           {generationOperations.includes('comfy.workflow') && <Action disabled={busy || checking} onClick={() => void checkServer()} className="h-11 min-w-0 flex-1 rounded-lg border border-[var(--vh-border)] px-3 text-xs">{checking ? 'Checking server…' : 'Check server'}</Action>}
-          <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length || hasReferences ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
+          <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length || hasReferences || hasSequence ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>
@@ -178,11 +179,12 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
           {data?.runs.map(run => <article key={run.id} className="rounded-xl border border-[var(--vh-border)] p-3">
             <div className="mb-2 flex items-center justify-between text-[10px] text-[var(--vh-text-2)]"><span>{run.id.slice(0, 8)}</span><time>{new Date(run.created_at).toLocaleString()}</time></div>
             {run.jobs.map(job => <div key={job.id} className="my-2 rounded-lg bg-[var(--vh-control)] p-2.5 text-xs">
-              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? isAssetOperation(job.operation) ? 'Asset ready' : job.operation === 'comfy.upload' ? 'Input ready' : 'Receipt ready' : job.state}</span></div>
+              <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? isAssetOperation(job.operation) ? 'Asset ready' : job.operation === 'editor.sequence' ? 'Edit ready' : job.operation === 'comfy.upload' ? 'Input ready' : 'Receipt ready' : job.state}</span></div>
               {job.cancel_requested === 1 && <p className="mt-1 text-amber-800">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
               {job.error && <p className="mt-2 break-words text-amber-800">{job.error}</p>}
               {job.state === 'succeeded' && <ReferenceResult projectId={projectId} output={job.output_json} />}
               {isAssetOperation(job.operation) && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><Action disabled={busy} onClick={() => void chooseTake(job)} className="text-[var(--color-lime-text)]">Use as take</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
+              {job.operation === 'editor.sequence' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 space-y-2"><p>Separate tracks for editing. Appends after your current timeline.</p><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add editable sequence'}</Action></div>}
               {takeTarget?.jobId === job.id && <div className="mt-3 space-y-2 border-t border-[var(--vh-border)] pt-3">
                 <label className="block" htmlFor={`take-${job.id}`}>Target clip</label>
                 <select id={`take-${job.id}`} value={takeTarget.clipId} onChange={event => setTakeTarget({ ...takeTarget, clipId: event.target.value })} className="h-10 w-full min-w-0 rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] px-2">
@@ -192,7 +194,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
                 <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Keeps timing, effects and the original. The new take starts at source time zero. Audio and video must cover the full clip.</p>
                 <div className="flex gap-2"><Action disabled={busy || !takeTarget.clipId} onClick={() => void applyTake(run.id)} className="vh-primary flex-1 text-xs">Apply take</Action><Action disabled={busy} onClick={() => setTakeTarget(undefined)} className="px-2">Cancel</Action></div>
               </div>}
-              {job.output_json && <details className="mt-2 text-[var(--vh-text-2)]"><summary className="cursor-pointer">{isAssetOperation(job.operation) ? 'Local asset record' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
+              {job.output_json && <details className="mt-2 text-[var(--vh-text-2)]"><summary className="cursor-pointer">{isAssetOperation(job.operation) ? 'Local asset record' : job.operation === 'editor.sequence' ? 'Edit summary' : 'Provider receipt'}</summary><pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-all text-[10px]">{JSON.stringify(JSON.parse(job.output_json), null, 2)}</pre></details>}
             </div>)}
             <div className="flex gap-3 text-xs">
               {run.jobs.some(j => ['queued', 'submitting', 'running'].includes(j.state)) && <Action disabled={busy} onClick={() => void act({ action: 'cancel', runId: run.id })} className="text-[var(--vh-text-2)] hover:text-[var(--vh-text-1)]">Request cancel</Action>}

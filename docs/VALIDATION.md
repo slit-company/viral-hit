@@ -1,5 +1,19 @@
 # Validation ledger — 2026-10-19
 
+## Portable editable sequences — 2026-10-20
+
+The built-in `editor.sequence` operation prepares versioned edit intent from verified project media or complete materializer bindings. UI, HTTP, MCP and CLI explicitly accept the result through the same revision-checked service. It appends independently editable visual, image-overlay, audio and caption clips after the existing timeline. Empty visible unlocked tracks are reused; existing clips and locked/hidden/muted rows are preserved. The two initial manifests and published schema are documented in [editable sequences](EDITABLE-SEQUENCES.md).
+
+- All 667 source tests pass, including original identity, foreign assets, altered bytes, missing pins, deferred materializer identities, wrong producer kinds, cancellation, reopen, no preparation-time timeline writes, stale acceptance, preserved preceding edits, independent caption edits, repeated attachment and empty-track reuse.
+- All 36 browser tests passed before the final empty-track layout refinement. The three affected sequence/caption/export browser flows then passed again against the final code. Actual HTTP acceptance, caption editing/reload and MCP replay preserve exactly the two intended clips and the changed text.
+- The real standalone verifier passes against FFmpeg/FFprobe and uploaded media without stored duration metadata (`research/evidence/editable-sequence/run-R4s49p`). CLI accepts five separate clips; changing only the title preserves other clip records and changes 3,161 sampled caption pixel bytes. Both 330 Hz music and 880 Hz voice test inputs survive, while the muted video's 660 Hz tone is excluded. The 1920×1080 H.264/AAC export decodes all 90 frames over three seconds. Retained original hashes remain unchanged. These tones are test signals, not generated narration or music-quality evidence.
+- Multi-track inspection exposed two existing server/preview gaps: later caption tracks were ignored by lookup/edit/export, and server mute incorrectly removed the video's picture. Both are corrected. An initial verifier also assumed upload metadata contained duration; preparation now probes a private copy of the verified bytes. Initial failed run directories are retained.
+- Architecture (389 modules, 169 browser-reachable, zero cycles, unchanged 23 size allowances), typecheck, translation, production build and performance gates pass. No runtime dependency was added. Browser JavaScript is 556,592 gzip bytes, up 187 bytes.
+- Desktop 1440×1000 and mobile 390×844 screenshots were inspected after functional gates. Reusing empty tracks made the imported visual clip immediately visible; the frozen self-review score improved from 3.74 to 4.195/5, without hard failures. Lower tracks still use the editor's ordinary vertical scrolling. Review hashes and captures are retained in `research/evidence/editable-sequence/visual/`.
+- Production port 3808 was restarted after confirming nine completed generation jobs and no publications. Aside queued and accepted a real new image-story run (`45933f09…`) with one submission, two persisted editable clips and the exact custom title. The local example project is `4909a6cd-e75a-4121-bb55-cac7441a7073`, “Open Studio · Editable Story”. Existing reference projects were not edited.
+
+This is a portable editor contract and real processing milestone. Native vid2 format/layer conversion, keyframes/transitions/masks, provider quality, public release and full Higgsfield parity remain open. Evidence is local and ignored under `research/evidence/editable-sequence/`.
+
 ## Project media composition — 2026-10-20
 
 The optional vid2 composition adapter accepts pinned project images, video and audio through six named slots. The generic adapter contract now supports explicit null for optional inputs; present inputs retain membership/hash checks and materializer dependency identity. Existing descriptor digests remain unchanged when the new flag is omitted.

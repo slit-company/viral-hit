@@ -102,3 +102,19 @@ try {
   callback.search = new URLSearchParams({ state: new URL(flow.authorizationUrl).searchParams.get('state')!, code: 'fixture-code', iss: 'https://accounts.google.com' }).toString();
   await accounts.complete(callback, binding, AbortSignal.timeout(10000));
 } finally { accounts.close(); }
+
+// Actual local preparation: no timeline mutation until the browser accepts the edit.
+const { pinSequenceInputs, createSequenceAdapter } = await import('../src/core/harness/sequence-adapter');
+const sequenceProject = await createProject({ name: 'Editable sequence E2E fixture' });
+const sequenceLedger = openHarness();
+try {
+  const source = createMaterializeAdapter({ download: async (_url, destination) => { await copyFile('public/logo.png', destination); }, probe: probeMedia });
+  const definition = JSON.parse(await readFile('../../recipes/editable-image-story.json', 'utf8'));
+  const sequence = compileRecipe(definition, { image: 'deferred', title: 'EDIT THIS TITLE', duration: 3 }, sequenceProject.id).nodes[0];
+  sequence.dependsOn = ['source']; sequence.bindings = [{ target: '/assets/image/assetId', node: 'source', pointer: '/assetId' }];
+  const run = sequenceLedger.enqueue(await pinSequenceInputs({ projectId: sequenceProject.id, nodes: [
+    { id: 'source', operation: 'asset.materialize', version: 'fixture', input: { kind: 'image', url: 'https://example.invalid/sequence.png' } }, sequence,
+  ] }), 'editable-fixture');
+  for (let i = 0; i < 4; i++) await sequenceLedger.step(run, { 'asset.materialize': source, 'editor.sequence': createSequenceAdapter() });
+  if (sequenceLedger.jobs(run).some(job => job.state !== 'succeeded')) throw Error('Editable sequence fixture did not prepare');
+} finally { sequenceLedger.close(); }

@@ -152,7 +152,7 @@ async function resolveRenderInputs({
   for (const track of document.tracks) {
     if (track.hidden || track.muted || track.kind === 'caption') continue;
     for (const clip of track.clips) {
-      if (clip.muted) continue;
+      if (clip.muted && track.kind !== 'video') continue;
       const source = getTimelineClipSource(clip);
       const asset = await getProjectAssetById({
         projectId,
@@ -290,10 +290,10 @@ async function buildFfmpegArgs({
     visualLabel = nextLabel;
   }
 
-  const captionTrack = document.tracks.find((track) => track.kind === 'caption');
-  if (captionTrack && !captionTrack.hidden && !captionTrack.muted) {
+  const captionClips = document.tracks.filter(track => track.kind === 'caption' && !track.hidden && !track.muted).flatMap(track => track.clips);
+  if (captionClips.length) {
     let captionIndex = 0;
-    for (const clip of captionTrack.clips) {
+    for (const clip of captionClips) {
       if (clip.muted || !clip.text?.trim()) continue;
       captionIndex += 1;
       const style = getResolvedCaptionStyle(document, clip);
@@ -341,7 +341,7 @@ async function buildFfmpegArgs({
 
   const audioLabels: string[] = [];
   let audioIndex = 0;
-  for (const input of inputs.filter((item) => item.probe.hasAudio)) {
+  for (const input of inputs.filter((item) => item.probe.hasAudio && !item.clip.muted)) {
     audioIndex += 1;
     const label = `audio${audioIndex}`;
     const steps = [

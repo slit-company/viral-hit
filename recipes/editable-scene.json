@@ -1,0 +1,212 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "author": "Viral Hit contributors",
+  "category": "editing",
+  "tags": [
+    "editable",
+    "local",
+    "sequence"
+  ],
+  "id": "editable-scene",
+  "title": "Build an editable scene",
+  "description": "Prepares separate visual, overlay, music, voice and caption tracks. Add the completed edit after the current timeline, then change each clip independently. Duration must fit all selected audio/video sources.",
+  "parameters": [
+    {
+      "id": "video",
+      "label": "Scene video",
+      "type": "asset",
+      "kind": "video"
+    },
+    {
+      "id": "image",
+      "label": "Overlay image",
+      "type": "asset",
+      "kind": "image"
+    },
+    {
+      "id": "music",
+      "label": "Background music",
+      "type": "asset",
+      "kind": "audio"
+    },
+    {
+      "id": "voice",
+      "label": "Narration",
+      "type": "asset",
+      "kind": "audio"
+    },
+    {
+      "id": "title",
+      "label": "Title",
+      "type": "string",
+      "multiline": false,
+      "default": "MAKE IT YOURS",
+      "maxLength": 80
+    },
+    {
+      "id": "duration",
+      "label": "Duration (seconds)",
+      "type": "number",
+      "default": 3,
+      "min": 0.1,
+      "max": 60
+    }
+  ],
+  "nodes": [
+    {
+      "id": "edit",
+      "operation": "editor.sequence",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "title": "Editable scene",
+        "assets": {
+          "image": {
+            "assetId": "select-image",
+            "kind": "image"
+          },
+          "video": {
+            "assetId": "select-video",
+            "kind": "video"
+          },
+          "music": {
+            "assetId": "select-music",
+            "kind": "audio"
+          },
+          "voice": {
+            "assetId": "select-voice",
+            "kind": "audio"
+          }
+        },
+        "tracks": [
+          {
+            "id": "visual",
+            "name": "Visual",
+            "kind": "video",
+            "clips": [
+              {
+                "id": "visual",
+                "type": "media",
+                "source": "video",
+                "startTime": 0,
+                "duration": 3,
+                "muted": true
+              }
+            ]
+          },
+          {
+            "id": "title",
+            "name": "Title",
+            "kind": "caption",
+            "clips": [
+              {
+                "id": "title",
+                "type": "caption",
+                "startTime": 0,
+                "duration": 3,
+                "text": "MAKE IT YOURS"
+              }
+            ]
+          },
+          {
+            "id": "overlay",
+            "name": "Overlay",
+            "kind": "overlay",
+            "clips": [
+              {
+                "id": "detail",
+                "type": "media",
+                "source": "image",
+                "startTime": 0,
+                "duration": 3,
+                "overlay": {
+                  "x": 0.75,
+                  "y": 0.25,
+                  "width": 0.3,
+                  "opacity": 1,
+                  "rotation": 0
+                }
+              }
+            ]
+          },
+          {
+            "id": "music",
+            "name": "Music",
+            "kind": "audio",
+            "clips": [
+              {
+                "id": "music",
+                "type": "media",
+                "source": "music",
+                "startTime": 0,
+                "duration": 3,
+                "volume": 0.22,
+                "audioRole": "music",
+                "fadeOut": 0.1
+              }
+            ]
+          },
+          {
+            "id": "voice",
+            "name": "Voice",
+            "kind": "audio",
+            "clips": [
+              {
+                "id": "voice",
+                "type": "media",
+                "source": "voice",
+                "startTime": 0,
+                "duration": 3,
+                "audioRole": "voice"
+              }
+            ]
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "parameter": "image",
+          "target": "/assets/image/assetId"
+        },
+        {
+          "parameter": "title",
+          "target": "/tracks/1/clips/0/text"
+        },
+        {
+          "parameter": "video",
+          "target": "/assets/video/assetId"
+        },
+        {
+          "parameter": "music",
+          "target": "/assets/music/assetId"
+        },
+        {
+          "parameter": "voice",
+          "target": "/assets/voice/assetId"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/0/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/1/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/2/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/3/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/4/clips/0/duration"
+        }
+      ]
+    }
+  ]
+}

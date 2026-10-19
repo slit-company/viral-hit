@@ -176,3 +176,7 @@ For binary-returning models, bind the provider node's `/binaryReceipt` to a mate
 ```
 
 Use either `url` or `receipt`, never both. The resolved receipt is an opaque job ID plus hash; recipes cannot supply local paths or another project's ID. Binary results are retained before the provider job is marked successful. The materializer verifies and copies them into normal Assets, then the existing revision-checked attachment adds video to a visual track or audio to an audio track. Extending the same pattern to music, effects or other binary models still requires a verified native input contract and a supported output container.
+
+## Editable workflow output
+
+Use the built-in [`editor.sequence`](EDITABLE-SEQUENCES.md) step to prepare separate timeline clips from project assets or preceding materializers. It shares the normal worker and explicit revision-checked attachment, while keeping rendering and user acceptance separate. The portable sequence schema and two example recipes support general planners and specialized workflows.

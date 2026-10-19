@@ -81,7 +81,7 @@ import { isComfyConfigured } from '@/core/harness/comfy-router';
 import { prepareRecipePlan, prepareRecipeCheck, recipeCheckRequest } from '@/core/harness/recipe-plan';
 import { preflightComfyPlan } from '@/core/harness/comfy-preflight';
 import { pinRuntimePlan } from '@/core/harness/runtime-plan';
-import { attachMaterializedJob } from '@/core/harness/attach-asset';
+import { attachRunResult } from '@/core/harness/attach-result';
 import { loadRecipes } from '@/core/harness/recipe-registry';
 import { changeRecipeLibrary, recipeLibraryRequest } from '@/core/harness/recipe-library';
 
@@ -1279,7 +1279,7 @@ export function createViralHitMcpServer() {
   server.registerTool(
     'viral_hit_runs_change',
     {
-      description: 'Enqueue an explicitly requested plan or recipe, request cancellation, retry a definitive failure, or attach a successfully imported asset to the timeline with expectedRevision. Comfy Router generation steps spend provider credits; ComfyUI workflows use the configured server and installed nodes; comfy.upload transfers a selected local project image to that server after membership/hash checks; asset.materialize steps download/store media; reference.youtube collects a selected video with an optional engine; reference.sample extracts five reference frames from a pinned project video. Both reference steps retain local assets and support timeline attachment. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Action reconcile queues read-only lookup for ambiguous ComfyUI workflow submissions without resubmitting. Native provider receipts stay separate from local asset records. Attach appends a clip. Action take applies a materialized asset as a reversible alternative to clipId with the same media kind, preserving placement and duration. Both require expectedRevision; take begins at source time zero, requires enough duration for audio/video, and rejects locked tracks. The same job/clip pair imports once; switch existing takes through editor commands.',
+      description: 'Enqueue an explicitly requested plan or recipe, request cancellation, retry a definitive failure, or attach a successfully imported asset to the timeline with expectedRevision. Comfy Router generation steps spend provider credits; ComfyUI workflows use the configured server and installed nodes; comfy.upload transfers a selected local project image to that server after membership/hash checks; asset.materialize steps download/store media; reference.youtube collects a selected video with an optional engine; reference.sample extracts five reference frames from a pinned project video. Both reference steps retain local assets and support timeline attachment. Use the same requestKey after a lost response. Uncertain submissions require reconciliation; retry cannot reset them. Action reconcile queues read-only lookup for ambiguous ComfyUI workflow submissions without resubmitting. Native provider receipts stay separate from local asset records. Attach appends a clip, or the separate tracks of an editor.sequence job after the existing timeline. editor.sequence prepares a pinned, editable sequence without rendering or changing the timeline. Action take applies a materialized asset as a reversible alternative to clipId with the same media kind, preserving placement and duration. Both require expectedRevision; take begins at source time zero, requires enough duration for audio/video, and rejects locked tracks. The same job/clip pair imports once; switch existing takes through editor commands.',
       inputSchema: z.object({ projectId: idSchema.optional(), request: runRequest }),
       annotations: { destructiveHint: false, idempotentHint: false },
     },
@@ -1294,7 +1294,7 @@ export function createViralHitMcpServer() {
         }
         if (!h.runs(project.id).some(run => run.id === request.runId)) throw new Error('Run not found in this project');
         if (request.action === 'attach' || request.action === 'take') {
-          const result = await attachMaterializedJob(h, project.id, request.runId, request.jobId, request.expectedRevision, request.action === 'take' ? request.clipId : undefined);
+          const result = await attachRunResult(h, project.id, request.runId, request.jobId, request.expectedRevision, request.action === 'take' ? request.clipId : undefined);
           if (!result.ok) throw new ViralHitMcpToolError(result.code === 'REVISION_CONFLICT' ? 409 : 400, { error: result.message, revision: result.revision });
           return result;
         }
