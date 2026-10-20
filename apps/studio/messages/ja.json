@@ -96,7 +96,7 @@
       },
       "console": {
         "eyebrow": "生成コンソール",
-        "title": "Cloud API Studio",
+        "title": "Viral Hit スタジオ",
         "referenceBound": "参照を添付済み",
         "nodeBound": "ノードを選択済み"
       },
@@ -330,8 +330,8 @@
           "status": {
             "queued": "キュー待ち",
             "generating": "生成中",
-        "ready": "成功",
-        "success": "成功",
+            "ready": "成功",
+            "success": "成功",
             "failed": "失敗"
           },
           "fromCanvas": "Canvasから",
@@ -687,7 +687,7 @@
         "triggerConfiguredLabel": "API設定 — Cloud API接続済み",
         "loadingConnection": "Cloud API接続を読み込み中",
         "title": "接続",
-        "description": "リモート生成モデルを使用するときにCloud API APIキーを接続します。",
+        "description": "リモート生成モデルを使用するときにCloud API キーを接続します。",
         "providerTab": "AIプロバイダー",
         "storageTab": "ストレージ",
         "activeProvider": "使用中のプロバイダー",
@@ -697,11 +697,10 @@
         "mediaLabel": "メディア",
         "mediaValue": "画像 + 動画",
         "keyLabel": "API Key",
-        "keyPlaceholder": "Cloud API APIキーを入力",
+        "keyPlaceholder": "Cloud API キーを入力",
         "save": "設定を保存",
         "saving": "保存中…",
         "saved": "APIキーを保存しました",
-        "getKey": "Cloud API APIキーを取得 →",
         "storage": {
           "intro": "デフォルトのCloud API Filesを使うか、ご自身の公開バケットに接続します。",
           "managedTitle": "Cloud API Files",
@@ -726,11 +725,12 @@
           "save": "保存",
           "saving": "保存中…",
           "saved": "ストレージ設定を保存しました"
-        }
+        },
+        "endpointMissing": "ホスト型生成はオフです。サーバーで VIRAL_HIT_CLOUD_API_URL に互換 Cloud API のエンドポイントを設定してから、ここにキーを追加してください。"
       }
     }
   },
-  "Cloud API": {
+  "Projects": {
     "workspace": {
       "scope": "履歴",
       "subtitle": "ここで新しいプロジェクトを作成するか、以前のCanvasでの作業を続けます。",

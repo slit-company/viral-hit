@@ -1,98 +1,29 @@
 export const meta = {
   title: 'Viral Hit Privacy Policy',
-  description: 'How the local-first Viral Hit workspace stores data and connects to Cloud API and other services.',
-  updated_at: '2026-08-22',
+  description: 'How the Viral Hit open-source workspace handles your data.',
+  updated_at: '2026-10-20',
 }
 
-Viral Hit is an open-source, local-first AI canvas maintained by Viral Hit contributors. This Privacy Policy explains how the official Viral Hit distribution stores information locally and when information leaves your environment.
+Viral Hit is local-first software. The project maintainers do not operate a service that receives your projects, and the software has no analytics or telemetry.
 
-This policy applies to Viral Hit itself. When you use a Cloud API account, API key, credits, file service, or hosted generation workflow, the [Cloud API Privacy Policy](https://cloud.example/privacy-policy) also applies to Cloud API's processing.
+## Data kept by your installation
 
-## 1. Local-first by default
+Your installation stores projects, Canvas and timeline documents, media files, generation and job receipts, publication records and settings in its own data directory. Provider secrets and OAuth tokens are encrypted with a key held by that installation. Unsaved timeline drafts stay in your browser's local storage.
 
-The Viral Hit open-source distribution does not include user accounts, authentication, payments, subscriptions, advertising, or built-in analytics. Projects and workspace state are stored in the database configured by the operator. The default local setup uses a SQLite file on the same computer.
+## Data sent to services you connect
 
-Viral Hit does not send project content to its maintainers merely because you open, edit, arrange, or import it. Selecting or dragging a local file into a project stores it in the local project workspace; it is not sent to a generation provider until you confirm a generation or another action that requires transmission.
+When you run an action that needs a connected service, Viral Hit sends only what that action requires:
 
-## 2. Information stored in your workspace
+- Generations send prompts, settings and selected reference media to your configured Cloud API, ComfyUI or ima2 server.
+- Reference intake downloads the video you selected from YouTube or Instagram.
+- An approved publication uploads the reviewed video and its metadata to the YouTube or Instagram account you selected.
 
-Depending on the features you use, Viral Hit may store the following in your local or operator-controlled environment:
+Each service processes that data under its own privacy policy. Remove a connection in Viral Hit and revoke access with the provider to stop future requests.
 
-- Project names, Canvas documents, Studio settings, node positions, and workflow state.
-- Imported images, videos, audio, and related local asset indexes.
-- Prompts, generation settings, model selections, task identifiers, status history, and output URLs.
-- Cloud API configuration, masked credential previews, and storage configuration.
-- Technical records needed to recover projects, prevent duplicate submissions, and display generation history.
+## Project files and deletion
 
-The operator of the installation controls this database and the files attached to it.
+Exported project files contain original media, Canvas and timelines, and exclude credentials, account connections and running jobs. Deleting a project or the data directory removes it from your installation; data already sent to a provider must be deleted with that provider.
 
-## 3. Information sent when you generate
+## Changes and contact
 
-When you confirm a generation, Viral Hit sends the information needed to perform that request. Depending on the selected workflow, this may include:
-
-- Your prompt, model choice, duration, resolution, aspect ratio, and other generation parameters.
-- Selected reference images, video, audio, subtitles, source URLs, or other media.
-- A Cloud API API key sent server-to-server for authentication.
-- Project or request identifiers needed for task status, error handling, and output retrieval.
-
-These requests are sent to the official Cloud API endpoint and may be processed by Cloud API's upstream AI, infrastructure, storage, and security providers. Provider processing is governed by the [Cloud API Privacy Policy](https://cloud.example/privacy-policy) and any model-specific terms that apply.
-
-## 4. API keys and storage credentials
-
-Viral Hit is designed to keep provider and storage credentials on the server side. Credentials saved through the workspace settings are encrypted before being stored in the local database. Local SQLite installations use a per-install encryption key that is excluded from version control; hosted installations must configure their own stable encryption key.
-
-Credentials are used to make the provider or storage requests you initiate. Viral Hit displays only masked previews in the interface. You are responsible for protecting the device, server, environment files, database, encryption key, backups, and administrator access associated with your installation.
-
-## 5. Storage and generated media
-
-Imported local assets are copied into the project-owned local asset directory in the default SQLite setup. When a confirmed workflow requires a remote reference, Viral Hit may upload that reference just in time to Cloud API Files or to storage configured by the operator.
-
-Generated files may remain at URLs returned by Cloud API or an upstream provider and may be indexed locally instead of copied to your device. Availability and retention of those remote files are controlled by the relevant service. Download important outputs if you need a durable local copy.
-
-## 6. Browser data, cookies, and telemetry
-
-Viral Hit may store essential interface preferences, such as language or theme, in your browser or an essential cookie. The open-source distribution does not include advertising trackers or maintainer-operated behavioral analytics and does not transmit product telemetry to the maintainers by default.
-
-Your browser, hosting platform, reverse proxy, network operator, or a modified deployment may create their own technical logs. Those logs are controlled by the relevant operator, not by the Viral Hit open-source project.
-
-## 7. Self-hosted and third-party deployments
-
-If you use Viral Hit through a deployment operated by another person or organization, that operator may change the software, connect additional services, enable logging or analytics, require accounts, or establish its own retention rules. The operator is responsible for explaining those practices and responding to privacy requests concerning that deployment.
-
-If you operate Viral Hit for other people, you must provide an accurate privacy notice, establish an appropriate legal basis for processing, limit access, protect credentials, define retention and deletion practices, and comply with applicable privacy and data-protection laws.
-
-## 8. How information may be used or disclosed
-
-The Viral Hit open-source project does not receive your local workspace data by default. Information intentionally sent to Cloud API is used and disclosed as described in the Cloud API Privacy Policy, including to provide requested workflows, authenticate requests, operate credits and billing, secure the service, troubleshoot failures, comply with law, and work with necessary service providers.
-
-We do not claim that third-party AI providers have identical privacy or retention practices. Review the applicable provider information before submitting sensitive or regulated content.
-
-## 9. Data retention and deletion
-
-Local project data remains in the database and project asset folders controlled by you or your deployment operator until it is deleted, overwritten, or removed according to that environment's backup and retention practices.
-
-Deleting a local project does not necessarily delete information already sent to Cloud API, storage providers, or upstream model providers. To request access, correction, export, or deletion of information held by Cloud API, contact [support@cloud.example](mailto:support@cloud.example). Other providers may require a separate request under their own policies.
-
-## 10. Security
-
-Viral Hit uses reasonable technical safeguards for its intended local-first architecture, including server-side credential handling and encryption of saved provider secrets. No software, device, storage system, or internet transmission can be guaranteed completely secure.
-
-Keep Viral Hit updated, bind local development servers to trusted interfaces, avoid exposing the workspace directly to the public internet, use deployment-level access controls, keep secrets out of source control, and rotate credentials after suspected exposure.
-
-## 11. Your choices and rights
-
-In a local installation, you can inspect, export, or delete files and database records under your control. If an organization operates your Viral Hit deployment, contact that operator first about data stored in its environment.
-
-Depending on where you live, you may have rights to access, correct, delete, restrict, object to, or obtain a portable copy of personal information held by a service provider. Requests concerning Cloud API can be sent to [support@cloud.example](mailto:support@cloud.example). We may need to verify your identity and may retain limited records where required for security, billing, fraud prevention, dispute resolution, or law.
-
-## 12. Children's privacy
-
-Viral Hit is a general-purpose creative tool and is not directed to children who cannot legally consent to data processing in their jurisdiction. Operators who make Viral Hit available to minors are responsible for age-appropriate notices, parental consent where required, content safeguards, and applicable legal compliance.
-
-## 13. Changes to this Policy
-
-We may update this Privacy Policy as Viral Hit evolves. We will update the date above when changes are published. Material changes may also be announced through the official repository or [Viral Hit website](https://github.com/slit-company/viral-hit).
-
-## 14. Contact
-
-For questions about this Privacy Policy or Cloud API data requests, contact [support@cloud.example](mailto:support@cloud.example). For a third-party or self-hosted deployment, contact that deployment's operator about information stored or processed in its environment.
+This policy may change as the project evolves. Questions go to the [Viral Hit repository](https://github.com/slit-company/viral-hit/issues).

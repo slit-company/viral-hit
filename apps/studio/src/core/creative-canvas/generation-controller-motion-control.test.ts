@@ -15,7 +15,7 @@ const makeCard = (overrides: Partial<CanvasCard>): CanvasCard => ({
   kind: 'asset',
   type: 'image',
   name: 'Reference',
-  url: 'https://media.cloud.example/inputs/reference.png',
+  url: 'https://media.cloud.test/inputs/reference.png',
   prompt: '',
   referenceCardIds: [],
   workflowTemplateId: null,
@@ -59,12 +59,12 @@ test('Canvas Motion Control controls reach the Cloud API provider request', asyn
     character: makeCard({
       id: 'character',
       type: 'image',
-      url: 'https://media.cloud.example/inputs/character.png',
+      url: 'https://media.cloud.test/inputs/character.png',
     }),
     motion: makeCard({
       id: 'motion',
       type: 'video',
-      url: 'https://media.cloud.example/inputs/motion.mp4',
+      url: 'https://media.cloud.test/inputs/motion.mp4',
     }),
   };
 
@@ -86,8 +86,8 @@ test('Canvas Motion Control controls reach the Cloud API provider request', asyn
   assert.deepEqual(built.input, {
     prompt: 'Keep the identity and follow the motion.',
     wmOutputQuality: '1080p',
-    image_urls: ['https://media.cloud.example/inputs/character.png'],
-    video_urls: ['https://media.cloud.example/inputs/motion.mp4'],
+    image_urls: ['https://media.cloud.test/inputs/character.png'],
+    video_urls: ['https://media.cloud.test/inputs/motion.mp4'],
     sourceVideoDurationSeconds: 15.25,
     characterOrientation: 'video',
     backgroundSource: 'input_image',
@@ -102,8 +102,8 @@ test('Canvas Motion Control controls reach the Cloud API provider request', asyn
     {
       model: 'kling-3-motion-control',
       prompt: 'Keep the identity and follow the motion.',
-      images: ['https://media.cloud.example/inputs/character.png'],
-      reference_videos: ['https://media.cloud.example/inputs/motion.mp4'],
+      images: ['https://media.cloud.test/inputs/character.png'],
+      reference_videos: ['https://media.cloud.test/inputs/motion.mp4'],
       resolution: '1080p',
       character_orientation: 'video',
       background_source: 'input_image',

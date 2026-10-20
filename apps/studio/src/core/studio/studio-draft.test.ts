@@ -15,14 +15,14 @@ const item = (
   modelId: 'gpt-image-2',
   modelName: 'GPT Image 2',
   mediaType: 'image',
-  resultUrl: 'https://media.cloud.example/out.png',
+  resultUrl: 'https://media.cloud.test/out.png',
   resultText: null,
   paramsLabel: '9:16 · 1K',
   aspectRatio: '9:16',
   outputQuality: '1k',
   mode: null,
   duration: null,
-  referenceImages: ['https://media.cloud.example/ref.png'],
+  referenceImages: ['https://media.cloud.test/ref.png'],
   referenceVideos: [],
   error: null,
   createdAt: new Date().toISOString(),
@@ -40,5 +40,5 @@ test('reuses a history item back into the studio composer draft', () => {
   assert.equal(next.draft.prompt, 'A coastal village');
   assert.equal(next.draft.modelId, 'gpt-image-2');
   assert.equal(next.draft.aspectRatio, '9:16');
-  assert.deepEqual(next.referenceUrls, ['https://media.cloud.example/ref.png']);
+  assert.deepEqual(next.referenceUrls, ['https://media.cloud.test/ref.png']);
 });

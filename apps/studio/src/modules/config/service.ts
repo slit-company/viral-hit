@@ -60,7 +60,6 @@ export async function getAllConfigs(): Promise<ConfigMap> {
 
 /** Provider and upload settings writable from the local workspace dialog. */
 const WRITABLE_CONFIG_KEYS: ReadonlySet<string> = new Set([
-  'CLOUD_API_BASE_URL',
   'CLOUD_API_KEY',
   'WORKSPACE_STORAGE_MODE',
   'R2_REGION',

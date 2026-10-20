@@ -10,7 +10,7 @@ import {
 import { getWorkspaceEffectRegistryEntryByEffectId } from '@/core/effects/effect-registry';
 import { S3Provider } from '@/core/workspace-storage/provider/s3';
 import type { StorageConfig } from '@/core/workspace-storage/types';
-import { DEFAULT_CLOUD_API_BASE_URL } from '@/core/creative-canvas/providers/provider-config';
+import { requireCloudApiBaseUrl } from '@/core/generation-providers/cloud-api-endpoint.server';
 import { validateStorageEndpoint } from '@/core/workspace-storage/endpoint-policy';
 import {
   readRequestFormDataWithLimit,
@@ -67,13 +67,13 @@ const readErrorMessage = (value: unknown) => {
 
 async function uploadToCloudApi(file: File) {
   const apiKey = await getConfig('CLOUD_API_KEY');
-  if (!apiKey) throw new Error('Connect a Cloud API API key before uploading files');
+  if (!apiKey) throw new Error('Connect a Cloud API key before uploading files');
 
   const formData = new FormData();
   formData.set('file', file, file.name);
   formData.set('purpose', 'input');
   const response = await fetch(
-    `${DEFAULT_CLOUD_API_BASE_URL}/v1/files`,
+    `${requireCloudApiBaseUrl()}/v1/files`,
     {
       method: 'POST',
       headers: { Authorization: `Bearer ${apiKey}` },

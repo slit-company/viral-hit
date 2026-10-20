@@ -14,7 +14,7 @@ export const cloudApiGenerationProvider: GenerationProviderDefinition = {
   createAdapter: (effect) => new CloudApiAdapter(effect),
   assertConfigured: async () => {
     if (!(await getConfig('CLOUD_API_KEY'))) {
-      throw new Error('Connect a Cloud API API key before generating.');
+      throw new Error('Connect a Cloud API key before generating.');
     }
   },
   validateInput: (effect, input) => {

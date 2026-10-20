@@ -16,7 +16,7 @@ export async function loadCreateProjectRoute(
   const messageLocale = normalizeLocale(locale);
   const projectName = resolvedPrompt
     ? resolvedPrompt.slice(0, 48)
-    : m['Cloud API.project.defaultName']({}, { locale: messageLocale });
+    : m['Projects.project.defaultName']({}, { locale: messageLocale });
 
   return {
     locale,

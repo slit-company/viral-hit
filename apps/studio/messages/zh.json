@@ -96,7 +96,7 @@
       },
       "console": {
         "eyebrow": "生成控制台",
-        "title": "Cloud API 创作台",
+        "title": "Viral Hit 创作台",
         "referenceBound": "已绑定参考素材",
         "nodeBound": "已选中节点"
       },
@@ -687,7 +687,7 @@
         "triggerConfiguredLabel": "API 配置 — Cloud API 已连接",
         "loadingConnection": "正在读取 Cloud API 连接",
         "title": "连接配置",
-        "description": "需要使用远程生成模型时，连接你的 Cloud API API Key。",
+        "description": "需要使用远程生成模型时，连接你的 Cloud API Key。",
         "providerTab": "AI Provider",
         "storageTab": "存储",
         "activeProvider": "当前提供商",
@@ -697,11 +697,10 @@
         "mediaLabel": "支持类型",
         "mediaValue": "图片 + 视频",
         "keyLabel": "API Key",
-        "keyPlaceholder": "请输入 Cloud API API Key",
+        "keyPlaceholder": "请输入 Cloud API Key",
         "save": "保存设置",
         "saving": "保存中…",
         "saved": "API Key 已保存",
-        "getKey": "获取 Cloud API API Key →",
         "storage": {
           "intro": "默认使用 Cloud API Files，也可以接入你自己的公网存储桶。",
           "managedTitle": "Cloud API Files",
@@ -726,11 +725,12 @@
           "save": "保存",
           "saving": "保存中…",
           "saved": "存储配置已保存"
-        }
+        },
+        "endpointMissing": "托管生成未开启。请先在服务器上将 VIRAL_HIT_CLOUD_API_URL 设置为兼容的 Cloud API 端点，再在此添加密钥。"
       }
     }
   },
-  "Cloud API": {
+  "Projects": {
     "workspace": {
       "scope": "历史",
       "subtitle": "从这里新建项目，或者继续处理之前的历史画布。",

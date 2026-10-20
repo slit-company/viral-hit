@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import { resolveOutputMedia } from './output-media';
-import { isOfficialCloudApiMediaUrl } from './cloud-api-media-url';
+import { isCloudApiMediaUrl } from './cloud-api-media-url';
 import { getGenerationById } from './record-generation';
 import {
   LOCAL_PROJECT_ASSET_BUCKET,
@@ -137,7 +137,7 @@ export async function persistEffectOutputIfNeeded({
   const localUrlByProviderUrl = new Map<string, string>();
 
   for (const { url, type, role } of providerEntries) {
-    if (!isOfficialCloudApiMediaUrl(url)) {
+    if (!isCloudApiMediaUrl(url)) {
       throw new Error('Generated media URL is not an approved Cloud API asset');
     }
     const response = await fetch(url, {

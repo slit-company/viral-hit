@@ -18,9 +18,9 @@ test('maps a stored generation onto the studio feed card', () => {
       mode: 'fast',
       aspect_ratio: '9:16',
       wmOutputQuality: '1k',
-      image_urls: ['https://media.cloud.example/inputs/ref.png'],
+      image_urls: ['https://media.cloud.test/inputs/ref.png'],
     },
-    output: { result_url: 'https://media.cloud.example/outputs/gen-1.mp4' },
+    output: { result_url: 'https://media.cloud.test/outputs/gen-1.mp4' },
     error: null,
     createdAt: new Date('2026-08-22T00:00:00.000Z'),
   });
@@ -28,12 +28,12 @@ test('maps a stored generation onto the studio feed card', () => {
   assert.equal(item.modelId, 'veo-3.1');
   assert.equal(item.modelName, 'Veo 3.1');
   assert.equal(item.mediaType, 'video');
-  assert.equal(item.resultUrl, 'https://media.cloud.example/outputs/gen-1.mp4');
+  assert.equal(item.resultUrl, 'https://media.cloud.test/outputs/gen-1.mp4');
   assert.equal(item.prompt, 'A quiet coastal village');
   assert.equal(item.paramsLabel, 'Fast · 9:16 · 1K');
   assert.equal(item.aspectRatio, '9:16');
   assert.deepEqual(item.referenceImages, [
-    'https://media.cloud.example/inputs/ref.png',
+    'https://media.cloud.test/inputs/ref.png',
   ]);
 });
 
@@ -44,7 +44,7 @@ test('maps video analysis text, depth, and source video onto the studio feed', (
     submittedPrompt: 'Find continuity issues',
     effectId: VIDEO_ANALYSIS_EFFECT_ID,
     input: {
-      video_url: 'https://media.cloud.example/inputs/review.mp4',
+      video_url: 'https://media.cloud.test/inputs/review.mp4',
       analysis_depth: 'deep',
       max_output_tokens: 4096,
     },
@@ -58,7 +58,7 @@ test('maps video analysis text, depth, and source video onto the studio feed', (
   assert.equal(item.resultText, 'One continuity issue at 00:12.');
   assert.equal(item.paramsLabel, null);
   assert.deepEqual(item.referenceVideos, [
-    'https://media.cloud.example/inputs/review.mp4',
+    'https://media.cloud.test/inputs/review.mp4',
   ]);
 });
 

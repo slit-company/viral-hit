@@ -1,5 +1,5 @@
 import { getConfig } from '@/modules/config/service';
-import { DEFAULT_CLOUD_API_BASE_URL } from '@/core/creative-canvas/providers/provider-config';
+import { requireCloudApiBaseUrl } from '@/core/generation-providers/cloud-api-endpoint.server';
 import { uploadCloudApiInputFile } from '@/core/effects/cloud-api-input-upload';
 import { validateStorageEndpoint } from '@/core/workspace-storage/endpoint-policy';
 import { S3Provider } from '@/core/workspace-storage/provider/s3';
@@ -117,10 +117,10 @@ export async function uploadManagedGenerationInput({
   }
   const apiKey = await getConfig('CLOUD_API_KEY');
   if (!apiKey) {
-    throw new Error('Connect a Cloud API API key before uploading files');
+    throw new Error('Connect a Cloud API key before uploading files');
   }
   const result = await uploadCloudApiInputFile({
-    baseUrl: DEFAULT_CLOUD_API_BASE_URL,
+    baseUrl: requireCloudApiBaseUrl(),
     apiKey,
     body,
     contentType,

@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { respData, respErr } from '@/lib/resp';
 import { getConfig, saveConfigs } from '@/modules/config/service';
-import { DEFAULT_CLOUD_API_BASE_URL } from '@/core/creative-canvas/providers/provider-config';
+import { getCloudApiBaseUrl, CLOUD_API_URL_ENV } from '@/core/generation-providers/cloud-api-endpoint.server';
 import { maskApiKeyPreview } from '@/lib/mask-api-key';
 import { validateTrustedLocalJsonMutation } from '@/lib/trusted-local-request';
 import {
@@ -11,15 +11,15 @@ import {
 } from '@/lib/request-body-limit';
 
 /**
- * Workspace-level Cloud API provider configuration. The dialog pre-fills the
- * official endpoint so a local user only has to paste an API key.
+ * Workspace-level Cloud API key. The endpoint is read-only server configuration
+ * so a saved key is only sent to the operator's chosen origin.
  */
 async function GET({ request }: { request: Request }) {
   try {
     const apiKey = (await getConfig('CLOUD_API_KEY')) || '';
 
     return respData({
-      baseUrl: DEFAULT_CLOUD_API_BASE_URL,
+      baseUrl: getCloudApiBaseUrl(),
       apiKeyConfigured: Boolean(apiKey),
       apiKeyPreview: apiKey ? maskApiKeyPreview(apiKey) : '',
     });
@@ -47,15 +47,16 @@ async function POST({ request }: { request: Request }) {
     if (typeof body.apiKey === 'string' && body.apiKey.trim()) {
       next.CLOUD_API_KEY = body.apiKey.trim();
     }
-    next.CLOUD_API_BASE_URL = DEFAULT_CLOUD_API_BASE_URL;
+    const baseUrl = getCloudApiBaseUrl();
+    if (!baseUrl) return respErr(`Set ${CLOUD_API_URL_ENV} on the server first`, 400);
 
     const apiKey =
       next.CLOUD_API_KEY ||
       (await getConfig('CLOUD_API_KEY')) ||
       '';
-    if (!apiKey) return respErr('Cloud API API key is required', 400);
+    if (!apiKey) return respErr('Cloud API key is required', 400);
 
-    const testResponse = await fetch(`${DEFAULT_CLOUD_API_BASE_URL}/v1/usage`, {
+    const testResponse = await fetch(`${baseUrl}/v1/usage`, {
       headers: { Authorization: `Bearer ${apiKey}` },
       signal: AbortSignal.timeout(15_000),
     });

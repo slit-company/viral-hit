@@ -1,3 +1,4 @@
+import { requireCloudApiBaseUrl } from '@/core/generation-providers/cloud-api-endpoint.server';
 import { z } from 'zod';
 
 import { getCreativeCanvasProviderServerConfig } from '@/core/creative-canvas/providers/provider-config';
@@ -7,7 +8,7 @@ import {
 } from '@/core/effects/cloud-api-model-contract';
 import { ensureMotionControlInputUrls } from '@/core/effects/cloud-api-input-upload';
 import {
-  isOfficialCloudApiMediaUrl,
+  isCloudApiMediaUrl,
   isPublicHttpMediaUrl,
 } from '@/core/effects/cloud-api-media-url';
 import { VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS } from '@/core/effects/video-analysis';
@@ -588,7 +589,7 @@ export const normalizeCloudApiTaskResult = (task: CloudApiTask): GenerationResul
     .filter((item): item is string => Boolean(item));
   const r2Url = readString(task.output?.r2_url);
   const untrustedMediaUrl = [...resultUrls, ...(r2Url ? [r2Url] : [])].find(
-    (url) => !isOfficialCloudApiMediaUrl(url)
+    (url) => !isCloudApiMediaUrl(url)
   );
   if (untrustedMediaUrl) {
     return {
@@ -677,13 +678,10 @@ const readBoundedJson = async (response: Response) => {
 
 export class CloudApiAdapter extends BaseAdapter {
   private async resolveConfig() {
-    const [baseUrl, apiKey] = await Promise.all([
-      getConfig('CLOUD_API_BASE_URL'),
-      getConfig('CLOUD_API_KEY'),
-    ]);
+    const apiKey = await getConfig('CLOUD_API_KEY');
     return getCreativeCanvasProviderServerConfig({
       providerId: 'cloud-api',
-      baseUrl,
+      baseUrl: requireCloudApiBaseUrl(),
       apiKey,
     });
   }

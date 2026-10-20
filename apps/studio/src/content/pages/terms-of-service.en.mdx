@@ -1,95 +1,39 @@
 export const meta = {
   title: 'Viral Hit Terms of Use',
-  description: 'Terms for using the Viral Hit open-source workspace and its connection to Cloud API.',
-  updated_at: '2026-08-22',
+  description: 'Terms for using the Viral Hit open-source creative workspace.',
+  updated_at: '2026-10-20',
 }
 
-These Terms of Use govern your use of the [official Viral Hit website](https://github.com/slit-company/viral-hit), distribution, and open-source workspace. By using Viral Hit, you agree to these Terms. If you do not agree, do not use the official website or services.
-
-Viral Hit is an open-source, local-first AI canvas maintained by Viral Hit contributors. In these Terms, “Viral Hit” means the workspace software and official Viral Hit surfaces. “Cloud API” means the separate hosted API service available at [cloud.example](https://cloud.example).
+These terms cover the Viral Hit source code, releases and repository. By using Viral Hit you agree to them.
 
 ## 1. Open-source software
 
-The Viral Hit source code is provided under the Apache License 2.0. Your rights to use, copy, modify, and distribute the source code are governed by that license. If these Terms conflict with the Apache License 2.0 with respect to the source code, the license controls.
+Viral Hit is released under the Apache License 2.0. Your rights to use, copy, modify and distribute the code are governed by that license, and the license controls if these terms conflict with it.
 
+## 2. Your installation
 
-## 2. Local-first workspace
+Viral Hit runs on a device or server you control. You are responsible for that installation, its database and media files, backups, network exposure and access controls. If you make it available to other people, you operate that deployment and must give its users your own terms and privacy notice.
 
-The open-source distribution is designed to run locally or in an environment you control. It does not include Cloud API account creation, payment processing, subscriptions, a local credit ledger, or an API-key issuing service.
+## 3. Connected services
 
-You are responsible for your installation, device, database, backups, network exposure, access controls, and deployment security. If you make Viral Hit available to other people, you become the operator of that deployment and are responsible for the notices, permissions, security, data handling, and legal compliance required for your users.
+Viral Hit can connect to services you choose and configure, such as a Cloud API endpoint, a ComfyUI server, an ima2 server, YouTube or Instagram. Each service is separate and governed by its own terms and privacy policy. Viral Hit sends data to a service only when you run an action that needs it, such as a generation, a reference download or an approved publication.
 
-## 3. Cloud API services
+## 4. Credentials
 
-Viral Hit can connect to Cloud API for image, video, and other supported generation workflows. Cloud API accounts, API keys, credits, billing, files, hosted outputs, logs, webhooks, and model access are separate hosted services governed by the [Cloud API Terms of Service](https://cloud.example/terms-of-service) and [Cloud API Privacy Policy](https://cloud.example/privacy-policy).
+Protect the API keys, OAuth connections, storage credentials and encryption keys you connect. Viral Hit stores provider secrets encrypted on the server. Rotate any credential you believe has been exposed.
 
-These Terms do not replace the Cloud API Terms of Service. When you use a Cloud API API key through Viral Hit, both these Terms and the applicable Cloud API terms apply to their respective services.
+## 5. Inputs and outputs
 
-## 4. Credentials and security
-
-You are responsible for protecting API keys, storage credentials, encryption keys, devices, and any other credentials connected to Viral Hit. Do not expose permanent API keys in client-side code, public repositories, screenshots, shared projects, or untrusted deployments.
-
-You are responsible for activity performed with your credentials. If you believe a credential has been exposed or used without authorization, revoke or rotate it promptly and contact the relevant provider.
-
-## 5. Inputs, uploads, and outputs
-
-You retain your rights in prompts, images, videos, audio, project data, and other material you provide to Viral Hit (“Inputs”). You must have all rights, permissions, and consents required to use and submit those Inputs.
-
-When you request a generation, Viral Hit may transmit the selected Inputs and generation settings to Cloud API, configured storage, and the upstream model providers needed to complete your request. You authorize that processing solely as needed to provide the requested workflow.
-
-To the extent permitted by applicable law and relevant provider terms, you may use the outputs generated for you. AI outputs may be inaccurate, incomplete, delayed, unavailable, or similar to outputs generated for other users. You are responsible for reviewing outputs before publishing, distributing, or using them commercially.
+You keep your rights in the prompts, media and project data you use, and you must have the rights and consent needed to use them. Generated outputs may be inaccurate or similar to other outputs; review them before publishing or commercial use.
 
 ## 6. Acceptable use
 
-You may not use Viral Hit or its official integrations to:
+Do not use Viral Hit to break the law or infringe others' rights; to use a person's face, voice or likeness without consent; to create deceptive impersonation, non-consensual intimate content or any sexual content involving minors; to distribute malware; or to bypass the safety, billing or rate limits of a connected service.
 
-- Violate applicable law, regulation, contractual obligations, or third-party rights.
-- Upload or generate unlawful, abusive, exploitative, deceptive, infringing, or harmful content.
-- Use a person's face, voice, likeness, identity, or private material without the rights and consent required for that use.
-- Create fraudulent impersonation, deceptive deepfakes, non-consensual intimate content, sexual content involving minors, harassment, or content intended to mislead people about a real person's actions or statements.
-- Submit malware, stolen credentials, or material that creates an unreasonable security or privacy risk.
-- Bypass safety, authentication, billing, usage, storage, or rate-limit controls.
-- Probe, attack, overload, disrupt, or gain unauthorized access to Viral Hit, Cloud API, model providers, or connected infrastructure.
-- Use third-party models or services in violation of their applicable terms.
+## 7. No warranty
 
-We may restrict access to official Viral Hit services or integrations when we reasonably believe their use creates legal, safety, security, payment, or operational risk. Your rights to independently use the open-source code remain governed by the Apache License 2.0.
+Viral Hit is provided "as is", without warranties of any kind. To the maximum extent permitted by law, its contributors are not liable for indirect or consequential damages, lost data, provider failures, unauthorized credential use, or claims arising from inputs or outputs.
 
-## 7. Third-party models and services
+## 8. Changes and contact
 
-Viral Hit may depend on Cloud API, upstream AI models, storage services, hosting providers, and other third-party services. We do not control their availability, processing time, output quality, retention practices, or terms. Your use of those services may be subject to additional agreements between you and the relevant provider.
-
-Third-party names and trademarks belong to their respective owners. References to them do not imply affiliation or endorsement.
-
-## 8. Availability and changes
-
-Viral Hit and its integrations may change over time. Features, model availability, limits, storage behavior, or provider compatibility may be added, modified, suspended, or removed. We do not guarantee uninterrupted operation, permanent compatibility with any provider, exact processing times, or continued availability of any model.
-
-## 9. Self-hosting and modified versions
-
-If you self-host, fork, or redistribute Viral Hit, you are responsible for your changes and operation. You must preserve notices required by applicable open-source licenses and must not represent a modified or third-party deployment as an official Viral Hit or Cloud API service without written permission.
-
-Operators who provide Viral Hit to other users must publish their own terms and privacy notice that accurately describe their deployment, data practices, providers, billing, and contact details.
-
-## 10. Disclaimers
-
-To the maximum extent permitted by law, Viral Hit is provided “as is” and “as available,” without warranties of any kind. We do not warrant that Viral Hit or AI outputs will be accurate, lawful, non-infringing, secure, uninterrupted, error-free, or fit for a particular purpose.
-
-You are responsible for deciding whether Viral Hit, its providers, and generated outputs are suitable for your intended use. Nothing generated through Viral Hit is professional, legal, medical, financial, or other regulated advice.
-
-## 11. Limitation of liability
-
-To the maximum extent permitted by law, Viral Hit and its maintainers will not be liable for indirect, incidental, special, consequential, exemplary, or punitive damages; loss of profits, revenue, data, credits, goodwill, or business opportunity; provider failures; unauthorized credential use; or claims arising from Inputs or outputs.
-
-Some jurisdictions do not allow certain exclusions or limitations, so parts of this section may not apply to you.
-
-## 12. Ending use
-
-You may stop using Viral Hit at any time. In a local installation, you control deletion of the local application data and files. Ending use of Viral Hit does not automatically close a Cloud API account, revoke an API key, delete provider data, or resolve an outstanding Cloud API balance; those actions must be completed with the relevant service.
-
-## 13. Changes to these Terms
-
-We may update these Terms as Viral Hit evolves. We will update the date above when changes are published. Material changes may also be announced through the project repository or [official website](https://github.com/slit-company/viral-hit). Your continued use after an update means you accept the revised Terms to the extent permitted by law.
-
-## 14. Contact
-
-For questions about Viral Hit or these Terms, contact [support@cloud.example](mailto:support@cloud.example) or open an issue in the official Viral Hit repository. Questions about Cloud API accounts, billing, or API processing should be directed to Cloud API support.
+These terms may change as the project evolves; the date above shows the latest version. Questions and reports go to the [Viral Hit repository](https://github.com/slit-company/viral-hit/issues).

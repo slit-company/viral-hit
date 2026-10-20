@@ -60,9 +60,9 @@ test('Wan 3.0 keeps image, video, and audio reference field names', () => {
     model: 'wan-3.0-prime',
     input: {
       prompt: 'Match the reference motion',
-      image_urls: ['https://media.cloud.example/input.png'],
-      video_urls: ['https://media.cloud.example/reference.mp4'],
-      audio_urls: ['https://media.cloud.example/reference.mp3'],
+      image_urls: ['https://media.cloud.test/input.png'],
+      video_urls: ['https://media.cloud.test/reference.mp4'],
+      audio_urls: ['https://media.cloud.test/reference.mp3'],
       wmDuration: '30s',
       aspect_ratio: '9:16',
       wmOutputQuality: '1080p',
@@ -72,9 +72,9 @@ test('Wan 3.0 keeps image, video, and audio reference field names', () => {
   assert.deepEqual(request.body, {
     model: 'wan-3.0-prime',
     prompt: 'Match the reference motion',
-    images: ['https://media.cloud.example/input.png'],
-    reference_videos: ['https://media.cloud.example/reference.mp4'],
-    reference_audios: ['https://media.cloud.example/reference.mp3'],
+    images: ['https://media.cloud.test/input.png'],
+    reference_videos: ['https://media.cloud.test/reference.mp4'],
+    reference_audios: ['https://media.cloud.test/reference.mp3'],
     aspect_ratio: '9:16',
     duration: 30,
     resolution: '1080p',
@@ -101,7 +101,7 @@ test('HappyHorse requires image input and publishes that requirement to agents',
     model: 'happyhorse-1.1',
     input: {
       prompt: 'Animate the subject',
-      image_urls: ['https://media.cloud.example/subject.png'],
+      image_urls: ['https://media.cloud.test/subject.png'],
       wmDuration: '15s',
       aspect_ratio: '3:4',
       wmOutputQuality: '1080p',
@@ -110,7 +110,7 @@ test('HappyHorse requires image input and publishes that requirement to agents',
   assert.deepEqual(request.body, {
     model: 'happyhorse-1.1',
     prompt: 'Animate the subject',
-    images: ['https://media.cloud.example/subject.png'],
+    images: ['https://media.cloud.test/subject.png'],
     aspect_ratio: '3:4',
     duration: 15,
     resolution: '1080p',
@@ -124,8 +124,8 @@ test('MiniMax H3 Max preserves ordered frames, upper-case resolution, and seed',
     input: {
       prompt: 'Move from first frame to last frame',
       image_urls: [
-        'https://media.cloud.example/first.png',
-        'https://media.cloud.example/last.png',
+        'https://media.cloud.test/first.png',
+        'https://media.cloud.test/last.png',
       ],
       wmDuration: '5s',
       wmOutputQuality: '480p',
@@ -138,8 +138,8 @@ test('MiniMax H3 Max preserves ordered frames, upper-case resolution, and seed',
     model: 'minimax-h3-max-turbo',
     prompt: 'Move from first frame to last frame',
     images: [
-      'https://media.cloud.example/first.png',
-      'https://media.cloud.example/last.png',
+      'https://media.cloud.test/first.png',
+      'https://media.cloud.test/last.png',
     ],
     duration: 5,
     resolution: '480P',
@@ -179,7 +179,7 @@ test('new model reference limits fail before an upstream request is submitted', 
         prompt: 'Too many references',
         image_urls: Array.from(
           { length: 17 },
-          (_, index) => `https://media.cloud.example/image-${index}.png`
+          (_, index) => `https://media.cloud.test/image-${index}.png`
         ),
       },
     }),
@@ -193,7 +193,7 @@ test('new model reference limits fail before an upstream request is submitted', 
         prompt: 'Too many videos',
         video_urls: Array.from(
           { length: 6 },
-          (_, index) => `https://media.cloud.example/video-${index}.mp4`
+          (_, index) => `https://media.cloud.test/video-${index}.mp4`
         ),
       },
     }),
@@ -207,7 +207,7 @@ test('new model reference limits fail before an upstream request is submitted', 
         prompt: 'Too many frames',
         image_urls: Array.from(
           { length: 3 },
-          (_, index) => `https://media.cloud.example/frame-${index}.png`
+          (_, index) => `https://media.cloud.test/frame-${index}.png`
         ),
       },
     }),

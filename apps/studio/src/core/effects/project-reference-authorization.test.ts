@@ -42,8 +42,8 @@ const card = ({
   }) as CanvasCard;
 
 test('treats saved canvas media as project-authorized generation references', () => {
-  const canvasVideo = 'https://media.cloud.example/inputs/canvas-video.mp4';
-  const projectImage = 'https://media.cloud.example/outputs/project-image.png';
+  const canvasVideo = 'https://media.cloud.test/inputs/canvas-video.mp4';
+  const projectImage = 'https://media.cloud.test/outputs/project-image.png';
   const unrelated = 'https://attacker.example/unrelated.mp4';
   const snapshot: ProjectSnapshotDocument = {
     version: 3,
@@ -65,7 +65,7 @@ test('treats saved canvas media as project-authorized generation references', ()
 });
 
 test('does not authorize a URL merely because another canvas URL is trusted', () => {
-  const canvasVideo = 'https://media.cloud.example/inputs/canvas-video.mp4';
+  const canvasVideo = 'https://media.cloud.test/inputs/canvas-video.mp4';
   const unknown = 'https://attacker.example/unknown.mp4';
   const snapshot: ProjectSnapshotDocument = {
     version: 3,

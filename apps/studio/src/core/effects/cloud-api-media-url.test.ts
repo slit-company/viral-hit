@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  isOfficialCloudApiInputUrl,
-  isOfficialCloudApiMediaUrl,
+  isCloudApiInputUrl,
+  isCloudApiMediaUrl,
   isPublicHttpMediaUrl,
 } from './cloud-api-media-url';
 
@@ -33,32 +33,32 @@ test('accepts arbitrary public provider media URLs without requiring an official
 
 test('allows only the official Cloud API media origin', () => {
   assert.equal(
-    isOfficialCloudApiMediaUrl(
-      'https://media.cloud.example/outputs/task_123/result.mp4'
+    isCloudApiMediaUrl(
+      'https://media.cloud.test/outputs/task_123/result.mp4'
     ),
     true
   );
 
   for (const url of [
-    'http://media.cloud.example/output.mp4',
-    'https://media.cloud.example.evil.example/output.mp4',
+    'http://media.cloud.test/output.mp4',
+    'https://media.cloud.test.evil.example/output.mp4',
     'https://127.0.0.1/output.mp4',
-    'https://media.cloud.example:8443/output.mp4',
-    'https://user:pass@media.cloud.example/output.mp4',
+    'https://media.cloud.test:8443/output.mp4',
+    'https://user:pass@media.cloud.test/output.mp4',
     'not-a-url',
   ]) {
-    assert.equal(isOfficialCloudApiMediaUrl(url), false, url);
+    assert.equal(isCloudApiMediaUrl(url), false, url);
   }
 });
 
 test('treats only /inputs/ objects as Cloud API input files', () => {
   assert.equal(
-    isOfficialCloudApiInputUrl('https://media.cloud.example/inputs/character.png'),
+    isCloudApiInputUrl('https://media.cloud.test/inputs/character.png'),
     true
   );
   assert.equal(
-    isOfficialCloudApiInputUrl(
-      'https://media.cloud.example/outputs/task_123/result.png'
+    isCloudApiInputUrl(
+      'https://media.cloud.test/outputs/task_123/result.png'
     ),
     false
   );

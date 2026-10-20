@@ -1,6 +1,6 @@
 import {
-  isOfficialCloudApiInputUrl,
-  isOfficialCloudApiMediaUrl,
+  isCloudApiInputUrl,
+  isCloudApiMediaUrl,
   isPublicHttpMediaUrl,
 } from './cloud-api-media-url';
 import {
@@ -94,9 +94,9 @@ export const ensureCloudApiInputUrl = async ({
   baseUrl: string;
   apiKey: string;
 }) => {
-  if (isOfficialCloudApiInputUrl(url)) return url;
-  if (isPublicHttpMediaUrl(url) && !isOfficialCloudApiMediaUrl(url)) return url;
-  if (!isOfficialCloudApiMediaUrl(url)) {
+  if (isCloudApiInputUrl(url)) return url;
+  if (isPublicHttpMediaUrl(url) && !isCloudApiMediaUrl(url)) return url;
+  if (!isCloudApiMediaUrl(url)) {
     throw new Error(
       'Kling Motion Control inputs must use public HTTP(S) URLs'
     );

@@ -1,4 +1,4 @@
-import { isOfficialCloudApiMediaUrl } from '@/core/effects/cloud-api-media-url';
+import { isCloudApiMediaUrl } from '@/core/effects/cloud-api-media-url';
 import {
   createLocalProviderAssetId,
   LOCAL_MEDIA_DOWNLOAD_TIMEOUT_MS,
@@ -40,7 +40,7 @@ const localizeProject = async (projectId: string) => {
   const cardsWithRemoteMedia = state.snapshot.cards.filter(
     (card): card is typeof card & { type: 'image' | 'video'; url: string } =>
       (card.type === 'image' || card.type === 'video') &&
-      Boolean(card.url && isOfficialCloudApiMediaUrl(card.url))
+      Boolean(card.url && isCloudApiMediaUrl(card.url))
   );
   if (cardsWithRemoteMedia.length === 0) return { cards: 0, files: 0 };
 

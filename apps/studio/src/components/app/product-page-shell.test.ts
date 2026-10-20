@@ -47,15 +47,15 @@ test('workspace header keeps mode switching, shared assets, and API configuratio
   assert.doesNotMatch(shellSource, /getUserInitial/);
 });
 
-test('API configuration presets the Cloud API endpoint and saves key + host', () => {
+test('API configuration shows the server endpoint and saves only the key', () => {
   assert.match(apiConfigSource, /getCreativeCanvasProviderPublicConfig/);
-  assert.match(apiConfigSource, /DEFAULT_CLOUD_API_BASE_URL/);
+  assert.match(apiConfigSource, /endpointMissing/);
+  assert.doesNotMatch(apiConfigSource, /baseUrl: (?:apiKey|nextKey)/);
   assert.match(apiConfigSource, /\/api\/config\/cloud-api/);
   assert.match(apiConfigSource, /\/api\/config\/storage/);
   assert.match(apiConfigSource, /'cloud-api' \| 's3'/);
   assert.match(apiConfigSource, /apiGet<StorageConfigState>\('\/api\/config\/storage'\)/);
   assert.match(apiConfigSource, /apiPost\('\/api\/config\/storage'/);
-  assert.match(apiConfigSource, /https:\/\/cloud-api\.io\/dashboard\/apikeys/);
   assert.doesNotMatch(apiConfigSource, /apiJson(?:Get|Post).*\/api\/config\/storage/);
 });
 

@@ -4,19 +4,19 @@ import test from 'node:test';
 import { ensureCloudApiInputUrl } from './cloud-api-input-upload';
 
 test('keeps official Cloud API input URLs and rehosts generated outputs', async () => {
-  const inputUrl = 'https://media.cloud.example/inputs/character.png';
+  const inputUrl = 'https://media.cloud.test/inputs/character.png';
   assert.equal(
     await ensureCloudApiInputUrl({
       url: inputUrl,
       kind: 'image',
-      baseUrl: 'https://api.cloud.example',
+      baseUrl: 'https://api.cloud.test',
       apiKey: 'sk-test',
     }),
     inputUrl
   );
 
   const originalFetch = globalThis.fetch;
-  const uploadedUrl = 'https://media.cloud.example/inputs/file_1.png';
+  const uploadedUrl = 'https://media.cloud.test/inputs/file_1.png';
   globalThis.fetch = async (input) => {
     const url = String(input);
     if (url.includes('/outputs/')) {
@@ -36,9 +36,9 @@ test('keeps official Cloud API input URLs and rehosts generated outputs', async 
   try {
     assert.equal(
       await ensureCloudApiInputUrl({
-        url: 'https://media.cloud.example/outputs/task/result.png',
+        url: 'https://media.cloud.test/outputs/task/result.png',
         kind: 'image',
-        baseUrl: 'https://api.cloud.example',
+        baseUrl: 'https://api.cloud.test',
         apiKey: 'sk-test',
       }),
       uploadedUrl
@@ -54,7 +54,7 @@ test('accepts public provider URLs without requiring the official Cloud API orig
     await ensureCloudApiInputUrl({
       url: publicUrl,
       kind: 'image',
-      baseUrl: 'https://api.cloud.example',
+      baseUrl: 'https://api.cloud.test',
       apiKey: 'sk-test',
     }),
     publicUrl
@@ -67,7 +67,7 @@ test('rejects private Motion Control media URLs', async () => {
       ensureCloudApiInputUrl({
         url: 'http://127.0.0.1/character.png',
         kind: 'image',
-        baseUrl: 'https://api.cloud.example',
+        baseUrl: 'https://api.cloud.test',
         apiKey: 'sk-test',
       }),
     /public HTTP\(S\) URLs/

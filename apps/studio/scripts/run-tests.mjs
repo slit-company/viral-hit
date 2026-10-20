@@ -22,6 +22,12 @@ const result = spawnSync(
   {
     cwd: root,
     stdio: 'inherit',
+    // Fixture endpoint for the hosted provider; tests never contact it.
+    env: {
+      ...process.env,
+      VIRAL_HIT_CLOUD_API_URL: 'https://api.cloud.test',
+      VIRAL_HIT_CLOUD_MEDIA_HOST: 'media.cloud.test',
+    },
   }
 );
 

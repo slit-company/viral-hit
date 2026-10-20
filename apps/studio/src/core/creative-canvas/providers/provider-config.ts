@@ -16,28 +16,29 @@ export type CreativeCanvasProviderServerConfig =
     apiKey: string;
   };
 
-export const DEFAULT_CLOUD_API_BASE_URL = 'https://api.cloud.example';
+const LOOPBACK_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 
-export const isOfficialCloudApiBaseUrl = (
-  baseUrl: string | null | undefined
-): boolean => {
+/**
+ * Normalize an operator-provided Cloud API endpoint. HTTPS is required except
+ * for a loopback development server; credentials, queries and fragments are
+ * rejected so the API key is only ever sent to the exact configured origin.
+ */
+export const normalizeCloudApiBaseUrl = (
+  value: string | null | undefined
+): string | null => {
+  const trimmed = value?.trim();
+  if (!trimmed) return null;
   try {
-    const candidate = new URL(baseUrl || DEFAULT_CLOUD_API_BASE_URL);
-    const official = new URL(DEFAULT_CLOUD_API_BASE_URL);
-    const candidatePath = candidate.pathname.replace(/\/+$/, '') || '/';
-    const officialPath = official.pathname.replace(/\/+$/, '') || '/';
-
-    return (
-      candidate.protocol === official.protocol &&
-      candidate.host === official.host &&
-      candidatePath === officialPath &&
-      !candidate.username &&
-      !candidate.password &&
-      !candidate.search &&
-      !candidate.hash
-    );
+    const url = new URL(trimmed);
+    const secure =
+      url.protocol === 'https:' ||
+      (url.protocol === 'http:' && LOOPBACK_HOSTS.has(url.hostname));
+    if (!secure || url.username || url.password || url.search || url.hash) {
+      return null;
+    }
+    return `${url.origin}${url.pathname.replace(/\/+$/, '')}`;
   } catch {
-    return false;
+    return null;
   }
 };
 
@@ -60,7 +61,7 @@ export const getCreativeCanvasProviderPublicConfig = (
 
 export const getCreativeCanvasProviderServerConfig = ({
   providerId,
-  baseUrl: _baseUrl,
+  baseUrl,
   apiKey,
 }: {
   providerId?: string | null;
@@ -71,7 +72,7 @@ export const getCreativeCanvasProviderServerConfig = ({
 
   return {
     ...publicConfig,
-    baseUrl: DEFAULT_CLOUD_API_BASE_URL,
+    baseUrl: normalizeCloudApiBaseUrl(baseUrl) ?? '',
     apiKey: apiKey || '',
   };
 };

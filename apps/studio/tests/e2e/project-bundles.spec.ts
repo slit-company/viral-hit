@@ -76,7 +76,10 @@ test('portable file downloads, imports, reopens, edits and renders through share
   const mcpReview = await mcp(request, 'viral_hit_project_file_inspect', { path });
   const accepted = await request.post(`/api/app/project-bundles/${mcpReview.id}/accept`, { headers, data: { sha256: mcpReview.sha256 } }); expect(accepted.ok()).toBe(true);
   const replay = await mcp(request, 'viral_hit_project_file_accept', { reviewId: mcpReview.id, sha256: mcpReview.sha256 }); expect(replay.replayed).toBe(true);
+  // Keep seeded fixtures within the recent-project list used by later specs.
+  const created = [id, importedId, (await accepted.json()).projectId];
   await page.getByRole('button', { name: 'Project file', exact: true }).click();
   await page.getByLabel('Choose project file', { exact: true }).setInputFiles({ name: 'broken.viralhit.tar', mimeType: 'application/x-tar', buffer: Buffer.from('broken') });
   await expect(page.getByRole('alert')).toBeVisible();
+  const removed = await request.delete('/api/app/projects', { headers, data: { projectIds: created } }); expect(removed.ok()).toBe(true);
 });

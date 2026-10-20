@@ -96,7 +96,7 @@
       },
       "console": {
         "eyebrow": "Generation Console",
-        "title": "Cloud API Studio",
+        "title": "Viral Hit Studio",
         "referenceBound": "Reference attached",
         "nodeBound": "Node selected"
       },
@@ -330,8 +330,8 @@
           "status": {
             "queued": "Queued",
             "generating": "Generating",
-        "ready": "Success",
-        "success": "Success",
+            "ready": "Success",
+            "success": "Success",
             "failed": "Failed"
           },
           "fromCanvas": "From canvas",
@@ -692,16 +692,15 @@
         "storageTab": "Storage",
         "activeProvider": "Active provider",
         "defaultBadge": "Default",
-        "providerDescription": "Cloud API is the default generation backend for this open-source workspace.",
+        "providerDescription": "Cloud API connects a compatible hosted image and video service you configure on the server.",
         "endpointLabel": "Endpoint",
         "mediaLabel": "Media",
         "mediaValue": "Image + video",
         "keyLabel": "API Key",
-        "keyPlaceholder": "Enter your Cloud API API key",
+        "keyPlaceholder": "Enter your Cloud API key",
         "save": "Save settings",
         "saving": "Saving…",
         "saved": "API key saved",
-        "getKey": "Get a Cloud API API key →",
         "storage": {
           "intro": "Use Cloud API Files by default, or connect your own public bucket.",
           "managedTitle": "Cloud API Files",
@@ -726,11 +725,12 @@
           "save": "Save",
           "saving": "Saving…",
           "saved": "Storage configuration saved"
-        }
+        },
+        "endpointMissing": "Hosted generation is off. Set VIRAL_HIT_CLOUD_API_URL on the server to a compatible Cloud API endpoint, then add its key here."
       }
     }
   },
-  "Cloud API": {
+  "Projects": {
     "workspace": {
       "scope": "History",
       "subtitle": "Create a new project here, or continue working on previous canvases.",
@@ -755,7 +755,7 @@
       "localPreviewUser": "Local preview user",
       "localPreviewCanvas": "Local preview canvas",
       "newTitle": "Creating project",
-      "newDescription": "Preparing a shared Cloud API project for your assets.",
+      "newDescription": "Preparing a shared project for your assets.",
       "newErrorTitle": "Project creation failed",
       "retry": "Try again",
       "backToHistory": "Back to history",

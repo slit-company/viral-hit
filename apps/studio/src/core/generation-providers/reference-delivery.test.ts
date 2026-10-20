@@ -11,13 +11,13 @@ test('reuses a generated asset provider URL instead of its local workspace URL',
     publicUrl: '/api/app/projects/project-1/assets/asset-1',
     source: 'provider',
     metadata: {
-      providerUrl: 'https://media.cloud.example/outputs/task-1/0.png',
+      providerUrl: 'https://media.cloud.test/outputs/task-1/0.png',
     },
   };
 
   assert.equal(
     getProviderGenerationAssetUrl(asset),
-    'https://media.cloud.example/outputs/task-1/0.png'
+    'https://media.cloud.test/outputs/task-1/0.png'
   );
   assert.equal(needsManagedGenerationReferenceUpload(asset), false);
 });
@@ -43,7 +43,7 @@ test('never trusts private or non-provider metadata as a delivery URL', () => {
     {
       publicUrl: '/api/app/projects/project-1/assets/asset-4',
       source: 'upload',
-      metadata: { providerUrl: 'https://media.cloud.example/inputs/image.png' },
+      metadata: { providerUrl: 'https://media.cloud.test/inputs/image.png' },
     },
   ]) {
     assert.equal(getProviderGenerationAssetUrl(asset), null);

@@ -56,7 +56,7 @@ test('counts same-origin demo assets as just-in-time uploads', () => {
   );
   assert.equal(isLocalWorkspaceMediaUrl('/demo-assets/character.png'), true);
   assert.equal(
-    isLocalWorkspaceMediaUrl('https://media.cloud.example/inputs/file.png'),
+    isLocalWorkspaceMediaUrl('https://media.cloud.test/inputs/file.png'),
     false
   );
 });
@@ -71,7 +71,7 @@ test('uploads local demo assets through the generation intent', async () => {
         '/demo-assets/character.png'
       ),
       'outfit-05': localCard('outfit-05', '/demo-assets/outfit.png'),
-      'bg-05': localCard('bg-05', 'https://media.cloud.example/keep.png'),
+      'bg-05': localCard('bg-05', 'https://media.cloud.test/keep.png'),
     },
     pendingUploadsByCardId: {},
     projectId: 'project-1',
@@ -83,7 +83,7 @@ test('uploads local demo assets through the generation intent', async () => {
       }),
     uploadFileFromBrowserImpl: async (file) => {
       uploaded.push(file.name);
-      return { url: `https://media.cloud.example/${file.name}`, key: file.name };
+      return { url: `https://media.cloud.test/${file.name}`, key: file.name };
     },
   });
 
@@ -91,6 +91,6 @@ test('uploads local demo assets through the generation intent', async () => {
   assert.equal(promotions.length, 2);
   assert.equal(
     promotions[0]?.uploadResult.url,
-    'https://media.cloud.example/character.png'
+    'https://media.cloud.test/character.png'
   );
 });

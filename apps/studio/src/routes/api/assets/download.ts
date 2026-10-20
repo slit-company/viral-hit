@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { getDb } from '@/core/workspace-lib/db-adapter';
 import { generationAssetLink, generationHistory, userAsset } from '@/config/db/schema';
 import { resolveOutputMedia } from '@/core/effects/output-media';
-import { isOfficialCloudApiMediaUrl } from '@/core/effects/cloud-api-media-url';
+import { isCloudApiMediaUrl } from '@/core/effects/cloud-api-media-url';
 import { and, desc, eq } from 'drizzle-orm';
 
 const getExtensionFromValue = (value: string | null) => {
@@ -94,7 +94,7 @@ async function GET({ request }: { request: Request }) {
     return Response.json({ error: 'Asset not found' }, { status: 404 });
   }
 
-  if (!isOfficialCloudApiMediaUrl(assetUrl)) {
+  if (!isCloudApiMediaUrl(assetUrl)) {
     return Response.json(
       { error: 'Only official Cloud API media can be downloaded in this release' },
       { status: 403 }

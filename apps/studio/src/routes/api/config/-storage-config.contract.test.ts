@@ -28,5 +28,5 @@ test('generation-authorized upload defaults to Cloud API files and can switch to
   assert.match(uploadSource, /generationIntentToken/);
   assert.match(uploadSource, /claimGenerationUploadSlot/);
   assert.match(uploadSource, /completeGenerationUploadSlot/);
-  assert.match(uploadSource, /DEFAULT_CLOUD_API_BASE_URL/);
+  assert.match(uploadSource, /requireCloudApiBaseUrl\(\)/);
 });

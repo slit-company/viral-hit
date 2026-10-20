@@ -12,7 +12,7 @@ directory owns the browser-side generation contract and Canvas domain logic.
   directory. UI lives under `src/components/creative-canvas`.
 - `providers/provider-config.ts` defines the public provider identity and the
   server-only endpoint and credential contract.
-- Cloud API is the default provider and uses `https://api.cloud.example`.
+- Cloud API is the default provider; its endpoint comes from `VIRAL_HIT_CLOUD_API_URL`.
 - API keys remain on the server. Client components may display the provider
   name, but must never receive or persist credentials in a project snapshot.
 

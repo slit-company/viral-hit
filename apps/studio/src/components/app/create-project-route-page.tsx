@@ -27,26 +27,26 @@ export type CreateProjectRouteData = {
 function getCopy(locale: string) {
   const messageLocale = normalizeLocale(locale);
   return {
-    title: m['Cloud API.project.newTitle']({}, { locale: messageLocale }),
-    description: m['Cloud API.project.newDescription'](
+    title: m['Projects.project.newTitle']({}, { locale: messageLocale }),
+    description: m['Projects.project.newDescription'](
       {},
       { locale: messageLocale }
     ),
-    errorTitle: m['Cloud API.project.newErrorTitle'](
+    errorTitle: m['Projects.project.newErrorTitle'](
       {},
       { locale: messageLocale }
     ),
-    retry: m['Cloud API.project.retry']({}, { locale: messageLocale }),
-    startTitle: m['Cloud API.project.startTitle']({}, { locale: messageLocale }),
-    startDescription: m['Cloud API.project.startDescription'](
+    retry: m['Projects.project.retry']({}, { locale: messageLocale }),
+    startTitle: m['Projects.project.startTitle']({}, { locale: messageLocale }),
+    startDescription: m['Projects.project.startDescription'](
       {},
       { locale: messageLocale }
     ),
-    startStudio: m['Cloud API.project.startStudio'](
+    startStudio: m['Projects.project.startStudio'](
       {},
       { locale: messageLocale }
     ),
-    startCanvas: m['Cloud API.project.startCanvas'](
+    startCanvas: m['Projects.project.startCanvas'](
       {},
       { locale: messageLocale }
     ),

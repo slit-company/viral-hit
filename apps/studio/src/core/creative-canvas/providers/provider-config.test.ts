@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import {
-  DEFAULT_CLOUD_API_BASE_URL,
   getCreativeCanvasProviderPublicConfig,
   getCreativeCanvasProviderServerConfig,
-  isOfficialCloudApiBaseUrl,
+  normalizeCloudApiBaseUrl,
   resolveCreativeCanvasProviderId,
 } from './provider-config';
+import { getCloudApiBaseUrl, requireCloudApiBaseUrl } from '@/core/generation-providers/cloud-api-endpoint.server';
 
 test('Cloud API is the default CreativeCanvas generation provider', () => {
   assert.equal(resolveCreativeCanvasProviderId(undefined), 'cloud-api');
@@ -19,25 +19,19 @@ test('Cloud API is the default CreativeCanvas generation provider', () => {
   });
 });
 
-test('default server config points to the production Cloud API endpoint', () => {
-  assert.equal(
-    getCreativeCanvasProviderServerConfig().baseUrl,
-    DEFAULT_CLOUD_API_BASE_URL
-  );
-  assert.equal(
-    getCreativeCanvasProviderServerConfig({
-      baseUrl: 'https://attacker.example',
-      apiKey: 'sk-test',
-    }).baseUrl,
-    DEFAULT_CLOUD_API_BASE_URL
-  );
+test('endpoints must be HTTPS origins without credentials, query or fragment', () => {
+  assert.equal(normalizeCloudApiBaseUrl('https://api.example.com/'), 'https://api.example.com');
+  assert.equal(normalizeCloudApiBaseUrl(' https://api.example.com/v2/ '), 'https://api.example.com/v2');
+  assert.equal(normalizeCloudApiBaseUrl('http://127.0.0.1:8787'), 'http://127.0.0.1:8787');
+  for (const value of [undefined, '', 'not-a-url', 'http://api.example.com', 'https://user:pass@api.example.com',
+    'https://api.example.com/?key=1', 'https://api.example.com/#x', 'ftp://api.example.com']) {
+    assert.equal(normalizeCloudApiBaseUrl(value), null, String(value));
+  }
+  assert.equal(getCreativeCanvasProviderServerConfig({ baseUrl: 'http://attacker.example', apiKey: 'sk' }).baseUrl, '');
 });
 
-test('managed storage eligibility is limited to the official Cloud API billing endpoint', () => {
-  assert.equal(isOfficialCloudApiBaseUrl(undefined), true);
-  assert.equal(isOfficialCloudApiBaseUrl('https://api.cloud.example/'), true);
-  assert.equal(isOfficialCloudApiBaseUrl('https://api.cloud.example/v1'), false);
-  assert.equal(isOfficialCloudApiBaseUrl('https://api.cloud.example.example.com'), false);
-  assert.equal(isOfficialCloudApiBaseUrl('https://provider.example.com'), false);
-  assert.equal(isOfficialCloudApiBaseUrl('not-a-url'), false);
+test('the server endpoint comes only from operator environment', () => {
+  assert.equal(getCloudApiBaseUrl({ VIRAL_HIT_CLOUD_API_URL: 'https://api.example.com/' }), 'https://api.example.com');
+  assert.equal(getCloudApiBaseUrl({}), null);
+  assert.throws(() => requireCloudApiBaseUrl({}), /VIRAL_HIT_CLOUD_API_URL/);
 });

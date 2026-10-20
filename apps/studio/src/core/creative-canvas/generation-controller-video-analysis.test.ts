@@ -13,7 +13,7 @@ const makeCard = (overrides: Partial<CanvasCard>): CanvasCard => ({
   kind: 'asset',
   type: 'video',
   name: 'Source video',
-  url: 'https://media.cloud.example/inputs/source.mp4',
+  url: 'https://media.cloud.test/inputs/source.mp4',
   prompt: '',
   referenceCardIds: [],
   workflowTemplateId: null,
@@ -121,7 +121,7 @@ test('Canvas video analysis accepts a generated video output through @Video', as
       quality: 'standard',
       capturedAt: '2026-08-24T00:00:00.000Z',
     },
-    url: 'https://media.cloud.example/outputs/generated.mp4',
+    url: 'https://media.cloud.test/outputs/generated.mp4',
   });
   const draft = makeCard({
     id: 'analysis-1',
@@ -151,6 +151,6 @@ test('Canvas video analysis accepts a generated video output through @Video', as
 
   assert.equal(
     built.input.video_url,
-    'https://media.cloud.example/outputs/generated.mp4'
+    'https://media.cloud.test/outputs/generated.mp4'
   );
 });

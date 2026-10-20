@@ -35,18 +35,18 @@ test('stores video covers as thumbnails without replacing the main output asset'
     buildOutputStoragePlan({
       effectType: 1,
       output: {
-        video_url: 'https://media.cloud.example/outputs/task-1/result.mp4',
-        cover_url: 'https://media.cloud.example/outputs/task-1/cover.jpg',
+        video_url: 'https://media.cloud.test/outputs/task-1/result.mp4',
+        cover_url: 'https://media.cloud.test/outputs/task-1/cover.jpg',
       },
     }),
     [
       {
-        url: 'https://media.cloud.example/outputs/task-1/result.mp4',
+        url: 'https://media.cloud.test/outputs/task-1/result.mp4',
         type: 'video',
         role: 'output',
       },
       {
-        url: 'https://media.cloud.example/outputs/task-1/cover.jpg',
+        url: 'https://media.cloud.test/outputs/task-1/cover.jpg',
         type: 'image',
         role: 'thumbnail',
       },

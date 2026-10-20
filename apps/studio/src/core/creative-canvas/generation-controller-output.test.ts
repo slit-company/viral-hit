@@ -57,7 +57,7 @@ test('keeps the generation configuration and completes a separate output card', 
         assert.equal(referenceUrlOverrides, undefined);
       } else {
         assert.deepEqual(referenceUrlOverrides, {
-          'asset:1': 'https://media.cloud.example/inputs/asset-1.png',
+          'asset:1': 'https://media.cloud.test/inputs/asset-1.png',
         });
       }
       return ({

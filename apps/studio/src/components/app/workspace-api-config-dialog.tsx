@@ -11,10 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import {
-  DEFAULT_CLOUD_API_BASE_URL,
-  getCreativeCanvasProviderPublicConfig,
-} from '@/core/creative-canvas/providers/provider-config';
+import { getCreativeCanvasProviderPublicConfig } from '@/core/creative-canvas/providers/provider-config';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import { apiGet, apiPost } from '@/lib/api-client';
 import { maskApiKeyPreview } from '@/lib/mask-api-key';
@@ -50,7 +47,8 @@ const saveButtonClassName =
 const configuredKeyMask = '••••••••••••••••••••••••';
 
 type CloudApiConfigState = {
-  baseUrl: string;
+  /** Read-only server configuration; null disables hosted generation. */
+  baseUrl: string | null;
   apiKeyConfigured: boolean;
   apiKeyPreview: string;
 };
@@ -101,7 +99,7 @@ function ApiConfigForm({
       setApiKey('');
       setEditing(false);
       onSaved({
-        baseUrl: DEFAULT_CLOUD_API_BASE_URL,
+        baseUrl: state?.baseUrl ?? null,
         apiKeyConfigured: true,
         apiKeyPreview: result?.apiKeyPreview || maskApiKeyPreview(nextKey),
       });
@@ -162,21 +160,22 @@ function ApiConfigForm({
 
       <Action
         type="button"
-        disabled={!loaded || saving || !apiKey.trim()}
+        disabled={!loaded || saving || !apiKey.trim() || !state?.baseUrl}
         onClick={() => void save()}
         className={saveButtonClassName}
       >
         {saving ? t('saving') : t('save')}
       </Action>
 
-      <a
-        href="https://cloud.example/dashboard/apikeys"
-        target="_blank"
-        rel="noreferrer"
-        className="inline-flex text-[12px] font-semibold text-[#ff8b4d] transition hover:text-[#ffa26b]"
-      >
-        {t('getKey')}
-      </a>
+      {loaded && state?.baseUrl ? (
+        <p className="break-all font-mono text-[12px] text-[var(--vh-text-2)]">
+          {t('endpointLabel')}: {state.baseUrl}
+        </p>
+      ) : loaded ? (
+        <p role="status" className="text-[12px] leading-5 text-[var(--vh-text-2)]">
+          {t('endpointMissing')}
+        </p>
+      ) : null}
     </div>
   );
 }

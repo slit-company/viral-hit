@@ -91,7 +91,7 @@ test('maps standard and deep video analysis to the stable Cloud API workflow', (
       model: 'video-analysis',
       input: {
         prompt: 'List each action with timestamps',
-        video_url: 'https://media.cloud.example/inputs/review.mp4',
+        video_url: 'https://media.cloud.test/inputs/review.mp4',
         analysis_depth: 'deep',
         max_output_tokens: 4096,
       },
@@ -99,7 +99,7 @@ test('maps standard and deep video analysis to the stable Cloud API workflow', (
     {
       path: '/v1/video-analysis/tasks',
       body: {
-        video_url: 'https://media.cloud.example/inputs/review.mp4',
+        video_url: 'https://media.cloud.test/inputs/review.mp4',
         prompt: 'List each action with timestamps',
         analysis_depth: 'deep',
         max_output_tokens: 4096,
@@ -113,11 +113,11 @@ test('maps standard and deep video analysis to the stable Cloud API workflow', (
       model: 'video-analysis',
       input: {
         prompt: 'Summarize this video',
-        video_url: 'https://media.cloud.example/inputs/review.mov',
+        video_url: 'https://media.cloud.test/inputs/review.mov',
       },
     }).body,
     {
-      video_url: 'https://media.cloud.example/inputs/review.mov',
+      video_url: 'https://media.cloud.test/inputs/review.mov',
       prompt: 'Summarize this video',
       analysis_depth: 'standard',
       max_output_tokens: 2048,
@@ -352,8 +352,8 @@ test('maps Kling 2.6 and 3.0 Motion Control to the dedicated Cloud API contract'
       model: 'kling-2.6-motion-control',
       input: {
         prompt: 'Follow the dance motion precisely',
-        image_urls: ['https://media.cloud.example/inputs/character.png'],
-        video_urls: ['https://media.cloud.example/inputs/motion.mp4'],
+        image_urls: ['https://media.cloud.test/inputs/character.png'],
+        video_urls: ['https://media.cloud.test/inputs/motion.mp4'],
         wmOutputQuality: '1080p',
         sourceVideoDurationSeconds: 15,
         characterOrientation: 'video',
@@ -364,8 +364,8 @@ test('maps Kling 2.6 and 3.0 Motion Control to the dedicated Cloud API contract'
       body: {
         model: 'kling-2.6-motion-control',
         prompt: 'Follow the dance motion precisely',
-        images: ['https://media.cloud.example/inputs/character.png'],
-        reference_videos: ['https://media.cloud.example/inputs/motion.mp4'],
+        images: ['https://media.cloud.test/inputs/character.png'],
+        reference_videos: ['https://media.cloud.test/inputs/motion.mp4'],
         resolution: '1080p',
         character_orientation: 'video',
       },
@@ -377,8 +377,8 @@ test('maps Kling 2.6 and 3.0 Motion Control to the dedicated Cloud API contract'
     model: 'kling-3-motion-control',
     input: {
       prompt: 'Keep the character identity stable',
-      image_urls: ['https://media.cloud.example/inputs/character.png'],
-      video_urls: ['https://media.cloud.example/inputs/motion.mov'],
+      image_urls: ['https://media.cloud.test/inputs/character.png'],
+      video_urls: ['https://media.cloud.test/inputs/motion.mov'],
       wmOutputQuality: '720p',
       sourceVideoDurationSeconds: 8,
       characterOrientation: 'image',
@@ -389,8 +389,8 @@ test('maps Kling 2.6 and 3.0 Motion Control to the dedicated Cloud API contract'
   assert.deepEqual(kling3.body, {
     model: 'kling-3-motion-control',
     prompt: 'Keep the character identity stable',
-    images: ['https://media.cloud.example/inputs/character.png'],
-    reference_videos: ['https://media.cloud.example/inputs/motion.mov'],
+    images: ['https://media.cloud.test/inputs/character.png'],
+    reference_videos: ['https://media.cloud.test/inputs/motion.mov'],
     resolution: '720p',
     character_orientation: 'image',
     background_source: 'input_image',
@@ -406,7 +406,7 @@ test('validates Motion Control media counts and orientation duration', () => {
         input: {
           prompt: 'Dance',
           image_urls: [],
-          video_urls: ['https://media.cloud.example/inputs/motion.mp4'],
+          video_urls: ['https://media.cloud.test/inputs/motion.mp4'],
         },
       }),
     /exactly one image/
@@ -418,8 +418,8 @@ test('validates Motion Control media counts and orientation duration', () => {
         model: 'kling-3-motion-control',
         input: {
           prompt: 'Dance',
-          image_urls: ['https://media.cloud.example/inputs/character.png'],
-          video_urls: ['https://media.cloud.example/inputs/motion.mp4'],
+          image_urls: ['https://media.cloud.test/inputs/character.png'],
+          video_urls: ['https://media.cloud.test/inputs/motion.mp4'],
           sourceVideoDurationSeconds: 11,
           characterOrientation: 'image',
         },
@@ -703,7 +703,7 @@ test('accepts only official Cloud API provider media URLs', () => {
         media: [
           {
             type: 'image',
-            url: 'https://media.cloud.example/outputs/task-1/result.png',
+            url: 'https://media.cloud.test/outputs/task-1/result.png',
           },
         ],
       },

@@ -152,7 +152,7 @@ test('video analysis can select a generated output as @Video', () => {
     id: 'output-video',
     kind: 'output',
     type: 'video',
-    url: 'https://media.cloud.example/outputs/generated.mp4',
+    url: 'https://media.cloud.test/outputs/generated.mp4',
     sourceConfigCardId: 'generator',
     generationRunId: 'run-1',
     generationSnapshot: {
