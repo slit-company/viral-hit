@@ -12,7 +12,6 @@ import type {
 } from '@/core/creative-canvas/canvas-types';
 import { isCanvasDraftCard } from '@/core/creative-canvas/canvas-types';
 import {
-  appendUniqueReferenceCardId,
   getDraftReferencePickerOptions,
   isDraftBusyStatus,
 } from '@/core/creative-canvas/composer';
@@ -31,8 +30,9 @@ import type {
   ChangeEvent,
   MutableRefObject,
 } from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { attachAssetCardToDraft, useProjectAssetReferenceListener, type DraftReferenceDeps } from './canvas-draft-reference';
 
 type PlacementSide = 'left' | 'right';
 
@@ -249,6 +249,12 @@ export function useCreativeCanvasUploadActions({
   const pendingUploadsRef = useRef<Record<string, PendingLocalReferenceUpload>>(
     {}
   );
+
+  const referenceDeps = useMemo<DraftReferenceDeps>(
+    () => ({ canvasCardsRef, imageModels, videoModels, updateDraftCard, createConnectorBetweenCards, setActiveComposerCardId, handleSelectShape, focusShape, focusShapes }),
+    [canvasCardsRef, imageModels, videoModels, updateDraftCard, createConnectorBetweenCards, setActiveComposerCardId, handleSelectShape, focusShape, focusShapes]
+  );
+  useProjectAssetReferenceListener({ ...referenceDeps, projectId, insertAssetCard });
 
   const setTemporaryStatusMessage = useCallback(
     (message: string, duration = 3000) => {
@@ -481,50 +487,7 @@ export function useCreativeCanvasUploadActions({
           insertedAssetCardIds.push(assetCardId);
 
           if (request.mode === 'reference') {
-            const currentDraft = canvasCardsRef.current[request.draftId];
-
-            if (
-              isCanvasDraftCard(currentDraft) &&
-              !isDraftBusyStatus(currentDraft.status)
-            ) {
-              const model =
-                currentDraft.type === 'image'
-                  ? getSelectableModel(imageModels, currentDraft.modelId)
-                  : getSelectableModel(videoModels, currentDraft.modelId);
-              const canAttachReference = getDraftReferencePickerOptions({
-                draftCard: currentDraft,
-                cards: canvasCardsRef.current,
-                model,
-              }).some((option) => option.intent === intent);
-
-              if (canAttachReference) {
-                updateDraftCard(request.draftId, (current) => {
-                  if (isDraftBusyStatus(current.status)) {
-                    return current;
-                  }
-
-                  return {
-                    ...current,
-                    referenceCardIds: appendUniqueReferenceCardId(
-                      current.referenceCardIds,
-                      assetCardId
-                    ),
-                    status: 'idle',
-                    error: null,
-                  };
-                });
-                createConnectorBetweenCards(assetCardId, request.draftId);
-                setActiveComposerCardId(request.draftId);
-                handleSelectShape(request.draftId);
-                focusShapes([assetCardId, request.draftId]);
-              } else {
-                handleSelectShape(assetCardId);
-                focusShape(assetCardId);
-              }
-            } else {
-              handleSelectShape(assetCardId);
-              focusShape(assetCardId);
-            }
+            attachAssetCardToDraft(referenceDeps, { draftId: request.draftId, assetCardId, intent });
           } else {
             handleSelectShape(assetCardId);
             focusShape(assetCardId);
@@ -567,22 +530,17 @@ export function useCreativeCanvasUploadActions({
       }
     },
     [
-      canvasCardsRef,
-      createConnectorBetweenCards,
       focusShape,
       focusShapes,
       handleSelectShape,
-      imageModels,
       insertAssetCard,
       onWorkspaceAssetsMayChange,
       projectId,
-      setActiveComposerCardId,
+      referenceDeps,
       setErrorMessage,
       setStatusMessage,
       setTemporaryStatusMessage,
       studioT,
-      updateDraftCard,
-      videoModels,
     ]
   );
 

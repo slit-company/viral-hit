@@ -6,7 +6,7 @@ Adding a character copies its reference images into the project once, as referen
 
 > Mina Fox (mascot): Orange fox mascot with a calm smile. Keep exactly: white chest patch; round glasses; lime scarf. Never: extra fingers.
 
-Attach the main image when you generate and include the brief. Adding the same character again reuses the copies that are already there. Archiving a character hides it from the library; projects keep the images they already have.
+On Canvas, open the image reference menu of a draft and choose the character under **Characters**: the main image is placed beside the draft and attached as a reference, and the brief is added to the prompt. Choosing it again reuses the image already on the canvas and leaves the prompt alone. Adding the same character again anywhere reuses the copies that are already in the project. Archiving a character hides it from the library; projects keep the images they already have.
 
 ## What a character holds
 
@@ -31,7 +31,9 @@ UI, HTTP, MCP and CLI use the same service.
 | MCP | `viral_hit_character` with actions `list`, `get`, `create`, `update`, `add_references`, `remove_reference`, `set_canonical`, `archive`, `use` |
 | CLI | `pnpm character list`, `get <id>`, `use <id> <project-id>`, `request <request.json>` |
 
-MCP and CLI can create characters from project images or absolute local image paths. The browser HTTP route accepts uploads and project images only.
+MCP and CLI can create characters from project images or absolute local image paths. The browser HTTP route accepts uploads and project images only. Agents attach a character on Canvas by calling `use`, then `viral_hit_canvas_apply` with an image asset card for the main image and a draft that lists it in `referenceCardIds` and includes the brief in its prompt.
+
+The bundled agent skill `consistent-characters` (`viral_hit_skill_get`) walks an agent through finding or defining a character, adding it to a project and Canvas draft, and revising it after a version conflict.
 
 ## Storage
 
@@ -39,4 +41,4 @@ Character records live in `character-library.sqlite` inside the data directory. 
 
 ## Limits
 
-Characters do not start generation. The Canvas composer does not attach the main image and brief automatically yet; that comes next. Viral Hit does not create Soul IDs, and it does not measure face or product similarity in generated media.
+Characters do not start generation. Only the main image is attached on Canvas; other angles stay in the project assets to attach by hand. Viral Hit does not create Soul IDs, and it does not measure face or product similarity in generated media.

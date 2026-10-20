@@ -338,7 +338,12 @@
           "fromCanvas": "来自画布",
           "currentReferences": "已添加",
           "noCanvasReferences": "画布上还没有可用的参考卡片。",
-          "removeReference": "移除参考"
+          "removeReference": "移除参考",
+          "characters": "角色",
+          "manageCharacters": "管理",
+          "noCharacters": "还没有角色。创建一个角色，让人物或产品在每个镜头中保持一致。",
+          "useCharacter": "使用{name}：附加主图并加入说明",
+          "characterFailed": "无法添加此角色，请重试。"
         },
         "zoom": {
           "label": "缩放",

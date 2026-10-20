@@ -37,7 +37,7 @@ export function CharacterDetail({ character, library, onClose }: { character: Ch
           <Action disabled={library.busy} onClick={async () => { if (await library.change({ action: 'archive', ...base })) onClose(); }} className="vh-secondary text-xs">Archive</Action>
           <Action onClick={() => setConfirmArchive(false)} className="text-xs">Keep</Action></span>
           : <Action onClick={() => setConfirmArchive(true)} className="text-xs text-[var(--vh-text-2)]">Archive</Action>}
-        <Action disabled={library.busy || !changed || !profile.name.trim() || !profile.description.trim()} onClick={() => void library.change({ action: 'update', ...base, profile })} className="vh-primary text-xs">{library.busy ? 'Saving…' : 'Save changes'}</Action>
+        <Action disabled={library.busy || !changed || !profile.name.trim() || !profile.description.trim()} onClick={() => void library.change({ action: 'update', ...base, profile: { ...profile, voice: profile.voice ?? null } })} className="vh-primary text-xs">{library.busy ? 'Saving…' : 'Save changes'}</Action>
       </div>
     </DialogContent>
   </Dialog>;

@@ -15,7 +15,7 @@ const { importLocalProjectAsset } = await import('../projects/import-local-asset
 const { getProjectAssetById } = await import('../workspace-lib/assets/user-assets');
 const { resolveLocalProjectAssetPath } = await import('../projects/local-project-assets');
 const { changeCharacters, readCharacterReference } = await import('./library.server');
-const { characterBrief } = await import('./contract');
+const { characterBrief, characterRequest } = await import('./contract');
 
 const ffmpeg = process.env.VIRAL_HIT_FFMPEG || 'ffmpeg';
 const image = (name: string, color: string, size = '320x480') => { const file = join(directory, name); execFileSync(ffmpeg, ['-v', 'error', '-f', 'lavfi', '-i', 'color=c=' + color + ':s=' + size, '-frames:v', '1', file]); return file; };
@@ -76,3 +76,14 @@ test('characters accept project images and reject unsupported or unsafe inputs',
   assert.deepEqual(listed.characters.map(item => item.id).sort(), ['mori-the-fox', 'mori-the-fox-2']);
 });
 
+test('a partial update changes only the fields it names and voice null removes the voice note', async () => {
+  type Saved = { id: string; version: number; invariants: string[]; forbidden: string[]; voice?: { direction: string } };
+  const run = async (request: unknown) => await changeCharacters(characterRequest.parse(request)) as Saved;
+  const created = await run({ action: 'create', profile: { ...profile, name: 'Patch fox', voice: { direction: 'calm' } }, references: [{ path: front, role: 'canonical' }] });
+  const voiced = await run({ action: 'update', id: created.id, expectedVersion: 1, profile: { voice: { direction: 'bright and quick' } } });
+  assert.deepEqual([voiced.invariants, voiced.forbidden, voiced.voice?.direction], [profile.invariants, profile.forbidden, 'bright and quick']);
+  const cleared = await run({ action: 'update', id: created.id, expectedVersion: 2, profile: { voice: null } });
+  assert.equal(cleared.voice, undefined); assert.deepEqual(cleared.invariants, profile.invariants);
+  const ruled = await run({ action: 'update', id: created.id, expectedVersion: 3, profile: { invariants: ['green scarf'] } });
+  assert.deepEqual([ruled.invariants, ruled.forbidden, ruled.voice], [['green scarf'], profile.forbidden, undefined]);
+});

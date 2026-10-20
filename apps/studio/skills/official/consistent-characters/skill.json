@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "id": "consistent-characters",
+  "version": "1.0.0",
+  "title": "Consistent characters",
+  "summary": "Keep a person, mascot or product looking the same across shots: build a character from reference images and written rules, add it to a project and attach it to Canvas drafts.",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_character",
+      "viral_hit_canvas_get",
+      "viral_hit_canvas_apply"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "who",
+      "label": "Who or what must stay the same",
+      "description": "A person, mascot or product, with what must never change about it.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "images",
+      "label": "Reference images",
+      "description": "Project images or absolute local image paths; one clear front view becomes the main image.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "define",
+      "title": "Define the character",
+      "description": "Find an existing character or create one from images, a description and keep/never rules the user agreed to.",
+      "reviewRequired": true
+    },
+    {
+      "id": "use",
+      "title": "Use it in a project",
+      "description": "Copy the references into the project and attach the main image and brief to the Canvas draft.",
+      "reviewRequired": false
+    },
+    {
+      "id": "revise",
+      "title": "Revise",
+      "description": "Change rules or images against the current version without overwriting someone else's change.",
+      "reviewRequired": false
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "characters",
+      "consistency",
+      "references"
+    ],
+    "featured": true
+  }
+}

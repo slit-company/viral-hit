@@ -20,18 +20,29 @@ export const providerIdentitySchema = z.object({
   label: z.string().trim().max(80).optional(),
 }).strict();
 
-export const characterProfileSchema = z.object({
+const voiceSchema = z.object({ direction: z.string().trim().min(1).max(500), provider: z.string().max(40).optional(), voiceId: z.string().max(120).optional() }).strict();
+const profileFields = {
   name: z.string().trim().min(1).max(80),
   kind: z.enum(characterKinds),
   description: z.string().trim().min(1).max(2000),
   /** Traits every image and video must keep, such as silhouette, colors, clothing and proportions. */
-  invariants: z.array(line).max(24).default([]),
+  invariants: z.array(line).max(24),
   /** Changes that are never acceptable, such as extra limbs, different eye count or a logo change. */
-  forbidden: z.array(line).max(24).default([]),
-  voice: z.object({ direction: z.string().trim().min(1).max(500), provider: z.string().max(40).optional(), voiceId: z.string().max(120).optional() }).strict().optional(),
-  providerIdentities: z.array(providerIdentitySchema).max(8).default([]),
+  forbidden: z.array(line).max(24),
+  providerIdentities: z.array(providerIdentitySchema).max(8),
+};
+
+export const characterProfileSchema = z.object({
+  ...profileFields,
+  invariants: profileFields.invariants.default([]),
+  forbidden: profileFields.forbidden.default([]),
+  voice: voiceSchema.optional(),
+  providerIdentities: profileFields.providerIdentities.default([]),
 }).strict();
 export type CharacterProfile = z.infer<typeof characterProfileSchema>;
+
+/** An update names only the fields it changes; nothing is defaulted, and voice null removes the voice note. */
+export const characterProfilePatchSchema = z.object({ ...profileFields, voice: voiceSchema.nullable() }).partial().strict();
 
 export const characterReferenceSchema = z.object({
   sha256, role: z.enum(referenceRoles), filename: z.string().min(1).max(160),
@@ -61,7 +72,7 @@ export const characterRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list'), includeArchived: z.boolean().optional() }).strict(),
   z.object({ action: z.literal('get'), id: characterId }).strict(),
   z.object({ action: z.literal('create'), id: characterId.optional(), profile: characterProfileSchema, references: z.array(referenceSourceSchema).max(MAX_CHARACTER_REFERENCES).default([]) }).strict(),
-  z.object({ action: z.literal('update'), id: characterId, expectedVersion: z.number().int().positive(), profile: characterProfileSchema.partial() }).strict(),
+  z.object({ action: z.literal('update'), id: characterId, expectedVersion: z.number().int().positive(), profile: characterProfilePatchSchema }).strict(),
   z.object({ action: z.literal('add_references'), id: characterId, expectedVersion: z.number().int().positive(), references: z.array(referenceSourceSchema).max(MAX_CHARACTER_REFERENCES).default([]) }).strict(),
   z.object({ action: z.literal('remove_reference'), id: characterId, expectedVersion: z.number().int().positive(), sha256 }).strict(),
   z.object({ action: z.literal('set_canonical'), id: characterId, expectedVersion: z.number().int().positive(), sha256 }).strict(),

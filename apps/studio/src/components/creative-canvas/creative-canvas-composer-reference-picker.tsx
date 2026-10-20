@@ -11,6 +11,7 @@ import {
   stopComposerEvent,
 } from './creative-canvas-composer-utils';
 import type { CanvasLabels } from './creative-canvas-front-layer-context';
+import { CreativeCanvasComposerCharacters } from './creative-canvas-composer-characters';
 
 type ReferenceOption = {
   intent: CanvasGenerationCard['type'];
@@ -240,6 +241,10 @@ export function CreativeCanvasComposerReferencePicker({
                 </Action>
               ))}
             </div>
+
+            {options.some((option) => option.intent === 'image') ? (
+              <CreativeCanvasComposerCharacters draftId={activeDraftId} disabled={isDraftBusy} onBrief={onInsertReferenceMention} onDone={() => onOpenChange(false)} />
+            ) : null}
 
             {attachedCount > 0 ? (
               <div className="space-y-1.5">

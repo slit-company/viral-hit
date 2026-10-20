@@ -15,7 +15,7 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 | Canvas | Connected media workspace | Connected typed nodes, branching, shared assets, provenance, partial recomputation | Target |
 | Editor | Reference-driven edits plus image layer editor | Integrated multitrack NLE, trim/split/reorder, captions, audio, keyframes, transitions, export | Target |
 | Audio | Dedicated audio navigation and lipsync surfaces | TTS/cast, music/SFX, measured alignment, mixing/ducking, lipsync | Needs deeper UI audit |
-| Characters | Soul ID, influencers, reusable elements | Identity library, reference consistency, permission and provenance records | Partial: library with reference roles, rules, versions and project import through UI/HTTP/MCP/CLI ([guide](CHARACTERS.md)). Not yet attached to generation automatically; no identity model, similarity scoring or generation evaluated |
+| Characters | Soul ID, influencers, reusable elements | Identity library, reference consistency, permission and provenance records | Partial: library with reference roles, rules, versions and project import through UI/HTTP/MCP/CLI ([guide](CHARACTERS.md)). Canvas composer attaches the main image and brief to a draft. No identity model, similarity scoring or generation evaluated |
 | Agent | Supercomputer: projects, skills, connectors, memory, ask-before-generation mode | Same project operations as UI; durable jobs; revisions, retries, cancellation, budget ledger | Target |
 | Templates | VFX, UGC, explainers, marketing, photography | Versioned, forkable workflows with editable parameters and actual execution | Target |
 | Extensibility | MCP, CLI and API | Versioned APIs, MCP, local/server providers, capability discovery | Target |

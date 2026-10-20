@@ -14,6 +14,14 @@ export type ProjectAssetInsertDetail = {
   clientPoint?: { x: number; y: number };
 };
 
+/** Asks the open canvas to place a project image beside a draft and attach it as a reference. */
+export const PROJECT_ASSET_REFERENCE_EVENT = 'viral-hit:project-asset-reference';
+
+export type ProjectAssetReferenceDetail = {
+  asset: ProjectAssetTransfer;
+  draftId: string;
+};
+
 const isFiniteNullableNumber = (value: unknown) =>
   value === null || (typeof value === 'number' && Number.isFinite(value));
 

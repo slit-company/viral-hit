@@ -117,6 +117,7 @@ export type CreativeCanvasComposerPresentation = {
 };
 
 export type CreativeCanvasFrontLayerValue = {
+  projectId: string;
   cards: Record<string, CanvasCard>;
   selectedShapeIds: string[];
   selectedCanvasCardIds: string[];

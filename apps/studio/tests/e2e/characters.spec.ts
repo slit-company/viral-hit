@@ -1,7 +1,7 @@
-import { test, expect, type Locator, type Page } from '@playwright/test';
+import { test, expect, type APIRequestContext, type Locator, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
@@ -92,5 +92,64 @@ test('a character keeps its images and rules from the library into a project', a
   await expect(page.getByRole('button', { name: 'Open Mina Fox', exact: true })).toHaveCount(0);
   expect(await read()).toBeUndefined();
   // Keep seeded fixtures within the recent-project list used by later specs.
+  expect((await request.delete('/api/app/projects', { headers, data: { projectIds: [projectId] } })).ok()).toBe(true);
+});
+
+async function mcp(request: APIRequestContext, name: string, args: Record<string, unknown>) {
+  const response = await request.post('http://127.0.0.1:3043/mcp', { headers: { authorization: 'Bearer e2e-local-only', accept: 'application/json, text/event-stream' },
+    data: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } } });
+  expect(response.ok()).toBe(true);
+  const text = await response.text();
+  const rpc = JSON.parse(text.startsWith('{') ? text : text.split('\n').find(line => line.startsWith('data: '))!.slice(6));
+  expect(rpc.result?.isError, JSON.stringify(rpc.result)).not.toBe(true);
+  return rpc.result.structuredContent?.result;
+}
+
+test('choosing a character in the Canvas composer attaches its main image and writes its brief once', async ({ page, request }) => {
+  const front = png('nori-front.png', '0xdb2777');
+  const created = await request.post('/api/app/characters', { headers, multipart: {
+    request: JSON.stringify({ action: 'create', profile: { name: 'Nori', kind: 'illustrated', description: 'Pink cat illustration', invariants: ['star-shaped ear tag'], forbidden: [], providerIdentities: [] } }),
+    roles: JSON.stringify(['canonical']), file: { name: 'nori-front.png', mimeType: 'image/png', buffer: readFileSync(front.path) } } });
+  expect(created.ok(), await created.text()).toBe(true);
+  const character = await created.json();
+  const projectId = (await (await request.post('/api/app/projects', { headers, data: { name: 'Nori canvas' } })).json()).id;
+  await mcp(request, 'viral_hit_canvas_apply', { projectId, operations: [{ type: 'upsert_card', card: { id: 'nori-draft', kind: 'generation', type: 'image', name: 'Nori shot', prompt: 'Nori waves at the camera.', modelId: 'gpt-image-2.5-flare' }, frame: { x: 420, y: 160, w: 360, h: 300 } }] });
+  const snapshot = async () => (await (await request.get('/api/app/projects/' + projectId + '/snapshot')).json()).document as { cards: { id: string; kind: string; assetId?: string; referenceCardIds?: string[] }[] };
+
+  await page.goto('/canvas/' + projectId);
+  const node = page.locator('.react-flow__node').first();
+  await expect(node).toBeVisible();
+  await page.waitForTimeout(800);
+  await node.dblclick();
+  const prompt = page.locator('textarea').first();
+  await expect(prompt).toHaveValue('Nori waves at the camera.');
+  const brief = 'Nori (illustrated): Pink cat illustration. Keep exactly: star-shaped ear tag.';
+  for (let round = 0; round < 2; round++) {
+    await page.getByRole('button', { name: 'Upload image', exact: true }).last().click();
+    const choose = page.getByRole('button', { name: 'Use Nori: attach the main image and add the brief', exact: true });
+    await expect(choose).toBeVisible();
+    if (round === 0) await page.screenshot({ path: 'test-results/characters-canvas-menu.png' });
+    await choose.click();
+    await expect.poll(async () => { const cards = (await snapshot()).cards; const image = cards.filter(card => card.kind === 'asset' && card.assetId?.startsWith('chr-'));
+      return [image.length, cards.find(card => card.id === 'nori-draft')?.referenceCardIds?.filter(id => id === image[0]?.id).length]; }).toEqual([1, 1]);
+    await expect.poll(async () => (await prompt.inputValue()).split(brief).length - 1).toBe(1);
+  }
+  expect(await prompt.inputValue()).toContain('Nori waves at the camera.');
+  await page.screenshot({ path: 'test-results/characters-canvas-desktop.png' });
+
+  // Agents reach the same state by following the bundled skill with the character and Canvas tools.
+  const skill = await mcp(request, 'viral_hit_skill_get', { skillId: 'consistent-characters' }) as { manifest?: { id: string }; compatible?: boolean; skill?: { manifest: { id: string }; compatible: boolean } };
+  expect([skill.manifest?.id ?? skill.skill?.manifest.id, skill.compatible ?? skill.skill?.compatible]).toEqual(['consistent-characters', true]);
+  const used = await mcp(request, 'viral_hit_character', { request: { action: 'use', id: character.id, projectId } }) as { brief: string; assets: { assetId: string; role: string; publicUrl: string }[] };
+  const main = used.assets.find(asset => asset.role === 'canonical')!;
+  expect(used.brief).toBe(brief);
+  await mcp(request, 'viral_hit_canvas_apply', { projectId, operations: [
+    { type: 'upsert_card', card: { id: 'nori-agent-ref', kind: 'asset', type: 'image', name: 'Nori', assetId: main.assetId, url: main.publicUrl } },
+    { type: 'upsert_card', card: { id: 'nori-agent', kind: 'generation', type: 'image', name: 'Nori agent shot', prompt: 'Nori jumps. ' + used.brief, modelId: 'gpt-image-2.5-flare', referenceCardIds: ['nori-agent-ref'] } },
+    { type: 'place_card', cardId: 'nori-agent', sourceCardIds: ['nori-agent-ref'] },
+  ] });
+  await expect.poll(async () => (await snapshot()).cards.find(card => card.id === 'nori-agent')?.referenceCardIds).toEqual(['nori-agent-ref']);
+
+  expect((await request.post('/api/app/characters', { headers, data: { action: 'archive', id: character.id, expectedVersion: character.version } })).ok()).toBe(true);
   expect((await request.delete('/api/app/projects', { headers, data: { projectIds: [projectId] } })).ok()).toBe(true);
 });

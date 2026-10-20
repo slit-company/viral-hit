@@ -53,7 +53,7 @@ Native, self-hosted ComfyUI graphs are also supported through `comfy.workflow`: 
 
 The interface now uses [SEED components and a light theme](docs/DESIGN.md), with an original [Viral Hit mark and wordmark](docs/BRAND.md). For local query debugging only, set `VITE_QUERY_DEVTOOLS=true`; the debug launcher is hidden by default.
 
-Keep a person, mascot or product consistent with [characters](docs/CHARACTERS.md): reference images plus written rules, added to any project as reference assets and a prompt brief. UI, MCP and CLI share the same library.
+Keep a person, mascot or product consistent with [characters](docs/CHARACTERS.md): reference images plus written rules, added to any project as reference assets and a prompt brief, or chosen in the Canvas composer to attach the main image to a draft. UI, MCP and CLI share the same library.
 
 Move an editable project between installations with a [project file](docs/PROJECT-FILES.md): original media, Canvas and timelines in one verified tar that always imports as a new project. UI, MCP and CLI share the same operations.
 

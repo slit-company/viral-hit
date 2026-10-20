@@ -338,7 +338,12 @@
           "fromCanvas": "From canvas",
           "currentReferences": "Attached",
           "noCanvasReferences": "No compatible cards on the canvas yet.",
-          "removeReference": "Remove reference"
+          "removeReference": "Remove reference",
+          "characters": "Characters",
+          "manageCharacters": "Manage",
+          "noCharacters": "No characters yet. Create one to keep a face or product the same in every shot.",
+          "useCharacter": "Use {name}: attach the main image and add the brief",
+          "characterFailed": "Couldn't add this character. Try again."
         },
         "zoom": {
           "label": "Zoom",

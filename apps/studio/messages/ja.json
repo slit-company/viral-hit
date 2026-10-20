@@ -338,7 +338,12 @@
           "fromCanvas": "Canvasから",
           "currentReferences": "添付済み",
           "noCanvasReferences": "Canvasに対応するカードがまだありません。",
-          "removeReference": "参照を削除"
+          "removeReference": "参照を削除",
+          "characters": "キャラクター",
+          "manageCharacters": "管理",
+          "noCharacters": "キャラクターはまだありません。顔や商品をどのショットでも同じに保つには、作成してください。",
+          "useCharacter": "{name}を使う：メイン画像を添付して説明を追加",
+          "characterFailed": "このキャラクターを追加できませんでした。もう一度お試しください。"
         },
         "zoom": {
           "label": "ズーム",

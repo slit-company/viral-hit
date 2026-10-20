@@ -100,7 +100,7 @@ export async function useCharacterInProject(id: string, projectId: string) {
       await linkProjectAsset({ projectId, assetId, role: 'reference', assetRole: 'character', metadata: { characterId: character.id, role: reference.role } });
       asset = await getProjectAssetById({ projectId, assetId });
     }
-    assets.push({ assetId, role: reference.role, publicUrl: asset!.publicUrl });
+    assets.push({ assetId, role: reference.role, publicUrl: asset!.publicUrl, filename: asset!.filename ?? null, mimeType: reference.mimeType, width: reference.width, height: reference.height });
   }
   return { character: { id: character.id, name: character.name, version: character.version }, brief: characterBrief(character), providerIdentities: character.providerIdentities, voice: character.voice ?? null, assets };
 }
@@ -112,8 +112,11 @@ export async function changeCharacters(request: CharacterRequest, uploads: Uploa
     case 'get': return required(request.id);
     case 'create': return createCharacter(request, [...request.references, ...uploads]);
     case 'update': {
-      const character = required(request.id);
-      const profile = characterProfileSchema.parse({ ...pickProfile(character), ...request.profile });
+      // Fields the request leaves out keep their saved values; voice null removes the voice note.
+      const { voice, ...changes } = request.profile;
+      const { voice: saved, ...character } = required(request.id);
+      const kept = voice === null ? undefined : voice ?? saved;
+      const profile = characterProfileSchema.parse({ ...pickProfile(character), ...changes, ...(kept ? { voice: kept } : {}) });
       return writeCharacter(next(character, profile), request.expectedVersion);
     }
     case 'add_references': {

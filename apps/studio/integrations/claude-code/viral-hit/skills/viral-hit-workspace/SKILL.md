@@ -90,3 +90,5 @@ user's request clearly authorizes that exact action.
 ## Find, install or share workflows
 
 When the user wants a ready-made workflow, wants Viral Hit set up for a particular job such as vertical product ads or slide stories, or wants to share recipes they made, read the bundled `recipe-packs` skill with `viral_hit_skill_get` (resource `viral-hit://skills/recipe-packs`) and follow it. Packs are labeled general or for a specific job, install only after the user has seen the review, and never queue runs.
+
+When the user wants the same person, mascot or product to look consistent across shots, or names a character to use, read the bundled `consistent-characters` skill with `viral_hit_skill_get` (resource `viral-hit://skills/consistent-characters`) and follow it. Characters hold reference images and keep/never rules, are added to projects once and never start generation.
