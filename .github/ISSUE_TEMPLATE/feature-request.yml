@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest a change to Viral Hit
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Where would it live?
+      description: See CONTRIBUTING.md. Work tied to one format, brand or audience usually belongs in a recipe, pack or adapter.
+      options: [Core app (helps every project), Recipe or pack, Adapter or extension, Generation provider, Agent skill, Not sure]
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+

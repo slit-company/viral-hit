@@ -1,0 +1,34 @@
+name: Bug report
+description: Something in Viral Hit does not work as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected and what happened
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options: [Studio, Canvas, Editor, Assets, Runs and recipes, Packs, Publishing, MCP or CLI, Extension or adapter, Other]
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node, FFmpeg and browser versions.
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: Remove API keys, tokens and private media before attaching logs or screenshots.
+

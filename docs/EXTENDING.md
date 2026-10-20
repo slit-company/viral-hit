@@ -136,6 +136,8 @@ The editor's model picker consumes pure metadata from `src/config/generation-cat
 
 ## Contributing
 
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for where a contribution belongs and how to propose a pack. Pack, recipe and sequence files can be checked against [pack.schema.json](schemas/pack.schema.json), [recipe.schema.json](schemas/recipe.schema.json) and [sequence.schema.json](schemas/sequence.schema.json).
+
 Keep general project/asset/timeline contracts free of brand-specific fields. Specialized parameters belong in recipes or optional metadata. Reuse public source only with compatible license/provenance and update `THIRD_PARTY_NOTICES.md`. Preserve existing MCP names when extending the catalog; new Viral Hit tools use `viral_hit_*`.
 
 Validate changes at the affected boundary. Provider logic needs timeout/restart/ambiguous-response tests. Editor changes need real imported media, a decoded export and visual inspection. A model-quality claim needs real paid/open-weight generation evidence, not fixtures. Do not mark broad parity areas complete from narrow tests. Document missing functionality and failed comparisons alongside successful ones.

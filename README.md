@@ -45,7 +45,7 @@ Viral Hit is a general creative workspace with room for very specific workflows.
 | Extensions | Optional runtimes with their own dependencies | Local media composition | ima2 images, YouTube intake | `extensions/<name>/` |
 | Providers | Hosted generation backends behind the Canvas composer | Cloud API (any compatible endpoint) | A hosted API with a different contract | `src/config/generation-providers.ts` |
 
-A workflow for one campaign or brand belongs in its own recipes and adapters, kept in a separate repository if it carries private rules or data. Project files move editable work between installations, so specialized setups can share results with general ones.
+A workflow for one campaign or brand belongs in its own recipes and adapters, kept in a separate repository if it carries private rules or data. [CONTRIBUTING.md](CONTRIBUTING.md) explains where each kind of contribution goes and how to propose a pack. Project files move editable work between installations, so specialized setups can share results with general ones.
 
 Install a versioned JSON recipe to add a workflow and its typed form without modifying the studio. UI and MCP discover the same recipes. [Extension guide](docs/EXTENDING.md) covers recipe authoring, output bindings, adapter contracts and current limits. Specialized recipes and general creative projects share the same core.
 

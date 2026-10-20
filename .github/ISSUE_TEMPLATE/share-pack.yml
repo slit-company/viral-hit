@@ -1,0 +1,50 @@
+name: Share a pack
+description: Propose a general or job-specific recipe pack for every Viral Hit installation
+labels: [pack]
+body:
+  - type: markdown
+    attributes:
+      value: You can share a pack without this repository by posting its GitHub file link. Use this form to propose bundling it in packs/.
+  - type: input
+    id: link
+    attributes:
+      label: Pack link
+      description: An HTTPS link to the pack JSON, for example a GitHub file in a public repository.
+      placeholder: https://github.com/you/your-packs/blob/main/my-pack.json
+    validations:
+      required: true
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Scope
+      options:
+        - General (helps any project)
+        - For a specific job (one format, audience or workflow)
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: What it is for
+      description: Who uses it, what they bring and what they get.
+    validations:
+      required: true
+  - type: textarea
+    id: setup
+    attributes:
+      label: Setup it needs
+      description: Adapters, servers or environment variables beyond the studio, or "none".
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: recipe inspect-pack reports no blocking items
+          required: true
+        - label: Every recipe keeps its author and license
+          required: true
+        - label: The pack contains no private rules, credentials, personal data or brand assets
+          required: true
+

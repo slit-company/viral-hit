@@ -256,12 +256,7 @@
                     "startTime",
                     "duration",
                     "type",
-                    "source",
-                    "inPoint",
-                    "volume",
-                    "muted",
-                    "fadeIn",
-                    "fadeOut"
+                    "source"
                   ],
                   "additionalProperties": false
                 },
