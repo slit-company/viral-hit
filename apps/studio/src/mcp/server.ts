@@ -775,7 +775,7 @@ export function createViralHitMcpServer() {
     'viral_hit_canvas_apply',
     {
       description:
-        'Apply incremental Canvas operations. For a newly connected node, append place_card to position it once to the right of its references; later user drag positions remain untouched unless place_card is called again. Raw document replacement is not exposed.',
+        'Apply incremental Canvas operations. For a newly connected node, append place_card to position it once to the right of its references; later user drag positions remain untouched unless place_card is called again. Shot controls are the last prompt line, for example Shot: close-up, low angle, slow push in, golden hour.; the Canvas Shot picker reads and rewrites that line and keeps unknown terms. Raw document replacement is not exposed.',
       inputSchema: commandMetadataSchema.extend({
         projectId: idSchema.optional(),
         operations: z.array(canvasOperationSchema).min(1).max(500),

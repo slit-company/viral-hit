@@ -8,7 +8,7 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 |---|---|---|---|
 | Images | Multi-model generation, image edit, references, upscale | Import/generate/edit/save images; provider capabilities validated | Target |
 | Video | Text/image/video conditioning, model and duration selection | Actual asynchronous generation, playable durable assets, aspect and fps checks | Target |
-| Cinema | Film/camera/palette/light; composable camera moves; 50 reference slots; batches | Structured shot controls, characters/elements, multi-shot sequence, per-shot regeneration | Target |
+| Cinema | Film/camera/palette/light; composable camera moves; 50 reference slots; batches | Structured shot controls, characters/elements, multi-shot sequence, per-shot regeneration | Partial: shot controls for framing, angle, lens, camera move, light and look written as an editable prompt line shared by UI and MCP ([guide](SHOT-CONTROLS.md)); characters attach on Canvas. Multi-shot sequence, per-shot regeneration and adherence to camera terms not evaluated |
 | Genjutsu | Motion transfer and object swap; 4–30 s reference; up to 30 images | Preserve motion/scene while replacing intended subject; temporal consistency benchmark | Target |
 | Katana | Reference edit + character references + optional instructions, Claude handoff | Analyze edit grammar; replace inputs; deliver editable project and final render | Target |
 | Layers | Relight, inpaint, decomposition, text editing, effects | Mask/layer operations, original retention, reversible edits, flattened and layered exports | Target |

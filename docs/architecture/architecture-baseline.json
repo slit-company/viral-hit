@@ -5,7 +5,7 @@
     "src/components/app/workspace-api-config-dialog.tsx": 476,
     "src/components/creative-canvas/creative-canvas-card-connector-overlay.tsx": 417,
     "src/components/creative-canvas/creative-canvas-composer-parameter-picker.tsx": 432,
-    "src/components/creative-canvas/creative-canvas-front-layer.tsx": 1053,
+    "src/components/creative-canvas/creative-canvas-front-layer.tsx": 943,
     "src/components/creative-canvas/creative-canvas-shell.tsx": 1536,
     "src/components/creative-canvas/nodes/generation-card-node.tsx": 619,
     "src/components/creative-canvas/react-flow/react-flow-editor.tsx": 837,

@@ -59,9 +59,10 @@ import {
   isDraftCard,
   normalizeComposerToken,
   resolveAnchoredComposerPosition,
-  resolveComposerPopoverStateOnPointerDown,
 } from './creative-canvas-composer-utils';
 import { useCanvasFrontLayer } from './creative-canvas-front-layer-context';
+import { useComposerPopovers } from './use-composer-popovers';
+import { CreativeCanvasComposerShotPicker } from './creative-canvas-composer-shot-picker';
 import { CardConnectorOverlay } from './creative-canvas-card-connector-overlay';
 import { creativeCanvasPanelClassName } from './creative-canvas-theme';
 import { registerGenerationCardHoverCallback } from './creative-canvas-generation-hover-bridge';
@@ -120,11 +121,6 @@ export function CreativeCanvasFrontLayer() {
     promptCharacterLimit,
     videoModels,
   } = useCanvasFrontLayer();
-  const [isTypeSelectOpen, setIsTypeSelectOpen] = useState(false);
-  const [isModelSelectOpen, setIsModelSelectOpen] = useState(false);
-  const [isParameterPopoverOpen, setIsParameterPopoverOpen] = useState(false);
-  const [isReferencePickerOpen, setIsReferencePickerOpen] = useState(false);
-  const [isVersionPickerOpen, setIsVersionPickerOpen] = useState(false);
   const [promptInputValue, setPromptInputValue] = useState('');
   const [isPromptComposing, setIsPromptComposing] = useState(false);
   const [activeCanvasTool, setActiveCanvasTool] = useState<'select' | 'pan'>(
@@ -137,11 +133,6 @@ export function CreativeCanvasFrontLayer() {
   >(null);
   const [composerHeight, setComposerHeight] = useState(260);
   const composerRef = useRef<HTMLElement | null>(null);
-  const typePickerRef = useRef<HTMLDivElement | null>(null);
-  const modelPickerRef = useRef<HTMLDivElement | null>(null);
-  const parameterPickerRef = useRef<HTMLDivElement | null>(null);
-  const referencePickerRef = useRef<HTMLDivElement | null>(null);
-  const versionPickerRef = useRef<HTMLDivElement | null>(null);
   const hoveredComposerCardIdRef = useRef<string | null>(null);
   const composerOpenTimerRef = useRef<number | null>(null);
   const composerCloseTimerRef = useRef<number | null>(null);
@@ -439,6 +430,7 @@ export function CreativeCanvasFrontLayer() {
   const isDraftBusy = activeDraftCard
     ? isDraftBusyStatus(activeDraftCard.status)
     : false;
+  const popovers = useComposerPopovers({ draftId: activeDraftCard?.id, isBusy: isDraftBusy });
 
   useEffect(() => {
     if (!activeDraftCard || !selectedModel || isDraftBusy) {
@@ -692,70 +684,6 @@ export function CreativeCanvasFrontLayer() {
   };
 
   useEffect(() => {
-    setIsTypeSelectOpen(false);
-    setIsModelSelectOpen(false);
-    setIsParameterPopoverOpen(false);
-    setIsReferencePickerOpen(false);
-    setIsVersionPickerOpen(false);
-  }, [activeDraftCard?.id]);
-
-  useEffect(() => {
-    if (
-      !isTypeSelectOpen &&
-      !isModelSelectOpen &&
-      !isParameterPopoverOpen &&
-      !isReferencePickerOpen &&
-      !isVersionPickerOpen
-    ) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const target = event.target;
-      if (!(target instanceof Node)) {
-        return;
-      }
-
-      const nextPopoverState = resolveComposerPopoverStateOnPointerDown({
-        isTypeSelectOpen,
-        isModelSelectOpen,
-        isParameterPopoverOpen,
-        isReferencePickerOpen,
-        isVersionPickerOpen,
-        isWithinComposer: Boolean(composerRef.current?.contains(target)),
-        isWithinTypePicker: Boolean(typePickerRef.current?.contains(target)),
-        isWithinModelPicker: Boolean(modelPickerRef.current?.contains(target)),
-        isWithinParameterPicker: Boolean(
-          parameterPickerRef.current?.contains(target)
-        ),
-        isWithinReferencePicker: Boolean(
-          referencePickerRef.current?.contains(target)
-        ),
-        isWithinVersionPicker: Boolean(
-          versionPickerRef.current?.contains(target)
-        ),
-      });
-
-      setIsTypeSelectOpen(nextPopoverState.isTypeSelectOpen);
-      setIsModelSelectOpen(nextPopoverState.isModelSelectOpen);
-      setIsParameterPopoverOpen(nextPopoverState.isParameterPopoverOpen);
-      setIsReferencePickerOpen(nextPopoverState.isReferencePickerOpen);
-      setIsVersionPickerOpen(nextPopoverState.isVersionPickerOpen);
-    };
-
-    document.addEventListener('pointerdown', handlePointerDown, true);
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown, true);
-    };
-  }, [
-    isModelSelectOpen,
-    isParameterPopoverOpen,
-    isReferencePickerOpen,
-    isTypeSelectOpen,
-    isVersionPickerOpen,
-  ]);
-
-  useEffect(() => {
     if (!activeDraftCard) {
       setPromptInputValue('');
       setIsPromptComposing(false);
@@ -768,18 +696,6 @@ export function CreativeCanvasFrontLayer() {
 
     setPromptInputValue(activeDraftCard.prompt);
   }, [isPromptComposing, activeDraftCard]);
-
-  useEffect(() => {
-    if (!isDraftBusy) {
-      return;
-    }
-
-    setIsTypeSelectOpen(false);
-    setIsModelSelectOpen(false);
-    setIsParameterPopoverOpen(false);
-    setIsReferencePickerOpen(false);
-    setIsVersionPickerOpen(false);
-  }, [isDraftBusy]);
 
   return (
     <div
@@ -970,19 +886,13 @@ export function CreativeCanvasFrontLayer() {
               <CreativeCanvasComposerReferencePicker
                 activeDraftId={activeDraftCard.id}
                 canvasReferenceCards={canvasReferenceCards}
-                containerRef={referencePickerRef}
+                containerRef={popovers.refs.reference}
                 currentReferenceCards={currentReferenceCards}
                 isDraftBusy={isDraftBusy}
-                isOpen={isReferencePickerOpen}
+                isOpen={popovers.open === 'reference'}
                 labels={labels}
                 onAttachCanvasReference={onAttachCanvasReference}
-                onOpenChange={(nextOpen) => {
-                  setIsTypeSelectOpen(false);
-                  setIsModelSelectOpen(false);
-                  setIsParameterPopoverOpen(false);
-                  setIsVersionPickerOpen(false);
-                  setIsReferencePickerOpen(nextOpen);
-                }}
+                onOpenChange={popovers.onOpenChange('reference')}
                 onOpenReferencePicker={onOpenReferencePicker}
                 onInsertReferenceMention={insertReferenceMention}
                 onReorderCanvasReferences={onReorderCanvasReferences}
@@ -991,19 +901,15 @@ export function CreativeCanvasFrontLayer() {
                 primaryIntent={primaryReferenceIntent}
                 variant="row"
               />
+              {!isAnalysisDraft ? <CreativeCanvasComposerShotPicker containerRef={popovers.refs.shot} disabled={isDraftBusy} isOpen={popovers.open === 'shot'}
+                mediaType={activeDraftCard.type} onOpenChange={popovers.onOpenChange('shot')} onPromptChange={handlePromptValueChange} prompt={promptInputValue} /> : null}
               <CreativeCanvasComposerVersionPicker
                 activeDraftId={activeDraftCard.id}
-                containerRef={versionPickerRef}
+                containerRef={popovers.refs.version}
                 isDraftBusy={isDraftBusy}
-                isOpen={isVersionPickerOpen}
+                isOpen={popovers.open === 'version'}
                 labels={labels}
-                onOpenChange={(nextOpen) => {
-                  setIsTypeSelectOpen(false);
-                  setIsModelSelectOpen(false);
-                  setIsParameterPopoverOpen(false);
-                  setIsReferencePickerOpen(false);
-                  setIsVersionPickerOpen(nextOpen);
-                }}
+                onOpenChange={popovers.onOpenChange('version')}
                 onPinGenerationOutput={onPinGenerationOutput}
                 outputs={generationOutputs}
                 pinnedOutputId={pinnedOutputId}
@@ -1014,18 +920,12 @@ export function CreativeCanvasFrontLayer() {
           <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-2">
             <CreativeCanvasComposerTypePicker
               activeDraftId={activeDraftCard.id}
-              containerRef={typePickerRef}
+              containerRef={popovers.refs.type}
               isDraftBusy={isDraftBusy}
-              isOpen={isTypeSelectOpen}
+              isOpen={popovers.open === 'type'}
               labels={labels}
               onDraftTaskTypeChange={onDraftTaskTypeChange}
-              onOpenChange={(nextOpen) => {
-                setIsModelSelectOpen(false);
-                setIsParameterPopoverOpen(false);
-                setIsReferencePickerOpen(false);
-                setIsVersionPickerOpen(false);
-                setIsTypeSelectOpen(nextOpen);
-              }}
+              onOpenChange={popovers.onOpenChange('type')}
               selectedType={
                 activeDraftCard.generationMode ?? activeDraftCard.type
               }
@@ -1034,36 +934,24 @@ export function CreativeCanvasFrontLayer() {
             {isAnalysisDraft ? (
               <CreativeCanvasAnalysisDepthPicker
                 activeDraftId={activeDraftCard.id}
-                containerRef={modelPickerRef}
+                containerRef={popovers.refs.model}
                 depth={activeDraftCard.analysisDepth ?? 'standard'}
                 isDraftBusy={isDraftBusy}
-                isOpen={isModelSelectOpen}
+                isOpen={popovers.open === 'model'}
                 labels={labels}
                 onDepthChange={onDraftAnalysisDepthChange}
-                onOpenChange={(nextOpen) => {
-                  setIsTypeSelectOpen(false);
-                  setIsReferencePickerOpen(false);
-                  setIsParameterPopoverOpen(false);
-                  setIsVersionPickerOpen(false);
-                  setIsModelSelectOpen(nextOpen);
-                }}
+                onOpenChange={popovers.onOpenChange('model')}
               />
             ) : (
               <div className="contents">
                 <CreativeCanvasComposerModelPicker
                   activeDraftId={activeDraftCard.id}
-                  containerRef={modelPickerRef}
+                  containerRef={popovers.refs.model}
                   isDraftBusy={isDraftBusy}
-                  isOpen={isModelSelectOpen}
+                  isOpen={popovers.open === 'model'}
                   modelOptions={modelOptions}
                   onDraftModelChange={onDraftModelChange}
-                  onOpenChange={(nextOpen) => {
-                    setIsTypeSelectOpen(false);
-                    setIsReferencePickerOpen(false);
-                    setIsParameterPopoverOpen(false);
-                    setIsVersionPickerOpen(false);
-                    setIsModelSelectOpen(nextOpen);
-                  }}
+                  onOpenChange={popovers.onOpenChange('model')}
                   selectedModelId={
                     selectedModel?.id ?? activeDraftCard.modelId
                   }
@@ -1076,9 +964,9 @@ export function CreativeCanvasFrontLayer() {
               <div className="contents">
                 <CreativeCanvasComposerParameterPicker
                   activeDraftCard={activeDraftCard}
-                  containerRef={parameterPickerRef}
+                  containerRef={popovers.refs.parameter}
                   isDraftBusy={isDraftBusy}
-                  isOpen={isParameterPopoverOpen}
+                  isOpen={popovers.open === 'parameter'}
                   labels={labels}
                   onDraftAspectRatioChange={onDraftAspectRatioChange}
                   onDraftBackgroundSourceChange={onDraftBackgroundSourceChange}
@@ -1091,13 +979,7 @@ export function CreativeCanvasFrontLayer() {
                   onDraftOutputQualityChange={onDraftOutputQualityChange}
                   onDraftQualityChange={onDraftQualityChange}
                   onDraftVariantChange={onDraftVariantChange}
-                  onOpenChange={(nextOpen) => {
-                    setIsTypeSelectOpen(false);
-                    setIsReferencePickerOpen(false);
-                    setIsModelSelectOpen(false);
-                    setIsVersionPickerOpen(false);
-                    setIsParameterPopoverOpen(nextOpen);
-                  }}
+                  onOpenChange={popovers.onOpenChange('parameter')}
                   parameterSummaryLabel={parameterSummaryLabel}
                   selectedAspectRatioOptions={selectedAspectRatioOptions}
                   selectedBackgroundSourceOptions={

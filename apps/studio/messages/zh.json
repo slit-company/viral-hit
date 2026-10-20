@@ -376,6 +376,73 @@
           "versions": "个版本",
           "latestResult": "最新结果",
           "viewResult": "查看结果"
+        },
+        "shot": {
+          "button": "镜头",
+          "buttonWithCount": "镜头，已选 {count} 项",
+          "title": "镜头设置",
+          "clear": "清除镜头",
+          "hint": "所选内容会写成提示词末尾的 Shot 行，也可以直接在那里编辑。",
+          "groups": {
+            "size": "景别",
+            "angle": "角度",
+            "lens": "镜头焦段",
+            "move": "运镜",
+            "light": "光线",
+            "look": "风格"
+          },
+          "options": {
+            "size": {
+              "extremeWide": "大远景",
+              "wide": "远景",
+              "medium": "中景",
+              "closeUp": "近景特写",
+              "extremeCloseUp": "大特写"
+            },
+            "angle": {
+              "eyeLevel": "平视",
+              "low": "仰拍",
+              "high": "俯拍",
+              "overhead": "顶拍",
+              "dutch": "倾斜角度"
+            },
+            "lens": {
+              "wide24": "24mm 广角",
+              "standard35": "35mm",
+              "normal50": "50mm",
+              "portrait85": "85mm 人像",
+              "macro": "微距"
+            },
+            "move": {
+              "static": "固定机位",
+              "pushIn": "推镜",
+              "pullOut": "拉镜",
+              "panLeft": "左摇",
+              "panRight": "右摇",
+              "tiltUp": "上摇",
+              "tiltDown": "下摇",
+              "orbit": "环绕",
+              "craneUp": "升镜",
+              "tracking": "跟拍",
+              "handheld": "手持",
+              "dollyZoom": "希区柯克变焦"
+            },
+            "light": {
+              "natural": "自然光",
+              "goldenHour": "黄金时刻",
+              "softStudio": "柔和棚拍光",
+              "neon": "霓虹光",
+              "lowKey": "低调光",
+              "backlight": "逆光"
+            },
+            "look": {
+              "film35": "35mm 胶片",
+              "documentary": "纪录片",
+              "commercial": "广告质感",
+              "anime": "动漫",
+              "blackWhite": "黑白"
+            }
+          }
         }
       },
       "emptyState": {

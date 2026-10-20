@@ -376,6 +376,73 @@
           "versions": "versions",
           "latestResult": "Latest result",
           "viewResult": "View result"
+        },
+        "shot": {
+          "button": "Shot",
+          "buttonWithCount": "Shot, {count} chosen",
+          "title": "Shot controls",
+          "clear": "Clear shot",
+          "hint": "Choices are written as a Shot line at the end of the prompt. You can edit it there.",
+          "groups": {
+            "size": "Framing",
+            "angle": "Angle",
+            "lens": "Lens",
+            "move": "Camera move",
+            "light": "Light",
+            "look": "Look"
+          },
+          "options": {
+            "size": {
+              "extremeWide": "Extreme wide",
+              "wide": "Wide",
+              "medium": "Medium",
+              "closeUp": "Close-up",
+              "extremeCloseUp": "Extreme close-up"
+            },
+            "angle": {
+              "eyeLevel": "Eye level",
+              "low": "Low angle",
+              "high": "High angle",
+              "overhead": "Overhead",
+              "dutch": "Dutch angle"
+            },
+            "lens": {
+              "wide24": "24mm wide",
+              "standard35": "35mm",
+              "normal50": "50mm",
+              "portrait85": "85mm portrait",
+              "macro": "Macro"
+            },
+            "move": {
+              "static": "Static",
+              "pushIn": "Push in",
+              "pullOut": "Pull out",
+              "panLeft": "Pan left",
+              "panRight": "Pan right",
+              "tiltUp": "Tilt up",
+              "tiltDown": "Tilt down",
+              "orbit": "Orbit",
+              "craneUp": "Crane up",
+              "tracking": "Tracking",
+              "handheld": "Handheld",
+              "dollyZoom": "Dolly zoom"
+            },
+            "light": {
+              "natural": "Natural",
+              "goldenHour": "Golden hour",
+              "softStudio": "Soft studio",
+              "neon": "Neon",
+              "lowKey": "Low-key",
+              "backlight": "Backlight"
+            },
+            "look": {
+              "film35": "35mm film",
+              "documentary": "Documentary",
+              "commercial": "Commercial",
+              "anime": "Anime",
+              "blackWhite": "Black and white"
+            }
+          }
         }
       },
       "emptyState": {

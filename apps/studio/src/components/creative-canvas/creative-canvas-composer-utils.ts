@@ -210,54 +210,6 @@ export const resolveComposerFocusLayout = ({
   };
 };
 
-export const resolveComposerPopoverStateOnPointerDown = ({
-  isTypeSelectOpen,
-  isModelSelectOpen,
-  isParameterPopoverOpen,
-  isReferencePickerOpen,
-  isVersionPickerOpen = false,
-  isWithinComposer,
-  isWithinTypePicker,
-  isWithinModelPicker,
-  isWithinParameterPicker,
-  isWithinReferencePicker,
-  isWithinVersionPicker = false,
-}: {
-  isTypeSelectOpen: boolean;
-  isModelSelectOpen: boolean;
-  isParameterPopoverOpen: boolean;
-  isReferencePickerOpen: boolean;
-  isVersionPickerOpen?: boolean;
-  isWithinComposer: boolean;
-  isWithinTypePicker: boolean;
-  isWithinModelPicker: boolean;
-  isWithinParameterPicker: boolean;
-  isWithinReferencePicker: boolean;
-  isWithinVersionPicker?: boolean;
-}) => {
-  if (!isWithinComposer) {
-    return {
-      isTypeSelectOpen: false,
-      isModelSelectOpen: false,
-      isParameterPopoverOpen: false,
-      isReferencePickerOpen: false,
-      isVersionPickerOpen: false,
-    };
-  }
-
-  return {
-    isTypeSelectOpen: isWithinTypePicker ? isTypeSelectOpen : false,
-    isModelSelectOpen: isWithinModelPicker ? isModelSelectOpen : false,
-    isParameterPopoverOpen: isWithinParameterPicker
-      ? isParameterPopoverOpen
-      : false,
-    isReferencePickerOpen: isWithinReferencePicker
-      ? isReferencePickerOpen
-      : false,
-    isVersionPickerOpen: isWithinVersionPicker ? isVersionPickerOpen : false,
-  };
-};
-
 export const getDraftStatusLabel = (
   card: CanvasGenerationCard,
   labels?: Pick<

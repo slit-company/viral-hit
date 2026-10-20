@@ -376,6 +376,73 @@
           "versions": "バージョン",
           "latestResult": "最新の結果",
           "viewResult": "結果を見る"
+        },
+        "shot": {
+          "button": "ショット",
+          "buttonWithCount": "ショット、{count}件選択",
+          "title": "ショット設定",
+          "clear": "ショットをクリア",
+          "hint": "選んだ内容はプロンプト末尾の Shot 行に書き込まれます。そこで直接編集することもできます。",
+          "groups": {
+            "size": "フレーミング",
+            "angle": "アングル",
+            "lens": "レンズ",
+            "move": "カメラワーク",
+            "light": "ライティング",
+            "look": "ルック"
+          },
+          "options": {
+            "size": {
+              "extremeWide": "超ロング",
+              "wide": "ロング",
+              "medium": "ミディアム",
+              "closeUp": "クローズアップ",
+              "extremeCloseUp": "超クローズアップ"
+            },
+            "angle": {
+              "eyeLevel": "アイレベル",
+              "low": "ローアングル",
+              "high": "ハイアングル",
+              "overhead": "真上",
+              "dutch": "ダッチアングル"
+            },
+            "lens": {
+              "wide24": "24mm 広角",
+              "standard35": "35mm",
+              "normal50": "50mm",
+              "portrait85": "85mm ポートレート",
+              "macro": "マクロ"
+            },
+            "move": {
+              "static": "固定",
+              "pushIn": "プッシュイン",
+              "pullOut": "プルアウト",
+              "panLeft": "左パン",
+              "panRight": "右パン",
+              "tiltUp": "ティルトアップ",
+              "tiltDown": "ティルトダウン",
+              "orbit": "周回",
+              "craneUp": "クレーンアップ",
+              "tracking": "トラッキング",
+              "handheld": "手持ち",
+              "dollyZoom": "ドリーズーム"
+            },
+            "light": {
+              "natural": "自然光",
+              "goldenHour": "ゴールデンアワー",
+              "softStudio": "ソフトなスタジオ光",
+              "neon": "ネオン",
+              "lowKey": "ローキー",
+              "backlight": "逆光"
+            },
+            "look": {
+              "film35": "35mm フィルム",
+              "documentary": "ドキュメンタリー",
+              "commercial": "CM調",
+              "anime": "アニメ",
+              "blackWhite": "モノクロ"
+            }
+          }
         }
       },
       "emptyState": {
