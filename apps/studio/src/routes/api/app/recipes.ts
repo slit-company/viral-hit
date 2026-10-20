@@ -2,13 +2,13 @@ import { createFileRoute } from '@tanstack/react-router';
 import { runtimeCapabilities } from '@/core/harness/capabilities';
 import { loadRecipes } from '@/core/harness/recipe-registry';
 import { changeRecipeLibrary, recipeLibraryRequest } from '@/core/harness/recipe-library';
-import { RecipeConflictError } from '@/core/harness/recipe-storage';
+import { readInstalledPacks, RecipeConflictError } from '@/core/harness/recipe-storage';
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
 
 export const Route = createFileRoute('/api/app/recipes')({ server: { handlers: {
   GET: async () => {
-    try { return Response.json({ recipes: await loadRecipes(), capabilities: runtimeCapabilities() }, { headers: { 'Cache-Control': 'no-store' } }); }
+    try { return Response.json({ recipes: await loadRecipes(), packs: readInstalledPacks(), capabilities: runtimeCapabilities() }, { headers: { 'Cache-Control': 'no-store' } }); }
     catch { return Response.json({ error: 'Recipe catalog is invalid or unavailable; inspect the configured recipe directory and local library.' }, { status: 503 }); }
   },
   POST: async ({ request }) => {

@@ -4,6 +4,8 @@ import { Download, FileJson, Copy, ArrowLeft } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { apiJsonPost } from '@/lib/api-client';
 import type { Recipe } from '@/core/harness/recipes';
+import type { PackSummary } from '@/core/harness/recipe-packs';
+import { RecipePacks } from './recipe-packs';
 
 export type RecipeInspection = {
   recipe: Recipe; digest: string; collision: 'none' | 'same' | 'different' | 'reserved';
@@ -17,7 +19,7 @@ function download(recipe: Recipe) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function RecipeLibrary({ selected, onInstalled, onBack }: { selected?: Recipe; onInstalled: (recipe: Recipe) => Promise<void>; onBack: () => void }) {
+export function RecipeLibrary({ selected, onInstalled, onPackInstalled, onBack }: { selected?: Recipe; onInstalled: (recipe: Recipe) => Promise<void>; onPackInstalled: (pack: PackSummary) => Promise<void>; onBack: () => void }) {
   const [text, setText] = useState('');
   const [graphBuilder, setGraphBuilder] = useState(false);
   const [inspection, setInspection] = useState<RecipeInspection>();
@@ -67,6 +69,8 @@ export function RecipeLibrary({ selected, onInstalled, onBack }: { selected?: Re
   }} />;
   return <div className="space-y-4">
     <Action onClick={onBack} disabled={busy} className="inline-flex items-center gap-1.5 text-xs text-[var(--vh-text-2)]"><ArrowLeft size={14} />Back to runs</Action>
+    <RecipePacks onInstalled={onPackInstalled} />
+    <h3 className="border-t border-[var(--vh-border)] pt-4 text-sm font-semibold">Your own recipe</h3>
     <Action disabled={busy} onClick={() => { setGraphBuilder(true); setError(''); }} className="flex w-full items-center justify-between rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-left text-xs"><span><strong className="block text-sm">Import ComfyUI workflow</strong><span className="mt-1 block text-[var(--vh-text-2)]">Choose graph inputs and an output, then build a portable recipe.</span></span><FileJson size={18} className="ml-3 shrink-0" /></Action>
     {selected && <section className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3">
       <p className="text-xs text-[var(--vh-text-2)]">Selected recipe</p>
@@ -97,7 +101,7 @@ export function RecipeLibrary({ selected, onInstalled, onBack }: { selected?: Re
       <Action onClick={() => download(inspection.recipe)} className="inline-flex items-center gap-1.5 underline"><Download size={14} />Download reviewed JSON</Action>
     </section>}
     {error && <p role="alert" className="whitespace-pre-wrap break-words rounded-lg bg-red-500/10 p-3 text-xs text-red-800">{error}</p>}
-    <div className="sticky -bottom-px z-10 flex gap-2 border-t border-[var(--vh-border)] bg-[var(--vh-surface)] py-3">
+    <div className={(text.trim() ? 'sticky -bottom-px z-10 ' : '') + 'flex gap-2 border-t border-[var(--vh-border)] bg-[var(--vh-surface)] py-3'}>
       <Action disabled={busy || !text.trim()} onClick={() => void inspect()} className="h-11 min-w-0 flex-1 rounded-xl border border-[var(--vh-border)] px-3 text-xs">Inspect JSON</Action>
       <Action disabled={busy || !inspection || ['reserved', 'different'].includes(inspection.collision)} onClick={() => void install()} className="vh-primary min-w-0 flex-1 text-xs">{busy ? 'Working…' : inspection?.collision === 'same' ? 'Use installed recipe' : 'Install recipe'}</Action>
     </div>

@@ -1,0 +1,507 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-pack",
+  "id": "slide-story",
+  "version": "1.0.0",
+  "title": "Slide story kit",
+  "description": "Turn card-news style slides into an editable video: one image per card, a cover title and short text per card, timed for social feeds. Every card, line and timing stays editable in the timeline.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "scope": "specialized",
+  "useCases": [
+    "card-news",
+    "carousel-to-video",
+    "explainer"
+  ],
+  "homepage": "https://github.com/slit-company/viral-hit/blob/main/docs/PACKS.md",
+  "recipes": [
+    {
+      "schemaVersion": 1,
+      "id": "slide-story-three-cards",
+      "version": "1.0.0",
+      "title": "Slides: three-card story",
+      "description": "Three cards of 3 seconds each (9 seconds) with a cover title and one line per card. Silent, so you can add music or narration in the editor.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "slides",
+      "tags": [
+        "cards",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "card1",
+          "label": "Card 1 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "card2",
+          "label": "Card 2 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "card3",
+          "label": "Card 3 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "line1",
+          "label": "Cover title",
+          "type": "string",
+          "multiline": false,
+          "default": "COVER TITLE",
+          "maxLength": 120
+        },
+        {
+          "id": "line2",
+          "label": "Card 2 text",
+          "type": "string",
+          "multiline": false,
+          "default": "Point 1",
+          "maxLength": 120
+        },
+        {
+          "id": "line3",
+          "label": "Card 3 text",
+          "type": "string",
+          "multiline": false,
+          "default": "Point 2",
+          "maxLength": 120
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "3-card story",
+            "assets": {
+              "card1": {
+                "assetId": "select-card1",
+                "kind": "image"
+              },
+              "card2": {
+                "assetId": "select-card2",
+                "kind": "image"
+              },
+              "card3": {
+                "assetId": "select-card3",
+                "kind": "image"
+              }
+            },
+            "tracks": [
+              {
+                "id": "cards",
+                "kind": "video",
+                "name": "Cards",
+                "clips": [
+                  {
+                    "id": "card1",
+                    "type": "media",
+                    "source": "card1",
+                    "startTime": 0,
+                    "duration": 3
+                  },
+                  {
+                    "id": "card2",
+                    "type": "media",
+                    "source": "card2",
+                    "startTime": 3,
+                    "duration": 3
+                  },
+                  {
+                    "id": "card3",
+                    "type": "media",
+                    "source": "card3",
+                    "startTime": 6,
+                    "duration": 3
+                  }
+                ]
+              },
+              {
+                "id": "lines",
+                "kind": "caption",
+                "name": "Card text",
+                "clips": [
+                  {
+                    "id": "line1",
+                    "type": "caption",
+                    "startTime": 0,
+                    "duration": 3,
+                    "text": "COVER TITLE",
+                    "caption": {
+                      "fontScale": 0.07,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.72
+                    }
+                  },
+                  {
+                    "id": "line2",
+                    "type": "caption",
+                    "startTime": 3,
+                    "duration": 3,
+                    "text": "Point 1",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  },
+                  {
+                    "id": "line3",
+                    "type": "caption",
+                    "startTime": 6,
+                    "duration": 3,
+                    "text": "Point 2",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "card1",
+              "target": "/assets/card1/assetId"
+            },
+            {
+              "parameter": "card2",
+              "target": "/assets/card2/assetId"
+            },
+            {
+              "parameter": "card3",
+              "target": "/assets/card3/assetId"
+            },
+            {
+              "parameter": "line1",
+              "target": "/tracks/1/clips/0/text"
+            },
+            {
+              "parameter": "line2",
+              "target": "/tracks/1/clips/1/text"
+            },
+            {
+              "parameter": "line3",
+              "target": "/tracks/1/clips/2/text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "slide-story-five-cards",
+      "version": "1.0.0",
+      "title": "Slides: five cards with music",
+      "description": "Five cards of 2.4 seconds each (12 seconds) with a cover title, one line per card and a music bed that fades in and out. Use music of at least 12 seconds.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "slides",
+      "tags": [
+        "cards",
+        "music",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "card1",
+          "label": "Card 1 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "card2",
+          "label": "Card 2 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "card3",
+          "label": "Card 3 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "card4",
+          "label": "Card 4 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "card5",
+          "label": "Card 5 image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "music",
+          "label": "Music bed",
+          "type": "asset",
+          "kind": "audio",
+          "description": "At least 12 seconds."
+        },
+        {
+          "id": "line1",
+          "label": "Cover title",
+          "type": "string",
+          "multiline": false,
+          "default": "COVER TITLE",
+          "maxLength": 120
+        },
+        {
+          "id": "line2",
+          "label": "Card 2 text",
+          "type": "string",
+          "multiline": false,
+          "default": "Point 1",
+          "maxLength": 120
+        },
+        {
+          "id": "line3",
+          "label": "Card 3 text",
+          "type": "string",
+          "multiline": false,
+          "default": "Point 2",
+          "maxLength": 120
+        },
+        {
+          "id": "line4",
+          "label": "Card 4 text",
+          "type": "string",
+          "multiline": false,
+          "default": "Point 3",
+          "maxLength": 120
+        },
+        {
+          "id": "line5",
+          "label": "Card 5 text",
+          "type": "string",
+          "multiline": false,
+          "default": "Point 4",
+          "maxLength": 120
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "5-card story",
+            "assets": {
+              "card1": {
+                "assetId": "select-card1",
+                "kind": "image"
+              },
+              "card2": {
+                "assetId": "select-card2",
+                "kind": "image"
+              },
+              "card3": {
+                "assetId": "select-card3",
+                "kind": "image"
+              },
+              "card4": {
+                "assetId": "select-card4",
+                "kind": "image"
+              },
+              "card5": {
+                "assetId": "select-card5",
+                "kind": "image"
+              },
+              "music": {
+                "assetId": "select-music",
+                "kind": "audio"
+              }
+            },
+            "tracks": [
+              {
+                "id": "cards",
+                "kind": "video",
+                "name": "Cards",
+                "clips": [
+                  {
+                    "id": "card1",
+                    "type": "media",
+                    "source": "card1",
+                    "startTime": 0.0,
+                    "duration": 2.4
+                  },
+                  {
+                    "id": "card2",
+                    "type": "media",
+                    "source": "card2",
+                    "startTime": 2.4,
+                    "duration": 2.4
+                  },
+                  {
+                    "id": "card3",
+                    "type": "media",
+                    "source": "card3",
+                    "startTime": 4.8,
+                    "duration": 2.4
+                  },
+                  {
+                    "id": "card4",
+                    "type": "media",
+                    "source": "card4",
+                    "startTime": 7.2,
+                    "duration": 2.4
+                  },
+                  {
+                    "id": "card5",
+                    "type": "media",
+                    "source": "card5",
+                    "startTime": 9.6,
+                    "duration": 2.4
+                  }
+                ]
+              },
+              {
+                "id": "lines",
+                "kind": "caption",
+                "name": "Card text",
+                "clips": [
+                  {
+                    "id": "line1",
+                    "type": "caption",
+                    "startTime": 0.0,
+                    "duration": 2.4,
+                    "text": "COVER TITLE",
+                    "caption": {
+                      "fontScale": 0.07,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.72
+                    }
+                  },
+                  {
+                    "id": "line2",
+                    "type": "caption",
+                    "startTime": 2.4,
+                    "duration": 2.4,
+                    "text": "Point 1",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  },
+                  {
+                    "id": "line3",
+                    "type": "caption",
+                    "startTime": 4.8,
+                    "duration": 2.4,
+                    "text": "Point 2",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  },
+                  {
+                    "id": "line4",
+                    "type": "caption",
+                    "startTime": 7.2,
+                    "duration": 2.4,
+                    "text": "Point 3",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  },
+                  {
+                    "id": "line5",
+                    "type": "caption",
+                    "startTime": 9.6,
+                    "duration": 2.4,
+                    "text": "Point 4",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "music",
+                "kind": "audio",
+                "name": "Music bed",
+                "clips": [
+                  {
+                    "id": "bed",
+                    "type": "media",
+                    "source": "music",
+                    "startTime": 0,
+                    "duration": 12.0,
+                    "volume": 0.5,
+                    "fadeIn": 0.5,
+                    "fadeOut": 1.5,
+                    "audioRole": "music"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "card1",
+              "target": "/assets/card1/assetId"
+            },
+            {
+              "parameter": "card2",
+              "target": "/assets/card2/assetId"
+            },
+            {
+              "parameter": "card3",
+              "target": "/assets/card3/assetId"
+            },
+            {
+              "parameter": "card4",
+              "target": "/assets/card4/assetId"
+            },
+            {
+              "parameter": "card5",
+              "target": "/assets/card5/assetId"
+            },
+            {
+              "parameter": "music",
+              "target": "/assets/music/assetId"
+            },
+            {
+              "parameter": "line1",
+              "target": "/tracks/1/clips/0/text"
+            },
+            {
+              "parameter": "line2",
+              "target": "/tracks/1/clips/1/text"
+            },
+            {
+              "parameter": "line3",
+              "target": "/tracks/1/clips/2/text"
+            },
+            {
+              "parameter": "line4",
+              "target": "/tracks/1/clips/3/text"
+            },
+            {
+              "parameter": "line5",
+              "target": "/tracks/1/clips/4/text"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

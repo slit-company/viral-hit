@@ -2,6 +2,10 @@
 
 The core must support both general creative work and specialized workflows. A new use case must not require forking the editor or inheriting advertising-specific assumptions. There are two extension levels: **data recipes** (implemented) and **execution adapters** (explicitly installed, versioned server modules shared by the UI, MCP and worker).
 
+## Share several recipes as a pack
+
+Group related recipes into a [recipe pack](PACKS.md) labeled general or for a specific job. Packs install all at once after review, appear grouped in the Runs picker, and are shared through the same UI, HTTP, MCP and CLI service.
+
 ## Add a recipe without editing application code
 
 A recipe is a versioned JSON file with identity, author/license, category, typed parameters, nodes and bindings. Import a manifest through **Runs → Recipe library**, put one in `recipes/`, or point `VIRAL_HIT_RECIPES_DIR` to your own file catalog before starting the app/MCP server. The configured directory replaces the shipped file catalog; the workspace’s separate local library is appended without shadowing file-catalog IDs. The studio reads the catalog and builds the input form from each manifest. Agents discover the same catalog through `viral_hit_recipes_list`; `viral_hit_runs_change` accepts `action: "recipe"`, `recipeId`, `values` and a stable `requestKey`.

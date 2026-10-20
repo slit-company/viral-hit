@@ -11,6 +11,8 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } 
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { Job } from '@/core/harness/durable';
 import type { Recipe } from '@/core/harness/recipes';
+import type { InstalledPack, PackSummary } from '@/core/harness/recipe-packs';
+import { packScopeLabel } from './recipe-packs';
 import type { TimelineDocument } from '@/core/editor/timeline-document';
 import type { ComfyPreflight } from '@/core/harness/comfy-preflight';
 
@@ -36,6 +38,8 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [takeNotice, setTakeNotice] = useState('');
   const [attached, setAttached] = useState<string[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [packs, setPacks] = useState<InstalledPack[]>([]);
+  const packed = new Set(packs.flatMap(pack => pack.recipeIds));
   const [inputAssets, setInputAssets] = useState<InputAsset[]>([]);
   const [recipeId, setRecipeId] = useState('open-frame');
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
@@ -77,7 +81,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   useEffect(() => {
     if (!open) return;
     let active = true;
-    void apiJsonGet<{ recipes: Recipe[] }>('/api/app/recipes').then(result => { if (active) setRecipes(result.recipes); }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
+    void apiJsonGet<{ recipes: Recipe[]; packs?: InstalledPack[] }>('/api/app/recipes').then(result => { if (active) { setRecipes(result.recipes); setPacks(result.packs ?? []); } }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
     return () => { active = false; };
   }, [open]);
   useEffect(() => {
@@ -122,11 +126,14 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       setTakeTarget(undefined); setTakeNotice('Take applied. Close this window and use Clip take in the editor to restore the original.');
     }
   }
-  async function recipeInstalled(recipe: Recipe) {
-    const result = await apiJsonGet<{ recipes: Recipe[] }>('/api/app/recipes');
-    setRecipes(result.recipes); setRecipeId(recipe.id); setValues({}); requestKey.current = ''; invalidateCheck();
-    setLibraryOpen(false); setLibraryNotice(`${recipe.title} is ready in this local library. No jobs started.`);
+  async function recipeInstalled(recipe: Pick<Recipe, 'id' | 'title'>, notice = `${recipe.title} is ready in this local library. No jobs started.`) {
+    const result = await apiJsonGet<{ recipes: Recipe[]; packs?: InstalledPack[] }>('/api/app/recipes');
+    setRecipes(result.recipes); setPacks(result.packs ?? []); setRecipeId(recipe.id); setValues({}); requestKey.current = ''; invalidateCheck();
+    setLibraryOpen(false); setLibraryNotice(notice);
     dialogBody.current?.scrollTo({ top: 0 });
+  }
+  async function packInstalled(pack: PackSummary) {
+    await recipeInstalled({ id: pack.recipeIds[0], title: pack.title }, `${pack.title} is ready: ${pack.recipeIds.length} recipes in this local library. No jobs started.`);
   }
   return <Dialog open={open} onOpenChange={setOpen}>
     <DialogTrigger className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-[var(--vh-border)] px-2.5 text-xs hover:bg-[var(--vh-control)]" aria-label="Generation runs">
@@ -136,17 +143,20 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
       <div className="pr-8">
         <p className="mb-2 text-[10px] font-semibold tracking-[0.2em] text-[var(--color-lime-text)]">VIRAL HIT / EXECUTION</p>
         <DialogTitle className="text-xl">{connectionsOpen ? 'Connections' : libraryOpen ? 'Recipe library' : 'Project runs'}</DialogTitle>
-        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{connectionsOpen ? 'Choose where your native workflows run.' : libraryOpen ? 'Bring your own workflow, make a separate copy, and share its JSON. Installation does not run it.' : 'Your project’s workflows and source imports. Closing this window keeps queued work in the local worker.'}</DialogDescription>
+        <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{connectionsOpen ? 'Choose where your native workflows run.' : libraryOpen ? 'Add a ready-made pack, bring your own workflow, or share a copy. Installing never runs anything.' : 'Your project’s workflows and source imports. Closing this window keeps queued work in the local worker.'}</DialogDescription>
       </div>
       <div ref={dialogBody} className="min-h-0 overflow-y-auto" data-testid="runs-body">
-      {connectionsOpen ? <ComfyConnectionSettings onBack={() => { setConnectionsOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} onChanged={async () => { invalidateCheck(); setChecking(false); requestKey.current = ''; await refresh(); }} /> : libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipeInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
+      {connectionsOpen ? <ComfyConnectionSettings onBack={() => { setConnectionsOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} onChanged={async () => { invalidateCheck(); setChecking(false); requestKey.current = ''; await refresh(); }} /> : libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipe => recipeInstalled(recipe)} onPackInstalled={packInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
       {libraryNotice && <p role="status" className="mb-3 rounded-lg bg-[var(--vh-control)] p-3 text-xs">{libraryNotice}</p>}
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">
           <div className="flex items-center justify-between gap-2"><label htmlFor="run-recipe" className="block text-xs text-[var(--vh-text-2)]">Creative recipe</label><Action onClick={() => { setLibraryOpen(true); setError(''); dialogBody.current?.scrollTo({ top: 0 }); }} className="text-xs text-[var(--color-lime-text)]">Recipe library</Action></div>
           <select id="run-recipe" value={selected?.id ?? ''} onChange={e => { setRecipeId(e.target.value); setValues({}); requestKey.current = ''; invalidateCheck(); setChecking(false); }} className="w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-surface)] p-2.5 text-sm">
             {!recipes.length && <option value="">No recipes available</option>}
-            {recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
+            {packs.length ? <>
+              <optgroup label="Recipes">{recipes.filter(recipe => !packed.has(recipe.id)).map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}</optgroup>
+              {packs.map(pack => <optgroup key={pack.id} label={`${pack.title} · ${packScopeLabel[pack.scope]}`}>{pack.recipeIds.flatMap(id => recipes.filter(recipe => recipe.id === id)).map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}</optgroup>)}
+            </> : recipes.map(recipe => <option key={recipe.id} value={recipe.id}>{recipe.title}</option>)}
           </select>
           {selected && <>
             <details className="text-xs text-[var(--vh-text-2)]"><summary className="cursor-pointer">Recipe details</summary><p className="mt-2 leading-relaxed">{selected.description}</p><p className="mt-2 text-[10px]">{selected.author} · {selected.license} · v{selected.version}</p></details>

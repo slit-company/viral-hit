@@ -1,0 +1,460 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-pack",
+  "id": "short-form-reel",
+  "version": "1.0.0",
+  "title": "Short-form reel kit",
+  "description": "Vertical-first, fully editable starting points for reels, shorts and product ads: a hook in the first seconds, a product punch-in and captions placed clear of phone controls. Bring your own footage, music and narration; nothing is generated or published.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "scope": "specialized",
+  "useCases": [
+    "short-form-video",
+    "product-ad",
+    "reel-remake"
+  ],
+  "homepage": "https://github.com/slit-company/viral-hit/blob/main/docs/PACKS.md",
+  "recipes": [
+    {
+      "schemaVersion": 1,
+      "id": "short-form-reel-hook-cut",
+      "version": "1.0.0",
+      "title": "Reel: hook, cut and call to action",
+      "description": "An 8-second vertical cut. A large hook sits in the upper third for 2.5 seconds, the call to action closes the last 2.5 seconds, and music stays under the narration. Use a vertical video and music of at least 8 seconds. The source video is muted; every clip stays editable.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "short-form",
+      "tags": [
+        "vertical",
+        "hook",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "video",
+          "label": "Vertical video",
+          "type": "asset",
+          "kind": "video",
+          "description": "At least 8 seconds. A 9:16 source keeps the export vertical."
+        },
+        {
+          "id": "music",
+          "label": "Music bed",
+          "type": "asset",
+          "kind": "audio",
+          "description": "At least 8 seconds. Plays at 30% under the narration."
+        },
+        {
+          "id": "voice",
+          "label": "Narration",
+          "type": "asset",
+          "kind": "audio"
+        },
+        {
+          "id": "voice-length",
+          "label": "Narration length (seconds)",
+          "type": "number",
+          "default": 6,
+          "min": 0.5,
+          "max": 8,
+          "description": "Shorter than the narration file; trimming happens in the editor."
+        },
+        {
+          "id": "hook",
+          "label": "Hook",
+          "type": "string",
+          "multiline": false,
+          "default": "WAIT FOR THE LAST ONE",
+          "maxLength": 60
+        },
+        {
+          "id": "cta",
+          "label": "Call to action",
+          "type": "string",
+          "multiline": false,
+          "default": "LINK IN BIO",
+          "maxLength": 60
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "Reel hook cut",
+            "assets": {
+              "video": {
+                "assetId": "select-video",
+                "kind": "video"
+              },
+              "music": {
+                "assetId": "select-music",
+                "kind": "audio"
+              },
+              "voice": {
+                "assetId": "select-voice",
+                "kind": "audio"
+              }
+            },
+            "tracks": [
+              {
+                "id": "visual",
+                "kind": "video",
+                "name": "Vertical video",
+                "clips": [
+                  {
+                    "id": "scene",
+                    "type": "media",
+                    "source": "video",
+                    "startTime": 0,
+                    "duration": 8,
+                    "muted": true
+                  }
+                ]
+              },
+              {
+                "id": "hook",
+                "kind": "caption",
+                "name": "Hook",
+                "clips": [
+                  {
+                    "id": "hook",
+                    "type": "caption",
+                    "startTime": 0,
+                    "duration": 2.5,
+                    "text": "WAIT FOR THE LAST ONE",
+                    "caption": {
+                      "fontScale": 0.07,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.72
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "cta",
+                "kind": "caption",
+                "name": "Call to action",
+                "clips": [
+                  {
+                    "id": "cta",
+                    "type": "caption",
+                    "startTime": 5.5,
+                    "duration": 2.5,
+                    "text": "LINK IN BIO",
+                    "caption": {
+                      "fontScale": 0.055,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.2
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "music",
+                "kind": "audio",
+                "name": "Music bed",
+                "clips": [
+                  {
+                    "id": "bed",
+                    "type": "media",
+                    "source": "music",
+                    "startTime": 0,
+                    "duration": 8,
+                    "volume": 0.3,
+                    "fadeIn": 0.3,
+                    "fadeOut": 1,
+                    "audioRole": "music"
+                  }
+                ]
+              },
+              {
+                "id": "voice",
+                "kind": "audio",
+                "name": "Narration",
+                "clips": [
+                  {
+                    "id": "line",
+                    "type": "media",
+                    "source": "voice",
+                    "startTime": 0.4,
+                    "duration": 6,
+                    "audioRole": "voice"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "video",
+              "target": "/assets/video/assetId"
+            },
+            {
+              "parameter": "music",
+              "target": "/assets/music/assetId"
+            },
+            {
+              "parameter": "voice",
+              "target": "/assets/voice/assetId"
+            },
+            {
+              "parameter": "voice-length",
+              "target": "/tracks/4/clips/0/duration"
+            },
+            {
+              "parameter": "hook",
+              "target": "/tracks/1/clips/0/text"
+            },
+            {
+              "parameter": "cta",
+              "target": "/tracks/2/clips/0/text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "short-form-reel-product-punch",
+      "version": "1.0.0",
+      "title": "Reel: product punch-in",
+      "description": "A 6-second product moment. Your product image punches in over a background video with editable keyframes, under a headline in the upper third and a music bed that fades out. Use a background video and music of at least 6 seconds; a transparent PNG product works best.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "short-form",
+      "tags": [
+        "vertical",
+        "product",
+        "animation"
+      ],
+      "parameters": [
+        {
+          "id": "video",
+          "label": "Background video",
+          "type": "asset",
+          "kind": "video",
+          "description": "At least 6 seconds."
+        },
+        {
+          "id": "product",
+          "label": "Product image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "music",
+          "label": "Music bed",
+          "type": "asset",
+          "kind": "audio",
+          "description": "At least 6 seconds."
+        },
+        {
+          "id": "headline",
+          "label": "Headline",
+          "type": "string",
+          "multiline": false,
+          "default": "NEW DROP",
+          "maxLength": 60
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "Product punch-in",
+            "assets": {
+              "video": {
+                "assetId": "select-video",
+                "kind": "video"
+              },
+              "product": {
+                "assetId": "select-product",
+                "kind": "image"
+              },
+              "music": {
+                "assetId": "select-music",
+                "kind": "audio"
+              }
+            },
+            "tracks": [
+              {
+                "id": "visual",
+                "kind": "video",
+                "name": "Background",
+                "clips": [
+                  {
+                    "id": "scene",
+                    "type": "media",
+                    "source": "video",
+                    "startTime": 0,
+                    "duration": 6,
+                    "muted": true
+                  }
+                ]
+              },
+              {
+                "id": "headline",
+                "kind": "caption",
+                "name": "Headline",
+                "clips": [
+                  {
+                    "id": "headline",
+                    "type": "caption",
+                    "startTime": 0.3,
+                    "duration": 5.2,
+                    "text": "NEW DROP",
+                    "caption": {
+                      "fontScale": 0.07,
+                      "maxWidth": 0.86,
+                      "bottomOffset": 0.72
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "product",
+                "kind": "overlay",
+                "name": "Product",
+                "clips": [
+                  {
+                    "id": "product",
+                    "type": "media",
+                    "source": "product",
+                    "startTime": 0,
+                    "duration": 6,
+                    "motion": {
+                      "version": 1,
+                      "keyframes": [
+                        {
+                          "id": "enter",
+                          "time": 0,
+                          "x": 0.5,
+                          "y": 0.56,
+                          "width": 0.34,
+                          "opacity": 0,
+                          "rotation": -6,
+                          "easing": "ease-out"
+                        },
+                        {
+                          "id": "punch",
+                          "time": 0.6,
+                          "x": 0.5,
+                          "y": 0.54,
+                          "width": 0.64,
+                          "opacity": 1,
+                          "rotation": 0,
+                          "easing": "linear"
+                        },
+                        {
+                          "id": "hold",
+                          "time": 5.4,
+                          "x": 0.5,
+                          "y": 0.53,
+                          "width": 0.7,
+                          "opacity": 1,
+                          "rotation": 0,
+                          "easing": "ease-in"
+                        },
+                        {
+                          "id": "exit",
+                          "time": 6,
+                          "x": 0.5,
+                          "y": 0.53,
+                          "width": 0.7,
+                          "opacity": 0,
+                          "rotation": 0,
+                          "easing": "linear"
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              {
+                "id": "music",
+                "kind": "audio",
+                "name": "Music bed",
+                "clips": [
+                  {
+                    "id": "bed",
+                    "type": "media",
+                    "source": "music",
+                    "startTime": 0,
+                    "duration": 6,
+                    "volume": 0.6,
+                    "fadeOut": 1.2,
+                    "audioRole": "music"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "video",
+              "target": "/assets/video/assetId"
+            },
+            {
+              "parameter": "product",
+              "target": "/assets/product/assetId"
+            },
+            {
+              "parameter": "music",
+              "target": "/assets/music/assetId"
+            },
+            {
+              "parameter": "headline",
+              "target": "/tracks/1/clips/0/text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "short-form-reel-study",
+      "version": "1.0.0",
+      "title": "Reel: study a reference",
+      "description": "Keep an original copy of a reference reel in this project and extract five frames across it, so a remake can follow its pacing and framing. Samples support planning; they are not motion, speech or cut analysis.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "short-form",
+      "tags": [
+        "reference",
+        "remake"
+      ],
+      "parameters": [
+        {
+          "id": "source",
+          "label": "Reference reel",
+          "type": "asset",
+          "kind": "video",
+          "description": "A video already in this project, such as a collected or uploaded reel."
+        }
+      ],
+      "nodes": [
+        {
+          "id": "reference",
+          "operation": "reference.sample",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "assetId": ""
+          },
+          "parameters": [
+            {
+              "parameter": "source",
+              "target": "/assetId"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

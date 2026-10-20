@@ -14,12 +14,12 @@ import { listGenerationModelDescriptors } from '@/core/generation-providers';
 
 import { VIRAL_HIT_MCP_TOOL_NAMES } from './tools';
 
-test('MCP tool catalog is exactly 40 named tools', () => {
-  const source = ['./server.ts', './publishing-tools.ts', './project-bundle-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
+test('MCP tool catalog is exactly 41 named tools', () => {
+  const source = ['./server.ts', './publishing-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
   const registered = [...source.matchAll(/server\.registerTool\(\s*'([^']+)'/g)].map(
     (match) => match[1]
   );
-  assert.equal(VIRAL_HIT_MCP_TOOL_NAMES.length, 40);
+  assert.equal(VIRAL_HIT_MCP_TOOL_NAMES.length, 41);
   assert.deepEqual(registered, [...VIRAL_HIT_MCP_TOOL_NAMES]);
 });
 

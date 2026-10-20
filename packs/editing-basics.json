@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-pack",
+  "id": "editing-basics",
+  "version": "1.0.0",
+  "title": "Editing basics",
+  "description": "Small, general building blocks for any project: a title card, a music bed, a voice-over with the original sound lowered, and picture-in-picture. Each one appends separate, editable tracks after your current timeline.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "scope": "general",
+  "useCases": [
+    "any-project",
+    "editing"
+  ],
+  "homepage": "https://github.com/slit-company/viral-hit/blob/main/docs/PACKS.md",
+  "recipes": [
+    {
+      "schemaVersion": 1,
+      "id": "editing-basics-title-card",
+      "version": "1.0.0",
+      "title": "Title card",
+      "description": "An image with a centered title for an opening, chapter break or end card.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "editing",
+      "tags": [
+        "title",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "image",
+          "label": "Background image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "title",
+          "label": "Title",
+          "type": "string",
+          "multiline": false,
+          "default": "CHAPTER ONE",
+          "maxLength": 80
+        },
+        {
+          "id": "duration",
+          "label": "Duration (seconds)",
+          "type": "number",
+          "default": 3,
+          "min": 0.5,
+          "max": 30
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "Title card",
+            "assets": {
+              "image": {
+                "assetId": "select-image",
+                "kind": "image"
+              }
+            },
+            "tracks": [
+              {
+                "id": "visual",
+                "kind": "video",
+                "name": "Background",
+                "clips": [
+                  {
+                    "id": "background",
+                    "type": "media",
+                    "source": "image",
+                    "startTime": 0,
+                    "duration": 3
+                  }
+                ]
+              },
+              {
+                "id": "title",
+                "kind": "caption",
+                "name": "Title",
+                "clips": [
+                  {
+                    "id": "title",
+                    "type": "caption",
+                    "startTime": 0,
+                    "duration": 3,
+                    "text": "CHAPTER ONE",
+                    "caption": {
+                      "fontScale": 0.075,
+                      "maxWidth": 0.8,
+                      "bottomOffset": 0.45
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "image",
+              "target": "/assets/image/assetId"
+            },
+            {
+              "parameter": "title",
+              "target": "/tracks/1/clips/0/text"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/0/clips/0/duration"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/1/clips/0/duration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "editing-basics-music-bed",
+      "version": "1.0.0",
+      "title": "Music bed",
+      "description": "A video with its original sound kept at 60% and music underneath with fades. The video and music must both cover the chosen duration.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "editing",
+      "tags": [
+        "music",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "video",
+          "label": "Video",
+          "type": "asset",
+          "kind": "video"
+        },
+        {
+          "id": "music",
+          "label": "Music",
+          "type": "asset",
+          "kind": "audio"
+        },
+        {
+          "id": "duration",
+          "label": "Duration (seconds)",
+          "type": "number",
+          "default": 8,
+          "min": 1,
+          "max": 120
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "Music bed",
+            "assets": {
+              "video": {
+                "assetId": "select-video",
+                "kind": "video"
+              },
+              "music": {
+                "assetId": "select-music",
+                "kind": "audio"
+              }
+            },
+            "tracks": [
+              {
+                "id": "visual",
+                "kind": "video",
+                "name": "Video",
+                "clips": [
+                  {
+                    "id": "scene",
+                    "type": "media",
+                    "source": "video",
+                    "startTime": 0,
+                    "duration": 8,
+                    "volume": 0.6,
+                    "audioRole": "source"
+                  }
+                ]
+              },
+              {
+                "id": "music",
+                "kind": "audio",
+                "name": "Music",
+                "clips": [
+                  {
+                    "id": "bed",
+                    "type": "media",
+                    "source": "music",
+                    "startTime": 0,
+                    "duration": 8,
+                    "volume": 0.4,
+                    "fadeIn": 0.5,
+                    "fadeOut": 1.5,
+                    "audioRole": "music"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "video",
+              "target": "/assets/video/assetId"
+            },
+            {
+              "parameter": "music",
+              "target": "/assets/music/assetId"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/0/clips/0/duration"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/1/clips/0/duration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "editing-basics-voiceover",
+      "version": "1.0.0",
+      "title": "Voice-over",
+      "description": "Narration over a video with its original sound lowered to 20%. The video must cover the chosen duration; the narration may be shorter.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "editing",
+      "tags": [
+        "voice",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "video",
+          "label": "Video",
+          "type": "asset",
+          "kind": "video"
+        },
+        {
+          "id": "voice",
+          "label": "Narration",
+          "type": "asset",
+          "kind": "audio"
+        },
+        {
+          "id": "duration",
+          "label": "Video duration (seconds)",
+          "type": "number",
+          "default": 8,
+          "min": 1,
+          "max": 120
+        },
+        {
+          "id": "voice-length",
+          "label": "Narration length (seconds)",
+          "type": "number",
+          "default": 6,
+          "min": 0.5,
+          "max": 120
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "Voice-over",
+            "assets": {
+              "video": {
+                "assetId": "select-video",
+                "kind": "video"
+              },
+              "voice": {
+                "assetId": "select-voice",
+                "kind": "audio"
+              }
+            },
+            "tracks": [
+              {
+                "id": "visual",
+                "kind": "video",
+                "name": "Video",
+                "clips": [
+                  {
+                    "id": "scene",
+                    "type": "media",
+                    "source": "video",
+                    "startTime": 0,
+                    "duration": 8,
+                    "volume": 0.2,
+                    "audioRole": "source"
+                  }
+                ]
+              },
+              {
+                "id": "voice",
+                "kind": "audio",
+                "name": "Narration",
+                "clips": [
+                  {
+                    "id": "line",
+                    "type": "media",
+                    "source": "voice",
+                    "startTime": 0,
+                    "duration": 6,
+                    "audioRole": "voice"
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "video",
+              "target": "/assets/video/assetId"
+            },
+            {
+              "parameter": "voice",
+              "target": "/assets/voice/assetId"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/0/clips/0/duration"
+            },
+            {
+              "parameter": "voice-length",
+              "target": "/tracks/1/clips/0/duration"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "editing-basics-picture-in-picture",
+      "version": "1.0.0",
+      "title": "Picture-in-picture",
+      "description": "An image in the top-right corner over a video, for a logo, speaker photo or reaction.",
+      "license": "Apache-2.0",
+      "author": "Viral Hit contributors",
+      "category": "editing",
+      "tags": [
+        "overlay",
+        "editable"
+      ],
+      "parameters": [
+        {
+          "id": "video",
+          "label": "Video",
+          "type": "asset",
+          "kind": "video"
+        },
+        {
+          "id": "image",
+          "label": "Corner image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "duration",
+          "label": "Duration (seconds)",
+          "type": "number",
+          "default": 5,
+          "min": 0.5,
+          "max": 120
+        }
+      ],
+      "nodes": [
+        {
+          "id": "edit",
+          "operation": "editor.sequence",
+          "version": "1",
+          "input": {
+            "schemaVersion": 1,
+            "title": "Picture-in-picture",
+            "assets": {
+              "video": {
+                "assetId": "select-video",
+                "kind": "video"
+              },
+              "image": {
+                "assetId": "select-image",
+                "kind": "image"
+              }
+            },
+            "tracks": [
+              {
+                "id": "visual",
+                "kind": "video",
+                "name": "Video",
+                "clips": [
+                  {
+                    "id": "scene",
+                    "type": "media",
+                    "source": "video",
+                    "startTime": 0,
+                    "duration": 5
+                  }
+                ]
+              },
+              {
+                "id": "corner",
+                "kind": "overlay",
+                "name": "Corner",
+                "clips": [
+                  {
+                    "id": "corner",
+                    "type": "media",
+                    "source": "image",
+                    "startTime": 0,
+                    "duration": 5,
+                    "overlay": {
+                      "x": 0.8,
+                      "y": 0.18,
+                      "width": 0.28,
+                      "opacity": 1,
+                      "rotation": 0
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "parameters": [
+            {
+              "parameter": "video",
+              "target": "/assets/video/assetId"
+            },
+            {
+              "parameter": "image",
+              "target": "/assets/image/assetId"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/0/clips/0/duration"
+            },
+            {
+              "parameter": "duration",
+              "target": "/tracks/1/clips/0/duration"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

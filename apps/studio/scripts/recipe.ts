@@ -4,14 +4,16 @@ import { z } from 'zod';
 import { compileRecipe, compileRecipeForCheck, recipeSchema } from '../src/core/harness/recipes';
 import { comfyRecipeDefinitionSchema, importComfyRecipe, inspectComfyGraph } from '../src/core/harness/import-comfy-recipe';
 import { preflightComfyPlan } from '../src/core/harness/comfy-preflight';
+import { changeRecipePacks } from '../src/core/harness/recipe-pack-library';
+import { MAX_PACK_BYTES } from '../src/core/harness/recipe-packs';
 const [command, file, values, projectId] = process.argv.slice(2);
-function readJson(path: string): unknown {
+function readJson(path: string, limit = 128_000): unknown {
   const fd = openSync(path, 'r');
   try {
     const stat = fstatSync(fd);
-    if (!stat.isFile() || stat.size > 128_000) throw new Error('Expected a JSON file no larger than 128 KB');
+    if (!stat.isFile() || stat.size > limit) throw new Error('Expected a JSON file no larger than ' + Math.round(limit / 1000) + ' KB');
     const bytes = readFileSync(fd);
-    if (bytes.byteLength > 128_000) throw new Error('JSON file exceeds 128 KB');
+    if (bytes.byteLength > limit) throw new Error('JSON file is too large');
     return JSON.parse(bytes.toString('utf8'));
   } finally { closeSync(fd); }
 }
@@ -19,6 +21,9 @@ try {
   if (command === 'schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(recipeSchema), null, 2) + '\n');
   else if (command === 'sequence-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(sequenceSchema), null, 2) + '\n');
   else if (command === 'comfy-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(comfyRecipeDefinitionSchema), null, 2) + '\n');
+  else if (command === 'packs') console.log(JSON.stringify(await changeRecipePacks({ action: 'list' }), null, 2));
+  else if (command === 'inspect-pack' && file) console.log(JSON.stringify(await changeRecipePacks({ action: 'inspect', pack: readJson(file, MAX_PACK_BYTES) }), null, 2));
+  else if (command === 'install-pack' && file && values) console.log(JSON.stringify(await changeRecipePacks({ action: 'install', pack: readJson(file, MAX_PACK_BYTES), expectedDigest: values }), null, 2));
   else if (command === 'inspect-comfy' && file) console.log(JSON.stringify(inspectComfyGraph(readJson(file)), null, 2));
   else if (command === 'import-comfy' && file && values && projectId) {
     const recipe = importComfyRecipe(readJson(file), readJson(values));
@@ -34,5 +39,5 @@ try {
       const report = await preflightComfyPlan(plan, { deferredInputs }); console.log(JSON.stringify(report, null, 2));
       process.exitCode = report.status === 'issues' ? 2 : report.status === 'unavailable' ? 3 : 0;
     } else console.log(JSON.stringify(compileRecipe(raw, supplied, projectId), null, 2));
-  } else throw new Error('Usage: recipe schema|sequence-schema|comfy-schema <output.json> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
+  } else throw new Error('Usage: recipe schema|sequence-schema|comfy-schema <output.json> | packs | inspect-pack <pack.json> | install-pack <pack.json> <digest> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
 } catch (error) { console.error(error instanceof Error ? error.message : 'Recipe failed'); process.exitCode = 1; }

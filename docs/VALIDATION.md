@@ -376,3 +376,14 @@ Projects export to a strict POSIX tar with a schema-validated manifest and conte
 - Actual desktop 1440×960 and phone 390×844 dialog captures passed the frozen visual rubric at 4.35 and 4.29 (self-review, no hard failures).
 
 Evidence is under ignored `research/evidence/project-bundles/`. Cloud sync, real-time collaboration, automatic cleanup of retained staging files and importing foreign editors' native project formats remain open.
+
+## Recipe packs — 2026-10-20
+
+Recipes can now be shared as packs labeled general or for a specific job. A pack installs all of its recipes after a digest-bound review, in one SQLite transaction, through one service shared by UI, HTTP, MCP and CLI. Installed packs are immutable; updates use a new pack ID. Three packs ship in `packs/`: Editing basics (general), Short-form reel kit and Slide story kit (specific jobs).
+
+- 686 source tests passed. Four new integration tests check the scope labels, recipe ID prefix, duplicate and size limits, digest binding, all-or-nothing rejection when one recipe conflicts, idempotent replay and rejection of a changed pack under the same ID. Every sequence recipe in the three packs was executed on real FFmpeg video, audio and image media through the durable harness and attached as editable tracks. The reel hook cut rendered an 8-second vertical MP4 with audio, the chosen hook and narration length.
+- All 40 browser tests passed. The new test reviews and installs the reel pack in the Recipe library, finds its three recipes grouped in the Runs picker with their input form, confirms no run was queued, replays the install through MCP, sees a version change blocked, and rejects an untrusted request.
+- A first desktop capture showed the always-sticky recipe JSON footer covering the pack's Install button. The footer is now sticky only while JSON is being edited. Desktop 1440×960 and phone 390×844 captures then passed the frozen visual rubric at 4.29 and 4.26 (self-review, no hard failures).
+- Architecture (417 modules, 178 browser-reachable, unchanged 23 allowances, no cycles), typecheck, i18n, build and performance passed; production JS is 549,425 gzip bytes. No dependency was added.
+
+Bundled recipes compose user media and do not evaluate creative quality or generation. A hosted pack gallery, pack signing and upgrade migration between pack versions remain open. Evidence is under ignored `research/evidence/recipe-packs/`.

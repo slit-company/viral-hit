@@ -39,6 +39,7 @@ Viral Hit is a general creative workspace with room for very specific workflows.
 | Layer | What it is | General examples | Situation-specific examples | Add your own |
 |---|---|---|---|---|
 | Core | Projects, assets, Canvas, timeline, durable harness, publishing, project files | Editing, export, MCP/CLI control | — | Pull request |
+| Packs | Groups of recipes, labeled general or for a specific job, installed together | Editing basics | Short-form reel kit, Slide story kit | A pack file in `packs/` or **Import pack file** ([guide](docs/PACKS.md)) |
 | Recipes | Versioned JSON workflows with typed forms, shared by UI and MCP | Open frame, Spoken line, Local diffusion on your ComfyUI | YouTube reference, Editable scene, Animated image story | Recipe library, `recipe import-comfy`, or a JSON file |
 | Adapters | Independently installed execution engines | Audio gain, procedural tone | Your own model server or render farm | `VIRAL_HIT_ADAPTERS_DIR` ([guide](docs/EXTERNAL-ADAPTERS.md)) |
 | Extensions | Optional runtimes with their own dependencies | Local media composition | ima2 images, YouTube intake | `extensions/<name>/` |
