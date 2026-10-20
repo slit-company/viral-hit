@@ -34,6 +34,18 @@ Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extract
 
 ## Extend it
 
+Viral Hit is a general creative workspace with room for very specific workflows. The core stays general; anything tied to one format, brand, service or model lives in a layer you can add, fork or remove without changing the app.
+
+| Layer | What it is | General examples | Situation-specific examples | Add your own |
+|---|---|---|---|---|
+| Core | Projects, assets, Canvas, timeline, durable harness, publishing, project files | Editing, export, MCP/CLI control | — | Pull request |
+| Recipes | Versioned JSON workflows with typed forms, shared by UI and MCP | Open frame, Spoken line, Local diffusion on your ComfyUI | YouTube reference, Editable scene, Animated image story | Recipe library, `recipe import-comfy`, or a JSON file |
+| Adapters | Independently installed execution engines | Audio gain, procedural tone | Your own model server or render farm | `VIRAL_HIT_ADAPTERS_DIR` ([guide](docs/EXTERNAL-ADAPTERS.md)) |
+| Extensions | Optional runtimes with their own dependencies | Local media composition | ima2 images, YouTube intake | `extensions/<name>/` |
+| Providers | Hosted generation backends behind the Canvas composer | Cloud API (any compatible endpoint) | A hosted API with a different contract | `src/config/generation-providers.ts` |
+
+A workflow for one campaign or brand belongs in its own recipes and adapters, kept in a separate repository if it carries private rules or data. Project files move editable work between installations, so specialized setups can share results with general ones.
+
 Install a versioned JSON recipe to add a workflow and its typed form without modifying the studio. UI and MCP discover the same recipes. [Extension guide](docs/EXTENDING.md) covers recipe authoring, output bindings, adapter contracts and current limits. Specialized recipes and general creative projects share the same core.
 
 Native, self-hosted ComfyUI graphs are also supported through `comfy.workflow`: see [setup, recipes and recovery semantics](docs/LOCAL-COMFYUI.md). Import your own API-format graph in **Runs → Recipe library → Import ComfyUI workflow** or with `recipe import-comfy`; the [import guide](docs/EXTENDING.md#import-your-own-comfyui-graph) includes input/output mapping and an offline example. **Runs → Connections** saves and checks your native server address without editing code or restarting the worker; managed environment overrides remain read-only. Project image parameters add a previewable selection and durable transfer to your configured ComfyUI server; try **Resize a project image** in Runs. **Check server** inspects installed native nodes and current input/model choices without submitting work; the same check is available in CLI and MCP.
