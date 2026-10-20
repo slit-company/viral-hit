@@ -124,3 +124,20 @@ test('the reel hook cut renders a vertical MP4 with the chosen hook and narratio
   assert.ok(Math.abs(info.durationMs! - 8000) < 150);
   assert.equal(info.hasAudio, true);
 });
+test('people can build a shareable pack from recipes they already have', async () => {
+  const { buildPack } = await import('./recipe-pack-library');
+  const meta = { id: 'team-launch', title: 'Team launch kit', description: 'Our launch formats.', author: 'A team', license: 'CC-BY-4.0', scope: 'specialized' as const, useCases: ['launch'] };
+  const built = await buildPack({ ...meta, recipeIds: ['open-frame', 'short-form-reel-hook-cut'] });
+  const manifest = built.manifest;
+  assert.deepEqual(manifest.recipes.map(recipe => recipe.id), ['team-launch-open-frame', 'team-launch-short-form-reel-hook-cut']);
+  assert.equal(manifest.version, '1.0.0');
+  // Recipe attribution stays with each recipe; the pack license only covers the bundle.
+  assert.deepEqual(manifest.recipes.map(recipe => recipe.license), ['Apache-2.0', 'Apache-2.0']);
+  assert.deepEqual(built.inspection.blocking, []);
+  const installed = await installPack(manifest, built.inspection.pack.digest);
+  assert.deepEqual(installed.added, ['team-launch-open-frame', 'team-launch-short-form-reel-hook-cut']);
+  assert.ok((await loadRecipes()).some(recipe => recipe.id === 'open-frame'), 'originals stay');
+  await assert.rejects(buildPack({ ...meta, recipeIds: ['missing-recipe'] }), /not found/);
+  await assert.rejects(buildPack({ ...meta, recipeIds: ['open-frame', 'open-frame'] }), /each recipe once/);
+  await assert.rejects(buildPack({ ...meta, scope: 'everyone' as never, recipeIds: ['open-frame'] }));
+});

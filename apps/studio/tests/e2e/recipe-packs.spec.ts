@@ -1,4 +1,5 @@
 import { test, expect, type APIRequestContext } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
 async function mcp(request: APIRequestContext, args: Record<string, unknown>) {
@@ -57,3 +58,47 @@ test('general and job-specific packs are reviewed, installed together and groupe
   await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });
 });
 
+test('a pack made from local recipes downloads, imports, reviews and installs as a new group', async ({ page, request }) => {
+  const created = await request.post('/api/app/projects', { headers, data: { name: 'Pack builder QA' } });
+  const id = (await created.json()).id;
+  await page.goto('/editor/' + id);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByRole('button', { name: 'Recipe library', exact: true }).click();
+  await page.getByRole('button', { name: 'Make a pack', exact: true }).click();
+  const form = page.getByRole('region', { name: 'Make a pack' });
+  await form.getByLabel('Pack name', { exact: true }).fill('Studio onboarding kit');
+  await expect(form.getByLabel('Pack ID', { exact: true })).toHaveValue('studio-onboarding-kit');
+  await form.getByRole('radio', { name: 'General' }).check();
+  await form.getByLabel('Use cases', { exact: true }).fill('onboarding, how to');
+  await form.getByLabel('Description', { exact: true }).fill('Starting points we give every new editor.');
+  await form.getByLabel('Author', { exact: true }).fill('Studio team');
+  await expect(form.getByRole('button', { name: 'Build pack file', exact: true })).toBeDisabled();
+  await form.getByRole('checkbox', { name: /^Open frame/ }).check();
+  await form.getByRole('checkbox', { name: /^Build an editable scene/ }).check();
+  await form.getByRole('button', { name: 'Build pack file', exact: true }).click();
+  const built = form.getByRole('region', { name: 'Built pack' });
+  await expect(built).toContainText('2 recipes, renamed under studio-onboarding-kit');
+  await page.screenshot({ path: 'test-results/pack-builder-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await built.scrollIntoViewIfNeeded();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.screenshot({ path: 'test-results/pack-builder-mobile.png' });
+  await page.setViewportSize({ width: 1440, height: 960 });
+  const download = page.waitForEvent('download');
+  await built.getByRole('button', { name: 'Download pack file', exact: true }).click();
+  const file = await (await download).path();
+  const manifest = JSON.parse(await readFile(file!, 'utf8'));
+  expect(manifest.scope).toBe('general'); expect(manifest.useCases).toEqual(['onboarding', 'how-to']);
+  expect(manifest.recipes.map((recipe: { id: string }) => recipe.id)).toEqual(['studio-onboarding-kit-open-frame', 'studio-onboarding-kit-editable-scene']);
+  await page.getByRole('button', { name: 'Back to packs', exact: true }).click();
+  await page.getByLabel('Import pack file', { exact: true }).setInputFiles(file!);
+  const review = page.getByRole('region', { name: 'Pack review' });
+  await expect(review).toContainText('Studio onboarding kit');
+  await review.getByRole('button', { name: 'Install pack', exact: true }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Studio onboarding kit is ready: 2 recipes' })).toBeVisible();
+  const groups = await page.getByRole('combobox', { name: 'Creative recipe' }).locator('optgroup').evaluateAll(nodes => nodes.map(node => node.getAttribute('label')));
+  expect(groups).toContain('Studio onboarding kit · General');
+  const invalid = await request.post('/api/app/recipe-packs', { headers, data: { action: 'build', pack: { ...manifest, recipes: undefined, recipeIds: [] } } });
+  expect(invalid.status()).toBe(400); expect((await invalid.json()).error).toContain('recipeIds');
+  await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });
+});

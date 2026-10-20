@@ -28,7 +28,16 @@ MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, 
 
 ## Make your own pack
 
-A pack is one JSON file of up to 1 MB:
+The quickest way is **Recipe library → Make a pack**. Name the pack, choose General or For a specific job, add use cases and a description, and tick recipes from your library: built-in ones, your forks, imported ComfyUI graphs or recipes from other packs. **Build pack file** checks the result and **Download pack file** saves it. Recipe IDs gain your pack ID as a prefix; contents, authors and licenses stay as they were. Scripts can do the same:
+
+```sh
+# definition.json: { "id", "title", "description", "author", "license", "scope", "useCases", "recipeIds" }
+pnpm --dir apps/studio recipe build-pack definition.json my-pack.json
+```
+
+MCP accepts the same definition as `{ "request": { "action": "build", "pack": { ... } } }`. Building never installs or runs anything.
+
+You can also write the file by hand. A pack is one JSON file of up to 1 MB:
 
 ```json
 {

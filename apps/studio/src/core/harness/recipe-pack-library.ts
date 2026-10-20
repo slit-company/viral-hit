@@ -2,11 +2,11 @@ import { lstat, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 import { fingerprint, type Json } from './durable';
-import { loadRecipeDirectory } from './recipe-registry';
+import { loadRecipeDirectory, loadRecipes } from './recipe-registry';
 import { validateRecipeManifest } from './recipe-library';
 import { readInstalledPacks, readInstalledRecipes, recipeDigest, RecipeConflictError, storeInstalledPack } from './recipe-storage';
 import { supportedOperations } from './capabilities';
-import { MAX_PACK_BYTES, packManifestSchema, type PackInspection, type PackSummary } from './recipe-packs';
+import { composePack, MAX_PACK_BYTES, packBuildSchema, packManifestSchema, type PackInspection, type PackSummary } from './recipe-packs';
 import type { Recipe } from './recipes';
 
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -14,6 +14,7 @@ export const recipePackRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
   z.object({ action: z.literal('inspect'), pack: z.unknown() }).strict(),
   z.object({ action: z.literal('install'), pack: z.unknown(), expectedDigest: digest }).strict(),
+  z.object({ action: z.literal('build'), pack: packBuildSchema }).strict(),
 ]);
 
 export function validatePack(raw: unknown) {
@@ -99,5 +100,13 @@ export async function changeRecipePacks(request: z.infer<typeof recipePackReques
     case 'list': return listRecipePacks();
     case 'inspect': return inspectPack(request.pack);
     case 'install': return installPack(request.pack, request.expectedDigest);
+    case 'build': return buildPack(request.pack);
   }
+}
+
+/** Builds a shareable pack file from local recipes. Nothing is installed or run. */
+export async function buildPack(raw: z.input<typeof packBuildSchema>) {
+  const manifest = composePack(raw, await loadRecipes());
+  validatePack(manifest);
+  return { manifest, inspection: await inspectPack(manifest) };
 }

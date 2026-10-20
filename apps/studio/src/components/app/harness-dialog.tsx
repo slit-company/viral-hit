@@ -12,7 +12,7 @@ import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { Job } from '@/core/harness/durable';
 import type { Recipe } from '@/core/harness/recipes';
 import type { InstalledPack, PackSummary } from '@/core/harness/recipe-packs';
-import { packScopeLabel } from './recipe-packs';
+import { packScopeLabel } from './pack-labels';
 import type { TimelineDocument } from '@/core/editor/timeline-document';
 import type { ComfyPreflight } from '@/core/harness/comfy-preflight';
 

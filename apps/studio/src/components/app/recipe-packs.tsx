@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
-import { Check, FileJson, Package } from 'lucide-react';
+import { Check, FileJson, Package, PackagePlus } from 'lucide-react';
 import { Action } from '@/components/base/action';
-import type { PackScope, PackSummary } from '@/core/harness/recipe-packs';
+import type { PackSummary } from '@/core/harness/recipe-packs';
 import { useRecipePacks } from './use-recipe-packs';
+import { packScopeLabel } from './pack-labels';
 
-export const packScopeLabel: Record<PackScope, string> = { general: 'General', specialized: 'For a specific job' };
 const words = (value: string) => value.replace(/-/g, ' ');
 
-export function RecipePacks({ onInstalled }: { onInstalled: (pack: PackSummary) => Promise<void> }) {
+export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: PackSummary) => Promise<void>; onMakePack: () => void }) {
   const packs = useRecipePacks(onInstalled);
   const fileInput = useRef<HTMLInputElement>(null);
   const review = packs.review?.inspection;
@@ -17,7 +17,10 @@ export function RecipePacks({ onInstalled }: { onInstalled: (pack: PackSummary) 
     <div className="flex items-center justify-between gap-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold"><Package size={16} aria-hidden="true" />Packs</h3>
       <input ref={fileInput} type="file" accept="application/json,.json" className="hidden" aria-label="Import pack file" onChange={event => { void packs.importFile(event.target.files?.[0]); event.target.value = ''; }} />
-      <Action disabled={packs.busy} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-1.5 text-xs"><FileJson size={14} />Import pack file</Action>
+      <div className="flex flex-wrap items-center justify-end gap-3">
+        <Action disabled={packs.busy} onClick={onMakePack} className="inline-flex items-center gap-1.5 text-xs"><PackagePlus size={14} />Make a pack</Action>
+        <Action disabled={packs.busy} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-1.5 text-xs"><FileJson size={14} />Import pack file</Action>
+      </div>
     </div>
     <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">General packs fit any project. Packs for a specific job set up one kind of work, such as vertical reels or slide stories. Installing adds recipes to this library; nothing runs.</p>
     <ul className="grid gap-2 sm:grid-cols-2">

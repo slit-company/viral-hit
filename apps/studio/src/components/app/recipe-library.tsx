@@ -6,6 +6,7 @@ import { apiJsonPost } from '@/lib/api-client';
 import type { Recipe } from '@/core/harness/recipes';
 import type { PackSummary } from '@/core/harness/recipe-packs';
 import { RecipePacks } from './recipe-packs';
+import { PackBuilder } from './pack-builder';
 
 export type RecipeInspection = {
   recipe: Recipe; digest: string; collision: 'none' | 'same' | 'different' | 'reserved';
@@ -22,6 +23,7 @@ function download(recipe: Recipe) {
 export function RecipeLibrary({ selected, onInstalled, onPackInstalled, onBack }: { selected?: Recipe; onInstalled: (recipe: Recipe) => Promise<void>; onPackInstalled: (pack: PackSummary) => Promise<void>; onBack: () => void }) {
   const [text, setText] = useState('');
   const [graphBuilder, setGraphBuilder] = useState(false);
+  const [packBuilder, setPackBuilder] = useState(false);
   const [inspection, setInspection] = useState<RecipeInspection>();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -64,12 +66,13 @@ export function RecipeLibrary({ selected, onInstalled, onPackInstalled, onBack }
     } catch (error) { setError(error instanceof Error ? error.message : 'Could not install recipe'); }
     finally { setBusy(false); }
   }
+  if (packBuilder) return <PackBuilder onBack={() => setPackBuilder(false)} />;
   if (graphBuilder) return <ComfyRecipeBuilder onBack={() => setGraphBuilder(false)} onBuilt={result => {
     edit(JSON.stringify(result.recipe, null, 2)); setInspection(result); setGraphBuilder(false);
   }} />;
   return <div className="space-y-4">
     <Action onClick={onBack} disabled={busy} className="inline-flex items-center gap-1.5 text-xs text-[var(--vh-text-2)]"><ArrowLeft size={14} />Back to runs</Action>
-    <RecipePacks onInstalled={onPackInstalled} />
+    <RecipePacks onInstalled={onPackInstalled} onMakePack={() => { setPackBuilder(true); setError(''); }} />
     <h3 className="border-t border-[var(--vh-border)] pt-4 text-sm font-semibold">Your own recipe</h3>
     <Action disabled={busy} onClick={() => { setGraphBuilder(true); setError(''); }} className="flex w-full items-center justify-between rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-left text-xs"><span><strong className="block text-sm">Import ComfyUI workflow</strong><span className="mt-1 block text-[var(--vh-text-2)]">Choose graph inputs and an output, then build a portable recipe.</span></span><FileJson size={18} className="ml-3 shrink-0" /></Action>
     {selected && <section className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3">
