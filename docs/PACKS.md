@@ -28,7 +28,7 @@ pnpm --dir apps/studio recipe inspect-pack ../../packs/slide-story.json
 pnpm --dir apps/studio recipe install-pack ../../packs/slide-story.json DIGEST_FROM_INSPECT
 ```
 
-MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, `fetch` (a pack link), `inspect`, `install` and `build`. HTTP uses `GET/POST /api/app/recipe-packs` with the trusted workspace header.
+Agents connected over MCP can read the bundled [recipe-packs skill](../apps/studio/skills/official/recipe-packs/SKILL.md) (`viral_hit_skill_get` or `viral-hit://skills/recipe-packs`). It walks them through matching a request to a general or job-specific pack, showing the review, installing with the reviewed digest and building a pack to share. MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, `fetch` (a pack link), `inspect`, `install` and `build`. HTTP uses `GET/POST /api/app/recipe-packs` with the trusted workspace header.
 
 ## Make your own pack
 

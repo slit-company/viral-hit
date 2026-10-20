@@ -2,10 +2,11 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
-async function mcp(request: APIRequestContext, args: Record<string, unknown>) {
+async function mcp(request: APIRequestContext, args: Record<string, unknown>) { return call(request, 'viral_hit_recipe_pack', args); }
+async function call(request: APIRequestContext, name: string, args: Record<string, unknown>) {
   const response = await request.post('http://127.0.0.1:3043/mcp', {
     headers: { authorization: 'Bearer e2e-local-only', accept: 'application/json, text/event-stream' },
-    data: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'viral_hit_recipe_pack', arguments: args } },
+    data: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } },
   });
   expect(response.ok()).toBe(true); const text = await response.text();
   const rpc = JSON.parse(text.startsWith('{') ? text : text.split('\n').find(line => line.startsWith('data: '))!.slice(6));
@@ -125,5 +126,28 @@ test('a shared pack link must be HTTPS on the public network and reports readabl
   await submit.click();
   await expect(page.getByRole('alert')).toContainText('public network address');
   await expect(page.getByRole('region', { name: 'Pack review' })).toHaveCount(0);
+  await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });
+});
+test('the recipe-packs skill workflow through MCP installs a general pack the user can see in Runs', async ({ page, request }) => {
+  const skill = await call(request, 'viral_hit_skill_get', { skillId: 'recipe-packs' });
+  expect(skill.manifest?.id ?? skill.skill?.manifest?.id).toBe('recipe-packs');
+  expect(skill.compatible ?? skill.skill?.compatible).toBe(true);
+  const listed = await call(request, 'viral_hit_recipe_pack', { request: { action: 'list' } });
+  const basics = listed.available.find((item: { summary: { scope: string; useCases: string[] } }) => item.summary.scope === 'general' && item.summary.useCases.includes('any-project'));
+  expect(basics.summary.id).toBe('editing-basics');
+  const review = await call(request, 'viral_hit_recipe_pack', { request: { action: 'inspect', pack: basics.manifest } });
+  expect(review.blocking).toEqual([]);
+  const installed = await call(request, 'viral_hit_recipe_pack', { request: { action: 'install', pack: basics.manifest, expectedDigest: review.pack.digest } });
+  expect(installed.added).toHaveLength(4);
+  const recipes = await call(request, 'viral_hit_recipes_list', {});
+  const ids = (recipes.recipes ?? recipes).map((recipe: { id: string }) => recipe.id);
+  expect(review.pack.recipeIds.every((id: string) => ids.includes(id))).toBe(true);
+  const created = await request.post('/api/app/projects', { headers, data: { name: 'Skill workflow QA' } });
+  const id = (await created.json()).id;
+  await page.goto('/editor/' + id);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  const groups = await page.getByRole('combobox', { name: 'Creative recipe' }).locator('optgroup').evaluateAll(nodes => nodes.map(node => node.getAttribute('label')));
+  expect(groups).toContain('Editing basics · General');
+  expect((await (await request.get('/api/app/projects/' + id + '/runs')).json()).runs).toHaveLength(0);
   await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });
 });

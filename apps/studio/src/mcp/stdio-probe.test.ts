@@ -133,10 +133,8 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
       readCatalog.result as { contents?: Array<{ text?: string }> }
     ).contents?.[0]?.text;
     assert.ok(catalogText);
-    assert.deepEqual(
-      (JSON.parse(catalogText) as { skills?: unknown[] }).skills,
-      []
-    );
+    const catalogSkills = (JSON.parse(catalogText) as { skills?: { manifest: { id: string }; compatible: boolean }[] }).skills ?? [];
+    assert.deepEqual(catalogSkills.map(skill => [skill.manifest.id, skill.compatible]), [['recipe-packs', true]]);
 
     send(child, {
       jsonrpc: '2.0',
@@ -146,9 +144,9 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     });
     const listedSkills = await readJsonLine(child);
     const skillPayload = listedSkills.result as {
-      structuredContent?: { result?: { skills?: unknown[] } };
+      structuredContent?: { result?: { skills?: { manifest: { id: string } }[] } };
     };
-    assert.deepEqual(skillPayload.structuredContent?.result?.skills, []);
+    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), ['recipe-packs']);
 
     send(child, {
       jsonrpc: '2.0',

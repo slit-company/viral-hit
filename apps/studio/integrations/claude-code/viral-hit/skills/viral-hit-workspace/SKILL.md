@@ -86,3 +86,7 @@ A database revision alone is not proof of a successful visible operation.
 
 Do not export, submit a paid generation, or create extra variants unless the
 user's request clearly authorizes that exact action.
+
+## Find, install or share workflows
+
+When the user wants a ready-made workflow, wants Viral Hit set up for a particular job such as vertical product ads or slide stories, or wants to share recipes they made, read the bundled `recipe-packs` skill with `viral_hit_skill_get` (resource `viral-hit://skills/recipe-packs`) and follow it. Packs are labeled general or for a specific job, install only after the user has seen the review, and never queue runs.

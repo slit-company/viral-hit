@@ -69,3 +69,7 @@ Viral Hit MCP 是结构化控制层，浏览器中的 Viral Hit 是用户审核�
 写入后核对返回的 revision 和变更 ID，再调用对应 view tool。Canvas 和 Editor 当前通常会在约两秒内或页面重新聚焦时读到 Agent 修改。最终提供准确的 `workspaceUrl` 供用户审核；仅有数据库 revision 不代表用户已经看到结果。
 
 未获明确授权时，不要导出、提交付费生成或额外创建多个版本。
+
+## 查找、安装或分享工作流
+
+当用户需要现成的工作流、希望为特定任务（例如竖屏产品广告或图文卡片视频）配置 Viral Hit，或想分享自己做的配方时，先用 `viral_hit_skill_get` 读取内置的 `recipe-packs` 技能（资源 `viral-hit://skills/recipe-packs`）并按其步骤执行。配方包分为通用和特定任务两类，只有在用户看过审核结果后才安装，且安装不会启动任何运行任务。

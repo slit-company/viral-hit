@@ -1,8 +1,12 @@
 # Official Viral Hit Skills
 
 This directory is the source of truth for portable creative Skills bundled with
-Viral Hit. The registry is intentionally empty until a Skill has completed
-prompt evaluation and a visible Viral Hit MCP workflow test.
+Viral Hit. A Skill is added only after prompt evaluation and a visible Viral Hit
+MCP workflow test.
+
+| Skill | What it helps an agent do | Evidence |
+|---|---|---|
+| [recipe-packs](recipe-packs/SKILL.md) | Find, review, install, build and share general or job-specific recipe packs | Four-scenario evaluation recorded under research/evidence/skills; browser test `the recipe-packs skill workflow through MCP…` |
 
 Each accepted Skill lives in `skills/official/<skill-id>/` and contains exactly
 the two required source files:

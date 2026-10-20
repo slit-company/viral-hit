@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "id": "recipe-packs",
+  "version": "1.0.0",
+  "title": "Recipe packs",
+  "summary": "Find, build and share packs of recipes, either general or for a specific job, and install a pack only after the user has seen its review.",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_recipe_pack",
+      "viral_hit_recipes_list"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "goal",
+      "label": "What the user wants to make",
+      "description": "The format, job or audience, such as vertical product ads, slide stories or any project.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "pack-link",
+      "label": "Pack link",
+      "description": "Optional HTTPS or GitHub file link to a pack someone shared.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "find",
+      "title": "Find a pack",
+      "description": "List offered packs or fetch a shared link and match them to the request by scope and use cases.",
+      "reviewRequired": false
+    },
+    {
+      "id": "review",
+      "title": "Review before installing",
+      "description": "Show recipes, setup needs, missing runtime steps and conflicts; install the reviewed manifest with its digest.",
+      "reviewRequired": true
+    },
+    {
+      "id": "share",
+      "title": "Build and share",
+      "description": "Compose a pack from local recipes and hand the user a file or link-ready JSON.",
+      "reviewRequired": false
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "packs",
+      "recipes",
+      "sharing"
+    ],
+    "featured": true
+  }
+}
