@@ -1,0 +1,43 @@
+import { useCallback, useEffect, useState } from 'react';
+import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
+import { WORKSPACE_MUTATION_HEADER } from '@/lib/trusted-local-request';
+import type { Character, CharacterProfile, CharacterRequest, CharacterReference } from '@/core/characters/contract';
+
+export type ImageDraft = { file: File; role: CharacterReference['role']; preview: string };
+export const referenceUrl = (character: Pick<Character, 'id'>, sha256: string) => `/api/app/characters/${character.id}/references/${sha256}`;
+
+async function upload(request: unknown, images: ImageDraft[]) {
+  const form = new FormData();
+  form.set('request', JSON.stringify(request));
+  form.set('roles', JSON.stringify(images.map(image => image.role)));
+  for (const image of images) form.append('file', image.file, image.file.name);
+  const response = await fetch('/api/app/characters', { method: 'POST', body: form, headers: { [WORKSPACE_MUTATION_HEADER]: '1' } });
+  const body = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(body.error || 'Character request failed');
+  return body as Character;
+}
+
+/** Loading and mutations for the workspace character library; rendering lives in the components. */
+export function useCharacters() {
+  const [characters, setCharacters] = useState<Character[]>();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const load = useCallback(async () => {
+    try { setCharacters((await apiJsonGet<{ characters: Character[] }>('/api/app/characters')).characters); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Characters are unavailable'); }
+  }, []);
+  useEffect(() => { void load(); }, [load]);
+  async function run<T>(task: () => Promise<T>) {
+    setBusy(true); setError('');
+    try { const result = await task(); await load(); return result; }
+    catch (cause) { setError(cause instanceof Error ? cause.message : 'Character request failed'); return undefined; }
+    finally { setBusy(false); }
+  }
+  return {
+    characters, busy, error, clearError: () => setError(''),
+    create: (profile: CharacterProfile, images: ImageDraft[]) => run(() => upload({ action: 'create', profile }, images)),
+    addImages: (character: Character, images: ImageDraft[]) => run(() => upload({ action: 'add_references', id: character.id, expectedVersion: character.version }, images)),
+    change: (request: CharacterRequest) => run(() => apiJsonPost<Character>('/api/app/characters', request)),
+  };
+}
+

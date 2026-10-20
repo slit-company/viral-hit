@@ -3,6 +3,8 @@ const PROJECT_ASSET_MEDIA_PATH =
 
 const PUBLICATION_MEDIA_PATH = /^\/api\/app\/projects\/[^/]+\/publications\/[^/]+\/media\/?$/;
 
+const CHARACTER_REFERENCE_PATH = /^\/api\/app\/characters\/[^/]+\/references\/[a-f0-9]{64}\/?$/;
+
 const MEDIA_FETCH_DESTINATIONS = new Set(['audio', 'image', 'video']);
 
 export function shouldNormalizeProjectAssetMediaRequest({
@@ -19,14 +21,14 @@ export function shouldNormalizeProjectAssetMediaRequest({
   }
   if (!MEDIA_FETCH_DESTINATIONS.has(destination.toLowerCase())) return false;
   const pathname = new URL(url, 'http://localhost').pathname;
-  return PROJECT_ASSET_MEDIA_PATH.test(pathname) || PUBLICATION_MEDIA_PATH.test(pathname);
+  return PROJECT_ASSET_MEDIA_PATH.test(pathname) || PUBLICATION_MEDIA_PATH.test(pathname) || CHARACTER_REFERENCE_PATH.test(pathname);
 }
 
 /**
  * TanStack Start treats browser media destinations as static asset requests
- * before file-route handlers run. Project assets are dynamic API resources, so
- * normalize only project assets and retained publication media back to an ordinary
- * fetch destination. Preserve Origin, Fetch-Site, range and digest checks.
+ * before file-route handlers run. Project assets, retained publication media and
+ * character reference images are dynamic API resources, so normalize only those
+ * back to an ordinary fetch destination. Preserve Origin, Fetch-Site, range and digest checks.
  */
 export function normalizeProjectAssetMediaRequest(request: Request) {
   if (

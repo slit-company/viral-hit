@@ -53,6 +53,8 @@ Native, self-hosted ComfyUI graphs are also supported through `comfy.workflow`: 
 
 The interface now uses [SEED components and a light theme](docs/DESIGN.md), with an original [Viral Hit mark and wordmark](docs/BRAND.md). For local query debugging only, set `VITE_QUERY_DEVTOOLS=true`; the debug launcher is hidden by default.
 
+Keep a person, mascot or product consistent with [characters](docs/CHARACTERS.md): reference images plus written rules, added to any project as reference assets and a prompt brief. UI, MCP and CLI share the same library.
+
 Move an editable project between installations with a [project file](docs/PROJECT-FILES.md): original media, Canvas and timelines in one verified tar that always imports as a new project. UI, MCP and CLI share the same operations.
 
 Unsaved timeline edits are backed up in the current browser. **Drafts** reviews and restores interrupted edits while preserving concurrent saved changes; see [editing recovery and storage limits](docs/EDITING-RECOVERY.md).

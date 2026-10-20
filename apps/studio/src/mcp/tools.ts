@@ -40,6 +40,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_project_file_inspect',
   'viral_hit_project_file_accept',
   'viral_hit_recipe_pack',
+  'viral_hit_character',
 ] as const;
 
 export type ViralHitMcpToolName = (typeof VIRAL_HIT_MCP_TOOL_NAMES)[number];

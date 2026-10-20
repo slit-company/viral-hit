@@ -32,6 +32,14 @@ test('retained publication videos route dynamically without dropping range, dige
   }
 });
 
+test('character reference images route dynamically for exact content hashes only', () => {
+  const sha = 'a'.repeat(64);
+  assert.equal(shouldNormalizeProjectAssetMediaRequest({ method: 'GET', url: '/api/app/characters/mina/references/' + sha, destination: 'image' }), true);
+  for (const path of ['/api/app/characters', '/api/app/characters/mina/references/not-a-hash', '/api/app/characters/mina/references/' + sha + '/extra']) {
+    assert.equal(shouldNormalizeProjectAssetMediaRequest({ method: 'GET', url: path, destination: 'image' }), false);
+  }
+});
+
 test('leaves ordinary routes and non-media requests unchanged', () => {
   const pageImage = new Request('http://127.0.0.1:3020/logo.png', {
     headers: { 'sec-fetch-dest': 'image' },
