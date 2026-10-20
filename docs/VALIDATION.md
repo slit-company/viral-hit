@@ -427,3 +427,13 @@ Skills were the only extension layer that read a single bundled folder. They now
 
 Skills are not yet browsable in the web UI, and installing one still needs file access and a restart.
 
+## Character files — 2026-10-20
+
+Characters can now move between installations, so a brand mascot, product or host made in one Viral Hit can be used in another. **Download character file** in a character's dialog produces a `.viralhit-character.tar`; **Import character** on the Characters page adds it. The file reuses the strict tar reader and writer of project files: `manifest.json` (kind `viral-hit-character`, profile and reference list) followed by `media/<sha256>` for each image. Importing never overwrites: the same file again returns the character it created, and an id held by a different character gets a new id. Every image is checked against its declared hash and probed again before it is stored. MCP (`export` and `import` actions with absolute paths) and CLI (`pnpm character export|import`) use the same service; the browser route refuses server paths, streams the upload to a private temporary file with a size limit and removes it afterwards.
+
+- Character requests now go through one service module that dispatches to the library and the file module, which keeps the dependency graph acyclic.
+- A new integration test exports a character, refuses to overwrite the file, replays an import of the same file, archives the original, imports it again under `share-fox-2` with identical image hashes, roles, filenames and rules, and refuses a file with one flipped image byte, a file missing an image listed in its manifest, and a relative path.
+- The character browser test now downloads the file from the dialog, checks it has four members with system `tar`, rejects an import without the workspace header, archives the character, imports the file through **Import character**, waits until all three images load and compares id, rules and image hashes. Desktop and phone captures show the two header actions without overflow.
+- 704 source tests and all 46 browser tests passed. Architecture (443 modules, no cycles), typecheck, i18n, build and performance passed; production JS is 564,460 gzip bytes. No dependency was added.
+
+Character files are not signed, and a pack cannot yet bundle characters.

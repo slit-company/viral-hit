@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { ZodError } from 'zod';
 import { characterRequest, referenceRoles, MAX_CHARACTER_REFERENCES, MAX_REFERENCE_BYTES, type CharacterRequest } from '@/core/characters/contract';
-import { changeCharacters, type UploadedReference } from '@/core/characters/library.server';
+import type { UploadedReference } from '@/core/characters/library.server';
+import { changeCharacters } from '@/core/characters/service.server';
 import { CharacterConflictError } from '@/core/characters/storage.server';
 import { validateTrustedWorkspaceJsonMutation, validateTrustedWorkspaceMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
@@ -13,6 +14,7 @@ const status = (error: unknown) => error instanceof RequestBodyTooLargeError ? 4
 /** Browsers send image bytes; server file paths are only accepted from local MCP and CLI hosts. */
 function rejectPaths(request: CharacterRequest) {
   if ((request.action === 'create' || request.action === 'add_references') && request.references.some(source => 'path' in source)) throw new Error('Upload the image or choose a project image instead of a file path');
+  if (request.action === 'export' || request.action === 'import') throw new Error('Download or upload character files instead of using server paths');
   return request;
 }
 

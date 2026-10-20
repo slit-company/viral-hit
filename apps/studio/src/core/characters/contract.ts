@@ -78,6 +78,10 @@ export const characterRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('set_canonical'), id: characterId, expectedVersion: z.number().int().positive(), sha256 }).strict(),
   z.object({ action: z.literal('archive'), id: characterId, expectedVersion: z.number().int().positive() }).strict(),
   z.object({ action: z.literal('use'), id: characterId, projectId: z.string().min(1).max(160) }).strict(),
+  /** MCP and CLI hosts only: writes a character file to a new absolute path. Browsers download it instead. */
+  z.object({ action: z.literal('export'), id: characterId, path: z.string().min(1).max(4096) }).strict(),
+  /** MCP and CLI hosts read an absolute path; browsers upload the file and send no path. */
+  z.object({ action: z.literal('import'), path: z.string().min(1).max(4096).optional() }).strict(),
 ]);
 export type CharacterRequest = z.infer<typeof characterRequest>;
 
@@ -98,3 +102,20 @@ export function slugCharacterId(name: string) {
   return slug.length >= 2 ? slug : 'character';
 }
 
+/**
+ * A character file moves one character between installations: a strict tar with manifest.json and
+ * media/<sha256> for every reference image. Importing always adds a character and never overwrites one.
+ */
+export const CHARACTER_FILE_KIND = 'viral-hit-character';
+export const MAX_CHARACTER_FILE_BYTES = MAX_CHARACTER_REFERENCES * MAX_REFERENCE_BYTES + 1024 * 1024;
+export const characterFileManifestSchema = z.object({
+  schemaVersion: z.literal(1),
+  kind: z.literal(CHARACTER_FILE_KIND),
+  id: characterId,
+  profile: characterProfileSchema,
+  references: z.array(characterReferenceSchema).min(1).max(MAX_CHARACTER_REFERENCES),
+}).strict().superRefine((value, ctx) => {
+  if (value.references.filter(item => item.role === 'canonical').length !== 1) ctx.addIssue({ code: 'custom', message: 'A character needs exactly one canonical reference' });
+  if (new Set(value.references.map(item => item.sha256)).size !== value.references.length) ctx.addIssue({ code: 'custom', message: 'Duplicate reference image' });
+});
+export type CharacterFileManifest = z.infer<typeof characterFileManifestSchema>;

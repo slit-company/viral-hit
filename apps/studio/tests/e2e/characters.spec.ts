@@ -87,10 +87,26 @@ test('a character keeps its images and rules from the library into a project', a
 
   await open(page, '/characters');
   await page.getByRole('button', { name: 'Open Mina Fox', exact: true }).click();
+  const download = page.waitForEvent('download');
+  await page.getByRole('dialog', { name: 'Mina Fox' }).getByRole('link', { name: 'Download character file', exact: true }).click();
+  const file = resolve('test-results/mina-fox.viralhit-character.tar');
+  await (await download).saveAs(file);
+  expect(execFileSync('tar', ['-tf', file], { encoding: 'utf8' }).split('\n').filter(Boolean)).toHaveLength(4);
   await page.getByRole('dialog', { name: 'Mina Fox' }).getByRole('button', { name: 'Archive', exact: true }).click();
   await page.getByRole('dialog', { name: 'Mina Fox' }).getByRole('button', { name: 'Archive', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Open Mina Fox', exact: true })).toHaveCount(0);
   expect(await read()).toBeUndefined();
+
+  // The file brings the character back, here or in another installation, with every image and rule.
+  expect((await request.post('/api/app/characters/import', { headers: { 'content-type': 'application/x-tar' }, data: readFileSync(file) })).status()).toBe(403);
+  await page.getByLabel('Import character', { exact: true }).setInputFiles(file);
+  const restored = page.getByRole('dialog', { name: 'Mina Fox' });
+  await expect.poll(() => loadedImages(restored.getByRole('region', { name: 'Saved reference images' }))).toBe(3);
+  const back = await read();
+  expect([back.id, back.invariants, back.references.map((item: { sha256: string; role: string }) => item.sha256 + ':' + item.role)]).toEqual(['mina-fox-2', saved.invariants, saved.references.map((item: { sha256: string; role: string }) => item.sha256 + ':' + item.role)]);
+  await restored.getByRole('button', { name: 'Archive', exact: true }).click();
+  await restored.getByRole('button', { name: 'Archive', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Open Mina Fox', exact: true })).toHaveCount(0);
   // Keep seeded fixtures within the recent-project list used by later specs.
   expect((await request.delete('/api/app/projects', { headers, data: { projectIds: [projectId] } })).ok()).toBe(true);
 });

@@ -56,7 +56,7 @@ The interface now uses [SEED components and a light theme](docs/DESIGN.md), with
 
 Describe framing, angle, lens, camera move, light and look with [shot controls](docs/SHOT-CONTROLS.md), written as one editable line of the prompt.
 
-Keep a person, mascot or product consistent with [characters](docs/CHARACTERS.md): reference images plus written rules, added to any project as reference assets and a prompt brief, or chosen in the Canvas composer to attach the main image to a draft. UI, MCP and CLI share the same library.
+Keep a person, mascot or product consistent with [characters](docs/CHARACTERS.md): reference images plus written rules, added to any project as reference assets and a prompt brief, or chosen in the Canvas composer to attach the main image to a draft. A character file carries one to another installation. UI, MCP and CLI share the same library.
 
 Move an editable project between installations with a [project file](docs/PROJECT-FILES.md): original media, Canvas and timelines in one verified tar that always imports as a new project. UI, MCP and CLI share the same operations.
 

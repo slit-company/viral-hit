@@ -5,6 +5,7 @@ import type { Character, CharacterProfile, CharacterRequest, CharacterReference 
 
 export type ImageDraft = { file: File; role: CharacterReference['role']; preview: string };
 export const referenceUrl = (character: Pick<Character, 'id'>, sha256: string) => `/api/app/characters/${character.id}/references/${sha256}`;
+export const characterFileUrl = (character: Pick<Character, 'id'>) => `/api/app/characters/${character.id}/file`;
 
 async function upload(request: unknown, images: ImageDraft[]) {
   const form = new FormData();
@@ -38,6 +39,12 @@ export function useCharacters() {
     create: (profile: CharacterProfile, images: ImageDraft[]) => run(() => upload({ action: 'create', profile }, images)),
     addImages: (character: Character, images: ImageDraft[]) => run(() => upload({ action: 'add_references', id: character.id, expectedVersion: character.version }, images)),
     change: (request: CharacterRequest) => run(() => apiJsonPost<Character>('/api/app/characters', request)),
+    importFile: (file: File) => run(async () => {
+      const response = await fetch('/api/app/characters/import', { method: 'POST', body: file, headers: { 'Content-Type': 'application/x-tar', [WORKSPACE_MUTATION_HEADER]: '1' } });
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(body.error || 'The character file could not be imported');
+      return body as Character & { replayed: boolean };
+    }),
   };
 }
 

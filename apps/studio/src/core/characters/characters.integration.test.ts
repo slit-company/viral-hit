@@ -14,7 +14,8 @@ const { createProject } = await import('../projects/projects');
 const { importLocalProjectAsset } = await import('../projects/import-local-asset');
 const { getProjectAssetById } = await import('../workspace-lib/assets/user-assets');
 const { resolveLocalProjectAssetPath } = await import('../projects/local-project-assets');
-const { changeCharacters, readCharacterReference } = await import('./library.server');
+const { readCharacterReference } = await import('./library.server');
+const { changeCharacters } = await import('./service.server');
 const { characterBrief, characterRequest } = await import('./contract');
 
 const ffmpeg = process.env.VIRAL_HIT_FFMPEG || 'ffmpeg';
@@ -87,3 +88,35 @@ test('a partial update changes only the fields it names and voice null removes t
   const ruled = await run({ action: 'update', id: created.id, expectedVersion: 3, profile: { invariants: ['green scarf'] } });
   assert.deepEqual([ruled.invariants, ruled.forbidden, ruled.voice], [['green scarf'], profile.forbidden, undefined]);
 });
+
+test('a character file round-trips images and rules, replays without duplicates and rejects tampering', async () => {
+  type Saved = { id: string; name: string; version: number; status: string; replayed?: boolean; invariants: string[]; references: { sha256: string; role: string; filename: string }[] };
+  const run = async (request: unknown) => await changeCharacters(characterRequest.parse(request)) as Saved;
+  const source = await run({ action: 'create', profile: { ...profile, name: 'Share fox' }, references: [{ path: front, role: 'canonical' }, { path: side, role: 'angle', note: 'left side' }] });
+  const file = join(directory, 'share-fox.viralhit-character.tar');
+  await run({ action: 'export', id: source.id, path: file });
+  await assert.rejects(run({ action: 'export', id: source.id, path: file }), /EEXIST/);
+  assert.match(execFileSync('tar', ['-tf', file], { encoding: 'utf8' }), /manifest\.json/);
+  const replay = await run({ action: 'import', path: file });
+  assert.equal(replay.id, source.id); assert.equal(replay.replayed, true);
+  await run({ action: 'archive', id: source.id, expectedVersion: 1 });
+  const imported = await run({ action: 'import', path: file });
+  assert.equal(imported.id, 'share-fox-2'); assert.equal(imported.replayed, false); assert.equal(imported.status, 'active');
+  assert.deepEqual(imported.references.map(item => [item.sha256, item.role, item.filename]), source.references.map(item => [item.sha256, item.role, item.filename]));
+  assert.deepEqual(imported.invariants, profile.invariants);
+  for (const reference of imported.references) assert.equal(createHash('sha256').update((await readCharacterReference(imported.id, reference.sha256)).bytes).digest('hex'), reference.sha256);
+  // One flipped byte in an image, and a manifest that lists an image the file does not contain, are both refused.
+  const bytes = await readFile(file); const image = bytes.indexOf(Buffer.from('IHDR'));
+  bytes[image + 8] ^= 0xff; const tampered = join(directory, 'tampered.tar'); await writeFile(tampered, bytes);
+  await assert.rejects(run({ action: 'import', path: tampered }), /does not match its checksum/);
+  const { writeTar } = await import('../projects/bundles/tar.server');
+  const { open } = await import('node:fs/promises');
+  const manifest = JSON.parse(execFileSync('tar', ['-xOf', file, 'manifest.json'], { encoding: 'utf8' }));
+  const partial = join(directory, 'partial.tar'); const handle = await open(partial, 'wx');
+  const first = manifest.references[0];
+  await writeTar(handle, Buffer.from(JSON.stringify(manifest)), [{ hash: first.sha256, path: join(directory, 'characters', first.sha256), size: (await readFile(join(directory, 'characters', first.sha256))).length }], AbortSignal.timeout(10_000));
+  await handle.close();
+  await assert.rejects(run({ action: 'import', path: partial }), /missing or extra images/);
+  await assert.rejects(run({ action: 'import', path: 'relative.tar' }), /absolute path/);
+});
+

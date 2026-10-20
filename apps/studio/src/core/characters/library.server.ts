@@ -105,8 +105,11 @@ export async function useCharacterInProject(id: string, projectId: string) {
   return { character: { id: character.id, name: character.name, version: character.version }, brief: characterBrief(character), providerIdentities: character.providerIdentities, voice: character.voice ?? null, assets };
 }
 
-/** Shared by HTTP, MCP and CLI. Uploaded bytes are only accepted from the HTTP transport. */
-export async function changeCharacters(request: CharacterRequest, uploads: UploadedReference[] = []) {
+/** Requests that change the library itself; character files are handled by service.server.ts. */
+export type LibraryRequest = Exclude<CharacterRequest, { action: 'export' | 'import' }>;
+
+/** Uploaded bytes are only accepted from the HTTP transport. */
+export async function changeCharacterLibrary(request: LibraryRequest, uploads: UploadedReference[] = []) {
   switch (request.action) {
     case 'list': return { characters: readCharacters(request.includeArchived) };
     case 'get': return required(request.id);
@@ -148,7 +151,7 @@ export async function changeCharacters(request: CharacterRequest, uploads: Uploa
   }
 }
 
-function pickProfile(character: Character): CharacterProfile {
+export function pickProfile(character: Omit<Character, 'voice'> & { voice?: Character['voice'] }): CharacterProfile {
   const { name, kind, description, invariants, forbidden, voice, providerIdentities } = character;
   return { name, kind, description, invariants, forbidden, ...(voice ? { voice } : {}), providerIdentities };
 }

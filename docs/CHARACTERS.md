@@ -20,6 +20,12 @@ On Canvas, open the image reference menu of a draft and choose the character und
 
 The first image becomes the main image unless you choose another. Every change raises the version, and each change must name the version it was based on, so two tabs or agents cannot silently overwrite each other. Images are checked with FFprobe before they are stored.
 
+## Share a character
+
+A brand mascot, a product or a recurring host often needs to look the same in more than one installation. Open the character and choose **Download character file** to get a `.viralhit-character.tar` with every reference image and rule; on the other side choose **Import character** on the Characters page.
+
+Importing always adds a character and never changes an existing one. Importing the same file again returns the character it created, and an id already used by a different character gets a new id. Every image is checked against the hash in the file and probed again before it is stored, so a damaged or edited file is refused. The file is a plain tar readable with `tar -tf`: `manifest.json` (kind `viral-hit-character`, the profile and the reference list) followed by `media/<sha256>` for each image, up to 20 images of 20 MB.
+
 ## Agents and scripts
 
 UI, HTTP, MCP and CLI use the same service.
@@ -27,9 +33,9 @@ UI, HTTP, MCP and CLI use the same service.
 | Surface | How |
 |---|---|
 | UI | `/characters`, and **Assets → Characters** in a project |
-| HTTP | `GET /api/app/characters`; `POST /api/app/characters` with a JSON request, or multipart `request`, `roles` and `file` fields for uploads |
-| MCP | `viral_hit_character` with actions `list`, `get`, `create`, `update`, `add_references`, `remove_reference`, `set_canonical`, `archive`, `use` |
-| CLI | `pnpm character list`, `get <id>`, `use <id> <project-id>`, `request <request.json>` |
+| HTTP | `GET /api/app/characters`; `POST /api/app/characters` with a JSON request, or multipart `request`, `roles` and `file` fields for uploads; `GET /api/app/characters/<id>/file` to download and `POST /api/app/characters/import` with the tar as the body to import |
+| MCP | `viral_hit_character` with actions `list`, `get`, `create`, `update`, `add_references`, `remove_reference`, `set_canonical`, `archive`, `use`, `export`, `import` |
+| CLI | `pnpm character list`, `get <id>`, `use <id> <project-id>`, `export <id> <file>`, `import <file>`, `request <request.json>` |
 
 MCP and CLI can create characters from project images or absolute local image paths. The browser HTTP route accepts uploads and project images only. Agents attach a character on Canvas by calling `use`, then `viral_hit_canvas_apply` with an image asset card for the main image and a draft that lists it in `referenceCardIds` and includes the brief in its prompt.
 
