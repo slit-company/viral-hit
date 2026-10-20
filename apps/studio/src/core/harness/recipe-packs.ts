@@ -19,6 +19,8 @@ export const packManifestSchema = z.object({
   author: z.string().min(1).max(120), license: z.string().min(1).max(100),
   scope: z.enum(packScopes), useCases: z.array(identifier).min(1).max(8),
   homepage: httpsUrl.optional(),
+  /** Plain-language setup a pack needs beyond the studio, such as an adapter or a server. */
+  requirements: z.string().min(1).max(600).optional(),
   recipes: z.array(z.unknown()).min(1).max(MAX_PACK_RECIPES),
 }).strict();
 export type PackManifest = z.infer<typeof packManifestSchema>;

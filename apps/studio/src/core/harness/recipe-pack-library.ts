@@ -75,13 +75,7 @@ export async function installPack(raw: unknown, expectedDigest: string) {
   return storeInstalledPack(summary, recipes);
 }
 
-/** Packs shipped with an installation; they are offered, never installed automatically. */
-export async function loadPackDirectory(directory = process.env.VIRAL_HIT_PACKS_DIR || resolve(process.cwd(), '../../packs')) {
-  let entries;
-  try { entries = await readdir(directory, { withFileTypes: true }); }
-  catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []; throw error; }
-  const files = entries.filter(entry => entry.isFile() && entry.name.endsWith('.json')).map(entry => resolve(directory, entry.name)).sort();
-  if (files.length > 50) throw new Error('Pack directory contains too many files');
+async function readPackFiles(files: string[]) {
   const result = [];
   for (const path of files) {
     const metadata = await lstat(path);
@@ -92,9 +86,39 @@ export async function loadPackDirectory(directory = process.env.VIRAL_HIT_PACKS_
   return result;
 }
 
+async function listDirectory(directory: string) {
+  try { return await readdir(directory, { withFileTypes: true }); }
+  catch (error) { if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []; throw error; }
+}
+
+/** Packs shipped with an installation; they are offered, never installed automatically. */
+export async function loadPackDirectory(directory = resolve(process.cwd(), '../../packs')) {
+  const files = (await listDirectory(directory)).filter(entry => entry.isFile() && entry.name.endsWith('.json')).map(entry => resolve(directory, entry.name)).sort();
+  if (files.length > 50) throw new Error('Pack directory contains too many files');
+  return readPackFiles(files);
+}
+
+/** Each optional extension may ship one pack.json describing its recipes and setup. */
+export async function loadExtensionPacks(root = resolve(process.cwd(), '../../extensions')) {
+  const files = (await listDirectory(root)).filter(entry => entry.isDirectory()).map(entry => resolve(root, entry.name, 'pack.json')).sort();
+  const present = [];
+  for (const file of files) if ((await lstat(file).catch(() => null))?.isFile()) present.push(file);
+  if (present.length > 50) throw new Error('Too many extension packs');
+  return readPackFiles(present);
+}
+
+/** VIRAL_HIT_PACKS_DIR replaces the bundled catalog; otherwise packs/ and extension packs are offered. */
+export async function loadBundledPacks() {
+  if (process.env.VIRAL_HIT_PACKS_DIR) return loadPackDirectory(process.env.VIRAL_HIT_PACKS_DIR);
+  const packs = [...await loadPackDirectory(), ...await loadExtensionPacks()];
+  const ids = new Set<string>();
+  for (const pack of packs) { if (ids.has(pack.summary.id)) throw new Error('Duplicate bundled pack: ' + pack.summary.id); ids.add(pack.summary.id); }
+  return packs;
+}
+
 export async function listRecipePacks() {
   const installed = readInstalledPacks();
-  const available = (await loadPackDirectory()).map(item => {
+  const available = (await loadBundledPacks()).map(item => {
     const current = installed.find(pack => pack.id === item.summary.id);
     return { ...item, state: !current ? 'available' as const : current.digest === item.summary.digest ? 'installed' as const : 'other-version' as const };
   });

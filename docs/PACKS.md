@@ -9,8 +9,12 @@ A pack bundles recipes that belong together. Some packs are **general** and fit 
 | [Editing basics](../packs/editing-basics.json) | General | Title card, music bed, voice-over, picture-in-picture | Any project |
 | [Short-form reel kit](../packs/short-form-reel.json) | Specific job | Hook cut with call to action, product punch-in, reference study | Reels, shorts, product ads, remakes of a reference |
 | [Slide story kit](../packs/slide-story.json) | Specific job | Three-card story, five cards with music | Card news, carousels turned into video, explainers |
+| [Local media engines](../extensions/local-media/pack.json) | General | Music score, motion timeline, animated image, narrated scene | Rendering music and motion on your machine; needs the local-media extension |
+| [ima2 image generation](../extensions/ima2/pack.json) | Specific job | Prompt to image, reimagine a project image | Image generation through your own ima2 server and provider account |
 
-Every bundled recipe prepares separate, editable tracks after your current timeline. They use your own footage, images, music and narration and do not generate or publish anything. The reel hook cut renders a vertical 8-second MP4 when the source is vertical.
+Optional extensions ship a `pack.json` next to their code. The pack gallery offers them with a **Needs setup** note that says what to install, and the review warns about any step this installation cannot run yet. You can install the recipes first and add the extension later.
+
+Every recipe in the first three packs prepares separate, editable tracks after your current timeline. They use your own footage, images, music and narration and do not generate or publish anything. The reel hook cut renders a vertical 8-second MP4 when the source is vertical.
 
 ## Install a pack
 
@@ -59,7 +63,8 @@ You can also write the file by hand. A pack is one JSON file of up to 1 MB:
 - `scope` is `general` or `specialized`. `useCases` are short lowercase identifiers shown on the pack card.
 - Each recipe is a complete [recipe manifest](EXTENDING.md) and its ID must start with the pack ID and a hyphen. This keeps packs from claiming each other's recipes or the built-in catalog.
 - Up to 24 recipes per pack. Recipes may use any installed operation, including [external adapters](EXTERNAL-ADAPTERS.md) and [ComfyUI graphs](LOCAL-COMFYUI.md); the review warns when an installation lacks one.
-- Put pack files in `packs/`, or point `VIRAL_HIT_PACKS_DIR` at your own folder, to offer them in every project of an installation. Files there are offered for review and never installed automatically.
+- `requirements` is an optional plain-language note (up to 600 characters) about setup beyond the studio, such as an adapter, a server or an environment variable. It appears on the pack card and in the review.
+- Put pack files in `packs/`, or ship one as `extensions/<name>/pack.json` beside an extension, to offer them in every project of an installation. Setting `VIRAL_HIT_PACKS_DIR` replaces both with your own folder. Offered packs are reviewed before install and never installed automatically.
 
 Installation is all or nothing. If any recipe conflicts with a different recipe already installed, nothing from the pack is added. An installed pack is immutable: reinstalling the same file is a no-op, and a changed file under the same ID is rejected. Publish updates under a new pack ID (for example `my-campaign-v2`) so projects that used the earlier recipes stay reproducible.
 

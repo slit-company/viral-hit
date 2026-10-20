@@ -1,0 +1,555 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-pack",
+  "id": "local-media",
+  "version": "1.0.0",
+  "title": "Local media engines",
+  "description": "Render music scores and motion timelines on your own machine, animate a project image, or compose a narrated scene from your footage, images, music and voice. No model generation or provider account is involved.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "scope": "general",
+  "useCases": [
+    "music",
+    "motion-graphics",
+    "composition"
+  ],
+  "requirements": "The local-media extension built with npm ci and npm run build, its adapters in VIRAL_HIT_ADAPTERS_DIR, VIRAL_HIT_LOCAL_MEDIA_DIR set, and FFmpeg with ffprobe.",
+  "homepage": "https://github.com/slit-company/viral-hit/blob/main/extensions/local-media/README.md",
+  "recipes": [
+    {
+      "schemaVersion": 1,
+      "id": "local-media-music2-render",
+      "version": "1.0.0",
+      "title": "Local music score",
+      "description": "Render an editable music2 Song JSON into a synthesized WAV. Built-in instruments, up to 60 seconds.",
+      "author": "Viral Hit contributors",
+      "license": "Apache-2.0",
+      "category": "audio",
+      "parameters": [
+        {
+          "id": "document",
+          "label": "Song JSON",
+          "type": "string",
+          "multiline": true,
+          "minLength": 2,
+          "maxLength": 16000,
+          "default": "{\n  \"version\": 1,\n  \"title\": \"Viral Hit — first pulse\",\n  \"bpm\": 120,\n  \"seed\": 7301,\n  \"sampleRate\": 48000,\n  \"loop\": true,\n  \"tailSeconds\": 1,\n  \"master\": { \"ceilingDb\": -1, \"targetLufs\": -18 },\n  \"tracks\": [\n    { \"id\": \"kick\", \"kind\": \"drums\", \"instrument\": \"drums\", \"pattern\": \"bd ~ bd ~\", \"gain\": -20 },\n    { \"id\": \"hats\", \"kind\": \"drums\", \"instrument\": \"drums\", \"pattern\": \"~ hh ~ hh\", \"gain\": -27 },\n    { \"id\": \"keys\", \"kind\": \"notes\", \"instrument\": \"marimba\", \"pattern\": \"c4 e4 g4 b4\", \"gain\": -18, \"sends\": { \"reverb\": 0.1 } }\n  ],\n  \"sections\": [{ \"id\": \"pulse\", \"bars\": 2 }],\n  \"arrangement\": [{ \"section\": \"pulse\" }]\n}\n"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "render",
+          "operation": "ext.music2-render",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "document": ""
+          },
+          "parameters": [
+            {
+              "parameter": "document",
+              "target": "/document"
+            }
+          ]
+        },
+        {
+          "id": "asset",
+          "operation": "asset.materialize",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "receipt": null,
+            "kind": "audio",
+            "label": "Local music score"
+          },
+          "dependsOn": [
+            "render"
+          ],
+          "bindings": [
+            {
+              "node": "render",
+              "pointer": "/binaryReceipt",
+              "target": "/receipt"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "local-media-vid2-image-motion",
+      "version": "1.0.0",
+      "title": "Animate a project image",
+      "description": "Create a portrait motion frame from a retained image, with editable title, camera motion and duration. Local rendering; no model generation.",
+      "author": "Viral Hit contributors",
+      "license": "Apache-2.0",
+      "category": "video",
+      "parameters": [
+        {
+          "id": "image",
+          "label": "Source image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "title",
+          "label": "Title",
+          "type": "string",
+          "default": "A NEW PERSPECTIVE",
+          "minLength": 1,
+          "maxLength": 60,
+          "multiline": false
+        },
+        {
+          "id": "duration",
+          "label": "Duration (seconds)",
+          "type": "number",
+          "default": 4,
+          "min": 1,
+          "max": 15
+        },
+        {
+          "id": "start-zoom",
+          "label": "Starting zoom",
+          "type": "number",
+          "default": 0.9,
+          "min": 0.5,
+          "max": 1
+        }
+      ],
+      "nodes": [
+        {
+          "id": "compose",
+          "operation": "ext.vid2-compose",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "timeline": {
+              "version": 1,
+              "output": {
+                "width": 720,
+                "height": 1280,
+                "fps": 30,
+                "container": "mp4",
+                "videoCodec": "h264",
+                "quality": "standard"
+              },
+              "sources": {
+                "hero": {
+                  "type": "image",
+                  "path": "asset:image-1"
+                }
+              },
+              "scenes": [
+                {
+                  "id": "frame",
+                  "duration": 4,
+                  "background": "#F7F6F2",
+                  "layers": [
+                    {
+                      "type": "media",
+                      "source": "hero",
+                      "fit": "blurfill",
+                      "motion": "none",
+                      "window": {
+                        "x": 48,
+                        "y": 160,
+                        "width": 624,
+                        "height": 832,
+                        "radius": 24,
+                        "shadow": false,
+                        "border": false
+                      },
+                      "camera": [
+                        {
+                          "at": 0,
+                          "zoom": 0.9,
+                          "x": 0.5,
+                          "y": 0.5,
+                          "ease": "inout"
+                        },
+                        {
+                          "at": 4,
+                          "zoom": 1,
+                          "x": 0.5,
+                          "y": 0.5,
+                          "ease": "inout"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "text",
+                      "text": "ONE FRAME. NEW MOTION.",
+                      "size": 22,
+                      "color": "#6B6862",
+                      "y": 80,
+                      "font": "mono",
+                      "animation": "fade"
+                    },
+                    {
+                      "type": "text",
+                      "text": "A NEW PERSPECTIVE",
+                      "size": 45,
+                      "color": "#191919",
+                      "y": 1090,
+                      "maxWidth": 624,
+                      "animation": "rise"
+                    }
+                  ]
+                }
+              ]
+            },
+            "assets": {
+              "image-1": null,
+              "image-2": null,
+              "video-1": null,
+              "video-2": null,
+              "audio-1": null,
+              "audio-2": null
+            }
+          },
+          "parameters": [
+            {
+              "parameter": "image",
+              "target": "/assets/image-1"
+            },
+            {
+              "parameter": "title",
+              "target": "/timeline/scenes/0/layers/2/text"
+            },
+            {
+              "parameter": "duration",
+              "target": "/timeline/scenes/0/duration"
+            },
+            {
+              "parameter": "duration",
+              "target": "/timeline/scenes/0/layers/0/camera/1/at"
+            },
+            {
+              "parameter": "start-zoom",
+              "target": "/timeline/scenes/0/layers/0/camera/0/zoom"
+            }
+          ]
+        },
+        {
+          "id": "asset",
+          "operation": "asset.materialize",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "receipt": null,
+            "kind": "video",
+            "label": "Animate a project image"
+          },
+          "dependsOn": [
+            "compose"
+          ],
+          "bindings": [
+            {
+              "node": "compose",
+              "pointer": "/binaryReceipt",
+              "target": "/receipt"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "local-media-vid2-narrated-scene",
+      "version": "1.0.0",
+      "title": "Compose a narrated scene",
+      "description": "Combine a video, detail image, music and narration. Adjust the title, duration and mix; retain the original assets and edit the rendered result in the timeline.",
+      "author": "Viral Hit contributors",
+      "license": "Apache-2.0",
+      "category": "video",
+      "parameters": [
+        {
+          "id": "video",
+          "label": "Scene video",
+          "type": "asset",
+          "kind": "video"
+        },
+        {
+          "id": "image",
+          "label": "Detail image",
+          "type": "asset",
+          "kind": "image"
+        },
+        {
+          "id": "music",
+          "label": "Background music",
+          "type": "asset",
+          "kind": "audio"
+        },
+        {
+          "id": "voice",
+          "label": "Narration",
+          "type": "asset",
+          "kind": "audio"
+        },
+        {
+          "id": "title",
+          "label": "Title",
+          "type": "string",
+          "default": "A CLOSER LOOK",
+          "minLength": 1,
+          "maxLength": 60,
+          "multiline": false
+        },
+        {
+          "id": "duration",
+          "label": "Duration (seconds)",
+          "type": "number",
+          "default": 4,
+          "min": 1,
+          "max": 15
+        },
+        {
+          "id": "music-volume",
+          "label": "Music volume",
+          "type": "number",
+          "default": 0.22,
+          "min": 0,
+          "max": 1
+        },
+        {
+          "id": "voice-volume",
+          "label": "Voice volume",
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2
+        }
+      ],
+      "nodes": [
+        {
+          "id": "compose",
+          "operation": "ext.vid2-compose",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "timeline": {
+              "version": 1,
+              "output": {
+                "width": 1280,
+                "height": 720,
+                "fps": 30,
+                "container": "mp4",
+                "videoCodec": "h264",
+                "quality": "standard"
+              },
+              "sources": {
+                "clip": {
+                  "type": "video",
+                  "path": "asset:video-1",
+                  "muted": true
+                },
+                "detail": {
+                  "type": "image",
+                  "path": "asset:image-1"
+                },
+                "score": {
+                  "type": "audio",
+                  "path": "asset:audio-1"
+                },
+                "voice": {
+                  "type": "audio",
+                  "path": "asset:audio-2"
+                }
+              },
+              "scenes": [
+                {
+                  "id": "scene",
+                  "duration": 4,
+                  "background": "#F7F6F2",
+                  "layers": [
+                    {
+                      "type": "media",
+                      "source": "clip",
+                      "fit": "blurfill",
+                      "window": {
+                        "x": 32,
+                        "y": 32,
+                        "width": 870,
+                        "height": 656,
+                        "radius": 20,
+                        "shadow": false,
+                        "border": false
+                      }
+                    },
+                    {
+                      "type": "media",
+                      "source": "detail",
+                      "fit": "blurfill",
+                      "window": {
+                        "x": 934,
+                        "y": 32,
+                        "width": 314,
+                        "height": 418,
+                        "radius": 20,
+                        "shadow": false,
+                        "border": false
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "text": "A CLOSER LOOK",
+                      "size": 30,
+                      "color": "#191919",
+                      "x": 1091,
+                      "y": 510,
+                      "maxWidth": 290,
+                      "animation": "fade"
+                    }
+                  ]
+                }
+              ],
+              "audio": {
+                "music": {
+                  "source": "score",
+                  "volume": 0.22,
+                  "fadeOut": 0.4
+                },
+                "voice": [
+                  {
+                    "source": "voice",
+                    "at": 0,
+                    "volume": 1
+                  }
+                ],
+                "duckMusicUnderVoice": true,
+                "loudness": {
+                  "target": -16,
+                  "truePeak": -1
+                }
+              }
+            },
+            "assets": {
+              "image-1": null,
+              "image-2": null,
+              "video-1": null,
+              "video-2": null,
+              "audio-1": null,
+              "audio-2": null
+            }
+          },
+          "parameters": [
+            {
+              "parameter": "video",
+              "target": "/assets/video-1"
+            },
+            {
+              "parameter": "image",
+              "target": "/assets/image-1"
+            },
+            {
+              "parameter": "music",
+              "target": "/assets/audio-1"
+            },
+            {
+              "parameter": "voice",
+              "target": "/assets/audio-2"
+            },
+            {
+              "parameter": "title",
+              "target": "/timeline/scenes/0/layers/2/text"
+            },
+            {
+              "parameter": "duration",
+              "target": "/timeline/scenes/0/duration"
+            },
+            {
+              "parameter": "music-volume",
+              "target": "/timeline/audio/music/volume"
+            },
+            {
+              "parameter": "voice-volume",
+              "target": "/timeline/audio/voice/0/volume"
+            }
+          ]
+        },
+        {
+          "id": "asset",
+          "operation": "asset.materialize",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "receipt": null,
+            "kind": "video",
+            "label": "Compose a narrated scene"
+          },
+          "dependsOn": [
+            "compose"
+          ],
+          "bindings": [
+            {
+              "node": "compose",
+              "pointer": "/binaryReceipt",
+              "target": "/receipt"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": 1,
+      "id": "local-media-vid2-render",
+      "version": "1.0.0",
+      "title": "Local motion timeline",
+      "description": "Render a vid2 Timeline JSON into H.264 MP4. Procedural motion, bundled fonts, up to 60 seconds.",
+      "author": "Viral Hit contributors",
+      "license": "Apache-2.0",
+      "category": "video",
+      "parameters": [
+        {
+          "id": "document",
+          "label": "Timeline JSON",
+          "type": "string",
+          "multiline": true,
+          "minLength": 2,
+          "maxLength": 16000,
+          "default": "{\n  \"version\": 1,\n  \"output\": { \"width\": 640, \"height\": 360, \"fps\": 30, \"container\": \"mp4\", \"videoCodec\": \"h264\", \"quality\": \"standard\" },\n  \"scenes\": [\n    {\n      \"id\": \"title\",\n      \"duration\": \"2.3s\",\n      \"background\": \"#F7F6F2\",\n      \"layers\": [\n        { \"type\": \"shape\", \"shape\": \"rect\", \"x\": 48, \"y\": 54, \"width\": 78, \"height\": 8, \"color\": \"#FF5438\" },\n        { \"type\": \"text\", \"text\": \"VIRAL HIT\", \"size\": 68, \"color\": \"#191919\", \"y\": 145, \"animation\": \"rise\" },\n        { \"type\": \"text\", \"text\": \"MAKE SOMETHING MOVE.\", \"font\": \"mono\", \"size\": 16, \"color\": \"#6B6862\", \"y\": 245, \"animation\": \"fade\" }\n      ],\n      \"transition\": { \"type\": \"fade\", \"duration\": \"0.3s\" }\n    },\n    {\n      \"id\": \"create\",\n      \"duration\": \"2s\",\n      \"background\": \"#FF5438\",\n      \"layers\": [\n        { \"type\": \"text\", \"text\": \"YOUR NEXT HIT.\", \"size\": 54, \"color\": \"#FFFFFF\", \"y\": \"center\", \"animation\": \"pop\" }\n      ]\n    }\n  ]\n}\n"
+        }
+      ],
+      "nodes": [
+        {
+          "id": "render",
+          "operation": "ext.vid2-render",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "document": ""
+          },
+          "parameters": [
+            {
+              "parameter": "document",
+              "target": "/document"
+            }
+          ]
+        },
+        {
+          "id": "asset",
+          "operation": "asset.materialize",
+          "version": "1",
+          "cache": false,
+          "input": {
+            "receipt": null,
+            "kind": "video",
+            "label": "Local motion timeline"
+          },
+          "dependsOn": [
+            "render"
+          ],
+          "bindings": [
+            {
+              "node": "render",
+              "pointer": "/binaryReceipt",
+              "target": "/receipt"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

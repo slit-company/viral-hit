@@ -2,7 +2,7 @@
 
 Connect an independently installed **ima2-gen 3.26.3** server to the Viral Hit harness. The extension has no npm dependencies and adds no code or dependencies to the studio browser bundle. ima2 owns provider authentication and generation; Viral Hit owns the approved recipe, pinned reference asset, durable request, immutable binary receipt and editable project asset.
 
-Two data-only recipes are included:
+Two data-only recipes are included. They are also offered together as the **ima2 image generation** pack in **Runs → Recipe library**, from [pack.json](pack.json):
 
 - `ima2-image`: one prompt → one image → project asset.
 - `ima2-reference`: a pinned project image and direction → one new image → project asset. This is reference-guided generation, not mask/inpainting support. The original stays in the project.

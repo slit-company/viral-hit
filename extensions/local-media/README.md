@@ -24,7 +24,7 @@ pnpm dev
 
 If other adapters are installed, copy these generated descriptor/module pairs into the existing adapter directory instead of replacing it. Restart consuming processes together. Keep engine installations immutable while jobs are pending: lockfile/version checks do not verify every executable file's contents.
 
-Open **Runs → Recipe library**, import `recipes/music2-render.json` and `recipes/vid2-render.json`, inspect, and install. This retains existing recipes. Each exposes an editable JSON document; the examples are starting points, not the only compositions. Queue, wait for **Asset ready**, then add the asset to the timeline or use it as a take. Authored JSON remains in the run input. Vid2 scenes/layers do not yet round-trip into separate editor clips; music2 tracks currently produce one mixed WAV.
+Open **Runs → Recipe library** and install the **Local media engines** pack, which contains every recipe in `recipes/` ([pack.json](pack.json)). You can still import `recipes/music2-render.json` and `recipes/vid2-render.json` individually, inspect, and install. This retains existing recipes. Each exposes an editable JSON document; the examples are starting points, not the only compositions. Queue, wait for **Asset ready**, then add the asset to the timeline or use it as a take. Authored JSON remains in the run input. Vid2 scenes/layers do not yet round-trip into separate editor clips; music2 tracks currently produce one mixed WAV.
 
 | Engine | Enabled | Bridge limits |
 |---|---|---|

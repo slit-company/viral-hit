@@ -41,6 +41,7 @@ export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: P
         <p className="text-sm font-semibold">{summary.title}</p>
         <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{summary.description}</p>
         <p className="text-[11px] text-[var(--vh-text-2)]">{summary.recipeIds.length} recipes · {summary.useCases.map(words).join(', ')}</p>
+        {summary.requirements && <p className="rounded-lg bg-[var(--vh-control)] px-2 py-1.5 text-[11px] leading-relaxed"><span className="font-semibold">Needs setup.</span> {summary.requirements}</p>}
         <Action aria-label={(state === 'available' ? 'Review ' : '') + summary.title} disabled={packs.busy || state !== 'available'} onClick={() => void packs.inspect(manifest)} className="vh-secondary mt-auto self-start text-xs">{state === 'installed' ? 'Installed' : state === 'other-version' ? 'Other version installed' : 'Review pack'}</Action>
       </li>)}
     </ul>
@@ -48,6 +49,7 @@ export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: P
       <p className="break-words text-sm font-semibold">{review.pack.title} <span className="font-normal text-[var(--vh-text-2)]">v{review.pack.version} · {packScopeLabel[review.pack.scope]}</span></p>
       <p className="break-words text-[var(--vh-text-2)]">{review.pack.author} · {review.pack.license}</p>
       {packs.review?.source && <p className="break-all text-[var(--vh-text-2)]">From {packs.review.source}</p>}
+      {review.pack.requirements && <p><span className="font-semibold">Needs setup.</span> {review.pack.requirements}</p>}
       <ul className="space-y-1.5">{review.recipes.map(recipe => <li key={recipe.id} className="break-words">
         <span className="font-semibold">{recipe.title}</span> · {recipe.parameterCount} {recipe.parameterCount === 1 ? 'input' : 'inputs'}
         {recipe.collision === 'same' && <span className="text-[var(--vh-text-2)]"> · already installed</span>}

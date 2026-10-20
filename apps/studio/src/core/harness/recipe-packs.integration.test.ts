@@ -41,7 +41,7 @@ for (const [kind, args] of Object.entries(media)) {
 test('bundled packs separate general and situation-specific workflows and validate offline', async () => {
   const listed = await listRecipePacks();
   const scopes = Object.fromEntries(listed.available.map(item => [item.summary.id, item.summary.scope]));
-  assert.deepEqual(scopes, { 'editing-basics': 'general', 'short-form-reel': 'specialized', 'slide-story': 'specialized' });
+  assert.deepEqual(scopes, { 'editing-basics': 'general', 'short-form-reel': 'specialized', 'slide-story': 'specialized', ima2: 'specialized', 'local-media': 'general' });
   assert.ok(listed.available.every(item => item.state === 'available'));
   const reel = await read('short-form-reel');
   assert.throws(() => validatePack({ ...reel, recipes: [{ ...reel.recipes[0], id: 'hook-cut' }] }), /must start with "short-form-reel-"/);
@@ -157,4 +157,23 @@ test('shared pack links download with media safeguards and return a reviewable m
   await assert.rejects(fetchPackFromLink('http://example.com/p.json'), /requires HTTPS/);
   await assert.rejects(fetchPackFromLink('https://10.0.0.8/p.json'), /public network address/);
   await assert.rejects(inspectPack({ name: 'not a pack' }), /not a Viral Hit pack/);
+});
+
+test('extension packs mirror their recipe files and explain the setup they need', async () => {
+  const { readdir } = await import('node:fs/promises');
+  for (const extension of ['ima2', 'local-media']) {
+    const pack = JSON.parse(await readFile(join('../../extensions', extension, 'pack.json'), 'utf8'));
+    const files = (await readdir(join('../../extensions', extension, 'recipes'))).filter(name => name.endsWith('.json')).sort();
+    assert.equal(pack.recipes.length, files.length, extension);
+    for (const [index, name] of files.entries()) {
+      const source = JSON.parse(await readFile(join('../../extensions', extension, 'recipes', name), 'utf8'));
+      const expectedId = source.id.startsWith(pack.id + '-') ? source.id : pack.id + '-' + source.id;
+      assert.deepEqual(pack.recipes[index], { ...source, id: expectedId }, extension + '/' + name + ' drifted; regenerate the extension pack');
+    }
+    const review = await inspectPack(pack);
+    assert.match(review.pack.requirements ?? '', /VIRAL_HIT_ADAPTERS_DIR/);
+    // Without the adapters installed the review warns but still allows installing the recipes.
+    assert.ok(review.unavailableOperations.every(operation => operation.startsWith('ext.')));
+    assert.deepEqual(review.blocking, []);
+  }
 });
