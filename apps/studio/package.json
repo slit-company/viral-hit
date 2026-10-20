@@ -50,7 +50,8 @@
     "publication": "tsx scripts/publication.ts",
     "publication:worker": "tsx scripts/publication-worker.ts",
     "project:file": "tsx scripts/project-file.ts",
-    "character": "tsx scripts/character.ts"
+    "character": "tsx scripts/character.ts",
+    "skill": "tsx scripts/skill.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

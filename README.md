@@ -43,6 +43,7 @@ Viral Hit is a general creative workspace with room for very specific workflows.
 | Recipes | Versioned JSON workflows with typed forms, shared by UI and MCP | Open frame, Spoken line, Local diffusion on your ComfyUI | YouTube reference, Editable scene, Animated image story | Recipe library, `recipe import-comfy`, or a JSON file |
 | Adapters | Independently installed execution engines | Audio gain, procedural tone | Your own model server or render farm | `VIRAL_HIT_ADAPTERS_DIR` ([guide](docs/EXTERNAL-ADAPTERS.md)) |
 | Extensions | Optional runtimes with their own dependencies | Local media composition | ima2 images, YouTube intake | `extensions/<name>/` |
+| Skills | Know-how an AI agent follows through MCP, labeled general or specialized | Recipe packs, Consistent characters | Product ad shots (example) | A folder in `VIRAL_HIT_SKILLS_DIR` ([guide](docs/SKILLS.md)) |
 | Providers | Hosted generation backends behind the Canvas composer | Cloud API (any compatible endpoint) | A hosted API with a different contract | `src/config/generation-providers.ts` |
 
 A workflow for one campaign or brand belongs in its own recipes and adapters, kept in a separate repository if it carries private rules or data. [CONTRIBUTING.md](CONTRIBUTING.md) explains where each kind of contribution goes and how to propose a pack. Project files move editable work between installations, so specialized setups can share results with general ones.

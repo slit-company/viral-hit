@@ -1,0 +1,211 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "scope": {
+      "default": "general",
+      "type": "string",
+      "enum": [
+        "general",
+        "specialized"
+      ]
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "visibility": {
+      "default": "showcase",
+      "type": "string",
+      "enum": [
+        "showcase",
+        "hidden"
+      ]
+    },
+    "compatibility": {
+      "type": "object",
+      "properties": {
+        "minimumViralHitVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$"
+        },
+        "requiredMcpTools": {
+          "default": [],
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^viral_hit_[a-z0-9_]+$"
+          }
+        }
+      },
+      "required": [
+        "minimumViralHitVersion"
+      ],
+      "additionalProperties": false
+    },
+    "requiredCapabilities": {
+      "default": [],
+      "maxItems": 50,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 80,
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      }
+    },
+    "inputs": {
+      "default": [],
+      "maxItems": 32,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "audio",
+              "number",
+              "boolean"
+            ]
+          },
+          "required": {
+            "default": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "kind"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "stages": {
+      "default": [],
+      "maxItems": 32,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "reviewRequired": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "showcase": {
+      "type": "object",
+      "properties": {
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "tags": {
+          "default": [],
+          "maxItems": 12,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 40
+          }
+        },
+        "featured": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "category"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "id",
+    "version",
+    "title",
+    "summary",
+    "compatibility"
+  ],
+  "additionalProperties": false
+}

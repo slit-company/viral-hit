@@ -416,3 +416,14 @@ The Canvas composer has a **Shot** picker for image and video drafts: framing, a
 - Architecture (439 modules, no cycles), typecheck, i18n, build and performance passed; production JS is 564,020 gzip bytes. No dependency was added.
 
 How closely a model follows camera terms was not evaluated, and no generation was run. Multi-shot sequences and per-shot regeneration remain open. Evidence is under ignored `research/evidence/shot-controls/`.
+
+## Skills anyone can add — 2026-10-20
+
+Skills were the only extension layer that read a single bundled folder. They now come from two sources: official skills bundled in Viral Hit and local skills from an operator folder set with `VIRAL_HIT_SKILLS_DIR`. Each skill.json is labeled `scope: general` (any project) or `specialized` (one format, job, audience or brand) and can name an author and license. A local skill that fails to load, or that reuses an official id, is listed under `problems` while the rest of the catalog keeps working; a broken official skill still stops startup so CI catches it. Authors validate a folder with `pnpm skill check`, list what an installation sees with `pnpm skill list`, and editors can use the generated `docs/schemas/skill.schema.json`. The README extension table, CONTRIBUTING, the env example and a new [skills guide](SKILLS.md) describe the layer.
+
+- 703 source tests passed. A new loader test covers a local specialized skill, an id conflict with an official skill, an invalid scope, a folder name that does not match its id, a missing folder and a broken official skill. A schema drift test validates the two official skills and the example against the published schema. The MCP stdio probe now starts with the examples folder as the operator folder and sees all three skills with their source and scope and no problems.
+- Example specialized skill: `examples/skills/product-ad-shots` plans a 9:16 product ad by building on the general `consistent-characters` and `recipe-packs` skills. A scripted run on a fresh data directory followed its steps through MCP for a request with user-supplied label text: the catalog listed it as local and specialized; the product character took the user's label rules; three 9:16 drafts were created with the main image attached, the brief once each and Shot lines made only of built-in terms; the Short-form reel kit review had no blocking items; nothing was queued. All nine checks passed. The transcript is under ignored `research/evidence/skills/`.
+- Architecture (439 modules, no cycles), typecheck, i18n, WorkBuddy connector validation, build and performance passed. No UI changed and no dependency was added.
+
+Skills are not yet browsable in the web UI, and installing one still needs file access and a restart.
+

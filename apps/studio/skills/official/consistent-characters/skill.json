@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "title": "Consistent characters",
   "summary": "Keep a person, mascot or product looking the same across shots: build a character from reference images and written rules, add it to a project and attach it to Canvas drafts.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
   "visibility": "showcase",
   "compatibility": {
     "minimumViralHitVersion": "0.2.4",

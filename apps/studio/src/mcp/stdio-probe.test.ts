@@ -39,7 +39,8 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     ['scripts/mcp-server.ts'],
     {
       cwd: resolve('.'),
-      env: { ...process.env, NODE_ENV: 'development' },
+      // The example skills folder stands in for an operator's own skills.
+      env: { ...process.env, NODE_ENV: 'development', VIRAL_HIT_SKILLS_DIR: resolve('../../examples/skills') },
       stdio: ['pipe', 'pipe', 'pipe'],
     }
   );
@@ -133,8 +134,13 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
       readCatalog.result as { contents?: Array<{ text?: string }> }
     ).contents?.[0]?.text;
     assert.ok(catalogText);
-    const catalogSkills = (JSON.parse(catalogText) as { skills?: { manifest: { id: string }; compatible: boolean }[] }).skills ?? [];
-    assert.deepEqual(catalogSkills.map(skill => [skill.manifest.id, skill.compatible]), [['consistent-characters', true], ['recipe-packs', true]]);
+    const catalog = JSON.parse(catalogText) as { skills?: { manifest: { id: string; scope: string }; source: string; compatible: boolean }[]; problems?: unknown[] };
+    assert.deepEqual((catalog.skills ?? []).map(skill => [skill.manifest.id, skill.source, skill.manifest.scope, skill.compatible]), [
+      ['consistent-characters', 'official', 'general', true],
+      ['product-ad-shots', 'local', 'specialized', true],
+      ['recipe-packs', 'official', 'general', true],
+    ]);
+    assert.deepEqual(catalog.problems, []);
 
     send(child, {
       jsonrpc: '2.0',
@@ -146,7 +152,7 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     const skillPayload = listedSkills.result as {
       structuredContent?: { result?: { skills?: { manifest: { id: string } }[] } };
     };
-    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), ['consistent-characters', 'recipe-packs']);
+    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), ['consistent-characters', 'product-ad-shots', 'recipe-packs']);
 
     send(child, {
       jsonrpc: '2.0',

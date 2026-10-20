@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "title": "Recipe packs",
   "summary": "Find, build and share packs of recipes, either general or for a specific job, and install a pack only after the user has seen its review.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
   "visibility": "showcase",
   "compatibility": {
     "minimumViralHitVersion": "0.2.4",

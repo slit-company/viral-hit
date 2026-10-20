@@ -25,5 +25,11 @@ reference Viral Hit MCP tools, but it must not contain executable scripts,
 credentials, generated user media, or automatic authorization for paid
 generation and export.
 
+Set `scope` to `general` when the skill helps any project and `specialized`
+when it serves one format, job, audience or brand. Skills that are not bundled
+live in the operator's own folder (`VIRAL_HIT_SKILLS_DIR`) and appear with
+source `local`; see [docs/SKILLS.md](../../../../docs/SKILLS.md). Check any
+folder with `pnpm skill check <folder>`.
+
 The Showcase UI and host-specific installation packages are consumers of this
 registry. They must not become separate Skill sources of truth.

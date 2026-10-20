@@ -111,3 +111,32 @@ test('filesystem loader treats a missing official directory as an empty catalog'
   });
   assert.deepEqual(registry.catalog().skills, []);
 });
+
+test('a local skills folder adds general or specialized skills and reports the ones it cannot load', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'viral-hit-skill-sources-'));
+  const write = async (folder: string, directory: string, manifest: unknown, instructions = '# Skill\n\nSteps.') => {
+    await mkdir(resolve(root, folder, directory), { recursive: true });
+    await writeFile(resolve(root, folder, directory, 'skill.json'), JSON.stringify(manifest));
+    await writeFile(resolve(root, folder, directory, 'SKILL.md'), instructions);
+  };
+  try {
+    await write('official', 'ugc-director', definition().manifest);
+    await write('local', 'shop-reels', { ...definition('shop-reels').manifest, scope: 'specialized', author: 'A shop', license: 'MIT' });
+    await write('local', 'ugc-director', { ...definition().manifest, title: 'Copy' });
+    await write('local', 'broken', { ...definition('broken').manifest, scope: 'everything' });
+    await write('local', 'misnamed', definition('other-name').manifest);
+    const registry = await loadViralHitSkillRegistry({ directory: resolve(root, 'official'), localDirectory: resolve(root, 'local'), viralHitVersion: '0.2.3', availableMcpTools: ['viral_hit_canvas_apply'] });
+    const catalog = registry.catalog();
+    assert.deepEqual(catalog.skills.map((skill) => [skill.manifest.id, skill.source, skill.manifest.scope]), [['shop-reels', 'local', 'specialized'], ['ugc-director', 'official', 'general']]);
+    assert.equal(registry.get('ugc-director')?.manifest.title, 'UGC Director');
+    assert.equal(registry.get('shop-reels')?.manifest.license, 'MIT');
+    assert.deepEqual(catalog.problems.map((problem) => problem.location).sort(), ['broken', 'misnamed', 'ugc-director']);
+    assert.match(catalog.problems.find((problem) => problem.location === 'ugc-director')!.message, /already provided by the official skill/);
+    const missing = await loadViralHitSkillRegistry({ directory: resolve(root, 'official'), localDirectory: resolve(root, 'nowhere'), viralHitVersion: '0.2.3', availableMcpTools: [] });
+    assert.deepEqual(missing.catalog().problems, [{ source: 'local', location: 'nowhere', message: 'Skills folder not found.' }]);
+    await write('official', 'broken-official', { ...definition('broken-official').manifest, scope: 'everything' });
+    await assert.rejects(loadViralHitSkillRegistry({ directory: resolve(root, 'official'), viralHitVersion: '0.2.3', availableMcpTools: [] }));
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+});

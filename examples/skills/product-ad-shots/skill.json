@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "product-ad-shots",
+  "version": "1.0.0",
+  "title": "Product ad shots",
+  "summary": "Plan a short vertical product ad: lock the product's look, prepare hero, detail and in-use shots with shot lines, and set up the reel edit.",
+  "scope": "specialized",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_skill_get",
+      "viral_hit_character",
+      "viral_hit_canvas_get",
+      "viral_hit_canvas_apply",
+      "viral_hit_recipe_pack"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "product",
+      "label": "Product",
+      "description": "What the product is and what must look exactly right, such as label text, logo placement and colors.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "images",
+      "label": "Product images",
+      "description": "Project images or absolute local paths; one clear front view.",
+      "kind": "text",
+      "required": false
+    },
+    {
+      "id": "approved-copy",
+      "label": "Approved claims",
+      "description": "Claims or copy the user has approved for the ad.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "lock",
+      "title": "Lock the product",
+      "description": "Define the product as a character with exact label, logo and color rules.",
+      "reviewRequired": true
+    },
+    {
+      "id": "plan",
+      "title": "Plan three shots",
+      "description": "Propose hero, detail and in-use drafts with shot lines and write them to Canvas after approval.",
+      "reviewRequired": true
+    },
+    {
+      "id": "edit",
+      "title": "Set up the edit",
+      "description": "Offer the Short-form reel kit for the cut; running and generation are separate requests.",
+      "reviewRequired": false
+    }
+  ],
+  "showcase": {
+    "category": "ads",
+    "tags": [
+      "product",
+      "vertical",
+      "ads"
+    ],
+    "featured": false
+  }
+}

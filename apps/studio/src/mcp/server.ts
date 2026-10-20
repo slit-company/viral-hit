@@ -95,6 +95,8 @@ let builtInSkillRegistryPromise: ReturnType<
 const getBuiltInSkillRegistry = () => {
   builtInSkillRegistryPromise ??= loadViralHitSkillRegistry({
     directory: builtInSkillDirectory,
+    // Operators add their own general or specialized skills without changing the app.
+    localDirectory: process.env.VIRAL_HIT_SKILLS_DIR?.trim() || undefined,
     viralHitVersion: VERSION,
     availableMcpTools: VIRAL_HIT_MCP_TOOL_NAMES,
   });
@@ -107,6 +109,7 @@ const formatSkillResource = (skill: ViralHitSkill) =>
     '',
     `Skill ID: ${skill.manifest.id}`,
     `Skill version: ${skill.manifest.version}`,
+    `Source: ${skill.source} · Scope: ${skill.manifest.scope}`,
     `ViralHit compatibility: ${skill.compatible ? 'compatible' : 'incompatible'}`,
     ...(skill.incompatibilities.length > 0
       ? [`Compatibility issues: ${skill.incompatibilities.join(' ')}`]
@@ -283,7 +286,7 @@ export function createViralHitMcpServer() {
     {
       title: 'ViralHit Skill catalog',
       description:
-        'Versioned catalog of official creative Skills bundled with this ViralHit installation.',
+        'Versioned catalog of creative Skills: official ones bundled with ViralHit and local ones the operator installed, each labeled general or specialized, plus any local skill that failed to load.',
       mimeType: 'application/json',
     },
     async (uri) => ({
@@ -324,7 +327,7 @@ export function createViralHitMcpServer() {
     {
       title: 'ViralHit Skill',
       description:
-        'Full model-readable instructions for one bundled ViralHit creative Skill.',
+        'Full model-readable instructions for one official or local ViralHit creative Skill.',
       mimeType: 'text/markdown',
     },
     async (uri, variables) => {
@@ -450,7 +453,7 @@ export function createViralHitMcpServer() {
     'viral_hit_skill_list',
     {
       description:
-        'List official creative Skills bundled with this ViralHit installation, including compatibility and MCP resource URIs.',
+        'List creative Skills: official ones bundled with ViralHit and local ones from the operator skills folder. Each has source (official or local), scope (general for any project, specialized for one format, job or brand), compatibility and an MCP resource URI. problems lists local skills that could not be loaded.',
       inputSchema: z.object({}),
       annotations: { readOnlyHint: true },
     },
@@ -461,7 +464,7 @@ export function createViralHitMcpServer() {
     'viral_hit_skill_get',
     {
       description:
-        'Read one bundled ViralHit Skill with its manifest, compatibility result, and full workflow instructions.',
+        'Read one official or local ViralHit Skill with its manifest, source, compatibility result and full workflow instructions.',
       inputSchema: z.object({ skillId: viralHitSkillIdSchema }),
       annotations: { readOnlyHint: true },
     },
