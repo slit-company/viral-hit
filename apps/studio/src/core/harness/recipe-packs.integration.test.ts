@@ -141,3 +141,20 @@ test('people can build a shareable pack from recipes they already have', async (
   await assert.rejects(buildPack({ ...meta, recipeIds: ['open-frame', 'open-frame'] }), /each recipe once/);
   await assert.rejects(buildPack({ ...meta, scope: 'everyone' as never, recipeIds: ['open-frame'] }));
 });
+test('shared pack links download with media safeguards and return a reviewable manifest', async () => {
+  const { fetchPackFromLink } = await import('./recipe-pack-source');
+  const { writeFile } = await import('node:fs/promises');
+  const story = await read('slide-story');
+  const requested: { url: string; max: number }[] = [];
+  const serve = (body: string) => async (url: string, destination: string, _signal: AbortSignal, max?: number) => { requested.push({ url, max: max! }); await writeFile(destination, body); };
+  const fetched = await fetchPackFromLink('https://github.com/acme/packs/blob/main/slides/slide-story.json', AbortSignal.timeout(5000), serve(JSON.stringify(story)));
+  assert.equal(fetched.source, 'https://raw.githubusercontent.com/acme/packs/main/slides/slide-story.json');
+  assert.deepEqual(requested[0], { url: fetched.source, max: 1_000_000 });
+  const review = await inspectPack(fetched.manifest);
+  assert.equal(review.pack.id, 'slide-story'); assert.deepEqual(review.blocking, []);
+  await assert.rejects(fetchPackFromLink('https://example.com/p.json', AbortSignal.timeout(5000), serve('<html>')), /did not return a pack file/);
+  await assert.rejects(fetchPackFromLink('https://example.com/p.json', AbortSignal.timeout(5000), async () => { throw new Error('Media exceeds download limit'); }), /Pack exceeds 1 MB pack limit/);
+  await assert.rejects(fetchPackFromLink('http://example.com/p.json'), /requires HTTPS/);
+  await assert.rejects(fetchPackFromLink('https://10.0.0.8/p.json'), /public network address/);
+  await assert.rejects(inspectPack({ name: 'not a pack' }), /not a Viral Hit pack/);
+});

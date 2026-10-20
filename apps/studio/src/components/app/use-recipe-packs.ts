@@ -7,7 +7,7 @@ const MAX_FILE_BYTES = 1_000_000;
 /** Loading, review and installation for recipe packs; rendering lives in RecipePacks. */
 export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>) {
   const [catalog, setCatalog] = useState<PackCatalog>();
-  const [review, setReview] = useState<{ inspection: PackInspection; manifest: unknown }>();
+  const [review, setReview] = useState<{ inspection: PackInspection; manifest: unknown; source?: string }>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const epoch = useRef(0);
@@ -22,6 +22,14 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
       const inspection = await apiJsonPost<PackInspection>('/api/app/recipe-packs', { action: 'inspect', pack: manifest });
       if (current === epoch.current) setReview({ inspection, manifest });
     } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not review pack'); }
+    finally { if (current === epoch.current) setBusy(false); }
+  }
+  async function fetchLink(url: string) {
+    const current = ++epoch.current; setBusy(true); setError(''); setReview(undefined);
+    try {
+      const result = await apiJsonPost<{ source: string; manifest: unknown; inspection: PackInspection }>('/api/app/recipe-packs', { action: 'fetch', url: url.trim() });
+      if (current === epoch.current) setReview(result);
+    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not download pack'); }
     finally { if (current === epoch.current) setBusy(false); }
   }
   async function importFile(file?: File) {
@@ -39,5 +47,5 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not install pack'); }
     finally { setBusy(false); }
   }
-  return { catalog, review, busy, error, inspect, importFile, install, dismiss: () => { epoch.current++; setReview(undefined); setBusy(false); } };
+  return { catalog, review, busy, error, inspect, fetchLink, importFile, install, dismiss: () => { epoch.current++; setReview(undefined); setBusy(false); } };
 }

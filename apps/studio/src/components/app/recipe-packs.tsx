@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { TextField } from '@seed-design/react';
 import { Check, FileJson, Package, PackagePlus } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import type { PackSummary } from '@/core/harness/recipe-packs';
@@ -12,6 +13,7 @@ export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: P
   const fileInput = useRef<HTMLInputElement>(null);
   const review = packs.review?.inspection;
   const reviewPanel = useRef<HTMLElement>(null);
+  const [link, setLink] = useState('');
   useEffect(() => { if (review) reviewPanel.current?.scrollIntoView({ block: 'nearest' }); }, [review]);
   return <section aria-label="Recipe packs" className="space-y-3">
     <div className="flex items-center justify-between gap-3">
@@ -23,6 +25,13 @@ export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: P
       </div>
     </div>
     <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">General packs fit any project. Packs for a specific job set up one kind of work, such as vertical reels or slide stories. Installing adds recipes to this library; nothing runs.</p>
+    <form className="flex flex-col gap-2 sm:flex-row sm:items-end" onSubmit={event => { event.preventDefault(); void packs.fetchLink(link); }}>
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <label htmlFor="pack-link" className="block text-xs text-[var(--vh-text-2)]">Add from link</label>
+        <TextField.Root className="vh-field"><TextField.Input id="pack-link" type="url" inputMode="url" placeholder="https://github.com/…/my-pack.json" value={link} maxLength={2000} onChange={event => setLink(event.target.value)} /></TextField.Root>
+      </div>
+      <Action type="submit" disabled={packs.busy || !/^https:\/\/\S+$/.test(link.trim())} className="vh-secondary text-xs">Review link</Action>
+    </form>
     <ul className="grid gap-2 sm:grid-cols-2">
       {packs.catalog?.available.map(({ manifest, summary, state }) => <li key={summary.id} className="flex flex-col gap-2 rounded-xl border border-[var(--vh-border)] p-3">
         <div className="flex items-center justify-between gap-2 text-[11px]">
@@ -38,6 +47,7 @@ export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: P
      {review && <section ref={reviewPanel} aria-label="Pack review" className="space-y-2 rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-xs">
       <p className="break-words text-sm font-semibold">{review.pack.title} <span className="font-normal text-[var(--vh-text-2)]">v{review.pack.version} · {packScopeLabel[review.pack.scope]}</span></p>
       <p className="break-words text-[var(--vh-text-2)]">{review.pack.author} · {review.pack.license}</p>
+      {packs.review?.source && <p className="break-all text-[var(--vh-text-2)]">From {packs.review.source}</p>}
       <ul className="space-y-1.5">{review.recipes.map(recipe => <li key={recipe.id} className="break-words">
         <span className="font-semibold">{recipe.title}</span> · {recipe.parameterCount} {recipe.parameterCount === 1 ? 'input' : 'inputs'}
         {recipe.collision === 'same' && <span className="text-[var(--vh-text-2)]"> · already installed</span>}

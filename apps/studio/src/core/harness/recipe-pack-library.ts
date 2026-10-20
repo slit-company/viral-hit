@@ -6,6 +6,7 @@ import { loadRecipeDirectory, loadRecipes } from './recipe-registry';
 import { validateRecipeManifest } from './recipe-library';
 import { readInstalledPacks, readInstalledRecipes, recipeDigest, RecipeConflictError, storeInstalledPack } from './recipe-storage';
 import { supportedOperations } from './capabilities';
+import { fetchPackFromLink } from './recipe-pack-source';
 import { composePack, MAX_PACK_BYTES, packBuildSchema, packManifestSchema, type PackInspection, type PackSummary } from './recipe-packs';
 import type { Recipe } from './recipes';
 
@@ -15,12 +16,18 @@ export const recipePackRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('inspect'), pack: z.unknown() }).strict(),
   z.object({ action: z.literal('install'), pack: z.unknown(), expectedDigest: digest }).strict(),
   z.object({ action: z.literal('build'), pack: packBuildSchema }).strict(),
+  z.object({ action: z.literal('fetch'), url: z.string().url().max(2000) }).strict(),
 ]);
 
 export function validatePack(raw: unknown) {
   const bytes = JSON.stringify(raw);
   if (!bytes || Buffer.byteLength(bytes) > MAX_PACK_BYTES) throw new Error('Recipe pack exceeds 1 MB');
-  const manifest = packManifestSchema.parse(raw);
+  const parsed = packManifestSchema.safeParse(raw);
+  if (!parsed.success) {
+    const fields = parsed.error.issues.slice(0, 6).map(issue => (issue.path.length ? issue.path.join('.') + ': ' : '') + issue.message).join('; ');
+    throw new Error(raw && typeof raw === 'object' && (raw as { kind?: unknown }).kind === 'viral-hit-pack' ? 'Invalid pack: ' + fields : 'This file is not a Viral Hit pack (' + fields + ')');
+  }
+  const manifest = parsed.data;
   const recipes: Recipe[] = manifest.recipes.map((recipe, index) => {
     try { return validateRecipeManifest(recipe); }
     catch (error) { throw new Error(`Recipe ${index + 1}: ${error instanceof Error ? error.message : 'invalid'}`); }
@@ -101,6 +108,10 @@ export async function changeRecipePacks(request: z.infer<typeof recipePackReques
     case 'inspect': return inspectPack(request.pack);
     case 'install': return installPack(request.pack, request.expectedDigest);
     case 'build': return buildPack(request.pack);
+    case 'fetch': {
+      const fetched = await fetchPackFromLink(request.url);
+      return { ...fetched, inspection: await inspectPack(fetched.manifest) };
+    }
   }
 }
 

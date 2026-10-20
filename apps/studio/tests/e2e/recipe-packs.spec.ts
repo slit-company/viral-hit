@@ -24,6 +24,7 @@ test('general and job-specific packs are reviewed, installed together and groupe
   await expect(packs.getByText('Editing basics', { exact: true })).toBeVisible();
   await expect(packs.getByText('General', { exact: true })).toHaveCount(1);
   await expect(packs.getByText('For a specific job', { exact: true })).toHaveCount(2);
+  await page.screenshot({ path: 'test-results/packs-gallery-desktop.png' });
   await page.getByRole('button', { name: 'Review Short-form reel kit', exact: true }).click();
   const review = page.getByRole('region', { name: 'Pack review' });
   await expect(review.getByText('Reel: hook, cut and call to action', { exact: true })).toBeVisible();
@@ -100,5 +101,21 @@ test('a pack made from local recipes downloads, imports, reviews and installs as
   expect(groups).toContain('Studio onboarding kit · General');
   const invalid = await request.post('/api/app/recipe-packs', { headers, data: { action: 'build', pack: { ...manifest, recipes: undefined, recipeIds: [] } } });
   expect(invalid.status()).toBe(400); expect((await invalid.json()).error).toContain('recipeIds');
+  await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });
+});
+test('a shared pack link must be HTTPS on the public network and reports readable errors', async ({ page, request }) => {
+  const created = await request.post('/api/app/projects', { headers, data: { name: 'Pack link QA' } });
+  const id = (await created.json()).id;
+  await page.goto('/editor/' + id);
+  await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
+  await page.getByRole('button', { name: 'Recipe library', exact: true }).click();
+  const link = page.getByLabel('Add from link', { exact: true });
+  const submit = page.getByRole('button', { name: 'Review link', exact: true });
+  await link.fill('http://example.com/pack.json');
+  await expect(submit).toBeDisabled();
+  await link.fill('https://127.0.0.1/pack.json');
+  await submit.click();
+  await expect(page.getByRole('alert')).toContainText('public network address');
+  await expect(page.getByRole('region', { name: 'Pack review' })).toHaveCount(0);
   await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });
 });

@@ -14,7 +14,7 @@ Every bundled recipe prepares separate, editable tracks after your current timel
 
 ## Install a pack
 
-In a project, open **Runs → Recipe library**. Choose **Review pack** on a bundled pack, or **Import pack file** for a pack someone shared. The review lists each recipe, its inputs, conflicts with recipes you already have, and any runtime step this installation is missing. **Install pack** adds all of its recipes at once, and they appear in the Runs recipe picker grouped under the pack name. Installing never queues work.
+In a project, open **Runs → Recipe library**. Choose **Review pack** on a bundled pack, **Import pack file** for a file someone sent you, or paste a link under **Add from link**. Links must be HTTPS on the public internet; a GitHub file page link is converted to its raw file automatically, so a pack kept in any public repository can be shared by URL. Downloads use the same address checks as media imports and are limited to 1 MB. The review lists each recipe, its inputs, conflicts with recipes you already have, and any runtime step this installation is missing. **Install pack** adds all of its recipes at once, and they appear in the Runs recipe picker grouped under the pack name. Installing never queues work.
 
 Agents and scripts use the same service:
 
@@ -24,7 +24,7 @@ pnpm --dir apps/studio recipe inspect-pack ../../packs/slide-story.json
 pnpm --dir apps/studio recipe install-pack ../../packs/slide-story.json DIGEST_FROM_INSPECT
 ```
 
-MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, `inspect` and `install`. HTTP uses `GET/POST /api/app/recipe-packs` with the trusted workspace header.
+MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, `fetch` (a pack link), `inspect`, `install` and `build`. HTTP uses `GET/POST /api/app/recipe-packs` with the trusted workspace header.
 
 ## Make your own pack
 
