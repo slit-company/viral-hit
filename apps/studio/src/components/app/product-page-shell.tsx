@@ -1,3 +1,4 @@
+import { ProjectBundleDialog } from '@/components/project-bundles/project-bundle-dialog';
 import { BackButton } from '@/components/base/back-button';
 import { useRouter } from '@/core/i18n/navigation';
 import type { ReactNode } from 'react';
@@ -176,6 +177,7 @@ export function ProductPageShell({
                   </Link>
                 </nav>
               ) : null}
+              <ProjectBundleDialog key={`file-${projectId}`} projectId={projectId} />
               <LanguageSwitcher variant="workspace" />
               {projectId && <Link href={`/publish/${projectId}`} aria-label="Publish project" title="Publish project" aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
               <Link href="/connections" aria-label="Publishing connections" title="Publishing connections" className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>

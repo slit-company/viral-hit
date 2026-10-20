@@ -1,3 +1,4 @@
+import { ProjectBundleDialog } from '@/components/project-bundles/project-bundle-dialog';
 import { Action } from '@/components/base/action';
 import {
   FolderClock,
@@ -194,6 +195,8 @@ export function WorkspacePage({
             </p>
           </div>
 
+          <div className="flex flex-wrap items-center gap-3">
+          <ProjectBundleDialog />
           <Action
             type="button"
             onClick={() => setCreateOpen(true)}
@@ -202,6 +205,7 @@ export function WorkspacePage({
             <Plus className="size-4" />
             {copy.newProject}
           </Action>
+          </div>
         </section>
 
         <section className="mt-12">

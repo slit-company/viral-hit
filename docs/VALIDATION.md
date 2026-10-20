@@ -365,3 +365,14 @@ Image-overlay keyframes now use a shared source-time contract across the inspect
 - The production launcher was restarted with all 10 prior harness jobs succeeded and no publications. Aside accepted the new `animated-image-story` recipe into a separate `Open Motion · Make It Yours` project: one successful preparation attempt, three editable clips. Adding a midpoint keyframe persisted revision 2; UI undo restored two keys at revision 3. Existing projects were preserved.
 
 Evidence is under ignored `research/evidence/overlay-motion/`, including MP4s, measured frames, UI screenshots, build/test logs and the production state. Arbitrary curves, masks, perspective, video-overlay animation, native foreign keyframe conversion, paid model quality, live publishing, full competitor parity and public release remain open.
+
+## Portable project files — 2026-10-20
+
+Projects export to a strict POSIX tar with a schema-validated manifest and content-addressed original media, and import as a new project through one service shared by UI, HTTP, MCP and CLI. Acceptance remaps asset IDs and URLs, clears provider job references and render receipts, resets in-flight cards to idle and registers project, media, Canvas and timeline in one SQLite transaction.
+
+- 682 source tests passed. Six new integration tests use real FFmpeg media: system `tar` lists and extracts the produced file; round trip keeps overlay keyframes, takes, Canvas layout/camera and graph links with byte-identical media; tampered staged media, edited review metadata, traversal/high-bit names, links, duplicates, extra members, missing tar end and corrupted bytes are rejected; a forced commit failure leaves no project, asset or membership and a retry registers once; missing or non-local media fails export; an idle upload aborts promptly.
+- Browser test: the editor prepares and downloads a file, rejects an untrusted request, inspects and imports it on a 390×844 viewport without horizontal overflow, opens the new project, renders both projects through MCP with identical decoded pixels at 0.1, 0.8 and 1.7 s, edits only the copy, and replays an MCP/HTTP import without duplication. A malformed file shows an error. Overlay-motion browser tests re-passed.
+- Architecture (410 modules, 176 browser-reachable, unchanged 23 allowances, no cycles), typecheck, i18n, build and performance passed. Production JS is 561,934 gzip bytes (+2,105); no dependency was added.
+- Actual desktop 1440×960 and phone 390×844 dialog captures passed the frozen visual rubric at 4.35 and 4.29 (self-review, no hard failures).
+
+Evidence is under ignored `research/evidence/project-bundles/`. Cloud sync, real-time collaboration, automatic cleanup of retained staging files and importing foreign editors' native project formats remain open.

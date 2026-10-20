@@ -1,5 +1,5 @@
 import { jsonResult, errorResult, withToolErrors, ViralHitMcpToolError } from './tool-results';
-import { registerPublishingTools } from './publishing-tools';
+import { registerWorkspaceTools } from './workspace-tools';
 import { changeComfyConnection, connectionRequest } from '@/core/harness/comfy-connection';
 import { readFile, stat } from 'node:fs/promises';
 import { isAbsolute, resolve as resolvePath } from 'node:path';
@@ -1339,7 +1339,7 @@ export function createViralHitMcpServer() {
       return preflightComfyPlan(plan, { deferredInputs });
     })
   );
-  registerPublishingTools(server, resolveScopedProject);
+  registerWorkspaceTools(server, resolveScopedProject);
   return server;
 }
 
