@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1, "id": "detect-video-scenes", "version": "1.0.0",
+  "title": "Split a video at visual cuts",
+  "description": "Analyze local video at 8 frames per second, review candidate visual cuts, and prepare individually editable clips with original audio. Sensitivity and minimum spacing are editable. Limited to ten minutes and 64 MiB; fades, motion and flashes can change detection. The complete source is retained even when weaker cuts are merged.",
+  "license": "Apache-2.0", "author": "Viral Hit", "category": "references", "tags": ["video", "reference", "local", "editing"],
+  "parameters": [
+    { "id": "source", "label": "Source video", "type": "asset", "kind": "video" },
+    { "id": "threshold", "label": "Visual change threshold", "type": "number", "default": 10, "min": 1, "max": 100, "description": "Lower values detect subtler changes; higher values keep stronger cuts." },
+    { "id": "minimum", "label": "Minimum scene length (seconds)", "type": "number", "default": 0.5, "min": 0.125, "max": 30 },
+    { "id": "maximum", "label": "Maximum scenes", "type": "number", "default": 24, "min": 1, "max": 64, "integer": true }
+  ],
+  "nodes": [
+    { "id": "detect", "operation": "reference.scenes", "version": "1", "cache": false,
+      "input": { "assetId": "", "threshold": 10, "minDuration": 0.5, "maxScenes": 24 }, "parameters": [
+        { "parameter": "source", "target": "/assetId" }, { "parameter": "threshold", "target": "/threshold" },
+        { "parameter": "minimum", "target": "/minDuration" }, { "parameter": "maximum", "target": "/maxScenes" }
+      ]
+    },
+    { "id": "sequence", "operation": "editor.sequence", "version": "1", "cache": false, "dependsOn": ["detect"],
+      "input": { "schemaVersion": 1, "title": "Visual cut edit", "assets": { "source": { "assetId": "pending", "kind": "video" } },
+        "tracks": [{ "id": "detected-scenes", "kind": "video", "name": "Detected visual cuts", "clips": [{ "id": "pending", "type": "media", "source": "source", "startTime": 0, "duration": 1 }] }]
+      },
+      "bindings": [{ "target": "/assets/source/assetId", "node": "detect", "pointer": "/assetId" }, { "target": "/tracks/0/clips", "node": "detect", "pointer": "/tracks/0/clips" }]
+    }
+  ]
+}

@@ -63,3 +63,11 @@ Canvas bulk downloads now use a small ZIP32/STORE writer for already-compressed 
 ## Portable storyboard review — 2026-10-21
 
 Adding project-file storyboard transfer and downloadable recipe requirements yields **204 public files / 8,539,278 bytes**, **1,972,149 raw JavaScript bytes / 582,647 summed gzip bytes**. The gzip increase is **352 bytes** over browser storyboard authoring. Existing 10 MB/600 KB gates pass; no dependency, worker or poller was added. Media packaging retains its existing streaming/size bounds. The existing 5 MiB manifest now also bounds board and recipe metadata; individual board and recipe limits are 256 KB and 128 KB. Retained bundle files and unactivated metadata are not automatically collected. These are bundle observations and limits, not a measured large-project memory/latency or competitor comparison.
+
+## Local visual-cut analysis — 2026-10-21
+
+Final public build: **204 files / 8,544,046 bytes**, **1,976,611 raw JavaScript bytes / 583,828 summed gzip bytes**. The increase is **1,181 gzip bytes** over portable storyboard review, within the unchanged 10 MB/600 KB gates. No package, worker or background poller was added. The new browser result uses the existing shared controls and one native video player, with at most 64 range buttons.
+
+The worker copies at most 64 MiB, verifies hashes through the existing file path and scans at most ten minutes of video. FFmpeg uses one decoding thread, one filter thread, a 320×320 analysis frame bound and 8 fps sampling. Decoding still processes source frames; these controls do not eliminate source-resolution cost. The scan's combined captured diagnostics are capped at 1 MiB and its deadline is 180 seconds. Abort/timeout waits for process closure, with SIGKILL escalation after five seconds. Tool version probes have separate five-second/64 KiB bounds. The adapter keeps the existing four-minute execution/five-minute lease policy.
+
+These are explicit workload/output/deadline bounds, not a measured whole-process memory cap, p95 scan rate or competitor comparison. Real small-fixture scans and browser/server exports passed; representative high-resolution, long-video accuracy and performance measurements remain open.

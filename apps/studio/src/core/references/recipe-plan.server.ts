@@ -1,3 +1,5 @@
+import { sceneInput, SCENE_MAX_BYTES } from './scene-contract';
+import { sceneEngineIdentity } from './scene-detection.server';
 import type { Plan } from '../harness/durable';
 import { isAssetOperation, assetOperationKind } from '../harness/asset-operations';
 import { sampleReferenceInput, youtubeReferenceInput } from './recipe-contract';
@@ -12,21 +14,24 @@ export async function pinReferencePlan(plan: Plan, signal = AbortSignal.timeout(
       const input = youtubeReferenceInput.parse(node.input), engine = youtubeEngineIdentity();
       if (!engine || (input.engine && input.engine !== engine)) throw new Error('Install the matching YoutubeExplode engine before queueing');
       node.input = { ...input, engine };
-    } else if (node.operation === 'reference.sample') {
-      const input = sampleReferenceInput.parse(node.input);
+    } else if (node.operation === 'reference.sample' || node.operation === 'reference.scenes') {
+      const input = node.operation === 'reference.scenes' ? sceneInput.parse(node.input) : sampleReferenceInput.parse(node.input);
+      const scene: Record<string, string> = node.operation === 'reference.scenes' ? { engine: await sceneEngineIdentity(signal) } : {};
+      if ('engine' in input && input.engine && input.engine !== scene.engine) throw Error('Scene detector engine changed');
       if (input.pin) throw new Error('Reference input was already pinned');
       if (node.bindings?.length) {
         const [binding] = node.bindings, source = result.nodes.find(other => other.id === binding.node);
         if (node.bindings.length !== 1 || binding.target !== '/assetId' || binding.pointer !== '/assetId'
           || !source || !isAssetOperation(source.operation) || assetOperationKind(source.operation, source.input) !== 'video'
           || !node.dependsOn?.includes(source.id)) throw new Error('Reference input must bind a video asset-producing dependency');
-        node.input = { ...input, pin: { projectId: null, assetId: null, kind: null, sha256: null, sizeBytes: null } };
+        node.input = { ...input, ...scene, pin: { projectId: null, assetId: null, kind: null, sha256: null, sizeBytes: null } };
         for (const field of ['projectId', 'assetId', 'kind', 'sha256', 'sizeBytes']) {
           node.bindings.push({ target: `/pin/${field}`, node: source.id, pointer: `/${field}` });
         }
       } else {
         const { pin } = await inspectProjectReference(plan.projectId, input.assetId, signal);
-        node.input = { ...input, pin };
+        if (node.operation === 'reference.scenes' && pin.sizeBytes > SCENE_MAX_BYTES) throw Error('Scene analysis supports up to 64 MiB');
+        node.input = { ...input, ...scene, pin };
       }
     }
   }

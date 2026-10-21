@@ -1,3 +1,4 @@
+import { sceneInput } from '../references/scene-contract';
 import { sequenceInput } from './sequence-adapter';
 import { sampleReferenceInput, youtubeReferenceInput } from '../references/recipe-contract';
 import { externalOperation } from './external-catalog';
@@ -17,6 +18,7 @@ const nodeBase = {
 const builtinNodeSchema = z.discriminatedUnion('operation', [
   z.object({ ...nodeBase, operation: z.literal('editor.sequence'), input: sequenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('reference.youtube'), input: youtubeReferenceInput }).strict(),
+  z.object({ ...nodeBase, operation: z.literal('reference.scenes'), input: sceneInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('reference.sample'), input: sampleReferenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.upload'), input: uploadInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('comfy.router'), input: routerInput }).strict(),

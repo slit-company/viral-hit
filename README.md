@@ -77,6 +77,8 @@ Built-in [editable sequences](docs/EDITABLE-SEQUENCES.md) let any workflow prepa
 
 Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE.md). Runs includes portable YouTube collection and project-video sampling recipes, with five frame previews and timeline attachment. CLI also accepts explicit Instagram direct-video items. Independent adapters can consume the resulting project video; automatic Instagram inbox collection remains pending.
 
+[Split a video at visual cuts](docs/SCENE-DETECTION.md) scans an owned source locally, previews detected ranges and prepares separately editable clips with original audio. Its portable recipe exposes sensitivity, minimum spacing and scene count for different use cases. Visual change detection does not provide semantic video analysis.
+
 Use [storyboards](docs/STORYBOARDS.md) to keep a general or specialized shot plan, reference observations and accepted results together. The browser workspace and MCP/CLI/API can generate selected shots through independently authored recipes, resume pinned attempts, and assemble accepted media into an editable sequence. The bundled Storyboard director skill guides the workflow; automatic visual analysis and model-quality evaluation remain pending.
 
 

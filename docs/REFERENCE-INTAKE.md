@@ -58,4 +58,4 @@ The same portable recipes work through `viral_hit_runs_change` (MCP), the projec
 
 These operations use a declared four-minute execution budget with a five-minute lease. The worker observes local cancellation during acquisition; it waits for subprocess shutdown before settling. Partial verified assets can remain after cancellation and are not automatically attached. The ordinary remote paid-generation cancellation/reconciliation policy is unchanged. See [bounded execution](architecture/006-bounded-adapter-execution.md).
 
-New samples use timestamp-aware versioned identities; earlier samples are not overwritten. Fixed samples still do not constitute shot detection or complete audiovisual analysis.
+New samples use timestamp-aware versioned identities; earlier samples are not overwritten. Fixed samples still do not constitute shot detection or complete audiovisual analysis. The separate [visual-cut recipe](SCENE-DETECTION.md) scans owned videos and prepares editable intervals; its thresholds, limits and lack of semantic understanding are documented separately.

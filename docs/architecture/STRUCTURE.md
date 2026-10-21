@@ -13,7 +13,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/commands/` | Revision-checked project mutations, idempotency and origin | React or transport-specific policy |
 | `src/core/projects/`, `src/core/editor/`, `src/core/creative-canvas/` | Project, asset, timeline and canvas behavior; pure contracts beside their owners | Imports from UI or routes |
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
-| `src/core/references/` | Explicit source acquisition, verified original and sampled-frame project assets | Inbox session management, sending messages, pretending previews are full media |
+| `src/core/references/` | Explicit source acquisition, verified originals/samples and bounded visual-cut analysis with editable interval output | Inbox session management, sending messages, pretending previews are full media or semantic analysis |
 | `src/core/storyboards/` | Revisioned creative plans, source observations, accepted shot identities and orchestration through existing runs/sequences | A second execution engine, invented visual inspection or brand-specific format constraints |
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, unchecked cross-library overwrite or silent runtime installation |
 | `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
