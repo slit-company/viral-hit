@@ -1,3 +1,4 @@
+import { modelOptionsDraftSchema } from '@/core/generation-providers/model-controls';
 import type {
   CanvasCard,
 } from '@/core/creative-canvas/canvas-types';
@@ -275,6 +276,7 @@ const normalizeCard = (value: unknown): CanvasCard | null => {
     sourceConfigCardId,
     generationRunId,
     generationSnapshot,
+    ...(value.modelOptions !== undefined ? { modelOptions: modelOptionsDraftSchema.parse(value.modelOptions) } : {}),
     pinnedOutputId:
       typeof value.pinnedOutputId === 'string' ? value.pinnedOutputId : null,
     audioRole:

@@ -1,3 +1,4 @@
+import { resolveModelOptions } from './model-controls';
 import { prepareLocalGenerationReferences } from './local-media.server';
 import { readFile, stat } from 'node:fs/promises';
 
@@ -149,7 +150,7 @@ async function prepareGenerationReferences({
 }
 
 export async function preflightAssetFirstGeneration(source: unknown) {
-  const generation = normalizeAssetFirstGenerationRequest(source);
+  let generation = normalizeAssetFirstGenerationRequest(source);
   const project = await getProject({ projectId: generation.projectId });
   if (!project || project.status !== 'active') throw new Error('Project not found');
   // The active provider or an installed one may serve the model.
@@ -159,6 +160,7 @@ export async function preflightAssetFirstGeneration(source: unknown) {
     throw new Error(`Model ${generation.modelId} is not available.`);
   }
   const { binding } = found;
+  if (binding.controls || generation.parameters.provider_options !== undefined) generation = { ...generation, parameters: { ...generation.parameters, provider_options: resolveModelOptions(binding.controls, generation.parameters.provider_options) } };
   const descriptor = getGenerationModelDescriptor(generation.modelId);
   if (!descriptor || descriptor.kind !== generation.mode) {
     throw new Error(

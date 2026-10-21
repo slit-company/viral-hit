@@ -274,6 +274,11 @@ export function useCreativeCanvasDraftActions({
     [canvasCardsRef, setActiveComposerCardId, updateDraftCard]
   );
 
+  const handleDraftModelOptionsChange = useCallback((draftId: string, modelOptions: NonNullable<CanvasDraftCard['modelOptions']>) => {
+    if (canvasCardsRef.current[draftId]?.modelId !== modelOptions.modelId) return;
+    updateEditableDraft(draftId, () => ({ modelOptions }))(modelOptions);
+  }, [canvasCardsRef, updateEditableDraft]);
+
   const handleDraftAspectRatioChange = useCallback(
     (draftId: string, aspectRatio: WorkspaceAspectRatio) =>
       updateEditableDraft(draftId, (value: WorkspaceAspectRatio) => ({
@@ -350,6 +355,7 @@ export function useCreativeCanvasDraftActions({
   );
 
   return {
+    handleDraftModelOptionsChange,
     handleDraftAnalysisDepthChange,
     handleCreatePromptDraft,
     handleDraftBackgroundSourceChange,

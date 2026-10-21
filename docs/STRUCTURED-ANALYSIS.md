@@ -54,4 +54,6 @@ References retain `provider-analysis` evidence and the original generation ID/fi
 
 The independent [technical inspector](../examples/providers/media-inspector/README.md) emits one structured observation of measured file metadata over the full video. It deliberately supplies no creative proposal because it does not understand scenes. Actual FFprobe output → draft preparation → explicit save is verified with original media. Provider proposal-field and queued-result tests use authored protocol fixtures; they do not establish semantic AI quality.
 
-Multi-source/image/audio analysis, arbitrary provider-specific controls, representative semantic-quality evaluation, automatic creative acceptance and a general graph editor remain separate work. The report bridge adds no model dependency, resident inference service or new queue.
+Multi-source/image/audio analysis, nested/conditional provider-specific forms, representative semantic-quality evaluation, automatic creative acceptance and a general graph editor remain separate work. The report bridge adds no model dependency, resident inference service or new queue.
+
+Providers may declare bounded scalar [model options](MODEL-OPTIONS.md) for their particular analysis workflow.

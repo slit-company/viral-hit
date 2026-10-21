@@ -1,3 +1,4 @@
+import { modelControlsSchema } from '../model-controls';
 import { analysisReport } from '../analysis-report';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
@@ -13,6 +14,7 @@ export const providerModelSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9.-]{1,63}$/, 'Use lowercase letters, numbers, dots and hyphens'),
   name: z.string().trim().min(1).max(80),
   kind: z.enum(['image', 'video', 'analysis']),
+  controls: modelControlsSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
   aspectRatios: z.array(z.enum(PROVIDER_ASPECT_RATIOS)).max(PROVIDER_ASPECT_RATIOS.length).default([]),
   defaultAspectRatio: z.enum(PROVIDER_ASPECT_RATIOS).optional(),

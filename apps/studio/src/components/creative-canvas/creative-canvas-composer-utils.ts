@@ -100,9 +100,15 @@ export const normalizeComposerToken = (
   }
 };
 
-export const stopComposerEvent = <T extends { stopPropagation: () => void }>(
+// Portaled dialogs are React descendants but not part of the composer's DOM.
+// Let their focus/keyboard handlers run instead of treating them as canvas input.
+const outsideComposerDom = (event: { currentTarget?: unknown; target?: unknown }) =>
+  typeof Node !== 'undefined' && event.currentTarget instanceof Node && event.target instanceof Node && !event.currentTarget.contains(event.target);
+
+export const stopComposerEvent = <T extends { stopPropagation: () => void; currentTarget?: unknown; target?: unknown }>(
   event: T
 ) => {
+  if (outsideComposerDom(event)) return;
   event.stopPropagation();
 };
 
@@ -110,10 +116,12 @@ export const stopComposerKeyboardEvent = <
   T extends {
     stopPropagation: () => void;
     nativeEvent?: { stopImmediatePropagation?: () => void };
+    currentTarget?: unknown; target?: unknown;
   },
 >(
   event: T
 ) => {
+  if (outsideComposerDom(event)) return;
   event.stopPropagation();
   event.nativeEvent?.stopImmediatePropagation?.();
 };

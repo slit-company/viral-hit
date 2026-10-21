@@ -182,3 +182,23 @@ test('fractional container durations use the editor millisecond timebase and rem
   assert.equal(prepared.plan.references[0].endTime,.333);
   await changeStoryboards(request.projectId,{action:'save',id:'fractional',expectedRevision:0,plan:prepared.plan});
 });
+
+test('declared controls reach real inspection, are retained in history and fail before upload when invalid', async () => {
+  const { request: generation, project } = await fixture();
+  const provider_options = { report_name: 'Delivery audit', minimum_height: 720, framing: 'landscape', include_hash: false };
+  const prepared = await preflightAssetFirstGeneration({ ...generation, parameters: { provider_options: { minimum_height: 720 } } });
+  assert.deepEqual(prepared.generation.parameters.provider_options, { report_name: 'Technical inspection', minimum_height: 720, framing: 'any', include_hash: true });
+  assert.equal(prepared.expectedUploadCount, 0);
+  for (const options of [{ minimum_height: '720' }, { minimum_height: 9000 }, { framing: 'square' }, { undeclared: true }]) await assert.rejects(() => preflightAssetFirstGeneration({ ...generation, parameters: { provider_options: options } }));
+  assert.equal((await listProjectGenerations(project.id)).length, 0);
+  const result = await submitAssetFirstGeneration({ generation: { ...generation, parameters: { provider_options } }, origin: 'mcp' });
+  assert.ok(result.status < 400, JSON.stringify(result));
+  const [item] = await listProjectGenerations(project.id);
+  assert.match(item.resultText!, /Delivery audit/);
+  assert.match(item.resultText!, /Height target: 720px; measured 320px — below target/);
+  assert.match(item.resultText!, /Expected framing: landscape — differs/);
+  assert.doesNotMatch(item.resultText!, /Source SHA-256/);
+  const { getGenerationById } = await import('../effects/record-generation');
+  const record = await getGenerationById({ id: item.id });
+  assert.deepEqual((record!.input as Record<string, unknown>).provider_options, provider_options);
+});

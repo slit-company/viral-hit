@@ -52,7 +52,7 @@ The reader admits only declared local references (64 MiB each, 256 MiB total, at
 
 [`media-inspector`](../examples/providers/media-inspector/README.md) performs actual FFprobe metadata inspection with no model service or new dependency. Its second model adds a 9:16/audio-presence review. Verified local bytes, SHA-256 and measured stream metadata make the report reproducible. It is a technical processor, not an AI-quality demonstration.
 
-Semantic video interpretation, representative model-quality tests, audio/image/multiple-video analysis inputs, arbitrary provider-specific controls remain open. Typed report → storyboard mapping is described below. The scene/transcript storyboard handoff is still a separate typed workflow; a free-text provider report is not silently converted into timed observations.
+Semantic video interpretation, representative model-quality tests, audio/image/multiple-video analysis inputs, nested/conditional provider-specific forms remain open; bounded scalar [model options](MODEL-OPTIONS.md) are supported. Typed report → storyboard mapping is described below. The scene/transcript storyboard handoff is still a separate typed workflow; a free-text provider report is not silently converted into timed observations.
 
 ## Structured report handoff
 

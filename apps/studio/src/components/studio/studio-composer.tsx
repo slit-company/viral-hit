@@ -1,3 +1,5 @@
+import { StudioReferenceThumbnails } from './studio-reference-thumbnails';
+import { ModelOptions } from '@/components/generation-providers/model-options';
 import { Action } from '@/components/base/action';
 import {
   ArrowUp,
@@ -185,20 +187,7 @@ export function StudioComposer({
         )}
         data-vh-composer=""
       >
-        {referenceUrls.length > 0 ? (
-          <div className="mb-2 flex flex-wrap gap-2">
-            {referenceUrls.map((url) => (
-              <Action
-                key={url}
-                type="button"
-                onClick={() => onRemoveReference?.(url)}
-                className="size-9 overflow-hidden rounded-[10px] border border-[var(--vh-border)]"
-              >
-                <img src={url} alt="" className="h-full w-full object-cover" />
-              </Action>
-            ))}
-          </div>
-        ) : null}
+        <StudioReferenceThumbnails urls={referenceUrls} onRemove={onRemoveReference} />
         <div className="relative">
           <Action
             type="button"
@@ -251,6 +240,7 @@ export function StudioComposer({
 
         <div className="mt-1.5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+            {!isAnalysis && <ModelOptions modelId={draft.modelId} value={draft.modelOptions} disabled={isBusy} onChange={modelOptions => onDraftChange({ ...draft, modelOptions })} />}
             <WorkspaceSelect
               ariaLabel="Media type"
               triggerClassName="min-w-[96px]"

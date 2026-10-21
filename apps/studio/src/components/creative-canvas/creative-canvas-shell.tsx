@@ -334,6 +334,7 @@ export function CreativeCanvasShell({
   const {
     handleCreatePromptDraft,
     handleDraftAnalysisDepthChange,
+    handleDraftModelOptionsChange,
     handleDraftAspectRatioChange,
     handleDraftBackgroundSourceChange,
     handleDraftCharacterOrientationChange,
@@ -655,6 +656,7 @@ export function CreativeCanvasShell({
       onActiveComposerCardIdChange: setActiveComposerCardId,
       onDraftPromptChange: handleDraftPromptChange,
       onDraftAnalysisDepthChange: handleDraftAnalysisDepthChange,
+      onDraftModelOptionsChange: handleDraftModelOptionsChange,
       onDraftTaskTypeChange: handleDraftTaskTypeChange,
       onDraftModelChange: handleDraftModelChange,
       onDraftAspectRatioChange: handleDraftAspectRatioChange,
@@ -684,6 +686,7 @@ export function CreativeCanvasShell({
       canvasCopy,
       handleDraftAspectRatioChange,
       handleDraftAnalysisDepthChange,
+      handleDraftModelOptionsChange,
       handleDraftBackgroundSourceChange,
       handleDraftCharacterOrientationChange,
       handleDraftDurationChange,

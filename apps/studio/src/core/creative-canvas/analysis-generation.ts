@@ -1,3 +1,4 @@
+import { draftModelOptions } from '@/core/generation-providers/model-controls';
 import { getGenerationPromptMaxChars, validateGenerationPrompt } from '@/core/effects/validation';
 import { VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS, VIDEO_ANALYSIS_MODEL_ID } from '@/core/effects/video-analysis';
 import type { WorkspaceModelOption } from '@/core/effects/workspace-models';
@@ -54,6 +55,7 @@ export function buildAnalysisGenerationInput({ draftCard, canvasCards, reference
     ? referenceUrlOverrides[videoReference.id] ?? videoReference.url
     : null;
   const input: Record<string, unknown> = {
+    ...draftModelOptions(draftCard),
     prompt: promptValidation.trimmedPrompt,
     analysis_depth: draftCard.analysisDepth ?? 'standard',
     max_output_tokens: VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS,

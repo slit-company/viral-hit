@@ -1,3 +1,4 @@
+import { draftModelOptions } from '@/core/generation-providers/model-controls';
 import type { CanvasDraftCard } from '@/core/creative-canvas/canvas-types';
 import { resolveWorkspaceEffectProviderModelVariant } from './effect-registry';
 
@@ -7,6 +8,7 @@ export function hasModelParameter(schema: unknown, field: string) {
 
 export function buildDraftModelParameters(draft: CanvasDraftCard, schema: unknown) {
   const candidates: Record<string, unknown> = {
+    ...draftModelOptions(draft),
     aspect_ratio: draft.aspectRatio,
     wmOutputQuality: draft.outputQuality,
     quality: draft.quality,

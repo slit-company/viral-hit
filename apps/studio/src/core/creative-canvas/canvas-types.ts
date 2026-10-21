@@ -1,3 +1,4 @@
+import type { ModelOptionsDraft } from '@/core/generation-providers/model-controls';
 import type {
   WorkspaceAspectRatio,
   WorkspaceBackgroundSource,
@@ -29,6 +30,7 @@ type CanvasCardBase = {
   type: CanvasAssetMediaType;
   generationMode?: CanvasGenerationMode;
   analysisDepth?: VideoAnalysisDepth;
+  modelOptions?: ModelOptionsDraft;
   name: string;
   url: string | null;
   resultText?: string | null;
@@ -66,6 +68,7 @@ export type CanvasGenerationSnapshot = Pick<
   | 'type'
   | 'generationMode'
   | 'analysisDepth'
+  | 'modelOptions'
   | 'prompt'
   | 'referenceCardIds'
   | 'workflowTemplateId'

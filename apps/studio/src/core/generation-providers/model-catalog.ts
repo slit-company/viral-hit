@@ -1,3 +1,4 @@
+import { resolveModelOptions, type ModelControl } from './model-controls';
 import {
   getWorkspaceEffectRegistryEntry,
   type WorkspaceEffectRegistryEntry,
@@ -34,6 +35,7 @@ export type GenerationModelDescriptor = {
   referenceDelivery?: 'project-media';
   kind: 'image' | 'video' | 'analysis';
   available: boolean;
+  controls?: ModelControl[];
   parameterSchema: unknown;
   defaultParameters: Record<string, unknown>;
   referenceSchema: unknown;
@@ -49,13 +51,15 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
           id: binding.modelId,
           name: effect.name,
           providerId: provider.id,
-        ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
+          ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
           kind: 'analysis' as const,
           available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
-          parameterSchema: effect.inputSchema,
+          ...(binding.controls ? { controls: binding.controls } : {}),
+        parameterSchema: effect.inputSchema,
           defaultParameters: {
             analysis_depth: 'standard',
             max_output_tokens: 2048,
+            ...(binding.controls ? { provider_options: resolveModelOptions(binding.controls, undefined) } : {}),
           },
           referenceSchema: {
             image: { min: 0, max: 0 },
@@ -75,8 +79,9 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
         kind: entry.workspaceType === 'ai-image' ? ('image' as const) : ('video' as const),
         available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
+        ...(binding.controls ? { controls: binding.controls } : {}),
         parameterSchema: effect.inputSchema,
-        defaultParameters: defaultsFromEntry(entry),
+        defaultParameters: { ...defaultsFromEntry(entry), ...(binding.controls ? { provider_options: resolveModelOptions(binding.controls, undefined) } : {}) },
         referenceSchema: getWorkspaceMediaSchema(entry.id),
       },
     ];

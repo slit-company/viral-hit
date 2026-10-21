@@ -55,13 +55,19 @@ export async function createGeneration({ model, input, signal, readMedia }) {
     if (!video || !(video.width > 0) || !(video.height > 0)) throw Error('No readable video stream');
     const duration = Number(report.format?.duration);
     if (!Number.isFinite(duration) || duration <= 0) throw Error('Video duration is unavailable');
+    const options = { report_name: 'Technical inspection', minimum_height: 0, framing: 'any', include_hash: true, ...input.options };
     const lines = [
-      'Technical inspection — measured file metadata',
-      `Source SHA-256: ${source.sha256}`,
+      `${options.report_name} — measured file metadata`,
+      ...(options.include_hash ? [`Source SHA-256: ${source.sha256}`] : []),
       `File: ${source.bytes} bytes; duration: ${duration.toFixed(3)} s`,
       `Video: ${video.width} × ${video.height}; codec: ${video.codec_name}; nominal frame rate: ${video.r_frame_rate}`,
       `Audio: ${audio.length} stream(s)` + (audio.length ? '; ' + audio.map(stream => `${stream.codec_name}, ${stream.sample_rate} Hz, ${stream.channels} channel(s)`).join('; ') : ''),
     ];
+    if (options.minimum_height > 0) lines.push(`Height target: ${options.minimum_height}px; measured ${video.height}px — ${video.height >= options.minimum_height ? 'meets target' : 'below target'}.`);
+    if (options.framing !== 'any') {
+      const matches = options.framing === 'portrait' ? video.height > video.width : video.width > video.height;
+      lines.push(`Expected framing: ${options.framing} — ${matches ? 'matches measured dimensions' : 'differs from measured dimensions'}.`);
+    }
     if (model.id === 'vertical-delivery-review') {
       lines.push(Math.abs(video.width / video.height - 9 / 16) < 0.01 ? 'Framing: approximately 9:16.' : 'Framing: differs from 9:16; review the target layout before exporting.');
       lines.push(audio.length ? 'Audio is present; listen to check speech and music balance.' : 'No audio stream; confirm that a silent delivery is intended.');

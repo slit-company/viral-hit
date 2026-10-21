@@ -1,3 +1,4 @@
+import type { ModelOptionsDraft } from '@/core/generation-providers/model-controls';
 import type { EffectMetadata } from '@/core/effects/client-api';
 import type {
   WorkspaceAspectRatio,
@@ -153,6 +154,7 @@ export type CreativeCanvasFrontLayerValue = {
   onSelectedShapeIdsChange: (shapeIds: string[]) => void;
   onSelectedCanvasCardIdsChange: (shapeIds: string[]) => void;
   onActiveComposerCardIdChange: (cardId: string | null) => void;
+  onDraftModelOptionsChange?: (draftId: string, value: ModelOptionsDraft) => void;
   onDraftPromptChange: (draftId: string, prompt: string) => void;
   onDraftTaskTypeChange: (
     draftId: string,

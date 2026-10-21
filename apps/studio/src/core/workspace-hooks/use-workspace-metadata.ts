@@ -1,3 +1,4 @@
+import type { ModelControl } from '@/core/generation-providers/model-controls';
 import {
   effectMetadataKeys,
   workspaceModelsKeys,
@@ -14,6 +15,7 @@ export type WorkspaceModelType = WorkspaceType | 'analysis';
 
 export type WorkspaceModelMetadata = WorkspaceModelOption & {
   workspaceType: WorkspaceModelType;
+  controls?: ModelControl[];
   inputSchema: unknown;
   defaultProviderModelVariant: string | null;
 };

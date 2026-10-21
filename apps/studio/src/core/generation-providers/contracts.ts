@@ -1,3 +1,4 @@
+import type { ModelControl } from './model-controls';
 import type { BaseAdapter, EffectRecord } from '@/core/adapters/base-adapter';
 
 export type GenerationMediaCapability = 'image' | 'video' | 'audio' | 'analysis';
@@ -5,6 +6,7 @@ export type GenerationMediaCapability = 'image' | 'video' | 'audio' | 'analysis'
 export type GenerationProviderModelBinding = {
   /** Stable ViralHit product model id. */
   modelId: string;
+  controls?: ModelControl[];
   /** Explicit output type/name for installed analysis models outside the image/video registry. */
   kind?: 'image' | 'video' | 'analysis';
   name?: string;

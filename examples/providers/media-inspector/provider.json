@@ -8,9 +8,111 @@
   "referenceDelivery": "project-media",
   "author": "Viral Hit contributors",
   "license": "Apache-2.0",
-  "environment": ["VIRAL_HIT_FFPROBE"],
+  "environment": [
+    "VIRAL_HIT_FFPROBE"
+  ],
   "models": [
-    { "id": "technical-video-review", "name": "Technical video review", "kind": "analysis" },
-    { "id": "vertical-delivery-review", "name": "Vertical delivery review", "kind": "analysis" }
+    {
+      "id": "technical-video-review",
+      "name": "Technical video review",
+      "kind": "analysis",
+      "controls": [
+        {
+          "key": "report_name",
+          "type": "string",
+          "label": "Report name",
+          "maxLength": 80,
+          "default": "Technical inspection"
+        },
+        {
+          "key": "minimum_height",
+          "type": "number",
+          "label": "Minimum height",
+          "description": "Compare measured video height against this pixel target. Zero disables the check.",
+          "min": 0,
+          "max": 8192,
+          "integer": true,
+          "default": 0
+        },
+        {
+          "key": "framing",
+          "type": "select",
+          "label": "Expected framing",
+          "default": "any",
+          "choices": [
+            {
+              "value": "any",
+              "label": "Any orientation"
+            },
+            {
+              "value": "portrait",
+              "label": "Portrait"
+            },
+            {
+              "value": "landscape",
+              "label": "Landscape"
+            }
+          ]
+        },
+        {
+          "key": "include_hash",
+          "type": "boolean",
+          "label": "Show source checksum",
+          "description": "Include the original file checksum in the text report. Source verification always remains enabled.",
+          "default": true
+        }
+      ]
+    },
+    {
+      "id": "vertical-delivery-review",
+      "name": "Vertical delivery review",
+      "kind": "analysis",
+      "controls": [
+        {
+          "key": "report_name",
+          "type": "string",
+          "label": "Report name",
+          "maxLength": 80,
+          "default": "Technical inspection"
+        },
+        {
+          "key": "minimum_height",
+          "type": "number",
+          "label": "Minimum height",
+          "description": "Compare measured video height against this pixel target. Zero disables the check.",
+          "min": 0,
+          "max": 8192,
+          "integer": true,
+          "default": 0
+        },
+        {
+          "key": "framing",
+          "type": "select",
+          "label": "Expected framing",
+          "default": "any",
+          "choices": [
+            {
+              "value": "any",
+              "label": "Any orientation"
+            },
+            {
+              "value": "portrait",
+              "label": "Portrait"
+            },
+            {
+              "value": "landscape",
+              "label": "Landscape"
+            }
+          ]
+        },
+        {
+          "key": "include_hash",
+          "type": "boolean",
+          "label": "Show source checksum",
+          "description": "Include the original file checksum in the text report. Source verification always remains enabled.",
+          "default": true
+        }
+      ]
+    }
   ]
 }

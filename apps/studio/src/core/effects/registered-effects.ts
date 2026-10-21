@@ -35,6 +35,7 @@ const buildVideoAnalysisEffect = (
     api: null,
     provider: providerId,
     inputSchema: {
+      ...(binding.controls ? { provider_options: { type: 'any', required: false } } : {}),
       prompt: { type: 'string', required: true },
       video_url: { type: 'string', required: true },
       analysis_depth: {
@@ -152,7 +153,7 @@ export const toRegisteredEffect = (
     platform: provider.id,
     api: null,
     provider: provider.id,
-    inputSchema: buildInputSchema(entry),
+    inputSchema: { ...buildInputSchema(entry), ...(binding.controls ? { provider_options: optionalAnyField } : {}) },
   };
 };
 

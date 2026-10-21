@@ -100,3 +100,10 @@ Project-media preflight now verifies content with a reusable 64 KiB buffer. A mo
 Final build: **204 public files / 8,560,884 bytes**, **1,992,915 raw JavaScript bytes / 587,740 individually gzipped JavaScript bytes**. The increase is **878 gzip bytes** over local provider media; unchanged 10 MB/600 KB gates pass. No default dependency, model service, worker or background poller was added.
 
 A report is bounded to 256 KB UTF-8 and 64 observations. Discovery examines at most 100 recent completed generations and discloses older candidates; preparation selects at most 16 observations and rejects a draft that cannot fit the existing storyboard storage bound. Source bytes are verified and probed only when preparing a draft. These bounds and bundle measurements are not a large-history latency, whole-process memory or competitor benchmark.
+
+
+## Independent model controls — 2026-10-22
+
+Final public build: **203 files / 8,566,568 bytes**, **1,998,504 raw JavaScript bytes / 589,365 individually gzipped JavaScript bytes**. The gzip increase is **1,625 bytes** over structured analysis; unchanged 10 MB/600 KB gates pass. Chunk count reflects bundler grouping and is not an initial-transfer measurement.
+
+Controls reuse cached workspace metadata and existing generation/storage paths. No new dependency, inference runtime, worker or polling loop was added. Each model has at most 16 controls with primitive values, strings at most 4,000 characters and select lists at most 32 choices. Default/constraint validation is synchronous and bounded; this is not a full-host memory or latency benchmark.

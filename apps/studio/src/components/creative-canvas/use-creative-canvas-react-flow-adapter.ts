@@ -1,3 +1,4 @@
+import { captureGenerationSnapshot } from '@/core/creative-canvas/generation-snapshot';
 import type {
   WorkspaceAspectRatio,
   WorkspaceModelOption,
@@ -138,6 +139,7 @@ const getDraftShapeSignature = (
     card.type,
     card.generationMode ?? card.type,
     card.analysisDepth ?? '',
+    JSON.stringify(card.modelOptions ?? null),
     card.resultText ?? '',
     card.aspectRatio,
     card.status,
@@ -1124,30 +1126,7 @@ export function useCreativeCanvasReactFlowAdapter({
         sourceGenerationId: null,
         sourceConfigCardId: draftCard.id,
         generationRunId: `run:${makeId()}`,
-        generationSnapshot: {
-          type: draftCard.type,
-          generationMode: draftCard.generationMode,
-          analysisDepth: draftCard.analysisDepth,
-          prompt: draftCard.prompt,
-          referenceCardIds: [...draftCard.referenceCardIds],
-          workflowTemplateId: draftCard.workflowTemplateId,
-          modelId: draftCard.modelId,
-          aspectRatio: resolvedAspectRatio,
-          outputQuality: draftCard.outputQuality,
-          duration: draftCard.duration,
-          language: draftCard.language,
-          mode: draftCard.mode,
-          variant: draftCard.variant,
-          quality: draftCard.quality,
-          ...(draftCard.characterOrientation
-            ? { characterOrientation: draftCard.characterOrientation }
-            : {}),
-          ...(draftCard.backgroundSource
-            ? { backgroundSource: draftCard.backgroundSource }
-            : {}),
-          resultText: draftCard.resultText ?? null,
-          capturedAt: new Date().toISOString(),
-        },
+        generationSnapshot: captureGenerationSnapshot(draftCard, resolvedAspectRatio),
       };
       setCanvasCard(nextCard);
 

@@ -13,3 +13,5 @@ The generic analysis provider contract also supports asynchronous AI services: r
 The processor also returns a version-1 structured report containing one measured whole-video observation. With local project-media delivery, open Storyboards → Start from a model report to prepare it as an unsaved reference plan. It supplies no creative direction or caption proposal; those remain yours to author. Independent vision models can return their own timed observations and optional proposals through the same contract described in `docs/STRUCTURED-ANALYSIS.md`.
 
 Whole-video structured intervals use the editor’s millisecond timebase and 0.01–3600 second range. Videos outside that range still receive the technical text report; no unsupported storyboard interval is fabricated.
+
+The models declare optional UI controls for report name, minimum measured height, expected framing and checksum display. They arrive as `input.options` with validated defaults; [model options](../../../docs/MODEL-OPTIONS.md) documents the shared contract. These checks compare file metadata and do not infer creative quality.

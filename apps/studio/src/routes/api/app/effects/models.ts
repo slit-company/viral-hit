@@ -28,6 +28,7 @@ async function GET({ request }: { request: Request }) {
     return {
       ...model,
       inputSchema: descriptor?.parameterSchema ?? null,
+      ...(descriptor?.controls ? { controls: descriptor.controls } : {}),
       defaultProviderModelVariant: model.defaultVariant
         ? resolveWorkspaceEffectProviderModelVariant({
             modelId: model.id,
@@ -41,7 +42,7 @@ async function GET({ request }: { request: Request }) {
   const analysisModels = listGenerationModelDescriptors().filter(model => model.kind === 'analysis').map(model => ({
     id: model.id, name: model.name, available: model.available, workspaceType: 'analysis',
     uploadPath: '', imageBucketName: '', supportsSourceVideo: true, maxSourceVideos: 1,
-    inputSchema: model.parameterSchema, defaultProviderModelVariant: null,
+    ...(model.controls ? { controls: model.controls } : {}), inputSchema: model.parameterSchema, defaultProviderModelVariant: null,
   }));
   return Response.json({ models: requestedType === 'analysis' ? analysisModels : requestedType ? models : [...models, ...analysisModels] });
 }

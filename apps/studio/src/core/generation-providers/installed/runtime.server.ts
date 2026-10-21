@@ -1,3 +1,4 @@
+import { resolveModelOptions } from '../model-controls';
 import { createProviderMediaContext } from '../local-media.server';
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { pinProviderTask, providerRuntimeDigest, unpinProviderTask } from './task-pin.server';
@@ -141,7 +142,9 @@ export class InstalledProviderAdapter extends BaseAdapter {
   constructor(effect: EffectRecord, private readonly runtime: InstalledProviderRuntime) { super(effect); }
   createGeneration(input: unknown) {
     if (this.effect.type === 3) validateInstalledAnalysisInput(input);
-    return this.runtime.call('createGeneration', this.effect, { input: providerInput(input) }, (input as Record<string, unknown> | null)?._referenceProjectId);
+    const model = this.runtime.manifest.models.find(item => item.id === this.effect.linkName);
+    const options = resolveModelOptions(model?.controls, (input as Record<string, unknown> | null)?.provider_options);
+    return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId);
   }
   checkStatus(taskId: string) { return this.runtime.call('checkStatus', this.effect, { taskId }); }
 }

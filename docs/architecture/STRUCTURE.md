@@ -88,3 +88,5 @@ Project storyboards follow [the planning boundary](STORYBOARDS.md): retain refer
 Installed generation providers follow [the local-input boundary](LOCAL-PROVIDER-MEDIA.md) when opting into project media: shared ownership/hash checks, bounded call-scoped readers and the existing generation/polling ledger.
 
 Structured provider reports follow [the analysis-to-plan decision](STRUCTURED-ANALYSIS.md): pure bounded output contracts, identity-checked discovery, source-byte verification on preparation and an unsaved storyboard handoff through existing operations.
+
+Independent model options follow [the declared-control boundary](MODEL-OPTIONS.md): bounded public definitions, namespaced values, model-scoped drafts and repeated validation before provider execution.

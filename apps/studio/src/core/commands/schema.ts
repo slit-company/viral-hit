@@ -1,3 +1,4 @@
+import { modelOptionsDraftSchema } from '@/core/generation-providers/model-controls';
 import { setOverlayMotionSchema, updateOverlaySchema } from './overlay-schema';
 import { z } from 'zod';
 
@@ -85,6 +86,7 @@ const generationSnapshotSchema = z
     type: z.enum(['image', 'video']),
     generationMode: generationModeSchema.optional(),
     analysisDepth: analysisDepthSchema.optional(),
+    modelOptions: modelOptionsDraftSchema.optional(),
     prompt: z.string().max(20_000).default(''),
     referenceCardIds: z.array(commandIdSchema).max(20).default([]),
     workflowTemplateId: commandIdSchema.nullable().default(null),
@@ -108,6 +110,7 @@ const canvasCardCommonShape = {
   assetId: commandIdSchema.nullable().optional(),
   generationMode: generationModeSchema.optional(),
   analysisDepth: analysisDepthSchema.optional(),
+  modelOptions: modelOptionsDraftSchema.optional(),
   name: z.string().trim().min(1).max(500),
   url: z.string().trim().max(4096).nullable().default(null),
   resultText: z.string().max(100_000).nullable().optional(),

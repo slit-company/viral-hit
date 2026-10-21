@@ -1,3 +1,4 @@
+import { ModelOptions } from '@/components/generation-providers/model-options';
 import { Action } from '@/components/base/action';
 import {
   countPromptCharacters,
@@ -99,6 +100,7 @@ export function CreativeCanvasFrontLayer() {
     onActiveComposerCardIdChange,
     onSelectedShapeIdsChange,
     onDraftAnalysisDepthChange,
+    onDraftModelOptionsChange,
     onDraftAspectRatioChange,
     onDraftBackgroundSourceChange,
     onDraftCharacterOrientationChange,
@@ -883,6 +885,7 @@ export function CreativeCanvasFrontLayer() {
           takeCount={generationOutputs.length}
           promptAccessory={(insertReferenceMention) => (
             <>
+              {onDraftModelOptionsChange && <ModelOptions modelId={activeDraftCard.modelId} value={activeDraftCard.modelOptions} disabled={isDraftBusy} onChange={value => onDraftModelOptionsChange(activeDraftCard.id, value)} />}
               <CreativeCanvasComposerReferencePicker
                 activeDraftId={activeDraftCard.id}
                 canvasReferenceCards={canvasReferenceCards}
@@ -943,60 +946,56 @@ export function CreativeCanvasFrontLayer() {
                 onOpenChange={popovers.onOpenChange('model')}
               />
             ) : (
-              <div className="contents">
-                <CreativeCanvasComposerModelPicker
-                  activeDraftId={activeDraftCard.id}
-                  containerRef={popovers.refs.model}
-                  isDraftBusy={isDraftBusy}
-                  isOpen={popovers.open === 'model'}
-                  modelOptions={modelOptions}
-                  onDraftModelChange={onDraftModelChange}
-                  onOpenChange={popovers.onOpenChange('model')}
-                  selectedModelId={
-                    selectedModel?.id ?? activeDraftCard.modelId
-                  }
-                  selectedModelLabel={selectedModelLabel}
-                />
-              </div>
+              <CreativeCanvasComposerModelPicker
+                activeDraftId={activeDraftCard.id}
+                containerRef={popovers.refs.model}
+                isDraftBusy={isDraftBusy}
+                isOpen={popovers.open === 'model'}
+                modelOptions={modelOptions}
+                onDraftModelChange={onDraftModelChange}
+                onOpenChange={popovers.onOpenChange('model')}
+                selectedModelId={
+                  selectedModel?.id ?? activeDraftCard.modelId
+                }
+                selectedModelLabel={selectedModelLabel}
+              />
             )}
 
             {!isAnalysisDraft ? (
-              <div className="contents">
-                <CreativeCanvasComposerParameterPicker
-                  activeDraftCard={activeDraftCard}
-                  containerRef={popovers.refs.parameter}
-                  isDraftBusy={isDraftBusy}
-                  isOpen={popovers.open === 'parameter'}
-                  labels={labels}
-                  onDraftAspectRatioChange={onDraftAspectRatioChange}
-                  onDraftBackgroundSourceChange={onDraftBackgroundSourceChange}
-                  onDraftCharacterOrientationChange={
-                    onDraftCharacterOrientationChange
-                  }
-                  onDraftDurationChange={onDraftDurationChange}
-                  onDraftLanguageChange={onDraftLanguageChange}
-                  onDraftModeChange={onDraftModeChange}
-                  onDraftOutputQualityChange={onDraftOutputQualityChange}
-                  onDraftQualityChange={onDraftQualityChange}
-                  onDraftVariantChange={onDraftVariantChange}
-                  onOpenChange={popovers.onOpenChange('parameter')}
-                  parameterSummaryLabel={parameterSummaryLabel}
-                  selectedAspectRatioOptions={selectedAspectRatioOptions}
-                  selectedBackgroundSourceOptions={
-                    selectedBackgroundSourceOptions
-                  }
-                  selectedCharacterOrientationOptions={
-                    selectedCharacterOrientationOptions
-                  }
-                  selectedDurationOptions={selectedDurationOptions}
-                  selectedLanguageOptions={selectedLanguageOptions}
-                  selectedModeOptions={selectedModeOptions}
-                  selectedOutputQualities={selectedOutputQualities}
-                  selectedQualityOptions={selectedQualityOptions}
-                  selectedVariantOptions={selectedVariantOptions}
-                  visibleParameterSummaryTokens={visibleParameterSummaryTokens}
-                />
-              </div>
+              <CreativeCanvasComposerParameterPicker
+                activeDraftCard={activeDraftCard}
+                containerRef={popovers.refs.parameter}
+                isDraftBusy={isDraftBusy}
+                isOpen={popovers.open === 'parameter'}
+                labels={labels}
+                onDraftAspectRatioChange={onDraftAspectRatioChange}
+                onDraftBackgroundSourceChange={onDraftBackgroundSourceChange}
+                onDraftCharacterOrientationChange={
+                  onDraftCharacterOrientationChange
+                }
+                onDraftDurationChange={onDraftDurationChange}
+                onDraftLanguageChange={onDraftLanguageChange}
+                onDraftModeChange={onDraftModeChange}
+                onDraftOutputQualityChange={onDraftOutputQualityChange}
+                onDraftQualityChange={onDraftQualityChange}
+                onDraftVariantChange={onDraftVariantChange}
+                onOpenChange={popovers.onOpenChange('parameter')}
+                parameterSummaryLabel={parameterSummaryLabel}
+                selectedAspectRatioOptions={selectedAspectRatioOptions}
+                selectedBackgroundSourceOptions={
+                  selectedBackgroundSourceOptions
+                }
+                selectedCharacterOrientationOptions={
+                  selectedCharacterOrientationOptions
+                }
+                selectedDurationOptions={selectedDurationOptions}
+                selectedLanguageOptions={selectedLanguageOptions}
+                selectedModeOptions={selectedModeOptions}
+                selectedOutputQualities={selectedOutputQualities}
+                selectedQualityOptions={selectedQualityOptions}
+                selectedVariantOptions={selectedVariantOptions}
+                visibleParameterSummaryTokens={visibleParameterSummaryTokens}
+              />
             ) : null}
           </div>
         </CreativeCanvasComposerShell>
