@@ -7,7 +7,7 @@ import { REFERENCE_MEDIA_KINDS, type ReferenceInputs } from '@/core/generation-p
 import { studioSourceCounts, type StudioMediaSource } from '@/core/studio/studio-media-sources';
 import { loadStudioSources } from './use-studio-source-actions';
 
-export function StudioMediaSources({ projectId, sources, limits, onAdd, onRemove, label, disabled }: { projectId: string; sources: StudioMediaSource[]; limits: ReferenceInputs; onAdd: (source: StudioMediaSource) => void; onRemove: (id: string) => void; label: 'Analysis' | 'Audio'; disabled: boolean }) {
+export function StudioMediaSources({ projectId, sources, limits, onAdd, onRemove, label, disabled }: { projectId: string; sources: StudioMediaSource[]; limits: ReferenceInputs; onAdd: (source: StudioMediaSource) => void; onRemove: (id: string) => void; label: 'Analysis' | 'Audio' | 'Visual'; disabled: boolean }) {
   const [open, setOpen] = useState(false), [search, setSearch] = useState('');
   const library = useQuery({ queryKey: ['studio-media-sources', projectId], queryFn: () => loadStudioSources(projectId), enabled: open && !disabled, staleTime: 0 });
   const selected = new Set(sources.map(source => source.id));

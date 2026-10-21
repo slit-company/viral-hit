@@ -159,3 +159,10 @@ Final public output is unchanged: **203 files / 8,593,619 bytes**, **2,025,164 r
 Final build: **203 public files / 8,594,026 bytes**, **2,025,571 raw JavaScript bytes / 596,488 individually gzipped JavaScript bytes**. Increase over generation receipt inspection: **91 gzip bytes**. Existing 10 MB/600 KB limits pass. There is no new dependency, migration, queue or daemon. The existing sequential worker uses the existing intent/history stores and disables submission's extra background polling timer for its own generations.
 
 Inputs stream through existing 64 KiB hash buffers with 64 MiB per reference and 256 MiB total limits. Completed generation assets are verified/probed and reused directly, without a second materializer copy. The four-step local proof retained three unique media assets and exported a one-second image/audio timeline. This does not measure whole-host RSS, large model inference, long-project latency, concurrency throughput or competitor performance. Installed code is trusted and cooperative deadlines cannot forcibly stop a module that ignores its signal.
+
+
+## Visual model reference declarations — 2026-10-22
+
+Final build: **203 public files / 8,596,577 bytes**, **2,028,171 raw JavaScript bytes / 597,047 individually gzipped JavaScript bytes**. Increase over installed-model recipes: **559 gzip bytes**. The unchanged 10 MB/600 KB gates pass. Source selection reuses the existing picker, upload fencing, project asset store and generation ledger; no default runtime dependency, queue or worker is added.
+
+New declarations allow at most 20 references in total and retain existing local reader bounds (64 MiB each, 256 MiB total/cumulative read). The optional visual-conform processor caps output at 320 pixels on the longest side, ten seconds of video, two FFmpeg threads, 60 seconds overall and bounded probe/conversion processes. Real short media/export passed; these caps and bundle measurements are not whole-host RSS, inference cost, long-project latency or competitor benchmarks.

@@ -14,7 +14,7 @@ Put the provider folder under `VIRAL_HIT_PROVIDERS_DIR`, or distribute it in a r
 
 ## Declare reference inputs
 
-Declare per-kind `{min,max}` ranges in `referenceInputs`. Each count is 0–20, minima cannot exceed maxima, and the sum of maxima must be 1–20. There is no implicit required reference when every declared minimum is zero. The descriptor exposes the same ranges to Studio, HTTP, MCP and CLI. Analysis retains its existing `analysisInputs` field; image/video models retain their existing input contracts.
+Declare per-kind `{min,max}` ranges in `referenceInputs`. Each count is 0–20, minima cannot exceed maxima, and the sum of maxima must be 1–20. There is no implicit required reference when every declared minimum is zero. The descriptor exposes the same ranges to Studio, HTTP, MCP and CLI. Analysis retains its existing `analysisInputs` field; image/video models may also opt into [declared mixed sources](VISUAL-REFERENCES.md).
 
 ```json
 "referenceInputs": {

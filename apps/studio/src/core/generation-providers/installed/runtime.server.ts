@@ -1,3 +1,4 @@
+import { validateInstalledVisualInput } from './visual-input';
 import { validateInstalledAudioInput } from './audio-input';
 import { resolveModelOptions } from '../model-controls';
 import { createProviderMediaContext } from '../local-media.server';
@@ -148,6 +149,7 @@ export class InstalledProviderAdapter extends BaseAdapter {
   createGeneration(input: unknown) {
     const model = this.runtime.manifest.models.find(item => item.id === this.effect.linkName);
     if (this.effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs);
+    if (model && (this.effect.type === 1 || this.effect.type === 2)) validateInstalledVisualInput(input, model);
     if (this.effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs);
     const options = resolveModelOptions(model?.controls, (input as Record<string, unknown> | null)?.provider_options);
     return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId, typeof (input as Record<string, unknown> | null)?._runtimeIdentity === 'string' ? String((input as Record<string, unknown>)._runtimeIdentity) : undefined, (input as Record<string, unknown> | null)?._executionSignal instanceof AbortSignal ? (input as Record<string, unknown>)._executionSignal as AbortSignal : undefined);

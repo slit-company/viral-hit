@@ -17,7 +17,7 @@ export function appendStudioSource<T extends { sources: StudioMediaSource[] }>(d
 }
 
 /** Recover exact local IDs even outside the library window; never infer ownership from foreign URLs. */
-export function restoreStudioSources(projectId: string, item: ProjectGenerationItem, library: StudioMediaSource[]): StudioMediaSource[] {
+export function restoreStudioSources(projectId: string, item: Pick<ProjectGenerationItem, 'referenceImages' | 'referenceVideos' | 'referenceAudios'>, library: StudioMediaSource[]): StudioMediaSource[] {
   const sources: StudioMediaSource[] = [];
   for (const [type, urls] of [['image', item.referenceImages], ['video', item.referenceVideos], ['audio', item.referenceAudios ?? []]] as [ReferenceMediaKind, string[]][]) {
     for (const publicUrl of urls) {

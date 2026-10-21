@@ -107,6 +107,6 @@ export function applyStudioHistoryItem({
   return {
     media,
     draft: { ...nextDraft, ...(item.modelOptions ? { modelOptions: item.modelOptions } : {}) },
-    referenceUrls: item.referenceImages,
+    referenceUrls: [...item.referenceImages, ...item.referenceVideos, ...(item.referenceAudios ?? [])],
   };
 }

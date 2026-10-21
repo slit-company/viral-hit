@@ -66,7 +66,7 @@ Rules and limits:
 - A provider module runs inside the server with its permissions, like an external adapter. Install only code you trust; keep its credentials in its own environment variables or files, never in `provider.json`.
 - Up to 32 provider folders, 64 KB per manifest, 5 MiB per module and 8 MB aggregate module source are accepted. Hidden staging folders are ignored.
 - The module must be one self-contained file: `node:` built-ins work, other dependencies must be bundled into it. It is read once at startup; restart after changing it.
-- Reference images reach the module as `imageUrls` prepared the same way as for Cloud API, so local images need the storage setting below (Cloud API files or your S3 bucket).
+- References reach the module as `imageUrls`, `videoUrls` and `audioUrls`. Image/video models may declare [mixed source counts](../../../docs/VISUAL-REFERENCES.md). Providers can opt into verified local readers with `referenceDelivery: "project-media"`; otherwise local sources use the managed storage settings below.
 - Viral Hit does not measure the quality of a provider's output.
 
 ## Forking the built-in provider

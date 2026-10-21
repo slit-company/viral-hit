@@ -1,3 +1,5 @@
+import { useStudioVisualSources } from './use-studio-visual-sources';
+import { visualSourceReferences } from '@/core/studio/studio-visual-sources';
 import { StudioAudioComposer } from './studio-audio-composer';
 import { useStudioAudio } from './use-studio-audio';
 import { StudioAnalysisComposer } from './studio-analysis-composer';
@@ -31,10 +33,8 @@ import type { StudioMedia } from '@/core/studio/studio-runtime';
 import {
   fetchProjectGenerations,
 } from '@/core/workspace-lib/app/workspace-client-api';
-import { parseLocalProjectAssetUrl } from '@/core/projects/local-project-asset-url';
 import { GENERATION_REQUEST_VERSION } from '@/core/commands/generation-contract';
 import { precheckEffect, generateEffect } from '@/core/effects/client-api';
-import { fetchRecentAssets } from '@/core/workspace-lib/app/workspace-client-api';
 import { getEffectsMetadata } from '@/core/effects/client-api';
 import { buildDraftModelParameters } from '@/core/effects/model-parameters';
 import { invalidateWorkspaceAfterGeneration } from '@/core/workspace-lib/app/workspace-query-invalidation';
@@ -113,13 +113,13 @@ export function StudioWorkspace({
     });
   });
   const [media, setMedia] = useState<StudioMedia>(initialMedia);
-  const [referenceUrls, setReferenceUrls] = useState<string[]>([]);
   const [error, setError] = useState('');
   const analysis = useStudioAnalysis({ projectId, initialModelId: initialMedia === 'analysis' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
   const audio = useStudioAudio({ projectId, initialModelId: initialMedia === 'audio' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
   const models = draft.type === 'video' ? videoModels : imageModels;
   const selectedModel =
     findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
+  const visualSources = useStudioVisualSources(projectId, selectedModel, setError);
 
   const generationsQuery = useQuery({
     queryKey: projectGenerationsKeys.list(projectId),
@@ -144,6 +144,7 @@ export function StudioWorkspace({
 
   const generation = useMutation({
     mutationFn: async () => {
+      if (visualSources.busy) throw Error('Wait for source files to finish loading.');
       const isAnalysis = media === 'analysis';
       if (!isAnalysis && media !== 'audio' && !selectedModel) {
         throw new Error('No model is available for this media type.');
@@ -154,18 +155,8 @@ export function StudioWorkspace({
       else {
         const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id });
         if (promptConstraints.required && !draft.prompt.trim()) throw new Error('Describe what you want to create first.');
-        if (selectedModel?.requiresImageInput && referenceUrls.length === 0) throw new Error(`${selectedModel.name} requires at least one image.`);
         const initialInput = buildDraftModelParameters(draft, (await getEffectsMetadata([selectedModel!.id])).data.effects?.[selectedModel!.id]?.inputSchema);
-        const assets = referenceUrls.length ? await fetchRecentAssets(projectId) : null;
-        const references = referenceUrls.map((url) => {
-          const local = parseLocalProjectAssetUrl(url);
-          const asset = [...(assets?.images ?? []), ...(assets?.videos ?? []), ...(assets?.audios ?? [])]
-            .find((item) => item.publicUrl === url ||
-              (item.metadata as { providerUrl?: string } | null)?.providerUrl === url);
-          const assetId = local?.assetId ?? asset?.id;
-          if (!assetId) throw new Error('Reference media must belong to this project. Import it again.');
-          return { assetId, role: 'reference' as const };
-        });
+        const references = visualSourceReferences(visualSources.sources, selectedModel);
         request = { version: GENERATION_REQUEST_VERSION, projectId, mode: draft.type, modelId: selectedModel!.id, prompt: draft.prompt, references, parameters: initialInput };
       }
       const precheck = await precheckEffect({ generation: request });
@@ -205,9 +196,8 @@ export function StudioWorkspace({
   });
 
   function changeMedia(nextMedia: StudioMedia) {
-    if (generation.isPending || analysis.busy || audio.busy) return;
+    if (generation.isPending || analysis.busy || audio.busy || visualSources.busy) return;
     setMedia(nextMedia);
-    setReferenceUrls([]);
     if (nextMedia === 'analysis' || nextMedia === 'audio') return;
     const nextType = nextMedia === 'video' ? 'video' : 'image';
     const nextModels = nextType === 'video' ? videoModels : imageModels;
@@ -227,13 +217,13 @@ export function StudioWorkspace({
       <div className="pointer-events-none absolute inset-0 bg-[var(--vh-surface)]" />
       <div className="pointer-events-none absolute inset-x-[8%] top-0 h-[62%] opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.16)_0.75px,transparent_0.75px)] [background-size:18px_18px] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
 
-      <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[220px] pt-8 sm:px-6 sm:pb-[210px]">
+      <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[340px] pt-8 sm:px-6 sm:pb-[290px]">
         {feedItems.length > 0 ? (
           <div className="flex min-h-full w-full flex-col justify-end">
             <StudioGenerationFeed
               items={feedItems}
               onReuse={(item) => {
-                if (generation.isPending || analysis.busy || audio.busy) return;
+                if (generation.isPending || analysis.busy || audio.busy || visualSources.busy) return;
                 if (item.mediaType === 'audio') { setMedia('audio'); void audio.reuse(item); return; }
                 if (item.mediaType === 'analysis') { setMedia('analysis'); void analysis.reuse(item); return; }
                 const next = applyStudioHistoryItem({
@@ -243,7 +233,7 @@ export function StudioWorkspace({
                 });
                 setMedia(next.media);
                 setDraft(next.draft);
-                setReferenceUrls(next.referenceUrls);
+                void visualSources.reuse(item);
               }}
             />
           </div>
@@ -259,12 +249,13 @@ export function StudioWorkspace({
         media={media}
         imageModels={imageModels}
         videoModels={videoModels}
-        isBusy={generation.isPending}
+        isBusy={generation.isPending || visualSources.busy}
         promptCharacterLimit={
           getGenerationPromptMaxChars({ modelId: selectedModel?.id })
         }
         takeCount={feedItems.length}
         onDraftChange={(next) => {
+          if (generation.isPending || visualSources.busy) return;
           if (next.type !== draft.type || next.modelId !== draft.modelId) {
             const nextModels =
               next.type === 'video' ? videoModels : imageModels;
@@ -285,12 +276,8 @@ export function StudioWorkspace({
           setDraft(next);
         }}
         onMediaChange={changeMedia}
-        referenceUrls={referenceUrls}
-        onRemoveReference={(url) =>
-          setReferenceUrls((current) =>
-            current.filter((item) => item !== url)
-          )
-        }
+        projectId={projectId}
+        visualSources={visualSources}
         onGenerate={() => {
           setError('');
           generation.mutate();

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "visual-conform",
+  "label": "Local visual conform",
+  "scope": "general",
+  "description": "Optional FFmpeg frame extraction and short video formatting using declared media references. No AI or prompt interpretation.",
+  "referenceDelivery": "project-media",
+  "models": [
+    {
+      "id": "visual-frame", "name": "Frame from video", "kind": "image",
+      "aspectRatios": ["1:1", "16:9", "9:16"],
+      "referenceInputs": {"image":{"min":0,"max":0},"video":{"min":1,"max":1},"audio":{"min":0,"max":0}},
+      "controls": [{"key":"start","label":"Start in source (seconds)","type":"number","min":0,"max":600,"default":0}]
+    },
+    {
+      "id": "visual-cut", "name": "Video with image and audio", "kind": "video",
+      "aspectRatios": ["1:1", "16:9", "9:16"],
+      "referenceInputs": {"image":{"min":0,"max":1},"video":{"min":1,"max":1},"audio":{"min":0,"max":1}},
+      "controls": [
+        {"key":"start","label":"Start in source (seconds)","type":"number","min":0,"max":600,"default":0},
+        {"key":"seconds","label":"Clip length (seconds)","type":"number","min":0.1,"max":10,"default":1}
+      ]
+    }
+  ]
+}

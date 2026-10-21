@@ -63,7 +63,7 @@ test('declared audio reference counts are discoverable, bounded and absent on le
   assert.deepEqual(getGenerationModelDescriptor('mixed-sound')?.referenceSchema, mixedInputs);
   const legacy = providerManifestSchema.parse(JSON.parse(await readFile('../../examples/providers/procedural-audio/provider.json', 'utf8')));
   assert.equal(Object.hasOwn(legacy.models[0], 'referenceInputs'), false);
-  for (const change of [{ kind: 'analysis' }, { kind: 'image', aspectRatios: ['1:1'] }, { referenceInputs: { ...mixedInputs, image: { min: 2, max: 1 } } }, { referenceInputs: { ...mixedInputs, image: { min: 0, max: 20 } } }])
+  for (const change of [{ kind: 'analysis' }, { referenceInputs: { ...mixedInputs, image: { min: 2, max: 1 } } }, { referenceInputs: { ...mixedInputs, image: { min: 0, max: 20 } } }])
     assert.throws(() => providerManifestSchema.parse({ ...mixedManifest, models: [{ ...mixedManifest.models[0], ...change }] }));
   for (const input of [{ prompt: 'x' }, { prompt: 'x', video_url: 'https://example.com/v.mp4' }, { prompt: 'x', image_urls: ['https://example.com/a'], audio_urls: ['https://example.com/a'], video_urls: ['https://example.com/v'] }]) assert.throws(() => validateInstalledAudioInput(input, mixedInputs));
   const runtime = new InstalledProviderRuntime(mixedManifest, 'throw Error("MUST_NOT_IMPORT")');

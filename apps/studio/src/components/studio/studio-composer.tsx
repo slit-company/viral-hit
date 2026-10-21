@@ -1,3 +1,6 @@
+import { StudioVisualSourceControls } from './studio-visual-source-controls';
+import { visualSourceReferences } from '@/core/studio/studio-visual-sources';
+import type { StudioVisualSourcesController } from './use-studio-visual-sources';
 import { StudioReferenceThumbnails } from './studio-reference-thumbnails';
 import { ModelOptions } from '@/components/generation-providers/model-options';
 import { Action } from '@/components/base/action';
@@ -5,7 +8,6 @@ import {
   ArrowUp,
   Film,
   ImageIcon,
-  ImagePlus,
   Loader2,
   ScanSearch,
   Sparkles,
@@ -47,8 +49,8 @@ export function StudioComposer({
   onDraftChange,
   onMediaChange,
   onGenerate,
-  referenceUrls = [],
-  onRemoveReference,
+  projectId,
+  visualSources,
 }: {
   draft: CanvasGenerationCard;
   media: 'image' | 'video';
@@ -60,8 +62,8 @@ export function StudioComposer({
   onDraftChange: (next: CanvasGenerationCard) => void;
   onMediaChange: (next: StudioMedia) => void;
   onGenerate: () => void;
-  referenceUrls?: string[];
-  onRemoveReference?: (url: string) => void;
+  projectId: string;
+  visualSources: StudioVisualSourcesController;
 }) {
   const labels = useCanvasComposerLabels();
   const t = useTranslations('AppShell.studio.analysis');
@@ -70,6 +72,9 @@ export function StudioComposer({
   const models = media === 'video' ? videoModels : imageModels;
   const selectedModel =
     findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
+  const referenceUrls = visualSources.sources.filter(source => source.type === 'image').map(source => source.publicUrl);
+  let referencesValid = true;
+  try { visualSourceReferences(visualSources.sources, selectedModel); } catch { referencesValid = false; }
   const promptRequired = getGenerationPromptConstraints({
     modelId: selectedModel?.id,
   }).required;
@@ -141,16 +146,9 @@ export function StudioComposer({
         )}
         data-vh-composer=""
       >
-        <StudioReferenceThumbnails urls={referenceUrls} onRemove={onRemoveReference} />
+        <StudioVisualSourceControls projectId={projectId} model={selectedModel} source={visualSources} disabled={isBusy} />
+        <StudioReferenceThumbnails urls={referenceUrls} onRemove={url => { if (!isBusy) { const source = visualSources.sources.find(item => item.publicUrl === url); if (source) visualSources.remove(source.id); } }} />
         <div className="relative">
-          <Action
-            type="button"
-            aria-label={labels.uploadImageLabel}
-            title={t('referenceUploadSoon')}
-            className="absolute left-0 top-0 z-10 flex size-9 rotate-[-5deg] items-center justify-center rounded-[10px] border border-dashed border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] shadow-none transition hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]"
-          >
-            <ImagePlus className="size-3.5" />
-          </Action>
           <textarea
             value={draft.prompt}
             onChange={(event) =>
@@ -168,7 +166,7 @@ export function StudioComposer({
                 : labels.imagePromptPlaceholder
             }
             disabled={isBusy}
-            className="h-[80px] min-h-[80px] w-full resize-none bg-transparent py-2 pl-[52px] pr-3 text-[14px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-2)] sm:h-[92px] sm:min-h-[92px] sm:pl-[56px] sm:pr-16 sm:text-[15px]"
+            className="h-[80px] min-h-[80px] w-full resize-none bg-transparent py-2 pl-2 pr-3 text-[14px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-2)] sm:h-[92px] sm:min-h-[92px] sm:pl-2 sm:pr-16 sm:text-[15px]"
           />
         </div>
 
@@ -305,7 +303,7 @@ export function StudioComposer({
               disabled={
                 isBusy ||
                 (promptRequired && !draft.prompt.trim()) ||
-                (selectedModel?.requiresImageInput && referenceUrls.length === 0) ||
+                !referencesValid ||
                 !selectedModel
               }
               className={cn(
