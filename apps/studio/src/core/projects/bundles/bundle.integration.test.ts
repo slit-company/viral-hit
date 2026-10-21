@@ -129,3 +129,107 @@ test('an idle upload can be aborted without waiting for another chunk', async ()
   setTimeout(() => controller.abort(Error('deadline')), 25);
   await assert.rejects(pending, /deadline/);
 });
+
+const { storyboardPlan } = await import('@/core/storyboards/contract');
+const { changeStoryboards } = await import('@/core/storyboards/service.server');
+const { readStoryboard, readStoryboardBundleSource, shotDigest } = await import('@/core/storyboards/storage.server');
+const { storyboardSequence } = await import('@/core/storyboards/execution.server');
+const { recipeSchema } = await import('@/core/harness/recipes');
+const { storeInstalledRecipe, recipeDigest } = await import('@/core/harness/recipe-storage');
+const { openRecipeLibrary } = await import('@/core/harness/recipe-database.server');
+const { inspectStoryboardAttachment } = await import('@/core/storyboards/portable.server');
+const { bundleManifest } = await import('./contract');
+const { getProjectAssetById } = await import('@/core/workspace-lib/assets/user-assets');
+const { openHarness } = await import('@/core/harness/store');
+
+async function withStoryboards() {
+  const f = await fixture(), source = (await getProjectAssetById({ projectId: f.p.id, assetId: f.scene.id }))!;
+  const tonePath = join(directory, crypto.randomUUID() + '.wav');
+  execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=2', tonePath]);
+  const tone = await importLocalProjectAsset({ projectId: f.p.id, filePath: tonePath });
+  const audio = (await getProjectAssetById({ projectId: f.p.id, assetId: tone.id }))!;
+  const recipe = recipeSchema.parse({ schemaVersion: 1, id: 'portable-' + crypto.randomUUID().slice(0, 8), version: '1.0.0',
+    title: 'Independent footage workflow', description: 'Typed media plus literal creative text', author: 'Test author', license: 'MIT', category: 'video',
+    parameters: [{ id: 'footage', type: 'asset', kind: 'video', label: 'Footage', default: source.id }, { id: 'words', type: 'string', label: 'Words' }],
+    nodes: [{ id: 'result', operation: 'ext.offline-reference', version: '1', input: { asset: null, words: '' }, parameters: [{ parameter: 'footage', target: '/asset' }, { parameter: 'words', target: '/words' }] }],
+  });
+  storeInstalledRecipe(recipe);
+  for (const scope of ['general', 'specialized'] as const) {
+    const plan = storyboardPlan.parse({ schemaVersion: 1, title: 'Portable ' + scope, scope, intent: 'Keep media and independently authored decisions',
+      references: [{ id: 'source', assetId: source.id, sha256: source.sha256, observation: 'Observed two-second source', basis: 'observed', startTime: .2, endTime: 1.5 }],
+      audio: [{ id: 'tone', assetId: audio.id, sha256: audio.sha256, startTime: 0, duration: 1, inPoint: .5, role: 'music', volume: .2 }],
+      shots: [{ id: 'opening', title: 'Opening', duration: 1, direction: 'Keep the source interval', references: ['source'], caption: 'Portable scene',
+        recipe: { id: recipe.id, digest: recipeDigest(recipe), values: { words: source.id }, outputNodeId: 'result' } }],
+    });
+    await changeStoryboards(f.p.id, { action: 'save', id: scope, expectedRevision: 0, plan });
+    await changeStoryboards(f.p.id, { action: 'accept', id: scope, expectedRevision: 1, shotId: 'opening', inPoint: .5, notes: 'Reviewed original source interval', source: { kind: 'asset', assetId: source.id, sha256: source.sha256 } });
+  }
+  return { ...f, recipe, source, audio };
+}
+
+test('v2 transfers general and specialized boards, typed media inputs and acceptance without installing recipes or jobs', async () => {
+  const f = await withStoryboards(), exported = await exportProjectBundle(f.p.id, signal());
+  const manifest = JSON.parse(execFileSync('tar', ['-xOf', bundlePath(exported.id, 'project.tar'), 'manifest.json'], { encoding: 'utf8' }));
+  assert.equal(manifest.version, 2); assert.equal(manifest.storyboards.boards.length, 2);
+  assert.equal(manifest.storyboards.boards[0].sourceRevision, 2);
+  const library = openRecipeLibrary()!;
+  try { library.prepare('DELETE FROM recipes WHERE id=?').run(f.recipe.id); } finally { library.close(); }
+  const review = await inspected(bundlePath(exported.id, 'project.tar'));
+  assert.equal(review.summary.storyboardCount, 2); assert.equal(review.summary.acceptedShotCount, 2);
+  assert.equal(review.summary.recipeRequirements[0].digest, recipeDigest(f.recipe));
+  const imported = await acceptProjectBundle(review.id, review.sha256, signal());
+  const state = readStoryboard(imported.projectId, 'specialized')!;
+  assert.equal(state.revision, 1); assert.equal(state.plan.scope, 'specialized');
+  const recipe = state.plan.shots[0].recipe!;
+  assert.equal(recipe.values.words, f.source.id);
+  assert.notEqual(recipe.values.footage, f.source.id);
+  assert.equal(recipe.values.footage, state.plan.references[0].assetId);
+  assert.equal(state.accepted.opening.assetId, state.plan.references[0].assetId);
+  assert.equal(state.accepted.opening.shotDigest, shotDigest(state.plan, state.plan.shots[0]));
+  assert.equal(state.accepted.opening.inPoint, .5); assert.equal(state.accepted.opening.sourceActionId, undefined);
+  assert.notEqual(state.plan.audio[0].assetId, f.audio.id);
+  const sequence = await storyboardSequence(state);
+  assert.equal(sequence.tracks.length, 3); assert.equal(sequence.tracks[0].clips[0].duration, 1);
+  const h = openHarness(); try { assert.equal(h.runs(imported.projectId).length, 0); } finally { h.close(); }
+  const currentLibrary = openRecipeLibrary(true)!;
+  try { assert.equal(currentLibrary.prepare('SELECT id FROM recipes WHERE id=?').get(f.recipe.id), undefined); } finally { currentLibrary.close(); }
+  const again = await exportProjectBundle(imported.projectId, signal());
+  assert.equal(again.summary.storyboardCount, 2);
+  await changeStoryboards(imported.projectId, { action: 'save', id: state.id, expectedRevision: 1, plan: { ...state.plan, title: 'Recipient revision' } });
+  assert.equal((await acceptProjectBundle(review.id, review.sha256)).replayed, true);
+  assert.equal(readStoryboard(imported.projectId, state.id)!.plan.title, 'Recipient revision');
+  assert.equal(readStoryboard(f.p.id, state.id)!.plan.title, 'Portable specialized');
+});
+
+test('storyboards stage before activation and retry a failed project transaction without partial exposure or duplicate revisions', async () => {
+  const f = await withStoryboards(), exported = await exportProjectBundle(f.p.id, signal());
+  const review = await inspected(bundlePath(exported.id, 'project.tar'));
+  await db.run(sql.raw("CREATE TRIGGER reject_storyboard_bundle BEFORE INSERT ON project_timeline_state BEGIN SELECT RAISE(ABORT, 'activation failure'); END"));
+  try { await assert.rejects(acceptProjectBundle(review.id, review.sha256)); }
+  finally { await db.run(sql.raw('DROP TRIGGER reject_storyboard_bundle')); }
+  assert.equal(await getProject({ projectId: review.id }), null);
+  assert.equal(readStoryboardBundleSource(review.id).boards.length, 2);
+  await assert.rejects(changeStoryboards(review.id, { action: 'list' }), /Project not found/);
+  await acceptProjectBundle(review.id, review.sha256);
+  assert.deepEqual(readStoryboardBundleSource(review.id).boards.map(board => board.revision), [1, 1]);
+});
+
+test('portable inspection rejects altered shot acceptance, foreign hashes, media ranges and missing recipe snapshots', async () => {
+  const f = await withStoryboards(), exported = await exportProjectBundle(f.p.id, signal());
+  const review = await inspected(bundlePath(exported.id, 'project.tar')), { manifest } = await readImportReview(review.id);
+  const attachment = manifest.storyboards!;
+  for (const mutate of [
+    (a: typeof attachment) => { a.boards[0].plan.shots[0].direction = 'Changed without reacceptance'; },
+    (a: typeof attachment) => { a.boards[0].accepted.opening.sha256 = '0'.repeat(64); },
+    (a: typeof attachment) => { a.boards[0].accepted.opening.inPoint = 99; },
+    (a: typeof attachment) => { a.boards[0].plan.audio[0].duration = 99; },
+    (a: typeof attachment) => { a.recipes = []; },
+    (a: typeof attachment) => { a.boards.push(a.boards[0]); },
+    (a: typeof attachment) => { a.recipes[0].parameters[0].label = 'Tampered definition'; },
+  ]) {
+    const copy = structuredClone(attachment); mutate(copy);
+    assert.throws(() => inspectStoryboardAttachment(copy, manifest.assets));
+  }
+  assert.throws(() => bundleManifest.parse({ ...manifest, version: 1 }));
+  assert.throws(() => bundleManifest.parse({ ...manifest, storyboards: undefined }));
+});

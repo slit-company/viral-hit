@@ -1,3 +1,4 @@
+import { storyboardAttachment } from '@/core/storyboards/portable';
 import { z } from 'zod';
 import { canvasCardSchema } from '@/core/commands/schema';
 import { normalizeProjectSnapshotDocument, type ProjectSnapshotDocument } from '../project-snapshot';
@@ -35,11 +36,13 @@ const timeline = z.unknown().transform((value, ctx): TimelineDocument => {
   catch { ctx.addIssue({ code: 'custom', message: 'Invalid timeline' }); return z.NEVER; }
 });
 export const bundleManifest = z.object({
-  format: z.literal('viral-hit-project'), version: z.literal(1), createdAt: z.string().datetime(),
+  format: z.literal('viral-hit-project'), version: z.union([z.literal(1), z.literal(2)]), createdAt: z.string().datetime(),
   project: z.object({ id, name: z.string().trim().min(1).max(240), workspaceMode: z.enum(['studio', 'canvas', 'editor', 'assets']), coverAssetId: id.nullable() }).strict(),
   revisions: z.object({ canvas: z.number().int().positive(), timeline: z.number().int().min(0) }).strict(),
+  storyboards: storyboardAttachment.optional(),
   canvas: snapshot, timeline: timeline.nullable(), assets: z.array(bundleAsset).max(500),
 }).strict().superRefine((value, ctx) => {
+  if ((value.version === 2) !== (value.storyboards !== undefined)) ctx.addIssue({ code: 'custom', message: 'Storyboard attachment requires project format version 2' });
   if (new Set(value.assets.map(asset => asset.id)).size !== value.assets.length) ctx.addIssue({ code: 'custom', message: 'Duplicate asset ID' });
   if (value.assets.reduce((sum, asset) => sum + asset.sizeBytes, 0) > MAX_BUNDLE_BYTES - MAX_MANIFEST_BYTES - 1024 * 1024) ctx.addIssue({ code: 'custom', message: 'Project media exceeds the bundle limit' });
   if (value.timeline && value.timeline.projectId !== value.project.id) ctx.addIssue({ code: 'custom', message: 'Timeline belongs to another project' });

@@ -63,7 +63,7 @@ Describe framing, angle, lens, camera move, light and look with [shot controls](
 
 Keep a person, mascot or product consistent with [characters](docs/CHARACTERS.md): reference images plus written rules, added to any project as reference assets and a prompt brief, or chosen in the Canvas composer to attach the main image to a draft. A character file carries one to another installation. UI, MCP and CLI share the same library.
 
-Move an editable project between installations with a [project file](docs/PROJECT-FILES.md): original media, Canvas and timelines in one verified tar that always imports as a new project. UI, MCP and CLI share the same operations.
+Move an editable project between installations with a [project file](docs/PROJECT-FILES.md): original media, Canvas, timelines and latest storyboard plans in one verified tar that always imports as a new project. UI, MCP and CLI share the same operations.
 
 Unsaved timeline edits are backed up in the current browser. **Drafts** reviews and restores interrupted edits while preserving concurrent saved changes; see [editing recovery and storage limits](docs/EDITING-RECOVERY.md).
 

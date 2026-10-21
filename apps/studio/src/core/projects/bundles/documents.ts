@@ -1,3 +1,4 @@
+import { inspectStoryboardAttachment } from '@/core/storyboards/portable.server';
 import { bundleManifest, type BundleManifest } from './contract';
 
 /** Every media pointer becomes a manifest identity; free-text prompts are not rewritten. */
@@ -41,12 +42,14 @@ export function inspectBundle(manifest: BundleManifest) {
     if (hashes.has(asset.sha256) && hashes.get(asset.sha256) !== asset.sizeBytes) throw Error('Conflicting media sizes for one hash');
     hashes.set(asset.sha256, asset.sizeBytes);
   }
-  return { name: manifest.project.name, assetCount: manifest.assets.length, mediaBytes: [...hashes.values()].reduce((a, b) => a + b, 0),
+  const storyboards = inspectStoryboardAttachment(manifest.storyboards ?? { boards: [], recipes: [] });
+  return { ...storyboards, name: manifest.project.name, assetCount: manifest.assets.length, mediaBytes: [...hashes.values()].reduce((a, b) => a + b, 0),
     cardCount: manifest.canvas.cards.length, clipCount: manifest.timeline?.tracks.reduce((n, track) => n + track.clips.length, 0) ?? 0,
     duration: manifest.timeline?.duration ?? 0, revisions: manifest.revisions };
 }
 
 export function validateMediaRanges(manifest: BundleManifest) {
+  if (manifest.storyboards) inspectStoryboardAttachment(manifest.storyboards, manifest.assets);
   const media = new Map(manifest.assets.map(asset => [asset.id, asset]));
   for (const track of manifest.timeline?.tracks ?? []) for (const clip of track.clips) {
     if (clip.sourceType === 'caption') continue;

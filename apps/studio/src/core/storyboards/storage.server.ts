@@ -3,6 +3,7 @@ import { lstatSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { getViralHitDataRoot } from '@/config/data-root';
 import { fingerprint, type Json, type Plan } from '../harness/durable';
+import type { Recipe } from '../harness/recipes';
 import { MAX_STORYBOARD_BYTES, type StoryboardState, type StoryboardPlan, type StoryboardShot } from './contract';
 
 export class StoryboardConflict extends Error {}
@@ -25,7 +26,8 @@ function open(readOnly = false) {
   db.exec('PRAGMA busy_timeout=5000');
   if (!readOnly) db.exec(
     'CREATE TABLE IF NOT EXISTS revisions(project_id TEXT NOT NULL,board_id TEXT NOT NULL,revision INTEGER NOT NULL,document TEXT NOT NULL,PRIMARY KEY(project_id,board_id,revision));' +
-    'CREATE TABLE IF NOT EXISTS actions(project_id TEXT NOT NULL,request_id TEXT NOT NULL,board_id TEXT NOT NULL,document TEXT NOT NULL,PRIMARY KEY(project_id,request_id));'
+    'CREATE TABLE IF NOT EXISTS actions(project_id TEXT NOT NULL,request_id TEXT NOT NULL,board_id TEXT NOT NULL,document TEXT NOT NULL,PRIMARY KEY(project_id,request_id));' +
+    'CREATE TABLE IF NOT EXISTS bundle_recipes(project_id TEXT NOT NULL,digest TEXT NOT NULL,document TEXT NOT NULL,PRIMARY KEY(project_id,digest));'
   );
   return db;
 }
@@ -110,5 +112,37 @@ export function recordRun(action: StoryboardAction, runId: string) {
     const next = { ...current, runId };
     db.prepare('UPDATE actions SET document=? WHERE project_id=? AND request_id=?').run(encoded(next), action.projectId, action.requestId);
     return next;
+  });
+}
+
+/** One read snapshot for export consistency, including inert definitions retained by earlier imports. */
+export function readStoryboardBundleSource(projectId: string) {
+  const db = open(true); if (!db) return { boards: [] as StoryboardState[], recipes: [] as Recipe[] };
+  try {
+    db.exec('BEGIN');
+    const boards = db.prepare('SELECT r.document FROM revisions r JOIN (SELECT board_id,MAX(revision) revision FROM revisions WHERE project_id=? GROUP BY board_id) h ON h.board_id=r.board_id AND h.revision=r.revision WHERE r.project_id=? ORDER BY r.board_id').all(projectId, projectId).map(row => JSON.parse(String(row.document)) as StoryboardState);
+    const table = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='bundle_recipes'").get();
+    const recipes = table ? db.prepare('SELECT document FROM bundle_recipes WHERE project_id=? ORDER BY digest').all(projectId).map(row => JSON.parse(String(row.document)) as Recipe) : [];
+    db.exec('COMMIT'); return { boards, recipes };
+  } finally { db.close(); }
+}
+
+/** Staged before project activation. Replay compares the first import revision, never overwrites user edits. */
+export function stageStoryboardBundle(projectId: string, boards: StoryboardState[], recipes: { digest: string; recipe: Recipe }[]) {
+  if (boards.length > 64 || boards.some(board => board.projectId !== projectId || board.revision !== 1)) throw Error('Invalid staged storyboard identities');
+  if (!boards.length) return;
+  write(db => {
+    const ids = db.prepare('SELECT DISTINCT board_id FROM revisions WHERE project_id=?').all(projectId).map(row => String(row.board_id));
+    if (ids.some(id => !boards.some(board => board.id === id))) throw Error('Staged storyboard set differs from the reviewed project');
+    for (const board of boards) {
+      const json = encoded(board), first = read(db, projectId, board.id, 1);
+      if (first) { if (digest(first) !== digest(board)) throw Error('Staged storyboard differs from the reviewed project'); }
+      else db.prepare('INSERT INTO revisions VALUES(?,?,?,?)').run(projectId, board.id, 1, json);
+    }
+    for (const item of recipes) {
+      const old = db.prepare('SELECT document FROM bundle_recipes WHERE project_id=? AND digest=?').get(projectId, item.digest);
+      if (old && digest(JSON.parse(String(old.document))) !== digest(item.recipe)) throw Error('Staged recipe definition changed');
+      db.prepare('INSERT OR IGNORE INTO bundle_recipes VALUES(?,?,?)').run(projectId, item.digest, JSON.stringify(item.recipe));
+    }
   });
 }

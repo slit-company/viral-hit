@@ -1,3 +1,4 @@
+import { readStoryboardBundleSource, exportStoryboardAttachment } from '@/core/storyboards/portable.server';
 import { open, rm, stat } from 'node:fs/promises';
 import { probeMedia } from '@/core/harness/probe-media';
 import { eq } from 'drizzle-orm';
@@ -28,7 +29,10 @@ async function readSource(projectId: string) {
 }
 export async function exportProjectBundle(projectId: string, signal = AbortSignal.timeout(10 * 60_000)) {
   const source = await readSource(projectId), signature = JSON.stringify(source);
-  const manifest = bundleManifest.parse({ format: 'viral-hit-project', version: 1, createdAt: new Date().toISOString(),
+  const boards = readStoryboardBundleSource(projectId), boardSignature = JSON.stringify(boards);
+  const attachment = await exportStoryboardAttachment(boards);
+  const manifest = bundleManifest.parse({ format: 'viral-hit-project', version: attachment.boards.length ? 2 : 1,
+    ...(attachment.boards.length ? { storyboards: attachment } : {}), createdAt: new Date().toISOString(),
     project: { id: projectId, name: source.p.name, workspaceMode: resolveWorkspaceMode(source.p.lastWorkspaceMode), coverAssetId: source.p.coverAssetId },
     revisions: { canvas: source.canvas?.version ?? 1, timeline: source.timeline?.version ?? 0 },
     canvas: normalizeProjectSnapshotDocument(source.canvas?.documentJson),
@@ -55,7 +59,7 @@ export async function exportProjectBundle(projectId: string, signal = AbortSigna
   try {
     await writeTar(file, bytes, [...sources.values()], signal);
     // Reads and network work remain outside the write transaction.
-    if (JSON.stringify(await readSource(projectId)) !== signature) throw Error('Project changed during export. Save edits and prepare a new file.');
+    if (JSON.stringify(await readSource(projectId)) !== signature || JSON.stringify(readStoryboardBundleSource(projectId)) !== boardSignature) throw Error('Project changed during export. Save edits and prepare a new file.');
   } catch (error) { await file.close(); await rm(path, { force: true }); throw error; }
   finally { await file.close(); }
   const sizeBytes = (await stat(path)).size;

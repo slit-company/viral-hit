@@ -19,14 +19,14 @@ export function ProjectBundleDialog({ projectId }: { projectId?: string | null }
         <DialogHeader>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Viral Hit / Project file</p>
           <DialogTitle className="pr-6 text-2xl">Take your work with you.</DialogTitle>
-          <DialogDescription>Original media, Canvas and editable timelines in one portable file.</DialogDescription>
+          <DialogDescription>Original media, storyboards, Canvas and editable timelines in one portable file.</DialogDescription>
         </DialogHeader>
         {projectId && <section className="space-y-3 rounded-2xl border border-border p-4" aria-label="Export project file">
           <h3 className="flex items-center gap-2 font-semibold"><ArrowDownToLine size={17} />Export this project</h3>
           <p className="text-sm leading-relaxed text-muted-foreground">Uses saved edits. Finish saving before preparing your file.</p>
           <Action className="vh-secondary" disabled={Boolean(state.busy)} onClick={() => void state.prepare()}>Prepare project file</Action>
           {state.prepared && <div className="space-y-2" role="status">
-            <p className="text-sm">{state.prepared.summary.assetCount} media · {state.prepared.summary.clipCount} clips · {fileSize(state.prepared.sizeBytes)}</p>
+            <p className="text-sm">{state.prepared.summary.assetCount} media · {state.prepared.summary.clipCount} clips · {state.prepared.summary.storyboardCount} storyboards · {fileSize(state.prepared.sizeBytes)}</p>
             <a className="vh-primary inline-flex items-center justify-center" href={state.prepared.downloadUrl} download>Download project file</a>
           </div>}
         </section>}
@@ -37,6 +37,8 @@ export function ProjectBundleDialog({ projectId }: { projectId?: string | null }
           {summary && <div className="space-y-3 rounded-xl bg-muted p-3" aria-label="Verified project contents">
             <p className="flex items-start gap-2 font-semibold"><Check size={17} className="mt-0.5 shrink-0" /><span className="break-words">{summary.name}</span></p>
             <p className="text-sm">{summary.assetCount} media · {summary.cardCount} cards · {summary.clipCount} clips</p>
+            <p className="text-sm">{summary.storyboardCount} storyboards · {summary.acceptedShotCount} accepted shots</p>
+            {!!summary.recipeRequirements.length && <details className="text-xs leading-5"><summary className="cursor-pointer font-medium">Recipes to review ({summary.recipeRequirements.length})</summary><p className="mt-2">Download these definitions and review them in the recipe library before generating new attempts.</p><ul className="mt-2 space-y-2">{summary.recipeRequirements.map(recipe => <li key={recipe.digest} className="break-words">{recipe.title} · {recipe.id} · v{recipe.version}<span className="block break-all font-mono">{recipe.digest}</span><a className="inline-block underline underline-offset-4" href={`/api/app/project-bundles/${state.review!.id}/recipes/${recipe.digest}`} download>Download {recipe.title}</a></li>)}</ul></details>}
             <p className="text-xs text-muted-foreground">{summary.mediaBytes ? fileSize(summary.mediaBytes) : "No"} original media · Checksum verified</p>
             {state.imported ? <a className="vh-primary inline-flex items-center justify-center" href={`/editor/${state.imported}`}>Open imported project</a> : <Action className="vh-primary" disabled={Boolean(state.busy)} onClick={() => void state.accept()}>Create new project</Action>}
           </div>}

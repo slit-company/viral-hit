@@ -1,3 +1,4 @@
+import { stageStoryboardAttachment } from '@/core/storyboards/portable.server';
 import { createHash } from 'node:crypto';
 import { constants } from 'node:fs';
 import { mkdir, open, rename, rm } from 'node:fs/promises';
@@ -77,6 +78,9 @@ export async function acceptProjectBundle(id: string, expectedDigest: string, si
       objectKey, publicUrl: buildLocalProjectAssetUrl({ projectId: id, assetId }), filename, mimeType: asset.mimeType, sizeBytes: asset.sizeBytes,
       sha256: asset.sha256, width: asset.width, height: asset.height, durationMs: asset.durationMs, originProjectId: id });
   }
+  signal.throwIfAborted();
+  // Storyboards stage under the new, still-invisible project identity before activation.
+  if (manifest.storyboards) stageStoryboardAttachment(manifest.storyboards, id, ids);
   signal.throwIfAborted();
   // The file copies are private until this single transaction becomes visible.
   return db.transaction(async tx => {
