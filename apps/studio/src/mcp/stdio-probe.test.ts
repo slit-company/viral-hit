@@ -1,7 +1,8 @@
+import { tmpdir } from 'node:os';
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { execFileSync, spawn } from 'node:child_process';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 
 import { VIRAL_HIT_MCP_TOOL_NAMES } from './tools';
@@ -34,13 +35,16 @@ const readJsonLine = async (
   });
 
 test('MCP stdio handshake lists the catalogued tools and can list projects', async () => {
+  const dataRoot = mkdtempSync(join(tmpdir(), 'vh-stdio-probe-'));
+  const env = { ...process.env, NODE_ENV: 'development', VIRAL_HIT_SKILLS_DIR: resolve('../../examples/skills'), VIRAL_HIT_DATA_DIR: dataRoot };
+  execFileSync('pnpm', ['exec', 'drizzle-kit', 'push', '--force'], { env, stdio: 'pipe' });
   const child = spawn(
     resolve('node_modules/.bin/tsx'),
     ['scripts/mcp-server.ts'],
     {
       cwd: resolve('.'),
       // The example skills folder stands in for an operator's own skills.
-      env: { ...process.env, NODE_ENV: 'development', VIRAL_HIT_SKILLS_DIR: resolve('../../examples/skills') },
+      env,
       stdio: ['pipe', 'pipe', 'pipe'],
     }
   );
@@ -166,6 +170,8 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     };
     assert.ok(Array.isArray(payload.structuredContent?.result));
   } finally {
-    child.kill();
+    const stopped = new Promise<void>(done => { if (child.exitCode !== null || child.signalCode !== null) done(); else child.once('exit', () => done()); });
+    child.kill(); await stopped;
+    rmSync(dataRoot, { recursive: true, force: true });
   }
 });
