@@ -25,7 +25,8 @@ export function PlanContext({ plan, assets, change }: { plan: StoryboardPlan; as
       }}><option value="">Choose project media…</option>{owned.map(asset => <option key={asset.id} value={asset.id}>{asset.filename || asset.type} · {asset.id}</option>)}</SelectField>
       {plan.references.map((item, i) => <div key={item.id} className="space-y-4 border-t border-[var(--vh-border)] pt-4" aria-label={'Reference ' + (i + 1)}>
         <p className="break-all font-mono text-xs">{item.id}</p>
-        <MediaPreview asset={owned.find(asset => asset.id === item.assetId)} />
+        <MediaPreview asset={owned.find(asset => asset.id === item.assetId)} startTime={item.startTime} duration={item.endTime !== undefined ? item.endTime - (item.startTime ?? 0) : undefined} />
+        {item.evidence && <p className="break-words text-xs leading-5 text-[var(--vh-text-2)]">Machine source: {item.evidence.engine} · {item.evidence.kind}. Receipt fingerprint {item.evidence.outputSha256.slice(0, 12)}. This source record is retained when the plan is shared.</p>}
         <SelectField label={'Observation basis ' + (i + 1)} value={item.basis} onChange={basis => reference(i, { basis: basis as typeof item.basis })}>{['observed', 'inferred', 'proposed'].map(basis => <option key={basis}>{basis}</option>)}</SelectField>
         <Field label={'Observation ' + (i + 1)} value={item.observation} multiline onChange={observation => reference(i, { observation })} />
         {owned.find(asset => asset.id === item.assetId)?.type !== 'image' && <div className="grid grid-cols-2 gap-3">

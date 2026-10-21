@@ -6,6 +6,7 @@ import { Link } from '@/core/i18n/navigation';
 import { useStoryboards } from './use-storyboards';
 import { downloadDraft, newShot } from './draft';
 import { panel, SelectField } from './fields';
+import { ReferenceImport } from './reference-import';
 import { PlanContext } from './plan-context';
 import { ShotEditor } from './shot-editor';
 
@@ -35,6 +36,7 @@ export function StoryboardsPage({ projectId, locale }: { projectId: string; loca
       <Action className="vh-secondary" disabled={!c.catalog || c.busy || c.dirty || !!c.pending} onClick={() => { c.create(); setTab('plan'); }}>New storyboard</Action>
       <Action className="vh-secondary" disabled={c.busy} onClick={() => void c.refresh()}>Refresh status</Action>
     </div>
+    <ReferenceImport controller={c} onPrepared={() => setTab('plan')} />
     {!c.catalog && <p role="status">Loading project storyboards…</p>}
     {c.error && <p role="alert" className="whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-4 text-sm text-red-800">{c.error}</p>}
     {c.notice && <p role="status" className="break-words rounded-xl bg-[var(--color-brand-lime-soft)] p-4 text-sm leading-6 text-[var(--color-lime-text)]">{c.notice}</p>}

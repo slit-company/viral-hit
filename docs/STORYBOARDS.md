@@ -16,6 +16,28 @@ The current tab retains one project draft in session storage, including incomple
 
 Before execution the browser retains the exact request ID and revision. A lost response offers **Recover same request**, including after reload. This resubmits the original identity; it does not create a new attempt. A known rejection with no reserved action releases the form, while uncertain outcomes retain their pending request. Browser-storage failure prevents submission. Existing Runs handles cancellation and provider-specific recovery.
 
+## Start from completed analysis
+
+In **Storyboards → Start from analyzed video**, choose a completed visual-cut result and optionally a transcript of the same original video. Select one to sixteen consecutive scenes, general/specialized scope and your creative intent. **Prepare reference draft** opens an unsaved plan with timed source references and one shot per selected interval. Review source playback, write the actual shot directions, then save and use the normal recipe/result workflow. A dirty local draft or unresolved action blocks preparation so work is not replaced.
+
+`reference-sources` returns up to 100 recent usable receipt summaries with a disclosed omitted count. It lists metadata without verifying that source files still exist. Preparation reads exact successful receipts and verifies the original media bytes, kind and measured duration. HTTP, CLI and MCP use this same request:
+
+```json
+{
+  "action": "prepare-reference",
+  "scenes": { "runId": "SOURCE_RUN_ID", "jobId": "SOURCE_JOB_ID", "outputSha256": "EXACT_RECEIPT_SHA256" },
+  "firstScene": 0,
+  "lastScene": 1,
+  "title": "Reference study",
+  "intent": "Reinterpret these two source intervals for an instructional video.",
+  "scope": "general"
+}
+```
+
+Replace the identity placeholders with the returned values. Optional `transcript` has the same identity shape. The API uses zero-based indices; the form uses scene numbers starting at one. More than sixteen selected scenes fails; choose another range or author additional plans. Foreign media, stale receipts and changed original bytes fail. No generation, acceptance, timeline attachment or publication follows from preparation.
+
+Generated observations are labeled `inferred`. Cut detection establishes intervals, not subjects/actions/story structure. Speech is quoted as whole overlapping model segments; text outside a cut is explicitly disclosed. Captions remain empty so a sentence crossing a cut is not automatically duplicated. A plan's optional `references[].evidence` retains the original run/job IDs, receipt digest, analysis kind and engine. Project-file transfer preserves this historical context while remapping media; receiving builds must support the evidence field, and the identifiers are not executable references to new local jobs. Authors may revise observations after review; the service does not certify their truth.
+
 ## Plan
 
 Read project assets and the recipe catalog first. A save with expectedRevision 0 creates a board; later saves compare the exact current revision and retain earlier versions.

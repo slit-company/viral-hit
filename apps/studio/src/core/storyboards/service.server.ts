@@ -1,3 +1,4 @@
+import { listReferenceSources, prepareReferencePlan } from './reference.server';
 import { getActiveProject } from '../projects/projects';
 import { openHarness } from '../harness/store';
 import { isAssetOperation } from '../harness/asset-operations';
@@ -52,6 +53,8 @@ export async function changeStoryboards(projectId: string, raw: unknown) {
   const request = storyboardRequest.parse(raw);
   if (!await getActiveProject({ projectId })) throw Error('Project not found');
   if (request.action === 'list') return listStoryboards(projectId);
+  if (request.action === 'reference-sources') return listReferenceSources(projectId);
+  if (request.action === 'prepare-reference') return prepareReferencePlan(projectId, request);
   if (request.action === 'read') return view(current(projectId, request.id, request.revision));
   if (request.action === 'save') {
     await checkReferences(projectId, request.plan);

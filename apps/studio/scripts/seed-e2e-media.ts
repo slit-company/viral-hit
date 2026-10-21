@@ -124,5 +124,6 @@ const { seedScenes } = await import('./seed-e2e-scenes');
 const sceneProject = await seedScenes();
 const { seedTranscript } = await import('./seed-e2e-transcripts');
 const transcriptProject = await seedTranscript(video);
+const referencePlanProject = await seedTranscript(video, 'Reference plan E2E fixture', true);
 await mkdir('../../research/evidence/browser-fixtures', { recursive: true });
-await writeFile('../../research/evidence/browser-fixtures/projects.json', JSON.stringify(Object.fromEntries([project, mediaProject, takeProject, referenceProject, sequenceProject, sceneProject, transcriptProject].map(item => [item.name, item.id]))));
+await writeFile('../../research/evidence/browser-fixtures/projects.json', JSON.stringify(Object.fromEntries([project, mediaProject, takeProject, referenceProject, sequenceProject, sceneProject, transcriptProject, referencePlanProject].map(item => [item.name, item.id]))));

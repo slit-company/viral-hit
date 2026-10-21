@@ -94,3 +94,37 @@ test('foreign media, a video without audio, altered originals and changed pinned
   const accepted = await adapter.submit(noAudio.plan.nodes[0].input, noAudioContext);
   await assert.rejects(adapter.poll(accepted.id, noAudio.plan.nodes[0].input, context.signal, noAudioContext), /audio stream/);
 });
+
+test('completed independent speech and actual scene jobs prepare a portable unsaved storyboard without launching new work', async () => {
+  const { changeStoryboards } = await import('../storyboards/service.server');
+  const { createHash } = await import('node:crypto');
+  const { mapStoryboardPlan } = await import('../storyboards/portable');
+  const { copyFile } = await import('node:fs/promises');
+  await copyFile('../../recipes/detect-video-scenes.json', join(recipesDir, 'detect-video-scenes.json'));
+  const f = await fixture(), file = join(directory, 'reference-harness.db'), h = new DurableHarness(file);
+  const previous = process.env.VIRAL_HIT_HARNESS_DB; process.env.VIRAL_HIT_HARNESS_DB = file;
+  try {
+    const speech = h.enqueue(f.plan, 'speech');
+    const scenePlan = await pinRuntimePlan(await prepareRecipePlan('detect-video-scenes', { source: f.source.id }, f.project.id));
+    const scene = h.enqueue(scenePlan, 'scenes');
+    for (const run of [speech, scene]) for (let i = 0; i < 6; i++) await h.step(run, createRuntimeAdapters());
+    assert.ok([speech, scene].every(run => h.jobs(run).every(job => job.state === 'succeeded')));
+    const identity = (run: string) => { const job = h.jobs(run)[0]; return { runId: run, jobId: job.id, outputSha256: createHash('sha256').update(job.output_json!).digest('hex') }; };
+    const sources = await changeStoryboards(f.project.id, { action: 'reference-sources' }) as { sources: { kind: string }[] };
+    assert.deepEqual(sources.sources.map(item => item.kind).sort(), ['scenes', 'transcript']);
+    const request = { action: 'prepare-reference', scenes: identity(scene), transcript: identity(speech), firstScene: 0, lastScene: 0, title: 'Reference plan', intent: 'Inspect the source and reinterpret its scene', scope: 'general' };
+    const result = await changeStoryboards(f.project.id, request) as { plan: import('../storyboards/contract').StoryboardPlan };
+    assert.equal(result.plan.references.length, 2); assert.equal(result.plan.shots[0].duration, 2);
+    assert.equal(result.plan.references[1].evidence?.engine, 'whisper.cpp · protocol-fixture');
+    assert.deepEqual(await changeStoryboards(f.project.id, { action: 'list' }), []); assert.equal(h.runs(f.project.id).length, 2);
+    const state = await changeStoryboards(f.project.id, { action: 'save', id: 'reference', expectedRevision: 0, plan: result.plan }) as { revision: number; accepted: object };
+    assert.equal(state.revision, 1); assert.deepEqual(state.accepted, {});
+    assert.deepEqual(mapStoryboardPlan(result.plan, new Map(), new Map([[f.source.id, 'transferred']])).references[0].evidence, result.plan.references[0].evidence);
+    await assert.rejects(changeStoryboards(f.project.id, { ...request, scenes: { ...request.scenes, outputSha256: '0'.repeat(64) } }), /changed/);
+    const other = await createProject({ name: 'Foreign analysis consumer' });
+    await assert.rejects(changeStoryboards(other.id, request), /does not belong/);
+    const row = (await getProjectAssetById({ projectId: f.project.id, assetId: f.source.id }))!;
+    const path = resolveLocalProjectAssetPath(row), bytes = await readFile(path); bytes[0] ^= 1; await writeFile(path, bytes);
+    await assert.rejects(changeStoryboards(f.project.id, request), /hash changed/);
+  } finally { h.close(); if (previous === undefined) delete process.env.VIRAL_HIT_HARNESS_DB; else process.env.VIRAL_HIT_HARNESS_DB = previous; }
+});

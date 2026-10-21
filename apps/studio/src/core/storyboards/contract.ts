@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { prepareReference, referenceEvidence } from './reference-input';
 
 export const MAX_STORYBOARD_BYTES = 256_000;
 export const storyboardId = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/).refine(value => !['constructor', 'prototype'].includes(value));
@@ -11,7 +12,7 @@ const text = z.string().trim().min(1).max(4000);
 const decisions = z.array(text).max(20).default([]);
 const reference = z.object({
   id: storyboardId, assetId, sha256: hash, observation: text,
-  basis: z.enum(['observed', 'inferred', 'proposed']),
+  basis: z.enum(['observed', 'inferred', 'proposed']), evidence: referenceEvidence.optional(),
   startTime: time.optional(), endTime: time.optional(),
 }).strict().refine(value => value.endTime === undefined || (value.startTime !== undefined && value.endTime > value.startTime), 'Reference time range is invalid');
 export const storyboardShot = z.object({
@@ -52,6 +53,8 @@ export type AcceptedShot = {
 export type StoryboardState = { projectId: string; id: string; revision: number; plan: StoryboardPlan; accepted: Record<string, AcceptedShot> };
 export const storyboardRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
+  z.object({ action: z.literal('reference-sources') }).strict(),
+  prepareReference,
   z.object({ action: z.literal('read'), id: storyboardId, revision: revision.optional() }).strict(),
   z.object({ action: z.literal('save'), id: storyboardId, expectedRevision: revision, plan: storyboardPlan }).strict(),
   z.object({ action: z.literal('generate'), id: storyboardId, expectedRevision: revision, shotId: storyboardId, requestId: z.string().uuid() }).strict(),
