@@ -10,6 +10,8 @@ import type {
 } from './contracts';
 
 const providers = new Map<string, GenerationProviderMetadata>();
+/** Providers an operator installed; their models are offered next to the active provider's. */
+const installed = new Set<string>();
 let initialized = false;
 
 function addProvider(provider: GenerationProviderMetadata) {
@@ -48,6 +50,23 @@ function ensureProvidersRegistered() {
 
 export const registerGenerationProviderMetadata = addProvider;
 
+/** Server only: metadata of a provider loaded from VIRAL_HIT_PROVIDERS_DIR. */
+export function registerInstalledGenerationProviderMetadata(provider: GenerationProviderMetadata) {
+  ensureProvidersRegistered();
+  addProvider(provider);
+  installed.add(provider.id.trim());
+}
+
+/** The active provider first, then installed providers; their model and effect ids never overlap. */
+export function listSelectableGenerationProviders() {
+  ensureProvidersRegistered();
+  return [getActiveGenerationProviderId(), ...installed].flatMap((id) => providers.get(id) ?? []);
+}
+
+export function isInstalledGenerationProvider(providerId: string) {
+  return installed.has(providerId);
+}
+
 export function listGenerationProviders() {
   ensureProvidersRegistered();
   return [...providers.values()];
@@ -76,26 +95,43 @@ export function getActiveGenerationProviderMetadata() {
   return provider;
 }
 
+/** Without a provider id, looks in the active provider and then in installed providers. */
 export function getGenerationModelBinding({
   modelId,
-  providerId = getActiveGenerationProviderId(),
+  providerId,
 }: {
   modelId: string;
   providerId?: string;
 }): GenerationProviderModelBinding | null {
-  const provider = getGenerationProviderMetadata(providerId);
-  return provider?.modelBindings.find((binding) => binding.modelId === modelId) ?? null;
+  return findGenerationModelBinding({ modelId, providerId })?.binding ?? null;
 }
 
 export function getGenerationModelBindingByEffectId({
   effectId,
-  providerId = getActiveGenerationProviderId(),
+  providerId,
 }: {
   effectId: number;
   providerId?: string;
 }): GenerationProviderModelBinding | null {
-  const provider = getGenerationProviderMetadata(providerId);
-  return provider?.modelBindings.find((binding) => binding.effectId === effectId) ?? null;
+  return findGenerationModelBinding({ effectId, providerId })?.binding ?? null;
+}
+
+/** Finds which provider serves a model or effect id, together with its binding. */
+export function findGenerationModelBinding({
+  modelId,
+  effectId,
+  providerId,
+}: {
+  modelId?: string;
+  effectId?: number;
+  providerId?: string;
+}): { providerId: string; binding: GenerationProviderModelBinding } | null {
+  const candidates = providerId ? [getGenerationProviderMetadata(providerId)].flatMap((item) => item ?? []) : listSelectableGenerationProviders();
+  for (const provider of candidates) {
+    const binding = provider.modelBindings.find((item) => (modelId !== undefined ? item.modelId === modelId : item.effectId === effectId));
+    if (binding) return { providerId: provider.id, binding };
+  }
+  return null;
 }
 
 export function resolveProviderUpstreamModel({

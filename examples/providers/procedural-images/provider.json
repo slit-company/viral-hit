@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "procedural-images",
+  "label": "Procedural images",
+  "description": "Placeholder gradient images made from the prompt, for trying Canvas layouts and flows without a model or API key.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "entry": "provider.mjs",
+  "mediaHosts": [],
+  "models": [
+    {
+      "id": "procedural-gradient",
+      "name": "Gradient (instant)",
+      "kind": "image",
+      "aspectRatios": [
+        "1:1",
+        "16:9",
+        "9:16",
+        "4:3",
+        "3:4"
+      ],
+      "defaultAspectRatio": "1:1"
+    },
+    {
+      "id": "procedural-gradient-queued",
+      "name": "Gradient (queued)",
+      "kind": "image",
+      "aspectRatios": [
+        "1:1",
+        "16:9",
+        "9:16",
+        "4:3",
+        "3:4"
+      ],
+      "defaultAspectRatio": "1:1"
+    }
+  ]
+}

@@ -437,3 +437,13 @@ Characters can now move between installations, so a brand mascot, product or hos
 - 704 source tests and all 46 browser tests passed. Architecture (443 modules, no cycles), typecheck, i18n, build and performance passed; production JS is 564,460 gzip bytes. No dependency was added.
 
 Character files are not signed, and a pack cannot yet bundle characters.
+
+## Installed generation providers — 2026-10-21
+
+Operators can add image/video models through a `provider.json` and one self-contained server module in `VIRAL_HIT_PROVIDERS_DIR`. General and specialized providers share discovery, Canvas model selection, generation submission, polling and local project assets. Byte results are retained by hash; URL results must match the provider's declared media hosts. Invalid providers are reported separately. No runtime dependency was added.
+
+- 710 source tests, typecheck, i18n, build, architecture and performance passed before this handoff. Architecture has 449 modules, no cycles and 22 size allowances (one removed after splitting the image/video effect tables); production JS is 564,701 gzip bytes.
+- The procedural example passes immediate and queued generation integration tests. The browser test discovers it through MCP, selects it on Canvas and verifies the generated local asset. The full suite passed 46 of 47 tests; the captioned server export used a minimal FFmpeg without drawtext. Repeating that test with the full FFmpeg binary passed.
+- A production-server check on a fresh data directory listed both procedural models and saved one generated PNG asset. This proves independently installed provider execution and asset handling, not live AI quality or competitor parity.
+
+Evidence: ignored `research/evidence/installed-providers/`.

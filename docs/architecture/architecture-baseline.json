@@ -22,7 +22,6 @@
     "src/core/editor/media-export.ts": 591,
     "src/core/editor/render-project-timeline.ts": 491,
     "src/core/editor/timeline-document.ts": 1009,
-    "src/core/effects/effect-registry.ts": 591,
     "src/core/effects/generation-upload-intent.ts": 524,
     "src/mcp/server.ts": 1353
   },

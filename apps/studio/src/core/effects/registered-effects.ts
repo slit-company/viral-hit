@@ -1,16 +1,15 @@
 import type { GenerationProviderModelBinding } from '@/core/generation-providers/contracts';
 import type { EffectRecord } from '@/core/adapters/base-adapter';
 import {
-  getActiveGenerationProviderMetadata as getActiveGenerationProvider,
+  findGenerationModelBinding,
   getActiveGenerationProviderId,
   getGenerationProviderMetadata as getGenerationProvider,
-  getGenerationModelBindingByEffectId,
+  listSelectableGenerationProviders,
 } from '@/core/generation-providers/catalog';
 
 import {
   type WorkspaceEffectRegistryEntry,
-  WORKSPACE_EFFECT_REGISTRY,
-  getWorkspaceEffectRegistryEntryByEffectId,
+  getWorkspaceEffectRegistryEntry,
 } from './effect-registry';
 import { getWorkspaceMediaSchema } from './workspace-media';
 import {
@@ -158,26 +157,26 @@ export const toRegisteredEffect = (
 };
 
 export const listRegisteredEffects = (): RegisteredEffect[] =>
-  getActiveGenerationProvider().modelBindings.flatMap((binding) => {
+  listSelectableGenerationProviders().flatMap((provider) => provider.modelBindings.flatMap((binding) => {
     if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
-      return [buildVideoAnalysisEffect(binding)];
+      return [buildVideoAnalysisEffect(binding, provider.id)];
     }
-    const entry = WORKSPACE_EFFECT_REGISTRY.find(
-      (candidate) => candidate.id === binding.modelId
-    );
-    return entry ? [toRegisteredEffect(entry, binding)] : [];
-  });
+    const entry = getWorkspaceEffectRegistryEntry(binding.modelId);
+    return entry ? [toRegisteredEffect(entry, binding, provider.id)] : [];
+  }));
 
+/** Without a provider id, the effect is looked up in the active provider and then installed providers. */
 export const getRegisteredEffectById = (
   id: number,
-  providerId = getActiveGenerationProviderId()
+  requestedProviderId?: string
 ): RegisteredEffect | null => {
-  const binding = getGenerationModelBindingByEffectId({ effectId: id, providerId });
-  if (!binding) return null;
+  const found = findGenerationModelBinding({ effectId: id, providerId: requestedProviderId });
+  if (!found) return null;
+  const { binding, providerId } = found;
   if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
     return buildVideoAnalysisEffect(binding, providerId);
   }
-  const entry = getWorkspaceEffectRegistryEntryByEffectId(id, providerId);
+  const entry = getWorkspaceEffectRegistryEntry(binding.modelId);
   return entry ? toRegisteredEffect(entry, binding, providerId) : null;
 };
 

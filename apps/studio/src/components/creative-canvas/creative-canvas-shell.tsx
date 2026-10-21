@@ -8,7 +8,6 @@ import {
   type WorkspaceModelOption,
   getCanonicalWorkspaceModelId,
   getDefaultSelectableWorkspaceModel,
-  getWorkspaceModelsByType,
 } from '@/core/effects/workspace-models';
 import type { ProjectSnapshotActiveTemplateWorkflow } from '@/core/projects/project-snapshot';
 import type {
@@ -31,6 +30,7 @@ import {
 import { getSelectableModel } from '@/core/creative-canvas/generation-controller';
 import { resolveConcreteCanvasMediaCard } from '@/core/creative-canvas/generation-history';
 import { useProjectAssetCanvasInsert } from './use-project-asset-canvas-insert';
+import { useAvailableModels } from '@/core/workspace-hooks/use-available-models';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import {
@@ -190,20 +190,7 @@ export function CreativeCanvasShell({
     [rawStudioT]
   );
 
-  const imageModels = useMemo(
-    () =>
-      getWorkspaceModelsByType('ai-image').filter(
-        (item) => item.available !== false
-      ),
-    []
-  );
-  const videoModels = useMemo(
-    () =>
-      getWorkspaceModelsByType('ai-video').filter(
-        (item) => item.available !== false
-      ),
-    []
-  );
+  const { imageModels, videoModels } = useAvailableModels();
   const canonicalInitialModelId = initialModelId
     ? getCanonicalWorkspaceModelId(initialModelId)
     : null;

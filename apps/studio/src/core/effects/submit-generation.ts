@@ -1,4 +1,5 @@
 import { createAdapter } from '@/core/adapters/adapter-factory';
+import { getGenerationProvider } from '@/core/generation-providers/registry';
 import { getEffectById } from '@/core/effects/effects';
 import { getWorkspaceEffectRegistryEntryByEffectId } from '@/core/effects/effect-registry';
 import { VIDEO_ANALYSIS_MODEL_ID } from '@/core/effects/video-analysis';
@@ -356,6 +357,7 @@ export async function submitEffectGeneration({
             wmTaskId: generationId,
             effectId,
             effectType: effect.type,
+            readMedia: getGenerationProvider(effect.provider)?.readOutputMedia,
           })
         : transition.output;
     if (result.status === 'failed') {

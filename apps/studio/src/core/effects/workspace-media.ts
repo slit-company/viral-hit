@@ -299,11 +299,20 @@ export const appendItemsToAvailableSlots = <T>({
   return { ok: true, next };
 };
 
+const INSTALLED_MEDIA_SCHEMAS = new Map<string, WorkspaceMediaSchema>();
+
+/** Server only: reference slots of a model declared by an installed provider. */
+export function registerInstalledWorkspaceMediaSchema(modelId: string, schema: WorkspaceMediaSchema) {
+  INSTALLED_MEDIA_SCHEMAS.set(modelId, schema);
+}
+
 export const getWorkspaceMediaSchema = (
   modelId: string
 ): WorkspaceMediaSchema | null => {
   const canonicalModelId =
     getWorkspaceEffectRegistryEntry(modelId)?.id ?? modelId;
+  const installed = INSTALLED_MEDIA_SCHEMAS.get(canonicalModelId);
+  if (installed) return installed;
   if (
     !Object.prototype.hasOwnProperty.call(
       WORKSPACE_MEDIA_SCHEMAS,

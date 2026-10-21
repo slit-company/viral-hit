@@ -28,9 +28,9 @@ import {
   validateGenerationModelInput,
 } from './model-catalog';
 import {
-  getActiveGenerationProvider,
-  getGenerationModelBinding,
+  getGenerationProvider,
 } from './registry';
+import { findGenerationModelBinding } from './catalog';
 import {
   getProviderGenerationAssetUrl,
   needsManagedGenerationReferenceUpload,
@@ -151,16 +151,13 @@ export async function preflightAssetFirstGeneration(source: unknown) {
   const generation = normalizeAssetFirstGenerationRequest(source);
   const project = await getProject({ projectId: generation.projectId });
   if (!project || project.status !== 'active') throw new Error('Project not found');
-  const provider = getActiveGenerationProvider();
-  const binding = getGenerationModelBinding({
-    modelId: generation.modelId,
-    providerId: provider.id,
-  });
-  if (!binding) {
-    throw new Error(
-      `Model ${generation.modelId} is not available from ${provider.label}.`
-    );
+  // The active provider or an installed one may serve the model.
+  const found = findGenerationModelBinding({ modelId: generation.modelId });
+  const provider = found && getGenerationProvider(found.providerId);
+  if (!found || !provider) {
+    throw new Error(`Model ${generation.modelId} is not available.`);
   }
+  const { binding } = found;
   const descriptor = getGenerationModelDescriptor(generation.modelId);
   if (!descriptor || descriptor.kind !== generation.mode) {
     throw new Error(

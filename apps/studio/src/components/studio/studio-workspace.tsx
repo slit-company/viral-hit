@@ -25,10 +25,7 @@ import {
   applyStudioHistoryItem,
   createStudioDraftCard,
 } from '@/core/studio/studio-draft';
-import {
-  getStudioModels,
-  type StudioMedia,
-} from '@/core/studio/studio-runtime';
+import type { StudioMedia } from '@/core/studio/studio-runtime';
 import {
   fetchProjectGenerations,
 } from '@/core/workspace-lib/app/workspace-client-api';
@@ -42,6 +39,7 @@ import { buildDraftModelParameters } from '@/core/effects/model-parameters';
 import { invalidateWorkspaceAfterGeneration } from '@/core/workspace-lib/app/workspace-query-invalidation';
 import { projectGenerationsKeys } from '@/core/workspace-lib/app/workspace-query-keys';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
+import { useAvailableModels } from '@/core/workspace-hooks/use-available-models';
 
 type GenerationResponse = {
   status?: 'pending' | 'processing' | 'succeeded' | 'failed';
@@ -97,8 +95,7 @@ export function StudioWorkspace({
       : initialTarget === 'video'
         ? 'video'
         : 'image';
-  const imageModels = useMemo(() => getStudioModels('image'), []);
-  const videoModels = useMemo(() => getStudioModels('video'), []);
+  const { imageModels, videoModels } = useAvailableModels();
   const [draft, setDraft] = useState(() => {
     const draftMedia = initialMedia === 'video' ? 'video' : 'image';
     const models = draftMedia === 'video' ? videoModels : imageModels;

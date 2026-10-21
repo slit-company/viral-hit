@@ -1,8 +1,5 @@
 import { buildCreateProjectPath } from '@/core/projects/project-entry';
-import {
-  getActiveGenerationProviderId,
-  getGenerationModelBinding,
-} from '@/core/generation-providers/catalog';
+import { getGenerationModelBinding } from '@/core/generation-providers/catalog';
 import {
   WORKSPACE_EFFECT_REGISTRY,
   type WorkspaceAspectRatio,
@@ -96,8 +93,7 @@ const toWorkspaceModelOption = (
   entry: (typeof WORKSPACE_EFFECT_REGISTRY)[number]
 ): WorkspaceModelOption | null => {
   const mediaSchema = withMediaSchema(workspaceType, entry.id);
-  const providerId = getActiveGenerationProviderId();
-  const binding = getGenerationModelBinding({ modelId: entry.id, providerId });
+  const binding = getGenerationModelBinding({ modelId: entry.id });
   if (!binding) return null;
 
   return {
@@ -160,15 +156,10 @@ const toWorkspaceModelOption = (
   };
 };
 
-const VIDEO_MODELS: WorkspaceModelOption[] =
-  getWorkspaceEffectRegistryEntriesByType('ai-video').flatMap((entry) => {
-    const model = toWorkspaceModelOption('ai-video', entry);
-    return model ? [model] : [];
-  });
-
-const IMAGE_MODELS: WorkspaceModelOption[] =
-  getWorkspaceEffectRegistryEntriesByType('ai-image').flatMap((entry) => {
-    const model = toWorkspaceModelOption('ai-image', entry);
+// Built from the registry on each call so models of installed providers appear on the server.
+const listModels = (workspaceType: WorkspaceType): WorkspaceModelOption[] =>
+  getWorkspaceEffectRegistryEntriesByType(workspaceType).flatMap((entry) => {
+    const model = toWorkspaceModelOption(workspaceType, entry);
     return model ? [model] : [];
   });
 
@@ -205,7 +196,7 @@ const DEFAULT_WORKSPACE_MODEL_ID_BY_TYPE: Partial<
 export const getWorkspaceModelsByType = (
   workspaceType: WorkspaceType
 ): WorkspaceModelOption[] => {
-  return workspaceType === 'ai-image' ? IMAGE_MODELS : VIDEO_MODELS;
+  return listModels(workspaceType);
 };
 
 export const getWorkspaceAspectRatioOptions = ({

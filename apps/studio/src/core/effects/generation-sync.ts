@@ -1,4 +1,5 @@
 import { createAdapter } from '@/core/adapters/adapter-factory';
+import { getGenerationProvider } from '@/core/generation-providers/registry';
 import { and, eq, inArray, isNull, lt, or } from 'drizzle-orm';
 import { generationHistory } from '@/config/db/schema';
 import { getDb } from '@/core/workspace-lib/db-adapter';
@@ -66,6 +67,7 @@ async function syncGenerationOnce({
         wmTaskId,
         effectId,
         effectType: effect.type,
+        readMedia: getGenerationProvider(effect.provider)?.readOutputMedia,
       })
     : transition.output;
   await updateGenerationById({

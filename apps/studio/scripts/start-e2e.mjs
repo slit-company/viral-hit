@@ -15,7 +15,10 @@ await cp('../../examples/adapters/tone', adapters, { recursive: true });
 await cp('../../examples/adapters/audio-gain', adapters, { recursive: true });
 await cp('../../examples/adapter-recipes/audio-gain.json', join(recipes, 'audio-gain.json'));
 await cp('../../examples/adapter-recipes/procedural-tone.json', join(recipes, 'procedural-tone.json'));
-const env = { ...process.env, VIRAL_HIT_FFMPEG: process.env.VIRAL_HIT_FFMPEG || execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim(), VIRAL_HIT_ADAPTERS_DIR: adapters, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
+// Installed generation providers: the dependency-free example stands in for a model an operator adds.
+const providers = join(directory, 'providers');
+await cp('../../examples/providers', providers, { recursive: true });
+const env = { ...process.env, VIRAL_HIT_FFMPEG: process.env.VIRAL_HIT_FFMPEG || execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim(), VIRAL_HIT_ADAPTERS_DIR: adapters, VIRAL_HIT_PROVIDERS_DIR: providers, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
 delete env.COMFY_API_KEY;
 delete env.VIRAL_HIT_COMFYUI_URL;
 delete env.VIRAL_HIT_HARNESS_DB;

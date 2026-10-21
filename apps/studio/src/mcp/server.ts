@@ -86,6 +86,10 @@ import { loadRecipes } from '@/core/harness/recipe-registry';
 import { changeRecipeLibrary, recipeLibraryRequest } from '@/core/harness/recipe-library';
 
 import { version as VERSION } from '../../package.json';
+import { installGenerationProviders } from '@/core/generation-providers/installed/install.server';
+
+// MCP generation and model discovery include providers from VIRAL_HIT_PROVIDERS_DIR.
+installGenerationProviders();
 const idSchema = z.string().trim().min(1).max(200);
 const builtInSkillDirectory = resolvePath(process.cwd(), 'skills', 'official');
 let builtInSkillRegistryPromise: ReturnType<

@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "kind": {
+      "type": "string",
+      "const": "viral-hit-provider"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{1,39}$"
+    },
+    "label": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "scope": {
+      "default": "general",
+      "type": "string",
+      "enum": [
+        "general",
+        "specialized"
+      ]
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "license": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "entry": {
+      "default": "provider.mjs",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+\\.m?js$"
+    },
+    "mediaHosts": {
+      "default": [],
+      "maxItems": 20,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(?:[a-z0-9-]+\\.)*[a-z0-9-]+(?::\\d{1,5})?$"
+      }
+    },
+    "models": {
+      "minItems": 1,
+      "maxItems": 50,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9.-]{1,63}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video"
+            ]
+          },
+          "upstreamModelId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "aspectRatios": {
+            "minItems": 1,
+            "maxItems": 14,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "1:1",
+                "16:9",
+                "9:16",
+                "4:3",
+                "3:4",
+                "3:2",
+                "2:3",
+                "4:5",
+                "5:4",
+                "21:9",
+                "9:21",
+                "2:1",
+                "1:2",
+                "auto"
+              ]
+            }
+          },
+          "defaultAspectRatio": {
+            "type": "string",
+            "enum": [
+              "1:1",
+              "16:9",
+              "9:16",
+              "4:3",
+              "3:4",
+              "3:2",
+              "2:3",
+              "4:5",
+              "5:4",
+              "21:9",
+              "9:21",
+              "2:1",
+              "1:2",
+              "auto"
+            ]
+          },
+          "durations": {
+            "minItems": 1,
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^\\d{1,2}s$"
+            }
+          },
+          "defaultDuration": {
+            "type": "string",
+            "pattern": "^\\d{1,2}s$"
+          },
+          "maxReferenceImages": {
+            "default": 0,
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 30
+          },
+          "requiresImageInput": {
+            "default": false,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "kind",
+          "aspectRatios"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "label",
+    "models"
+  ],
+  "additionalProperties": false
+}

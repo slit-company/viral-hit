@@ -22,6 +22,8 @@ export type GenerationProviderDefinition = {
   createAdapter: (effect: EffectRecord) => BaseAdapter;
   assertConfigured?: () => Promise<void>;
   validateInput?: (effect: EffectRecord, input: Record<string, unknown>) => void;
+  /** Reads a result URL this provider returned; without it only approved Cloud API media is downloaded. */
+  readOutputMedia?: (url: string, signal: AbortSignal) => Promise<Response>;
 };
 
 export type GenerationProviderRegistrar = (

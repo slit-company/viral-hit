@@ -114,11 +114,13 @@ export async function persistEffectOutputIfNeeded({
   wmTaskId,
   effectId,
   effectType,
+  readMedia,
 }: {
   output: unknown;
   wmTaskId: string;
   effectId: number;
   effectType: number;
+  readMedia?: (url: string, signal: AbortSignal) => Promise<Response>;
 }) {
   const storagePlan = buildOutputStoragePlan({ output, effectType });
   if (storagePlan.length === 0) return output;
@@ -137,12 +139,11 @@ export async function persistEffectOutputIfNeeded({
   const localUrlByProviderUrl = new Map<string, string>();
 
   for (const { url, type, role } of providerEntries) {
-    if (!isCloudApiMediaUrl(url)) {
+    const signal = AbortSignal.timeout(LOCAL_MEDIA_DOWNLOAD_TIMEOUT_MS);
+    if (!readMedia && !isCloudApiMediaUrl(url)) {
       throw new Error('Generated media URL is not an approved Cloud API asset');
     }
-    const response = await fetch(url, {
-      signal: AbortSignal.timeout(LOCAL_MEDIA_DOWNLOAD_TIMEOUT_MS),
-    });
+    const response = readMedia ? await readMedia(url, signal) : await fetch(url, { signal });
     if (!response.ok) {
       throw new Error(`Failed to save generated media locally (${response.status})`);
     }

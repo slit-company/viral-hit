@@ -8,10 +8,8 @@ import {
   VIDEO_ANALYSIS_MODEL_ID,
 } from '@/core/effects/video-analysis';
 
-import {
-  getActiveGenerationProvider,
-  getGenerationModelBinding,
-} from './registry';
+import { findGenerationModelBinding, listSelectableGenerationProviders } from './catalog';
+import { getGenerationProvider } from './registry';
 
 const defaultsFromEntry = (entry: WorkspaceEffectRegistryEntry) => ({
   ...(entry.defaultAspectRatio
@@ -44,9 +42,8 @@ export type GenerationModelDescriptor = {
 };
 
 export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
-  const provider = getActiveGenerationProvider();
-  return provider.modelBindings.flatMap<GenerationModelDescriptor>((binding) => {
-    const effect = getRegisteredEffectById(binding.effectId);
+  return listSelectableGenerationProviders().flatMap((provider) => provider.modelBindings.flatMap<GenerationModelDescriptor>((binding) => {
+    const effect = getRegisteredEffectById(binding.effectId, provider.id);
     if (!effect) return [];
     if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
       return [
@@ -83,7 +80,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         referenceSchema: getWorkspaceMediaSchema(entry.id),
       },
     ];
-  });
+  }));
 }
 
 export function getGenerationModelDescriptor(modelId: string) {
@@ -100,10 +97,11 @@ export function validateGenerationModelInput({
   modelId: string;
   input: Record<string, unknown>;
 }) {
-  const provider = getActiveGenerationProvider();
-  const binding = getGenerationModelBinding({ modelId, providerId: provider.id });
-  if (!binding) throw new Error(`Model ${modelId} is not available from ${provider.label}.`);
-  const effect = getRegisteredEffectById(binding.effectId);
+  const found = findGenerationModelBinding({ modelId });
+  const provider = found && getGenerationProvider(found.providerId);
+  if (!found || !provider) throw new Error(`Model ${modelId} is not available.`);
+  const { binding } = found;
+  const effect = getRegisteredEffectById(binding.effectId, provider.id);
   if (!effect) throw new Error(`Model ${modelId} is not registered.`);
   provider.validateInput?.(effect, input);
   return { provider, binding, effect };
