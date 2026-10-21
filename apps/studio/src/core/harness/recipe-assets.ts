@@ -8,7 +8,7 @@ export function eligibleRecipeAssets(recipe: Recipe, parameter: Extract<Recipe['
   return assets.filter(asset => {
     if (asset.type !== parameter.kind || asset.storageProvider !== 'local' || !asset.sizeBytes || asset.sizeBytes > 512 * 1024 * 1024) return false;
     return consumers.every(({ node, binding }) => {
-      if (node.operation === 'editor.sequence' && asset.sizeBytes! > 64 * 1024 * 1024) return false;
+      if (['editor.sequence', 'generation.model'].includes(node.operation) && asset.sizeBytes! > 64 * 1024 * 1024) return false;
       if (node.operation === 'comfy.upload') return asset.type === 'image' && ['image/png', 'image/jpeg', 'image/webp'].includes(asset.mimeType ?? '') && asset.sizeBytes! <= 32 * 1024 * 1024;
       const input = capabilities.find(capability => capability.operation === node.operation)?.assetInputs?.find(input => input.pointer === binding.target);
       return !input || (input.kind === asset.type && asset.sizeBytes! <= input.maxBytes);

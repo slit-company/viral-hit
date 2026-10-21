@@ -209,3 +209,22 @@ test('cancellation after submission remains unconfirmed and never grants another
   f.h.retry(f.run);await finish(f.h,f.run);assert.deepEqual(await events(),before);
  }finally{f.h.close();}
 });
+
+test('an independently authored model recipe installs, compiles and executes through the existing worker adapter', async () => {
+ const { listModelRecipeModels, buildModelRecipe } = await import('./model-recipe.server');
+ const { inspectRecipe, installRecipe } = await import('./recipe-library');
+ const chosen = listModelRecipeModels().find(model => model.id === 'procedural-gradient')!;
+ const recipe = buildModelRecipe({schemaVersion:1,id:'authored-gradient',version:'1.0.0',title:'Independent gradient',description:'General reusable model',author:'External author',license:'MIT',category:'creation',tags:['general'],modelId:chosen.id,referenceCounts:{image:0,video:0,audio:0}}, chosen.digest);
+ const review = await inspectRecipe(recipe); await installRecipe(JSON.parse(JSON.stringify(recipe)), review.digest);
+ const project = await createProject({name:'Authored model run'});
+ const h = new DurableHarness(join(directory, project.id+'.sqlite'),()=>now);
+ try {
+  const plan = await pinRuntimePlan(compileRecipe(recipe,{prompt:'Amber composition','aspect-ratio':'9:16'},project.id));
+  const run = h.enqueue(plan,'authored'); await finish(h,run);
+  assert.equal(h.jobs(run)[0].state,'succeeded'); assert.equal(h.jobs(run)[0].attempts,1);
+  const output=JSON.parse(h.jobs(run)[0].output_json!); assert.ok(output.assetId); assert.equal(output.kind,'image');
+  assert.equal((await listProjectGenerations(project.id)).length,1);
+  assert.equal((await attachRunResult(h,project.id,run,h.jobs(run)[0].id,0)).ok,true);
+  assert.equal((await loadProjectTimeline(project.id))!.document.tracks[0].clips[0].assetId,output.assetId);
+ } finally {h.close();}
+});

@@ -53,3 +53,49 @@ Reference verification streams through the existing 64 KiB hash buffer; local pr
 - [Calibration-card recipe](../examples/provider-recipes/calibration-card.json): a specialized composition of image generation, tone generation, referenced audio processing and separately editable visual/audio tracks.
 
 The examples use optional procedural image/audio modules and the FFmpeg audio-conform processor. They exercise actual PNG/WAV processing and editing, not semantic model quality. Contributors can replace the model IDs, declare compatible controls and assemble their own recipes without changing application code. Hosted model-quality benchmarks and full Higgsfield parity remain separate requirements.
+
+## Author a recipe from installed model metadata
+
+In a project's **Generation runs → Recipe library → Build from an installed model**, select a model by its name and stable ID. The form shows its output kind, provider, configuration presence, declared input ranges and adjustable controls. Choose the number of image/video/audio source slots, recipe metadata and a general or specialized use-case tag. Every chosen source becomes a required project input; project file IDs and credentials are not embedded in the portable recipe. Analysis needs at least one source and returns a report. For media, output index selects an actual returned item, starting at zero; it does not request additional outputs.
+
+**Build recipe for review** produces an ordinary single-step `generation.model` manifest. Review, download, installation, same-ID updates and execution use the existing recipe library and worker. Prompt, aspect ratio, duration and provider-declared controls become typed run inputs where supported. The model ID stays fixed. The draft can be composed with other steps using the existing recipe format and included in a recipe or creative pack. This is a starting point for independent workflows, not a visual graph editor or a model-quality guarantee.
+
+Providers with missing configuration can still be authored and shared; execution checks configuration separately. The catalog includes providers with an execution identity supported by the durable model adapter. Refresh reads their loaded metadata; changed module manifests require the runtime's normal coordinated restart. A stale catalog digest is rejected before building. That digest describes the public contract, not credential values or a code signature; the worker's runtime/configuration pin is captured later at queue admission. Authoring never imports a provider's executable module or creates a generation intent.
+
+HTTP `POST /api/app/recipes` and MCP `viral_hit_recipe_library` share these requests:
+
+```json
+{"action":"model_catalog"}
+```
+
+```json
+{
+  "action": "build_model",
+  "expectedModelDigest": "<digest returned by model_catalog>",
+  "definition": {
+    "schemaVersion": 1,
+    "id": "my-source-frame",
+    "version": "1.0.0",
+    "title": "Source frame",
+    "description": "An adjustable frame extraction recipe.",
+    "author": "Independent contributor",
+    "license": "MIT",
+    "category": "creation",
+    "tags": ["specialized"],
+    "modelId": "visual-frame",
+    "referenceCounts": {"image": 0, "video": 1, "audio": 0},
+    "outputIndex": 0
+  }
+}
+```
+
+The example requires the separately installed `visual-conform` provider. Other installed models use their own declared counts and controls. Save the `definition` object above to `definition.json` for the CLI:
+
+```sh
+pnpm recipe model-catalog
+pnpm recipe build-model definition.json <model-digest> new-recipe.json
+pnpm recipe inspect new-recipe.json
+pnpm recipe install new-recipe.json <inspection-digest>
+```
+
+`build-model` refuses an existing output file. Exported JSON retains the same inspection digest; required sources are chosen from the receiving project's library at run time. Source files are limited to 64 MiB each by generation admission and the recipe picker. This does not install a model, include its runtime, or allocate paid work.

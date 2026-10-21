@@ -1,3 +1,4 @@
+import { ModelRecipeBuilder } from './model-recipe-builder';
 import { ComfyRecipeBuilder } from './comfy-recipe-builder';
 import { useEffect, useRef, useState } from 'react';
 import { Download, FileJson, Copy, ArrowLeft } from 'lucide-react';
@@ -15,10 +16,12 @@ export function RecipeLibrary({ selected, installed = false, onInstalled, onRemo
   const library = useRecipeLibrary(selected, onInstalled, onRemoved);
   const { text, inspection, removal, error, busy, edit, fork, loadFile, inspect, install } = library;
   const [graphBuilder, setGraphBuilder] = useState(false), [packBuilder, setPackBuilder] = useState(false);
+  const [modelBuilder, setModelBuilder] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null), reviewPanel = useRef<HTMLElement>(null);
   useEffect(() => { if (inspection || removal) reviewPanel.current?.scrollIntoView({ block: 'start' }); }, [inspection, removal]);
   if (removal) return <section ref={reviewPanel}><RecipeRemovalPanel library={library} /></section>;
   if (packBuilder) return <PackBuilder onBack={() => setPackBuilder(false)} />;
+  if (modelBuilder) return <ModelRecipeBuilder onBack={() => setModelBuilder(false)} onBuilt={result => { library.acceptBuilt(result); setModelBuilder(false); }} />;
   if (graphBuilder) return <ComfyRecipeBuilder onBack={() => setGraphBuilder(false)} onBuilt={result => {
     library.acceptBuilt(result); setGraphBuilder(false);
   }} />;
@@ -27,6 +30,7 @@ export function RecipeLibrary({ selected, installed = false, onInstalled, onRemo
     <RecipePacks onInstalled={onPackInstalled} onRemoved={onPackRemoved} onMakePack={() => { setPackBuilder(true); }} />
     <h3 className="border-t border-[var(--vh-border)] pt-4 text-sm font-semibold">Your own recipe</h3>
     <Action disabled={busy} onClick={() => { setGraphBuilder(true); }} className="flex w-full items-center justify-between rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-left text-xs"><span><strong className="block text-sm">Import ComfyUI workflow</strong><span className="mt-1 block text-[var(--vh-text-2)]">Choose graph inputs and an output, then build a portable recipe.</span></span><FileJson size={18} className="ml-3 shrink-0" /></Action>
+    <Action disabled={busy} onClick={() => setModelBuilder(true)} className="w-full rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-left text-xs"><strong className="block text-sm">Build from an installed model</strong><span className="mt-1 block text-[var(--vh-text-2)]">Create a general or specialized recipe from declared controls and source slots.</span></Action>
     {selected && <section className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3">
       <p className="text-xs text-[var(--vh-text-2)]">Selected recipe</p>
       <p className="mt-1 break-words text-sm font-semibold">{selected.title} <span className="font-normal text-[var(--vh-text-2)]">v{selected.version}</span></p>

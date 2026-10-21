@@ -15,3 +15,10 @@ test('asset selection applies each consumer’s kind, size and native image form
   const png = { ...base, type: 'image', mimeType: 'image/png' };
   assert.equal(eligibleRecipeAssets(native, imageParameter, [png, { ...png, mimeType: 'image/gif' }, { ...png, sizeBytes: 33 * 1024 * 1024 }], []).length, 1);
 });
+
+test('model recipes only offer project originals within the generation source byte limit', () => {
+  const recipe = recipeSchema.parse({ schemaVersion: 1, id: 'model-sources', version: '1.0.0', title: 'Model sources', description: 'Input bounds', author: 'Test', license: 'MIT', category: 'test', parameters: [{ id: 'source', label: 'Source', type: 'asset', kind: 'video' }], nodes: [{ id: 'model', operation: 'generation.model', version: '1', input: {}, parameters: [{ parameter: 'source', target: '/references/0/assetId' }] }] });
+  const parameter = recipe.parameters[0]; if (parameter.type !== 'asset') throw Error('fixture');
+  const asset: RecipeInputAsset = { id: 'video', type: 'video', storageProvider: 'local', filename: 'source.mp4', publicUrl: '/media', mimeType: 'video/mp4', sizeBytes: 64 * 1024 * 1024 };
+  assert.deepEqual(eligibleRecipeAssets(recipe, parameter, [asset, { ...asset, id: 'too-big', sizeBytes: asset.sizeBytes! + 1 }], []).map(a => a.id), ['video']);
+});

@@ -1,3 +1,5 @@
+import { modelRecipeDefinition } from './model-recipe-contract';
+import { listModelRecipeModels, buildModelRecipe } from './model-recipe.server';
 import { changeInstalledRecipe } from './recipe-lifecycle-storage.server';
 import type { RecipeInspection, RecipeRemovalReview } from './recipe-library-contract';
 import { z } from 'zod';
@@ -9,6 +11,8 @@ import { inspectComfyGraph, importComfyRecipe, comfyRecipeDefinitionSchema } fro
 import { supportedOperations } from './capabilities';
 
 export const recipeLibraryRequest = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('model_catalog') }).strict(),
+  z.object({ action: z.literal('build_model'), definition: modelRecipeDefinition, expectedModelDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('inspect_graph'), graph: z.unknown() }).strict(),
   z.object({ action: z.literal('convert_graph'), graph: z.unknown(), definition: comfyRecipeDefinitionSchema, expectedGraphDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('inspect'), manifest: z.unknown() }).strict(),
@@ -60,6 +64,8 @@ export function inspectRecipeGraph(graph: unknown) {
 export async function changeRecipeLibrary(raw: z.infer<typeof recipeLibraryRequest>) {
   const request = recipeLibraryRequest.parse(raw);
   switch (request.action) {
+    case 'model_catalog': return { models: listModelRecipeModels() };
+    case 'build_model': return inspectRecipe(buildModelRecipe(request.definition, request.expectedModelDigest));
     case 'inspect': return inspectRecipe(request.manifest);
     case 'get': { const recipe = (await loadRecipes()).find(recipe => recipe.id === request.recipeId); if (!recipe) throw new Error('Recipe not found'); return { recipe, digest: recipeDigest(recipe) }; }
     case 'review-remove': return reviewRecipeRemoval(request.recipeId);

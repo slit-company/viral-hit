@@ -221,3 +221,7 @@ Analysis providers can declare [image/video/audio input ranges](ANALYSIS-PROVIDE
 [Installed-model recipes](MODEL-RECIPES.md) bridge independently installed image/video/audio/analysis models into the durable worker. Model/runtime identities and original references are pinned before execution; the same retained generation assets flow into further models, external adapters, editable sequences and storyboard acceptance. General and specialized example recipes are independent JSON definitions, not hardcoded application modes.
 
 [Visual model references](VISUAL-REFERENCES.md) let independently installed image/video models declare image, video and audio source counts. Studio source selection, server admission, local readers and durable recipes share those declarations; old image-only manifests retain their contract.
+
+## Make an installed model reusable without hand-writing JSON
+
+The [model recipe builder](MODEL-RECIPES.md#author-a-recipe-from-installed-model-metadata) turns installed model metadata into a portable starting recipe. Authors choose source-slot counts and metadata; declared options become typed inputs, and actual sources belong to the receiving project. General and specialized workflows share the same path. UI, HTTP, MCP and CLI return the same review, then reuse normal recipe installation and durable execution. Compose the exported recipe with other steps or include it in a shared pack; no app-specific model form or core edit is required.

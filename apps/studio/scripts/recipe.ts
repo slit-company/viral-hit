@@ -23,6 +23,13 @@ try {
   else if (command === 'pack-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(packManifestSchema.extend({ recipes: z.array(recipeSchema).min(1).max(MAX_PACK_RECIPES) }), { io: 'input' }), null, 2) + '\n');
   else if (command === 'sequence-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(sequenceSchema, { io: 'input' }), null, 2) + '\n');
   else if (command === 'comfy-schema' && file) writeFileSync(file, JSON.stringify(z.toJSONSchema(comfyRecipeDefinitionSchema, { io: 'input' }), null, 2) + '\n');
+  else if (command === 'model-catalog') console.log(JSON.stringify(await changeRecipeLibrary({ action: 'model_catalog' }), null, 2));
+  else if (command === 'build-model' && file && values && projectId) {
+    const result = await changeRecipeLibrary({ action: 'build_model', definition: readJson(file) as never, expectedModelDigest: values });
+    if (!('recipe' in result)) throw Error('Expected a model recipe review');
+    writeFileSync(projectId, JSON.stringify(result.recipe, null, 2) + '\n', { flag: 'wx' });
+    console.log(JSON.stringify({ file: projectId, inspection: result }, null, 2));
+  }
   else if (command === 'inspect' && file) console.log(JSON.stringify(await changeRecipeLibrary({ action: 'inspect', manifest: readJson(file) }), null, 2));
   else if (command === 'install' && file && values) console.log(JSON.stringify(await changeRecipeLibrary({ action: 'install', manifest: readJson(file), expectedDigest: values }), null, 2));
   else if (command === 'update' && file && values && projectId) console.log(JSON.stringify(await changeRecipeLibrary({ action: 'update', manifest: readJson(file), expectedDigest: values, expectedInstalledDigest: projectId }), null, 2));
@@ -62,5 +69,5 @@ try {
       const report = await preflightComfyPlan(plan, { deferredInputs }); console.log(JSON.stringify(report, null, 2));
       process.exitCode = report.status === 'issues' ? 2 : report.status === 'unavailable' ? 3 : 0;
     } else console.log(JSON.stringify(compileRecipe(raw, supplied, projectId), null, 2));
-  } else throw new Error('Usage: recipe inspect <file> | install <file> <digest> | update <file> <incoming-digest> <installed-digest> | review-remove <id> | remove <id> <digest> | export <id> <new-file> | schema|pack-schema|sequence-schema|comfy-schema <output.json> | packs | fetch-pack <url> <new-file> [sha256] | build-pack <definition.json> <new-pack.json> | pack-request <request.json> | review-update-pack <pack.json> | review-remove-pack <id> | inspect-pack <pack.json> | install-pack <pack.json> <digest> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
+  } else throw new Error('Usage: recipe model-catalog | build-model <definition.json> <model-digest> <new-file.json> | inspect <file> | install <file> <digest> | update <file> <incoming-digest> <installed-digest> | review-remove <id> | remove <id> <digest> | export <id> <new-file> | schema|pack-schema|sequence-schema|comfy-schema <output.json> | packs | fetch-pack <url> <new-file> [sha256] | build-pack <definition.json> <new-pack.json> | pack-request <request.json> | review-update-pack <pack.json> | review-remove-pack <id> | inspect-pack <pack.json> | install-pack <pack.json> <digest> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');
 } catch (error) { console.error(error instanceof Error ? error.message : 'Recipe failed'); process.exitCode = 1; }
