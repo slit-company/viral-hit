@@ -9,7 +9,8 @@ import { VIDEO_ANALYSIS_MODEL_ID } from '@/core/effects/video-analysis';
 import { truncatePromptToMaxChars } from '@/core/effects/validation';
 import type { StudioMedia } from '@/core/studio/studio-runtime';
 import { cn } from '@/lib/utils';
-import { StudioAnalysisSources } from './studio-analysis-sources';
+import { StudioMediaSources } from './studio-media-sources';
+import { resolveAnalysisInputs } from '@/core/generation-providers/analysis-inputs';
 import type { StudioAnalysisController } from './use-studio-analysis';
 
 export function StudioAnalysisComposer({ projectId, analysis, isBusy, onMediaChange, onGenerate }: {
@@ -33,7 +34,7 @@ export function StudioAnalysisComposer({ projectId, analysis, isBusy, onMediaCha
         </NativeSelect>
         {draft.modelId === VIDEO_ANALYSIS_MODEL_ID && <NativeSelect className="w-auto" aria-label="Analysis depth" disabled={disabled} value={draft.depth} onChange={event => analysis.update({ depth: event.target.value === 'deep' ? 'deep' : 'standard' })}><option value="standard">Standard</option><option value="deep">Deep</option></NativeSelect>}
         <ModelOptions modelId={draft.modelId} value={draft.modelOptions} disabled={disabled} onChange={modelOptions => analysis.update({ modelOptions })} />
-        <StudioAnalysisSources projectId={projectId} analysis={analysis} disabled={disabled} />
+        <StudioMediaSources projectId={projectId} sources={draft.sources} limits={resolveAnalysisInputs(model?.analysisInputs)} onAdd={analysis.add} onRemove={id => analysis.update({ sources: draft.sources.filter(source => source.id !== id) })} label="Analysis" disabled={disabled} />
         <Action className="vh-secondary flex items-center gap-1.5" aria-label="Upload analysis files" disabled={disabled || !model || model.available === false} onClick={() => input.current?.click()}><Upload size={15} />Upload files</Action>
         <input ref={input} aria-label="Analysis files" type="file" className="hidden" multiple accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/mp4,audio/ogg,audio/aac" onChange={event => { void analysis.upload(Array.from(event.target.files ?? [])); event.target.value = ''; }} />
         <div className="ml-auto flex items-center gap-2"><span className="text-[10px] tabular-nums text-[var(--vh-text-2)]">{draft.prompt.length}/12000</span>

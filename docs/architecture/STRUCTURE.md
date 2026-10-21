@@ -90,3 +90,6 @@ Installed generation providers follow [the local-input boundary](LOCAL-PROVIDER-
 Structured provider reports follow [the analysis-to-plan decision](STRUCTURED-ANALYSIS.md): pure bounded output contracts, identity-checked discovery, source-byte verification on preparation and an unsaved storyboard handoff through existing operations.
 
 Independent model options follow [the declared-control boundary](MODEL-OPTIONS.md): bounded public definitions, namespaced values, model-scoped drafts and repeated validation before provider execution.
+
+
+Declared audio references reuse the common per-kind count contract, existing asset-first admission and local provider reader. `referenceInputs` is optional metadata; omission retains text-only audio and existing fingerprints. Studio analysis/audio share source selection, bounded library projection and fenced upload/history actions. Model changes retain sources and reject incompatible submissions; no second upload store or polling engine is introduced.

@@ -1,17 +1,14 @@
 import { z } from 'zod';
-import { resolveAnalysisInputs, validateAnalysisReferenceCounts, type AnalysisMediaKind } from '../generation-providers/analysis-inputs';
+import { resolveAnalysisInputs, validateAnalysisReferenceCounts } from '../generation-providers/analysis-inputs';
 import { draftModelOptions, modelOptionsDraftSchema } from '../generation-providers/model-controls';
 import { VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS, VIDEO_ANALYSIS_MODEL_ID } from '../effects/video-analysis';
 import type { WorkspaceModelOption } from '../effects/workspace-models';
 import type { ProjectGenerationItem } from '../effects/project-generations';
-import { parseLocalProjectAssetUrl } from '../projects/local-project-asset-url';
+import { studioMediaSourceSchema, studioSourceCounts, appendStudioSource, restoreStudioSources, type StudioMediaSource } from './studio-media-sources';
 import type { AssetFirstGenerationRequest } from '../commands/generation-contract';
 
-export const studioAnalysisSourceSchema = z.object({
-  id: z.string().min(1).max(200), type: z.enum(['image', 'video', 'audio']),
-  publicUrl: z.string().min(1).max(4096), filename: z.string().max(500),
-}).strict();
-export type StudioAnalysisSource = z.infer<typeof studioAnalysisSourceSchema>;
+export const studioAnalysisSourceSchema = studioMediaSourceSchema;
+export type StudioAnalysisSource = StudioMediaSource;
 export const studioAnalysisDraftSchema = z.object({
   version: z.literal(1), modelId: z.string().min(1).max(200), prompt: z.string().max(12_000),
   depth: z.enum(['standard', 'deep']), modelOptions: modelOptionsDraftSchema.optional(),
@@ -19,13 +16,10 @@ export const studioAnalysisDraftSchema = z.object({
 }).strict();
 export type StudioAnalysisDraft = z.infer<typeof studioAnalysisDraftSchema>;
 export const newStudioAnalysisDraft = (modelId = VIDEO_ANALYSIS_MODEL_ID, prompt = ''): StudioAnalysisDraft => ({ version: 1, modelId, prompt, depth: 'standard', sources: [] });
-export const analysisSourceCounts = (sources: Pick<StudioAnalysisSource, 'type'>[]) => sources.reduce((counts, source) => ({ ...counts, [source.type]: counts[source.type] + 1 }), { image: 0, video: 0, audio: 0 });
+export const analysisSourceCounts = studioSourceCounts;
 
 export function appendAnalysisSource(draft: StudioAnalysisDraft, source: StudioAnalysisSource, model: WorkspaceModelOption): StudioAnalysisDraft {
-  if (draft.sources.some(item => item.id === source.id)) return draft;
-  const limits = resolveAnalysisInputs(model.analysisInputs);
-  if (draft.sources.length >= 20 || analysisSourceCounts(draft.sources)[source.type] >= limits[source.type].max) throw Error(`This model allows at most ${limits[source.type].max} ${source.type} sources. Remove a source or choose another model.`);
-  return { ...draft, sources: [...draft.sources, studioAnalysisSourceSchema.parse(source)] };
+  return appendStudioSource(draft, source, resolveAnalysisInputs(model.analysisInputs));
 }
 
 export function studioAnalysisRequest(projectId: string, raw: StudioAnalysisDraft, model: WorkspaceModelOption | undefined): AssetFirstGenerationRequest {
@@ -40,16 +34,6 @@ export function studioAnalysisRequest(projectId: string, raw: StudioAnalysisDraf
 /** Local URLs retain their exact IDs even outside the bounded library window. Never infer ownership from another project's URL. */
 export function restoreStudioAnalysisHistory(projectId: string, item: ProjectGenerationItem, library: StudioAnalysisSource[]): StudioAnalysisDraft {
   if (item.mediaType !== 'analysis' || !item.modelId) throw Error('Choose an analysis history item');
-  const sources: StudioAnalysisSource[] = [];
-  for (const [type, urls] of [['image', item.referenceImages], ['video', item.referenceVideos], ['audio', item.referenceAudios ?? []]] as [AnalysisMediaKind, string[]][]) {
-    for (const publicUrl of urls) {
-      const local = parseLocalProjectAssetUrl(publicUrl);
-      if (local && local.projectId !== projectId) throw Error('Saved source belongs to another project');
-      const found = library.find(source => source.type === type && (local ? source.id === local.assetId : source.publicUrl === publicUrl));
-      if (!found && !local) throw Error('A saved source is unavailable in the project library. Import it again before reusing this analysis.');
-      const source = found ?? { id: local!.assetId, type, publicUrl, filename: local!.assetId };
-      if (!sources.some(existing => existing.id === source.id)) sources.push(source);
-    }
-  }
+  const sources = restoreStudioSources(projectId, item, library);
   return studioAnalysisDraftSchema.parse({ ...newStudioAnalysisDraft(item.modelId, item.prompt ?? ''), depth: item.analysisDepth ?? 'standard', modelOptions: item.modelOptions, sources });
 }

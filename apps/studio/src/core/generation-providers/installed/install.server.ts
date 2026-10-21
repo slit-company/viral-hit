@@ -48,7 +48,7 @@ export function readProviderFolder(path: string) {
 
 function install({ manifest, source }: ReturnType<typeof readProviderFolder>, managed = false): InstalledProviderSummary {
   if (getGenerationProviderMetadata(manifest.id)) throw new ProviderLoadError('Provider id ' + manifest.id + ' is already used');
-  const modelBindings = manifest.models.map(model => ({ modelId: model.id, ...(model.controls ? { controls: model.controls } : {}), ...(model.analysisInputs ? { analysisInputs: model.analysisInputs } : {}), kind: model.kind, name: model.name, effectId: installedEffectId(manifest.id, model.id), upstreamModelId: model.upstreamModelId ?? model.id, uploadPath: '', imageBucketName: '' }));
+  const modelBindings = manifest.models.map(model => ({ modelId: model.id, ...(model.controls ? { controls: model.controls } : {}), ...(model.analysisInputs ? { analysisInputs: model.analysisInputs } : {}), ...(model.referenceInputs ? { referenceInputs: model.referenceInputs } : {}), kind: model.kind, name: model.name, effectId: installedEffectId(manifest.id, model.id), upstreamModelId: model.upstreamModelId ?? model.id, uploadPath: '', imageBucketName: '' }));
   // Check every model before registering anything, so a rejected provider leaves no partial state.
   for (const binding of modelBindings) {
     if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID || getWorkspaceEffectRegistryEntry(binding.modelId) || findGenerationModelBinding({ modelId: binding.modelId })) throw new ProviderLoadError('Model id ' + binding.modelId + ' is already used');
@@ -68,7 +68,7 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
     registerInstalledWorkspaceMediaSchema(model.id, { image: { max: slots.length, slots }, video: { max: 0, slots: [] }, audio: { max: 0, slots: [] } });
   }
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
-  registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input); resolveModelOptions(model?.controls, input.provider_options); } });
+  registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); resolveModelOptions(model?.controls, input.provider_options); } });
   const { id, label, scope, author, license, description, environment, referenceDelivery } = manifest;
   return { id, label, scope, author, license, description, environment, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }

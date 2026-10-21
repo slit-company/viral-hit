@@ -4,7 +4,7 @@ Audio providers use the same installed provider boundary, model catalog, typed o
 
 ## Implement and install
 
-Declare `kind: "audio"` on a model in `provider.json`. Set provider `scope` to `general` or `specialized`. Declare typed `controls` for provider-specific duration, voice, style or other settings; values reach the module in `input.options`. Visual aspect ratios, frame references and video duration fields are rejected. This initial audio path accepts a required prompt and typed options only; reference-conditioned audio is not implemented.
+Declare `kind: "audio"` on a model in `provider.json`. Set provider `scope` to `general` or `specialized`. Declare typed `controls` for provider-specific duration, voice, style or other settings; values reach the module in `input.options`. Visual aspect ratios, frame references and video duration fields are rejected. Models may opt into `referenceInputs` to accept image, video and audio references alongside the required prompt and typed options. Omitting it preserves the text-only contract.
 
 The optional [procedural audio example](../examples/providers/procedural-audio) implements immediate and queued 24 kHz mono PCM WAV output without dependencies. It synthesizes sine/triangle tones from numeric controls; it does not interpret the prompt, synthesize speech or establish music-model quality. Replace its implementation with a suitable service or local engine to implement those capabilities. Model code remains independently installable and does not import studio internals.
 
@@ -12,9 +12,29 @@ A successful module returns `status: "succeeded"` and `media: [{data, mimeType}]
 
 Put the provider folder under `VIRAL_HIT_PROVIDERS_DIR`, or distribute it in a reviewed [runtime package](RUNTIME-PACKAGES.md). Restart the app, MCP server and workers to activate changed source. Credentials are declared by name and remain server-side. Modules are trusted server code, not sandboxed plugins. Heavy engines and models stay in optional installations.
 
+## Declare reference inputs
+
+Declare per-kind `{min,max}` ranges in `referenceInputs`. Each count is 0–20, minima cannot exceed maxima, and the sum of maxima must be 1–20. There is no implicit required reference when every declared minimum is zero. The descriptor exposes the same ranges to Studio, HTTP, MCP and CLI. Analysis retains its existing `analysisInputs` field; image/video models retain their existing input contracts.
+
+```json
+"referenceInputs": {
+  "image": { "min": 0, "max": 0 },
+  "video": { "min": 0, "max": 1 },
+  "audio": { "min": 1, "max": 1 }
+}
+```
+
+This example requires one audio source and permits one video. A speech-reference engine may require audio only; an independently implemented Foley engine can declare video/image inputs. Supporting a field is not evidence that a model understands those sources. Inspect engine behavior separately.
+
+Asset-first requests name owned asset IDs in `references`. `audio_track` is valid only for an actual audio asset; `source` is available for all three kinds. The adapter receives ordered `input.imageUrls`, `input.videoUrls` and `input.audioUrls`, with ordering preserved within each kind. Cross-kind interleaving is not preserved by this interface. Scalar aliases, frame-pair fields and visual output settings are rejected for audio.
+
+Use `referenceDelivery: "project-media"` for local inputs: `media` describes admitted pins and `readMedia(url)` returns verified bytes only while `createGeneration` runs. The existing 64 MiB/file, 256 MiB total/cumulative-read limits apply. Project ownership and hashes are checked before importing provider code. Queued providers must retain their own task input/state: `checkStatus` receives the original task ID and no media reader. Remote delivery uses existing explicit upload admission; selecting files alone does not send them to a model service.
+
+The optional [audio conform processor](../examples/providers/audio-conform) demonstrates real soundtrack trim/gain/padding and optional video-duration matching. It uses separately installed FFmpeg/FFprobe, keeps source bytes intact, and returns a normal audio asset. It does not interpret prompt text, perform voice conversion or synthesize Foley.
+
 ## Studio
 
-Select **Audio**, choose an available model, enter a prompt and edit **Model options**. Submission uses the existing generation intent and project history. Completed audio opens a native player with a download action. Reusing history restores the original model and its saved options; an unavailable model is retained and cannot silently become another model.
+Select **Audio**, choose an available model, enter a prompt and edit **Model options**. Declared models expose **Sources** and **Upload files**, with required/maximum counts. Changing models preserves existing selections and blocks generation until they meet the selected model’s contract. The complete upload selection is checked before files are written; completed uploads are retained if a later upload fails. Submission uses the existing generation intent and project history. Completed audio opens a native player with a download action. Reusing history restores the original model and its saved options; an unavailable model is retained and cannot silently become another model.
 
 Drafts are scoped to the project in browser session storage. They survive reload in the same browser session, not device transfer. An unreadable saved copy remains until explicit replacement. Completed output is retained in the project independently of browser draft storage. Audio generation is currently in Studio; Canvas generation nodes remain image/video/analysis. Existing timeline operations can use the resulting audio asset with explicit revision-checked editing.
 

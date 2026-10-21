@@ -205,7 +205,7 @@ export function StudioWorkspace({
   });
 
   function changeMedia(nextMedia: StudioMedia) {
-    if (generation.isPending || analysis.busy) return;
+    if (generation.isPending || analysis.busy || audio.busy) return;
     setMedia(nextMedia);
     setReferenceUrls([]);
     if (nextMedia === 'analysis' || nextMedia === 'audio') return;
@@ -233,8 +233,8 @@ export function StudioWorkspace({
             <StudioGenerationFeed
               items={feedItems}
               onReuse={(item) => {
-                if (generation.isPending || analysis.busy) return;
-                if (item.mediaType === 'audio') { setMedia('audio'); audio.reuse(item); return; }
+                if (generation.isPending || analysis.busy || audio.busy) return;
+                if (item.mediaType === 'audio') { setMedia('audio'); void audio.reuse(item); return; }
                 if (item.mediaType === 'analysis') { setMedia('analysis'); void analysis.reuse(item); return; }
                 const next = applyStudioHistoryItem({
                   item,
@@ -254,7 +254,7 @@ export function StudioWorkspace({
         )}
       </div>
 
-      {media === 'audio' ? <StudioAudioComposer audio={audio} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : media === 'analysis' ? <StudioAnalysisComposer projectId={projectId} analysis={analysis} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : <StudioComposer
+      {media === 'audio' ? <StudioAudioComposer projectId={projectId} audio={audio} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : media === 'analysis' ? <StudioAnalysisComposer projectId={projectId} analysis={analysis} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : <StudioComposer
         draft={draft}
         media={media}
         imageModels={imageModels}

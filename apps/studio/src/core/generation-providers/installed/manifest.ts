@@ -1,3 +1,4 @@
+import { referenceInputsSchema } from '../reference-inputs';
 import { modelControlsSchema } from '../model-controls';
 import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
@@ -17,6 +18,7 @@ export const providerModelSchema = z.object({
   kind: z.enum(['image', 'video', 'audio', 'analysis']),
   controls: modelControlsSchema.optional(),
   analysisInputs: analysisInputsSchema.optional(),
+  referenceInputs: referenceInputsSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
   aspectRatios: z.array(z.enum(PROVIDER_ASPECT_RATIOS)).max(PROVIDER_ASPECT_RATIOS.length).default([]),
   defaultAspectRatio: z.enum(PROVIDER_ASPECT_RATIOS).optional(),
@@ -27,7 +29,8 @@ export const providerModelSchema = z.object({
 }).strict().superRefine((model, ctx) => {
   if ((model.kind === 'image' || model.kind === 'video') && !model.aspectRatios.length) ctx.addIssue({ code: 'custom', message: 'Image/video models require aspectRatios' });
   if (model.kind === 'analysis' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, with no image-generation or output aspect-ratio settings' });
-  if (model.kind === 'audio' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Audio models use prompt/options without visual aspect ratios or reference-image settings' });
+  if (model.kind === 'audio' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Audio models use referenceInputs without visual aspect ratios or image-generation settings' });
+  if (model.kind !== 'audio' && model.referenceInputs) ctx.addIssue({ code: 'custom', message: 'Only audio models declare referenceInputs; analysis uses analysisInputs' });
   if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });
   if (model.defaultAspectRatio && !model.aspectRatios.includes(model.defaultAspectRatio)) ctx.addIssue({ code: 'custom', message: 'defaultAspectRatio must be one of aspectRatios' });
   if (model.kind !== 'video' && model.durations) ctx.addIssue({ code: 'custom', message: 'Only video models have durations' });

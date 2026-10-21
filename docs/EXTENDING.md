@@ -214,4 +214,4 @@ Analysis providers can declare [image/video/audio input ranges](ANALYSIS-PROVIDE
 
 ## Add an audio model
 
-[Independent audio providers](AUDIO-PROVIDERS.md) declare `kind: "audio"` and typed model options. Studio, MCP and CLI share admission, single-use intents, polling and project asset storage. General and specialized models use the same interface. The optional procedural example returns real WAV; speech/music quality, reference conditioning and Canvas audio generation nodes remain separate work.
+[Independent audio providers](AUDIO-PROVIDERS.md) declare `kind: "audio"` and typed model options. Studio, MCP and CLI share admission, single-use intents, polling and project asset storage. General and specialized models use the same interface. The optional procedural example returns real WAV; declared image/video/audio reference delivery is supported, while actual generative conditioning quality and Canvas audio generation nodes remain separate work.

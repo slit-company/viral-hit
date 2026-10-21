@@ -141,3 +141,10 @@ Runtime link downloads have a 12,000,000-byte limit and a 20-second deadline wit
 Final build: **203 public files / 8,591,337 bytes**, **2,022,882 raw JavaScript bytes / 596,046 individually gzipped JavaScript bytes**. Increase over runtime discovery: **1,256 gzip bytes**. The unchanged 10 MB/600 KB gates pass. Audio uses the existing cached model catalog, generation intents/history, polling and retained asset store. No default engine, dependency, daemon, migration or worker was added; model implementations remain optional.
 
 Output storage caps each generated audio file at 64 MiB; the example caps duration at ten seconds and produces mono 24 kHz PCM16. Real WAV playback and a short mixed image/audio browser export passed. These bounds and short fixtures do not measure whole-host memory, sustained inference speed, long music tracks, high track counts or competitor performance.
+
+
+## Audio reference delivery — 2026-10-22
+
+Final build: **203 public files / 8,593,619 bytes**, **2,025,164 raw JavaScript bytes / 596,397 individually gzipped JavaScript bytes**. Increase over independent audio generation: **351 gzip bytes**. Both unchanged 10 MB/600 KB gates pass. Analysis/audio now reuse one source picker, upload/recovery hook and source identity helpers. No runtime dependency, model, migration, daemon or polling loop was added.
+
+The optional audio-conform provider uses separately installed FFmpeg/FFprobe with existing 64 MiB/file and 256 MiB total/cumulative-read limits. Its example-specific limits are 0.1–30 seconds output, 60 seconds overall, 15 seconds/probe and 30 seconds/conversion, with 1 MiB logs. These are bounded tasks, not whole-host memory limits. Short reference processing, native playback and browser export passed; long projects, simultaneous inference and competitor benchmarks remain unmeasured.

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "audio-conform",
+  "label": "Audio conform processor",
+  "description": "Trim, gain-adjust and pad a local soundtrack, optionally matching a reference video's measured duration. Real FFmpeg processing; no generative model or prompt interpretation.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "referenceDelivery": "project-media",
+  "models": [{
+    "id": "audio-conform",
+    "name": "Conform a soundtrack",
+    "kind": "audio",
+    "referenceInputs": { "image": { "min": 0, "max": 0 }, "video": { "min": 0, "max": 1 }, "audio": { "min": 1, "max": 1 } },
+    "controls": [
+      { "key": "gain", "label": "Gain", "type": "number", "min": 0, "max": 2, "default": 1 },
+      { "key": "start", "label": "Start in source (seconds)", "type": "number", "min": 0, "max": 600, "default": 0 },
+      { "key": "seconds", "label": "Length without video (seconds)", "type": "number", "min": 0.1, "max": 30, "default": 1 }
+    ]
+  }]
+}

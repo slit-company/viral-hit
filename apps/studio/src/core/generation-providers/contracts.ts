@@ -1,3 +1,4 @@
+import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { ModelControl } from './model-controls';
 import type { AnalysisInputs } from './analysis-inputs';
 import type { BaseAdapter, EffectRecord } from '@/core/adapters/base-adapter';
@@ -9,6 +10,7 @@ export type GenerationProviderModelBinding = {
   modelId: string;
   controls?: ModelControl[];
   analysisInputs?: AnalysisInputs;
+  referenceInputs?: ReferenceInputs;
   /** Explicit output type/name for installed analysis models outside the image/video registry. */
   kind?: 'image' | 'video' | 'audio' | 'analysis';
   name?: string;

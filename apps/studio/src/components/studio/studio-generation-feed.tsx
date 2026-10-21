@@ -227,7 +227,7 @@ export function StudioGenerationFeed({
                     {Object.entries(selected.modelOptions.values).map(([key, value]) => <div key={key} className="grid min-w-0 grid-cols-2 gap-3 border-b border-[var(--vh-border)] py-3 text-sm last:border-0"><dt className="break-words text-[var(--vh-text-3)]">{key}</dt><dd className="min-w-0 break-words text-right text-[var(--vh-text-1)]">{String(value)}</dd></div>)}
                   </dl>}
                   {selected.referenceImages.length > 0 ||
-                  selected.referenceVideos.length > 0 ? (
+                  selected.referenceVideos.length > 0 || selected.referenceAudios.length > 0 ? (
                     <div className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4">
                       <p className="text-[13px] text-[var(--vh-text-3)]">
                         {t('references')}
@@ -248,6 +248,7 @@ export function StudioGenerationFeed({
                             />
                           </a>
                         ))}
+                        {selected.referenceAudios.map(url => <audio key={url} aria-label="Audio reference" src={url} controls preload="metadata" className="w-full min-w-0" />)}
                         {selected.referenceVideos.map((url) => (
                           <video
                             key={url}

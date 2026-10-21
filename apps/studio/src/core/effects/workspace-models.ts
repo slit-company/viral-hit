@@ -1,3 +1,4 @@
+import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { AnalysisInputs } from '@/core/generation-providers/analysis-inputs';
 import { buildCreateProjectPath } from '@/core/projects/project-entry';
 import { getGenerationModelBinding } from '@/core/generation-providers/catalog';
@@ -41,6 +42,7 @@ export type WorkspaceModelOption = {
   name: string;
   mediaSchema?: WorkspaceMediaSchema;
   analysisInputs?: AnalysisInputs;
+  referenceInputs?: ReferenceInputs;
   mode?: WorkspaceModelMode;
   defaultMode?: WorkspaceModelMode;
   modeOptions?: WorkspaceModelMode[];

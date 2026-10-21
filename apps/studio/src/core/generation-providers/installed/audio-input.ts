@@ -1,16 +1,22 @@
 import { z } from 'zod';
 import { MAX_GENERATION_PROMPT_CHARS } from '@/core/effects/validation';
+import { resolveAudioReferenceInputs, validateReferenceCounts, type ReferenceInputs } from '../reference-inputs';
 
-const noReferences = z.array(z.never()).max(0).optional();
+const urls = z.array(z.string().url().max(4096)).max(20).optional();
 const audioInput = z.object({
   prompt: z.string().trim().min(1).max(MAX_GENERATION_PROMPT_CHARS),
-  image_urls: noReferences, video_urls: noReferences, audio_urls: noReferences,
+  image_urls: urls, video_urls: urls, audio_urls: urls,
   image_url: z.never().optional(), video_url: z.never().optional(), audio_url: z.never().optional(),
   first_frame: z.never().optional(), last_frame: z.never().optional(),
   aspect_ratio: z.never().optional(), wmDuration: z.never().optional(),
+}).superRefine((input, ctx) => {
+  const references = [...(input.image_urls ?? []), ...(input.video_urls ?? []), ...(input.audio_urls ?? [])];
+  if (new Set(references).size !== references.length) ctx.addIssue({ code: 'custom', message: 'Audio references must be distinct across media types' });
 });
 
-/** Text-to-audio models declare their own typed options, not visual generation fields. */
-export function validateInstalledAudioInput(input: unknown) {
-  return audioInput.parse(input);
+/** Repeated before upload and before module import; undeclared models remain text-only. */
+export function validateInstalledAudioInput(input: unknown, declared?: ReferenceInputs) {
+  const parsed = audioInput.parse(input);
+  validateReferenceCounts({ image: parsed.image_urls?.length ?? 0, video: parsed.video_urls?.length ?? 0, audio: parsed.audio_urls?.length ?? 0 }, resolveAudioReferenceInputs(declared), 'Audio');
+  return parsed;
 }

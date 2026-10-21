@@ -1,7 +1,7 @@
+import { useStudioSourceActions } from './use-studio-source-actions';
 import { useEffect, useState } from 'react';
 import { useWorkspaceModels } from '@/core/workspace-hooks/use-workspace-metadata';
-import type { ProjectGenerationItem } from '@/core/effects/project-generations';
-import { newStudioAudioDraft, restoreStudioAudioHistory, studioAudioDraftSchema, studioAudioRequest, type StudioAudioDraft } from '@/core/studio/studio-audio';
+import { appendAudioSource, newStudioAudioDraft, restoreStudioAudioHistory, studioAudioDraftSchema, studioAudioRequest, type StudioAudioDraft } from '@/core/studio/studio-audio';
 
 export function useStudioAudio({ projectId, initialModelId, initialPrompt, onError }: { projectId: string; initialModelId?: string; initialPrompt?: string; onError: (message: string) => void }) {
   const { data } = useWorkspaceModels();
@@ -10,6 +10,7 @@ export function useStudioAudio({ projectId, initialModelId, initialPrompt, onErr
   const [restoredKey, setRestoredKey] = useState(''), [unreadableDraft, setUnreadableDraft] = useState(false);
   const key = `viral-hit:studio-audio:${projectId}`;
   const model = models.find(item => item.id === draft.modelId);
+  const actions = useStudioSourceActions({ projectId, draft, setDraft, model, append: appendAudioSource, restore: restoreStudioAudioHistory, onError });
   useEffect(() => {
     setRestoredKey(''); setUnreadableDraft(false);
     let next = newStudioAudioDraft(initialModelId, initialPrompt);
@@ -36,15 +37,12 @@ export function useStudioAudio({ projectId, initialModelId, initialPrompt, onErr
     catch { onError('Browser draft storage is unavailable or full. Completed audio remains in project history.'); }
   }, [key, draft, restoredKey]);
   function replaceUnreadableDraft() {
+    if (actions.locked.current) return;
     try { save(); setRestoredKey(key); setUnreadableDraft(false); onError(''); }
     catch { onError('Browser draft storage is unavailable or full.'); }
   }
-  function reuse(item: ProjectGenerationItem) {
-    try { setDraft(restoreStudioAudioHistory(item)); onError(''); }
-    catch (error) { onError((error as Error).message); }
-  }
-  return { draft, models, model, unreadableDraft, replaceUnreadableDraft, reuse,
-    update: (patch: Partial<StudioAudioDraft>) => setDraft(current => ({ ...current, ...patch })),
+  return { draft, models, model, unreadableDraft, replaceUnreadableDraft, busy: actions.busy, add: actions.add, upload: actions.upload, reuse: actions.reuse,
+    update: (patch: Partial<StudioAudioDraft>) => { if (!actions.locked.current) setDraft(current => ({ ...current, ...patch })); },
     request: () => studioAudioRequest(projectId, draft, model) };
 }
 export type StudioAudioController = ReturnType<typeof useStudioAudio>;
