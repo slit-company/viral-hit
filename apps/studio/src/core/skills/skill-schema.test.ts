@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import Ajv2020 from 'ajv/dist/2020';
 import * as z from 'zod/v4';
 import { viralHitSkillManifestSchema } from './skill-registry';
+import { skillPackageSchema } from './package';
 
 const schemaFile = '../../docs/schemas/skill.schema.json';
 
@@ -23,4 +24,16 @@ test('the published skill.json schema matches the runtime contract and accepts e
   assert.equal(checked, 3);
   const official = JSON.parse(await readFile('skills/official/recipe-packs/skill.json', 'utf8'));
   assert.equal(validate({ ...official, scope: 'everyone' }), false);
+});
+
+test('the portable skill file schema matches the runtime and preserves complete instructions', async () => {
+  const published = JSON.parse(await readFile('../../docs/schemas/skill-file.schema.json', 'utf8'));
+  assert.deepEqual(published, JSON.parse(JSON.stringify(z.toJSONSchema(skillPackageSchema, { io: 'input' }))));
+  const validate = new Ajv2020({ strict: false, allErrors: true }).compile(published);
+  const manifest = JSON.parse(await readFile('../../examples/skills/product-ad-shots/skill.json', 'utf8'));
+  const instructions = await readFile('../../examples/skills/product-ad-shots/SKILL.md', 'utf8');
+  const file = { schemaVersion: 1, kind: 'viral-hit-skill', manifest, instructions };
+  assert.equal(validate(file), true);
+  assert.equal(validate({ ...file, instructions: '' }), false);
+  assert.equal(validate({ ...file, entry: 'run.sh' }), false);
 });

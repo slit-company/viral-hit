@@ -841,5 +841,6 @@
   },
   "Common": {
     "loading": "加载中"
-  }
+  },
+  "product.shell.skills": "技能"
 }

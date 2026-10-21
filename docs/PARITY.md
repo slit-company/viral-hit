@@ -59,3 +59,19 @@ Measure cold and warm runs separately on fixed machine/browser/model versions. R
 Registering, social posting, and submitting are not performed by creating this repository.
 
 Image overlays now have a shared [keyframe contract](OVERLAY-MOTION.md) for position, width, opacity and rotation, with source-time split/trim semantics and portable recipe support. This is bounded image-overlay animation, not general motion graphics or completion of the editor row.
+
+
+## Open extension boundary audit — 2026-10-21
+
+The objective is that contributors can add general workflows and workflows for a particular situation without editing the application. This is broader than shipping the examples currently in the repository. The implementation is not yet complete across every layer.
+
+| Layer | Current boundary and evidence | Remaining work |
+|---|---|---|
+| Recipes and execution adapters | JSON recipe library and installed `ext.*` adapters feed typed forms, durable plans and materialization; `recipe-library` and external-adapter integration/browser tests exercise independent additions | Real third-party engine/model quality is separate from the extension contract |
+| Packs | General/specialized recipe packs support build, review, link/file install and export; `recipe-packs.integration.test.ts` and browser pack tests cover it | Packs contain recipes only. They cannot yet carry character files or skill files together as a reusable setup |
+| Skills | Official, operator-folder and installed skill files share live UI/MCP/CLI discovery; review retains full instructions and scope, install verifies the reviewed digest | Managed version updates/uninstall and community discovery are not implemented |
+| Generation providers | Operator folders register independent image/video models into Canvas, Studio and MCP; immediate and queued procedural generation produce real project assets | Provider load problems currently require CLI inspection; no UI diagnostics. Audio uses recipe/adapter execution, not this image/video model menu |
+| Characters and project files | Portable character tar files and editable project files validate content and support import/export across installations | No combined pack of character references and workflow definitions |
+| Publishing connectors | Generic publication records and the durable worker exist, with fixture-tested YouTube/Instagram implementations | `publication-destination.server.ts` and `runtime.server.ts` select only those two connectors. Installing another destination still requires app changes; this layer is not yet open |
+
+No installed skill or pack authorizes paid generation or external publication. Those actions retain the user's existing approval and identity/revision checks. No model-quality, live publishing or full Higgsfield parity claim follows from this audit.

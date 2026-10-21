@@ -11,7 +11,7 @@ Viral Hit is a general creative workspace. Work that only makes sense for one fo
 | Reusable building blocks that fit any project | A pack labeled `general` | [Packs](docs/PACKS.md) |
 | A new engine, model server or render farm | An external adapter, optionally shipped as an extension with its own `pack.json` | [External adapters](docs/EXTERNAL-ADAPTERS.md) |
 | An image or video model with its own API, general or for one job | A provider folder (provider.json plus one module) in your own repository, installed with `VIRAL_HIT_PROVIDERS_DIR` | [Providers](apps/studio/docs/PROVIDERS.md#install-a-provider-without-changing-the-app) |
-| Know-how an AI agent should follow, for any project or one job | A skill folder in your own repository, installed with `VIRAL_HIT_SKILLS_DIR`; propose it as official with an evaluation | [Skills](docs/SKILLS.md), [official skill rules](apps/studio/skills/official/README.md) |
+| Know-how an AI agent should follow, for any project or one job | A skill folder in your own repository, shared as a portable file or loaded with `VIRAL_HIT_SKILLS_DIR`; propose it as official with an evaluation | [Skills](docs/SKILLS.md), [official skill rules](apps/studio/skills/official/README.md) |
 
 A quick test: if your change names a brand, a platform's format, an audience or a campaign, it does not belong in the core. Core contracts (projects, assets, Canvas, timeline, runs) stay free of those fields; specialized parameters live in recipes, packs or optional metadata.
 

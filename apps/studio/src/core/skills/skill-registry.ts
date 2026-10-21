@@ -1,119 +1,12 @@
-import { readFile, readdir } from 'node:fs/promises';
+import { lstat, readFile, readdir } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
 
 import * as z from 'zod/v4';
 
-export const VIRAL_HIT_SKILL_SCHEMA_VERSION = 1;
-export const VIRAL_HIT_SKILL_CATALOG_URI = 'viral-hit://skills';
-export const VIRAL_HIT_SKILL_RESOURCE_TEMPLATE =
-  'viral-hit://skills/{skillId}';
+export * from './contract';
+import { MAX_MANIFEST_BYTES, MAX_INSTRUCTIONS_BYTES, VIRAL_HIT_SKILL_CATALOG_URI, VIRAL_HIT_SKILL_SCHEMA_VERSION, viralHitSkillManifestSchema, type ViralHitSkill, type ViralHitSkillCatalog, type ViralHitSkillDefinition, type ViralHitSkillDescriptor, type ViralHitSkillProblem, type ViralHitSkillSource } from './contract';
 
-const MAX_MANIFEST_BYTES = 64 * 1024;
-const MAX_INSTRUCTIONS_BYTES = 512 * 1024;
-
-export const viralHitSkillIdSchema = z
-  .string()
-  .trim()
-  .min(1)
-  .max(80)
-  .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
-
-const semanticVersionSchema = z
-  .string()
-  .trim()
-  .regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/);
-
-const skillInputSchema = z
-  .object({
-    id: viralHitSkillIdSchema,
-    label: z.string().trim().min(1).max(120),
-    description: z.string().trim().min(1).max(500),
-    kind: z.enum(['text', 'image', 'video', 'audio', 'number', 'boolean']),
-    required: z.boolean().default(true),
-  })
-  .strict();
-
-const skillStageSchema = z
-  .object({
-    id: viralHitSkillIdSchema,
-    title: z.string().trim().min(1).max(120),
-    description: z.string().trim().min(1).max(500),
-    reviewRequired: z.boolean().default(false),
-  })
-  .strict();
-
-export const viralHitSkillManifestSchema = z
-  .object({
-    schemaVersion: z.literal(VIRAL_HIT_SKILL_SCHEMA_VERSION),
-    id: viralHitSkillIdSchema,
-    version: semanticVersionSchema,
-    title: z.string().trim().min(1).max(120),
-    summary: z.string().trim().min(1).max(500),
-    /** general: helps any project. specialized: one format, job, audience or brand. */
-    scope: z.enum(['general', 'specialized']).default('general'),
-    author: z.string().trim().min(1).max(120).optional(),
-    license: z.string().trim().min(1).max(80).optional(),
-    visibility: z.enum(['showcase', 'hidden']).default('showcase'),
-    compatibility: z
-      .object({
-        minimumViralHitVersion: semanticVersionSchema,
-        requiredMcpTools: z
-          .array(z.string().regex(/^viral_hit_[a-z0-9_]+$/))
-          .max(100)
-          .default([]),
-      })
-      .strict(),
-    requiredCapabilities: z
-      .array(viralHitSkillIdSchema)
-      .max(50)
-      .default([]),
-    inputs: z.array(skillInputSchema).max(32).default([]),
-    stages: z.array(skillStageSchema).max(32).default([]),
-    showcase: z
-      .object({
-        category: viralHitSkillIdSchema,
-        tags: z.array(z.string().trim().min(1).max(40)).max(12).default([]),
-        featured: z.boolean().default(false),
-      })
-      .strict()
-      .optional(),
-  })
-  .strict();
-
-export type ViralHitSkillManifest = z.infer<
-  typeof viralHitSkillManifestSchema
->;
-
-/** official: bundled and evaluated with Viral Hit. local: installed by the operator from VIRAL_HIT_SKILLS_DIR. */
-export type ViralHitSkillSource = 'official' | 'local';
-
-/** Unparsed input: defaults such as scope general are applied when the registry is built. */
-export type ViralHitSkillDefinition = {
-  manifest: z.input<typeof viralHitSkillManifestSchema>;
-  instructions: string;
-  source?: ViralHitSkillSource;
-};
-
-export type ViralHitSkill = {
-  manifest: ViralHitSkillManifest;
-  instructions: string;
-  source: ViralHitSkillSource;
-  resourceUri: string;
-  compatible: boolean;
-  incompatibilities: string[];
-};
-
-export type ViralHitSkillDescriptor = Omit<ViralHitSkill, 'instructions'>;
-
-/** A local skill that could not be loaded; the rest of the catalog still works. */
-export type ViralHitSkillProblem = { source: ViralHitSkillSource; location: string; message: string };
-
-export type ViralHitSkillCatalog = {
-  schemaVersion: typeof VIRAL_HIT_SKILL_SCHEMA_VERSION;
-  viralHitVersion: string;
-  skills: ViralHitSkillDescriptor[];
-  problems: ViralHitSkillProblem[];
-};
+const semanticVersionSchema = z.string().regex(/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/);
 
 const problemMessage = (error: unknown) =>
   (error instanceof z.ZodError
@@ -235,6 +128,8 @@ export function createViralHitSkillRegistry({
 }
 
 const readBoundedTextFile = async (path: string, maxBytes: number) => {
+  const metadata = await lstat(path);
+  if (!metadata.isFile() || metadata.size > maxBytes) throw new Error('Invalid or oversized skill file');
   const contents = await readFile(path);
   if (contents.byteLength > maxBytes) {
     throw new Error(`ViralHit Skill file is too large: ${path}`);
@@ -265,7 +160,7 @@ async function readSkillRoot(directory: string, source: ViralHitSkillSource, pro
     if (source === 'local') problems.push({ source, location: basename(directory), message: 'Skills folder not found.' });
     return [];
   }
-  const folders = entries.filter((entry) => entry.isDirectory()).sort((left, right) => left.name.localeCompare(right.name));
+  const folders = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith('.')).sort((left, right) => left.name.localeCompare(right.name));
   const read = await Promise.all(folders.map(async (entry) => {
     try {
       return await readViralHitSkillDirectory(resolve(directory, entry.name), source);
@@ -285,16 +180,19 @@ async function readSkillRoot(directory: string, source: ViralHitSkillSource, pro
 export async function loadViralHitSkillRegistry({
   directory,
   localDirectory,
+  installedDirectory,
   viralHitVersion,
   availableMcpTools,
 }: {
   directory: string;
   localDirectory?: string;
+  installedDirectory?: string;
   viralHitVersion: string;
   availableMcpTools: readonly string[];
 }) {
   const problems: ViralHitSkillProblem[] = [];
   const official = await readSkillRoot(directory, 'official', problems);
   const local = localDirectory ? await readSkillRoot(localDirectory, 'local', problems) : [];
-  return createViralHitSkillRegistry({ definitions: [...official, ...local], viralHitVersion, availableMcpTools, problems });
+  const installed = installedDirectory ? await readSkillRoot(installedDirectory, 'installed', problems) : [];
+  return createViralHitSkillRegistry({ definitions: [...official, ...local, ...installed], viralHitVersion, availableMcpTools, problems });
 }

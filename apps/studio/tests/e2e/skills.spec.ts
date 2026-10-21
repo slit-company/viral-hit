@@ -1,0 +1,69 @@
+import { test, expect, type APIRequestContext } from '@playwright/test';
+import { readFile, mkdir, copyFile } from 'node:fs/promises';
+
+const headers = { 'x-viral-hit-workspace-request': '1' };
+async function mcp(request: APIRequestContext, name: string, args: Record<string, unknown>) {
+  const response = await request.post('http://127.0.0.1:3043/mcp', { headers: { authorization: 'Bearer e2e-local-only', accept: 'application/json, text/event-stream' },
+    data: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name, arguments: args } } });
+  expect(response.ok()).toBe(true);
+  const text = await response.text();
+  const rpc = JSON.parse(text.startsWith('{') ? text : text.split('\n').find(line => line.startsWith('data: '))!.slice(6));
+  expect(rpc.result?.isError, JSON.stringify(rpc.result)).not.toBe(true);
+  return rpc.result.structuredContent?.result;
+}
+
+test('a shared skill is reviewed in the UI, appears in an already connected agent, and round-trips as a portable file', async ({ page, request }) => {
+  const before = await mcp(request, 'viral_hit_skill_list', {});
+  expect(before.skills.every((skill: { source: string }) => skill.source === 'official')).toBe(true);
+  const manifest = { ...JSON.parse(await readFile('../../examples/skills/product-ad-shots/skill.json', 'utf8')), id: 'product-shots-e2e', title: 'Product shots for our shop' };
+  const file = { schemaVersion: 1, kind: 'viral-hit-skill', manifest, instructions: await readFile('../../examples/skills/product-ad-shots/SKILL.md', 'utf8') };
+  const upload = { name: 'product-shots.viralhit-skill.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(file)) };
+  await page.goto('/skills');
+  await expect(page.getByRole('heading', { name: 'Give your agent a way to work.' })).toBeVisible();
+  await page.getByRole('button', { name: 'For a specific job', exact: true }).click();
+  await expect(page.getByText(/No skills in this group yet/)).toBeVisible();
+  await page.getByLabel('Import skill file', { exact: true }).setInputFiles(upload);
+  const dialog = page.getByRole('dialog');
+  await expect(dialog.getByRole('heading', { name: 'Review skill: Product shots for our shop' })).toBeVisible();
+  await expect(dialog.getByText(/For a specific job · Shared file/)).toBeVisible();
+  expect((await mcp(request, 'viral_hit_skill_list', {})).skills).toHaveLength(before.skills.length);
+  await expect(dialog.getByRole('button', { name: 'Install skill', exact: true })).toBeVisible();
+  const evidence = '../../research/evidence/skill-library'; await mkdir(evidence, { recursive: true });
+  await page.screenshot({ animations: 'disabled', path: evidence + '/review-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await expect(dialog.getByRole('button', { name: 'Install skill', exact: true })).toBeVisible();
+  await page.screenshot({ animations: 'disabled', path: evidence + '/review-mobile.png' });
+  await dialog.getByRole('button', { name: 'Install skill', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Product shots for our shop is installed');
+  const installed = await mcp(request, 'viral_hit_skill_get', { skillId: manifest.id });
+  expect(installed.source).toBe('installed'); expect(installed.manifest.scope).toBe('specialized');
+  expect(installed.instructions).toBe(file.instructions.trim());
+  await page.reload();
+  await expect(page.getByRole('heading', { name: manifest.title, exact: true })).toBeVisible();
+  await page.screenshot({ animations: 'disabled', path: evidence + '/library-mobile.png' });
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.screenshot({ animations: 'disabled', path: evidence + '/library-desktop.png' });
+  await page.getByRole('button', { name: 'Read ' + manifest.title, exact: true }).click();
+  await expect(dialog.locator('pre')).toHaveText(file.instructions.trim());
+  const download = page.waitForEvent('download');
+  await dialog.getByRole('button', { name: 'Download skill', exact: true }).click();
+  const path = await (await download).path();
+  const exported = JSON.parse(await readFile(path!, 'utf8'));
+  expect(exported).toEqual(await mcp(request, 'viral_hit_skill_library', { request: { action: 'export', skillId: manifest.id } }));
+  await copyFile(path!, evidence + '/exported.viralhit-skill.json');
+  await dialog.getByRole('button', { name: 'Done', exact: true }).click();
+  await page.getByLabel('Import skill file', { exact: true }).setInputFiles(path!);
+  await expect(dialog.getByRole('button', { name: 'Already installed' })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Already installed' }).click();
+  await expect(dialog).toHaveCount(0);
+  expect((await mcp(request, 'viral_hit_skill_list', {})).skills).toHaveLength(before.skills.length + 1);
+  const inspection = await mcp(request, 'viral_hit_skill_library', { request: { action: 'inspect', file } });
+  const stale = await request.post('/api/app/skills', { headers, data: { action: 'install', file: { ...file, instructions: 'Changed' }, expectedDigest: inspection.digest } });
+  expect(stale.status()).toBe(409);
+  const denied = await request.post('/api/app/skills', { data: { action: 'install', file, expectedDigest: inspection.digest } });
+  expect(denied.status()).toBe(403);
+  await page.getByLabel('Add from link', { exact: true }).fill('https://127.0.0.1/skill.json');
+  await page.getByRole('button', { name: 'Review link', exact: true }).click();
+  await expect(page.getByRole('alert')).toContainText('public network address');
+});

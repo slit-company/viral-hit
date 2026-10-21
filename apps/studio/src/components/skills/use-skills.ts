@@ -1,0 +1,57 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
+import type { ViralHitSkill, ViralHitSkillCatalog } from '@/core/skills/contract';
+import { MAX_SKILL_FILE_BYTES, type SkillInspection, type SkillPackage, type SkillReview } from '@/core/skills/package';
+
+export function useSkills() {
+  const [catalog, setCatalog] = useState<ViralHitSkillCatalog>();
+  const [review, setReview] = useState<SkillReview>();
+  const [detail, setDetail] = useState<ViralHitSkill>();
+  const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
+  const epoch = useRef(0);
+  const load = useCallback(async () => { setCatalog(await apiJsonGet<ViralHitSkillCatalog>('/api/app/skills')); }, []);
+  useEffect(() => { void load().catch(() => setError('Skills could not be loaded. Reload the page to retry.')); }, [load]);
+  useEffect(() => () => { epoch.current++; }, []);
+  async function work<T>(task: () => Promise<T>, apply: (result: T) => void) {
+    const current = ++epoch.current; setBusy(true); setError(''); setNotice('');
+    try { const result = await task(); if (current === epoch.current) apply(result); }
+    catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Skill request failed'); }
+    finally { if (current === epoch.current) setBusy(false); }
+  }
+  function importFile(file?: File) {
+    if (!file) return;
+    setDetail(undefined); setReview(undefined);
+    return work(async () => {
+      if (file.size > MAX_SKILL_FILE_BYTES) throw new Error('Skill files must be 700 KB or smaller.');
+      let parsed: SkillPackage;
+      try { parsed = JSON.parse(await file.text()); } catch { throw new Error('This file is not valid JSON.'); }
+      const inspection = await apiJsonPost<SkillInspection>('/api/app/skills', { action: 'inspect', file: parsed });
+      return { file: parsed, inspection };
+    }, setReview);
+  }
+  function fetchLink(url: string) {
+    setDetail(undefined); setReview(undefined);
+    return work(() => apiJsonPost<SkillReview>('/api/app/skills', { action: 'fetch', url: url.trim() }), setReview);
+  }
+  function open(skillId: string) {
+    setReview(undefined); setDetail(undefined);
+    return work(() => apiJsonPost<ViralHitSkill>('/api/app/skills', { action: 'get', skillId }), setDetail);
+  }
+  function install() {
+    if (!review) return;
+    return work(async () => {
+      await apiJsonPost('/api/app/skills', { action: 'install', file: review.file, expectedDigest: review.inspection.digest });
+      await load();
+      return review.inspection.skill.manifest.title;
+    }, title => { setReview(undefined); setNotice(title + ' is installed. Your agent can read it now.'); });
+  }
+  function download(skillId: string) {
+    return work(() => apiJsonPost<SkillPackage>('/api/app/skills', { action: 'export', skillId }), file => {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2) + '\n'], { type: 'application/json' }));
+      const a = document.createElement('a'); a.href = url; a.download = file.manifest.id + '.viralhit-skill.json'; a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }
+  return { catalog, review, detail, busy, error, notice, importFile, fetchLink, open, install, download,
+    close: () => { epoch.current++; setReview(undefined); setDetail(undefined); setError(''); setBusy(false); } };
+}

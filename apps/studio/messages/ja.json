@@ -841,5 +841,6 @@
   },
   "Common": {
     "loading": "読み込み中"
-  }
+  },
+  "product.shell.skills": "スキル"
 }
