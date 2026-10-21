@@ -124,7 +124,7 @@ export function ProductPageShell({
     <div className="vh-product-shell flex h-screen min-h-screen flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
       <header className={`pointer-events-auto sticky top-0 z-40 shrink-0 border-b border-[var(--vh-border)] bg-[var(--vh-surface)]/96 text-[var(--vh-text-1)] backdrop-blur-xl ${projectId && (workspaceMode || publishing) ? 'pb-10 sm:pb-0' : ''}`}>
           <div className="flex h-14 items-center gap-3 px-4 lg:px-5">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="flex min-w-0 shrink-0 items-center gap-3 sm:flex-1">
               <BackButton label={t('header.backHome')} onClick={() => router.push('/')} />
 
               <div className="hidden min-w-0 flex-1 sm:block">
@@ -132,7 +132,7 @@ export function ProductPageShell({
               </div>
             </div>
 
-            <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
+            <div className="ml-auto flex min-w-0 items-center justify-end gap-2 max-sm:justify-start max-sm:overflow-x-auto max-sm:[&>*:not(nav)]:shrink-0">
               {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs">Storyboards</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
               {projectId && (workspaceMode || publishing) ? (
                 <nav

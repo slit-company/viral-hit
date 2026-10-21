@@ -932,7 +932,7 @@ export function CreativeCanvasFrontLayer() {
             />
 
             {isAnalysisDraft ? (
-              <CreativeCanvasAnalysisDepthPicker
+              <CreativeCanvasAnalysisDepthPicker selectedModelId={activeDraftCard.modelId} onModelChange={onDraftModelChange}
                 activeDraftId={activeDraftCard.id}
                 containerRef={popovers.refs.model}
                 depth={activeDraftCard.analysisDepth ?? 'standard'}

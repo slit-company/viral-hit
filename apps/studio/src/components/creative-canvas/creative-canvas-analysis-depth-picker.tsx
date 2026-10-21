@@ -1,3 +1,5 @@
+import { useWorkspaceModels } from '@/core/workspace-hooks/use-workspace-metadata';
+import { VIDEO_ANALYSIS_MODEL_ID } from '@/core/effects/video-analysis';
 import { Action } from '@/components/base/action';
 import { getModelIconPathByModelId } from '@/core/workspace-lib/model-icons';
 import type { VideoAnalysisDepth } from '@/core/effects/video-analysis';
@@ -18,6 +20,8 @@ const ANALYSIS_DEPTHS: VideoAnalysisDepth[] = ['standard', 'deep'];
 
 export function CreativeCanvasAnalysisDepthPicker({
   activeDraftId,
+  selectedModelId = VIDEO_ANALYSIS_MODEL_ID,
+  onModelChange,
   containerRef,
   depth,
   isDraftBusy,
@@ -27,6 +31,8 @@ export function CreativeCanvasAnalysisDepthPicker({
   onOpenChange,
 }: {
   activeDraftId: string;
+  selectedModelId?: string | null;
+  onModelChange: (draftId: string, modelId: string) => void;
   containerRef?: RefObject<HTMLDivElement | null>;
   depth: VideoAnalysisDepth;
   isDraftBusy: boolean;
@@ -35,13 +41,16 @@ export function CreativeCanvasAnalysisDepthPicker({
   onDepthChange: (draftId: string, depth: VideoAnalysisDepth) => void;
   onOpenChange: (nextOpen: boolean) => void;
 }) {
-  const label =
+  const { data } = useWorkspaceModels();
+  const installed = data?.models.filter(model => model.workspaceType === 'analysis' && model.id !== VIDEO_ANALYSIS_MODEL_ID) ?? [];
+  const isBuiltin = !selectedModelId || selectedModelId === VIDEO_ANALYSIS_MODEL_ID;
+  const label = !isBuiltin ? installed.find(model => model.id === selectedModelId)?.name ?? selectedModelId :
     depth === 'deep'
       ? labels.analysisProModelLabel
       : labels.analysisStandardModelLabel;
   const modelId =
     depth === 'deep' ? 'video-analysis-pro' : 'video-analysis-standard';
-  const iconPath = getModelIconPathByModelId(modelId);
+  const iconPath = isBuiltin ? getModelIconPathByModelId(modelId) : null;
 
   return (
     <div ref={containerRef} className={cn(composerFieldSlotClassName, 'min-w-0')}>
@@ -76,13 +85,13 @@ export function CreativeCanvasAnalysisDepthPicker({
         <div
           className={cn(
             composerFloatingPanelClassName,
-            'left-0 w-[min(300px,calc(100vw-48px))]'
+            'left-0 w-[min(300px,calc(100vw-48px))] max-sm:left-auto max-sm:right-0'
           )}
           onPointerDownCapture={stopComposerEvent}
         >
-          <div className="space-y-1">
+          <div className="max-h-[min(360px,50vh)] space-y-1 overflow-y-auto">
             {ANALYSIS_DEPTHS.map((option) => {
-              const isSelected = option === depth;
+              const isSelected = isBuiltin && option === depth;
               const optionLabel =
                 option === 'deep'
                   ? labels.analysisProModelLabel
@@ -99,6 +108,7 @@ export function CreativeCanvasAnalysisDepthPicker({
                   type="button"
                   disabled={isDraftBusy}
                   onClick={() => {
+                    onModelChange(activeDraftId, VIDEO_ANALYSIS_MODEL_ID);
                     if (!isSelected) onDepthChange(activeDraftId, option);
                     onOpenChange(false);
                   }}
@@ -120,6 +130,15 @@ export function CreativeCanvasAnalysisDepthPicker({
                 </Action>
               );
             })}
+            {installed.map(model => (
+              <Action key={model.id} type="button" disabled={isDraftBusy || model.available === false}
+                onClick={() => { onModelChange(activeDraftId, model.id); onOpenChange(false); }}
+                className={getComposerOptionRowClassName(model.id === selectedModelId)}>
+                <ScanSearch className="size-3.5 shrink-0" />
+                <span className="flex-1 text-left text-[12px] font-medium break-words">{model.name}</span>
+                {model.id === selectedModelId ? <Check className="size-3.5 shrink-0 text-[var(--vh-accent)]" /> : null}
+              </Action>
+            ))}
           </div>
         </div>
       ) : null}

@@ -84,7 +84,8 @@
             "type": "string",
             "enum": [
               "image",
-              "video"
+              "video",
+              "analysis"
             ]
           },
           "upstreamModelId": {
@@ -93,7 +94,7 @@
             "maxLength": 200
           },
           "aspectRatios": {
-            "minItems": 1,
+            "default": [],
             "maxItems": 14,
             "type": "array",
             "items": {
@@ -162,8 +163,7 @@
         "required": [
           "id",
           "name",
-          "kind",
-          "aspectRatios"
+          "kind"
         ],
         "additionalProperties": false
       }

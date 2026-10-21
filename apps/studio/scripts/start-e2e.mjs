@@ -25,6 +25,9 @@ Object.assign(protectedManifest, { id: 'protected-fixture', label: 'Studio image
 await writeFile(join(providers, 'protected-fixture', 'provider.json'), JSON.stringify(protectedManifest));
 // Discovery must never import the module, even when the status page is refreshed.
 await writeFile(join(providers, 'protected-fixture', 'provider.mjs'), 'throw new Error("DIAGNOSTICS_MUST_NOT_EXECUTE_MODULES");');
+await cp('../../examples/providers/procedural-images', join(providers, 'analysis-fixture'), { recursive: true });
+await writeFile(join(providers, 'analysis-fixture', 'provider.json'), JSON.stringify({schemaVersion:1,kind:'viral-hit-provider',id:'analysis-fixture',label:'Analysis protocol fixture',scope:'specialized',models:[{id:'analysis-fixture-review',name:'Independent review fixture',kind:'analysis'}]}));
+await writeFile(join(providers, 'analysis-fixture', 'provider.mjs'), `export async function createGeneration({input}) { if(!input.videoUrl)throw Error('Missing video'); return {status:'succeeded',text:'Protocol fixture: ' + input.prompt + '\\nNo visual inspection was performed.'}; }`);
 const env = { ...process.env, VIRAL_HIT_FFMPEG: process.env.VIRAL_HIT_FFMPEG || execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim(), VIRAL_HIT_ADAPTERS_DIR: adapters, VIRAL_HIT_PROVIDERS_DIR: providers, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
 Object.assign(env, await prepareWhisperFixture(directory, adapters, recipes));
 env.VIRAL_HIT_FFPROBE = process.env.VIRAL_HIT_FFPROBE || execFileSync('which', ['ffprobe'], { encoding: 'utf8' }).trim();

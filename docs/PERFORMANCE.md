@@ -81,3 +81,9 @@ The exercised multilingual tiny model is 77,691,713 bytes. A 3.876-second Englis
 ## Reference-to-storyboard preparation — 2026-10-21
 
 This handoff adds no runtime dependency, model service or poller. The final production build contains 204 public files totaling 8,554,211 bytes; cumulative individually gzipped client JavaScript is 586,345 bytes (1,359 bytes above the transcript build). Both existing budgets pass. Discovery returns at most 100 recent analysis summaries with an omitted count; preparation verifies one original video and uses selected receipt JSON. Source verification is streamed through the existing media boundary and does not decode a second analysis. This is not a complete long-history or large-project latency benchmark.
+
+## Independent analysis models — 2026-10-22
+
+Final public build: **204 files / 8,556,038 bytes**, **1,988,094 raw JavaScript bytes / 586,862 individually gzipped JavaScript bytes**. The gzip increase is **517 bytes** over the reference-to-storyboard build. Existing 10 MB/600 KB gates pass. Discovery reuses the existing cached model request; analysis reuses the existing generation poller. No new default runtime package, daemon or periodic discovery was introduced.
+
+The optional technical inspector streams at most 64 MiB into a private temporary file, caps FFprobe output at 1 MiB, and has a two-minute signal plus a twenty-second subprocess deadline. FFprobe is separately installed. These limits and the successful small-media test do not establish a whole-host RAM cap, representative latency, semantic model quality or superiority to Higgsfield. Private/local media still needs the existing managed-upload path for model providers.

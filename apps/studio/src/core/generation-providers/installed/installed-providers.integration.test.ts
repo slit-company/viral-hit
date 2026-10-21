@@ -24,6 +24,15 @@ await folder('leaky', { ...example, id: 'leaky', label: 'Leaky', mediaHosts: ['m
 await folder('copycat', { ...example, id: 'copycat', models: [{ ...model, id: 'nano-banana-pro' }] }, 'export async function createGeneration() {}');
 await folder('broken', { ...example, id: 'broken', scope: 'everything' }, 'export async function createGeneration() {}');
 
+await folder('analysis-fixture', { ...example, id: 'analysis-fixture', label: 'Independent analysis', scope: 'specialized', models: [
+  { id: 'independent-analysis', name: 'Review fixture', kind: 'analysis' },
+  { id: 'queued-analysis', name: 'Queued review fixture', kind: 'analysis' },
+] }, `export async function createGeneration({model,input}) {
+  if (!input.videoUrl || input.analysisDepth !== 'deep' || input.maxOutputTokens !== 4096) throw Error('Lost analysis input');
+  return model.id === 'queued-analysis' ? {status:'processing',taskId:'review-42'} : {status:'succeeded',text:'Protocol fixture: ' + input.prompt};
+} export async function checkStatus({taskId}) { if(taskId!=='review-42') throw Error('Wrong task'); return {status:'succeeded',text:'Queued protocol fixture; no visual inspection.'}; }`);
+await folder('analysis-copycat', { ...example, id: 'analysis-copycat', models: [{ id: 'video-analysis', name: 'Collision', kind: 'analysis' }] }, 'export async function createGeneration() {}');
+
 const { installGenerationProviders } = await import('./install.server');
 const installed = installGenerationProviders(providers);
 const { createProject } = await import('@/core/projects/projects');
@@ -47,8 +56,8 @@ const pngSize = async (projectId: string) => {
 };
 
 test('an installed provider adds its models next to the built-in ones and reports broken folders', () => {
-  assert.deepEqual(installed.providers.map(item => [item.id, item.scope]), [['leaky', 'general'], ['procedural-images', 'general']]);
-  assert.deepEqual(installed.problems.map(item => item.location), ['broken', 'copycat']);
+  assert.deepEqual(installed.providers.map(item => [item.id, item.scope]), [['analysis-fixture', 'specialized'], ['leaky', 'general'], ['procedural-images', 'general']]);
+  assert.deepEqual(installed.problems.map(item => item.location), ['analysis-copycat', 'broken', 'copycat']);
   assert.match(installed.problems.find(item => item.location === 'copycat')!.message, /already used/);
   const descriptors = listGenerationModelDescriptors();
   assert.equal(descriptors.find(item => item.id === 'procedural-gradient')?.providerId, 'procedural-images');
@@ -94,4 +103,56 @@ test('simultaneous generations returning identical bytes each retain their proje
   const results = await Promise.all(projects.map(project => submitAssetFirstGeneration({ generation: request(project.id, 'procedural-gradient', 'An identical concurrent sunset'), origin: 'mcp' })));
   for (const result of results) assert.equal(result.body.status, 'succeeded', JSON.stringify(result.body));
   for (const project of projects) assert.equal(await pngSize(project.id), 'png,640,360');
+});
+
+const { recordUserAsset, linkProjectAsset } = await import('@/core/workspace-lib/assets/user-assets');
+const { listProjectGenerations } = await import('@/core/effects/project-generations');
+const { preflightAssetFirstGeneration } = await import('../submit');
+async function analysisRequest(modelId: string) {
+  const project = await createProject({ name: 'Independent analysis' });
+  const assetId = await recordUserAsset({ type: 'video', source: 'upload', bucket: 'test', objectKey: project.id + '.mp4', publicUrl: 'https://media.example.com/source.mp4', originProjectId: project.id });
+  await linkProjectAsset({ projectId: project.id, assetId, role: 'upload' });
+  return { version: 2, projectId: project.id, modelId, mode: 'analysis', prompt: 'Review continuity', references: [{ assetId, role: 'reference' }], parameters: { analysis_depth: 'deep', max_output_tokens: 4096 } };
+}
+
+test('independent analysis discovers, validates and persists text without a media output', async () => {
+  const descriptor = listGenerationModelDescriptors().find(item => item.id === 'independent-analysis');
+  assert.equal(descriptor?.kind, 'analysis'); assert.equal(descriptor?.name, 'Review fixture');
+  const request = await analysisRequest('independent-analysis');
+  const result = await submitAssetFirstGeneration({ generation: request, origin: 'mcp' });
+  assert.equal(result.body.status, 'succeeded', JSON.stringify(result.body));
+  const [item] = await listProjectGenerations(request.projectId);
+  assert.equal(item.mediaType, 'analysis'); assert.equal(item.modelName, 'Review fixture');
+  assert.equal(item.resultText, 'Protocol fixture: Review continuity'); assert.equal(item.resultUrl, null);
+  assert.deepEqual([...new Set((await listProjectAssets({ projectId: request.projectId })).map((asset: { id: string }) => asset.id))], [request.references[0].assetId]);
+  for (const bad of [{ ...request, references: [] }, { ...request, parameters: { max_output_tokens: 99999 } }, { ...request, mode: 'video' }]) {
+    await assert.rejects(preflightAssetFirstGeneration(bad));
+  }
+  assert.equal((await listProjectGenerations(request.projectId)).length, 1);
+});
+
+test('queued independent analysis retains its model and source through background completion', { timeout: 60_000 }, async () => {
+  const request = await analysisRequest('queued-analysis');
+  const result = await submitAssetFirstGeneration({ generation: request, origin: 'ui' });
+  assert.equal(result.body.status, 'processing', JSON.stringify(result.body));
+  let item;
+  for (let i = 0; i < 45; i++) {
+    [item] = await listProjectGenerations(request.projectId);
+    if (item.status === 'succeeded' || item.status === 'failed') break;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+  }
+  assert.equal(item?.status, 'succeeded'); assert.equal(item?.modelId, 'queued-analysis');
+  assert.equal(item?.resultText, 'Queued protocol fixture; no visual inspection.');
+  assert.deepEqual(item?.referenceVideos, ['https://media.example.com/source.mp4']);
+});
+
+
+test('the same public URL in another project does not grant its asset membership to this analysis', async () => {
+  const first = await analysisRequest('independent-analysis');
+  const second = await analysisRequest('independent-analysis');
+  const result = await submitAssetFirstGeneration({ generation: second, origin: 'mcp' });
+  assert.equal(result.body.status, 'succeeded');
+  const ids = [...new Set((await listProjectAssets({projectId:second.projectId})).map((asset: {id:string}) => asset.id))];
+  assert.deepEqual(ids, [second.references[0].assetId]);
+  assert.ok(!ids.includes(first.references[0].assetId));
 });

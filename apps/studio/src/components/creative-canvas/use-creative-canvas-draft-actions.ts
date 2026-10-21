@@ -213,6 +213,12 @@ export function useCreativeCanvasDraftActions({
         return;
       }
 
+      if (currentCard.generationMode === 'analysis') {
+        updateDraftCard(draftId, { modelId, status: 'idle', error: null });
+        setActiveComposerCardId(draftId);
+        return;
+      }
+
       const model =
         currentCard.type === 'image'
           ? getSelectableModel(imageModels, modelId)

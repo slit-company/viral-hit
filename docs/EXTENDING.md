@@ -196,3 +196,7 @@ Installed recipe-only packs can publish same-ID releases through [reviewed pack 
 [Creative packs](CREATIVE-PACKS.md#update-remove-and-recover-releases) maintain combined recipes, skills and characters through reviewed same-ID releases. Select replacements, preserve local edits, export retained releases by digest, and remove the bundle listing while keeping reusable contents. Executable runtime modules remain a separate explicit installation boundary.
 
 [Managed runtime packages](RUNTIME-PACKAGES.md) combine independent providers, workflow adapters and publishing connectors without editing the studio. CLI/MCP/HTTP support full-source review, atomic desired-state installation/update/removal and retained release restoration. Activation requires coordinated process restart; the existing runtime owners execute the reviewed code.
+
+## Add an analysis model
+
+[Independent analysis providers](ANALYSIS-PROVIDERS.md) use the existing provider module/manifest boundary for general review or specialized one-video text reports. They share Canvas selection, HTTP/MCP descriptors, generation records and polling. The optional [technical inspector](../examples/providers/media-inspector/README.md) runs FFprobe without a model service; semantic analysis requires a suitable independently implemented engine.

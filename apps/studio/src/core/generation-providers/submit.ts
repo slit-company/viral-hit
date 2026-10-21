@@ -164,7 +164,7 @@ export async function preflightAssetFirstGeneration(source: unknown) {
       `Model ${generation.modelId} does not support ${generation.mode} generation.`
     );
   }
-  const prompt = validateGenerationPrompt(generation.prompt, getGenerationPromptConstraints({ modelId: generation.modelId }));
+  const prompt = validateGenerationPrompt(generation.prompt, getGenerationPromptConstraints({ modelId: descriptor.kind === 'analysis' ? 'video-analysis' : generation.modelId }));
   if (!prompt.ok) throw new Error(prompt.code === 'PROMPT_TOO_LONG' ? `Prompt must be ${prompt.maxChars} characters or fewer.` : 'Prompt is required.');
   const uniqueAssets = new Map<
     string,

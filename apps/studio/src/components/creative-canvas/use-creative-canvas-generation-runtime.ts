@@ -284,7 +284,7 @@ export function useCreativeCanvasGenerationRuntime({
         try {
           const output = await pollEffectUntilComplete({
             wmTaskId,
-            modelId: isAnalysis ? VIDEO_ANALYSIS_MODEL_ID : model!.id,
+            modelId: isAnalysis ? outputCard.generationSnapshot.modelId || VIDEO_ANALYSIS_MODEL_ID : model!.id,
             onStatus: (status, message) => {
               updateGenerationOutput(outputCard.id, { status });
               const latestDraft = canvasCardsRef.current[draftCard.id];

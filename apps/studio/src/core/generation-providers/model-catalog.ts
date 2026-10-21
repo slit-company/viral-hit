@@ -4,9 +4,6 @@ import {
 } from '@/core/effects/effect-registry';
 import { getRegisteredEffectById } from '@/core/effects/registered-effects';
 import { getWorkspaceMediaSchema } from '@/core/effects/workspace-media';
-import {
-  VIDEO_ANALYSIS_MODEL_ID,
-} from '@/core/effects/video-analysis';
 
 import { findGenerationModelBinding, listSelectableGenerationProviders } from './catalog';
 import { getGenerationProvider } from './registry';
@@ -45,11 +42,11 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
   return listSelectableGenerationProviders().flatMap((provider) => provider.modelBindings.flatMap<GenerationModelDescriptor>((binding) => {
     const effect = getRegisteredEffectById(binding.effectId, provider.id);
     if (!effect) return [];
-    if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
+    if (effect.type === 3) {
       return [
         {
-          id: VIDEO_ANALYSIS_MODEL_ID,
-          name: 'Video Analysis',
+          id: binding.modelId,
+          name: effect.name,
           providerId: provider.id,
           kind: 'analysis' as const,
           available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,

@@ -25,11 +25,11 @@ const buildVideoAnalysisEffect = (
   const provider = getGenerationProvider(providerId);
   return {
     id: binding.effectId,
-    name: 'Video Analysis',
+    name: binding.name ?? 'Video Analysis',
     type: 3,
     model: binding.upstreamModelId,
     version: null,
-    linkName: VIDEO_ANALYSIS_MODEL_ID,
+    linkName: binding.modelId,
     description: `${provider?.label ?? providerId} asynchronous video analysis`,
     platform: binding.modelId,
     api: null,
@@ -158,7 +158,7 @@ export const toRegisteredEffect = (
 
 export const listRegisteredEffects = (): RegisteredEffect[] =>
   listSelectableGenerationProviders().flatMap((provider) => provider.modelBindings.flatMap((binding) => {
-    if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
+    if (binding.kind === 'analysis' || binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
       return [buildVideoAnalysisEffect(binding, provider.id)];
     }
     const entry = getWorkspaceEffectRegistryEntry(binding.modelId);
@@ -173,7 +173,7 @@ export const getRegisteredEffectById = (
   const found = findGenerationModelBinding({ effectId: id, providerId: requestedProviderId });
   if (!found) return null;
   const { binding, providerId } = found;
-  if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
+  if (binding.kind === 'analysis' || binding.modelId === VIDEO_ANALYSIS_MODEL_ID) {
     return buildVideoAnalysisEffect(binding, providerId);
   }
   const entry = getWorkspaceEffectRegistryEntry(binding.modelId);

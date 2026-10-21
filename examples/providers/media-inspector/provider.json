@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "media-inspector",
+  "label": "Technical video inspection",
+  "description": "Optional FFprobe-based file inspection and vertical-delivery review. Reads media metadata; does not interpret visuals, dialogue or user instructions.",
+  "scope": "specialized",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "environment": ["VIRAL_HIT_FFPROBE"],
+  "models": [
+    { "id": "technical-video-review", "name": "Technical video review", "kind": "analysis" },
+    { "id": "vertical-delivery-review", "name": "Vertical delivery review", "kind": "analysis" }
+  ]
+}

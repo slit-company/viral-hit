@@ -1,3 +1,4 @@
+import { validateInstalledAnalysisInput } from './analysis-input';
 import { pinProviderTask, providerRuntimeDigest, unpinProviderTask } from './task-pin.server';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
@@ -27,6 +28,9 @@ export function providerInput(input: unknown) {
     ...(typeof value.wmDuration === 'string' ? { duration: value.wmDuration } : {}),
     ...(typeof value.seed === 'number' ? { seed: value.seed } : {}),
     imageUrls: images,
+    ...(typeof value.video_url === 'string' ? { videoUrl: value.video_url } : {}),
+    ...(typeof value.analysis_depth === 'string' ? { analysisDepth: value.analysis_depth } : {}),
+    ...(typeof value.max_output_tokens === 'number' ? { maxOutputTokens: value.max_output_tokens } : {}),
   };
 }
 
@@ -74,6 +78,10 @@ export class InstalledProviderRuntime {
 
   private async toResult(raw: unknown, model: ProviderModel, runtime?:string): Promise<GenerationResult> {
     const result = providerResultSchema.parse(raw);
+    if (model.kind === 'analysis') {
+      if (result.media?.length) throw new Error('Analysis models return text, not media');
+      if (result.status === 'succeeded' && !result.text) throw new Error('A succeeded analysis needs text');
+    } else if (result.text || (result.status === 'succeeded' && !result.media?.length)) throw new Error('Image/video models return media, not analysis text');
     const urls: string[] = [];
     for (const item of result.media ?? []) {
       if ('url' in item) { this.checkMediaUrl(item.url); urls.push(item.url); continue; }
@@ -82,7 +90,7 @@ export class InstalledProviderRuntime {
     }
     return {
       status: result.status,
-      output: { ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}) },
+      output: { ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text ? { analysis_text: result.text } : {}) },
       ...(result.error ? { error: result.error } : {}),
     };
   }
@@ -124,6 +132,9 @@ export class InstalledProviderRuntime {
 
 export class InstalledProviderAdapter extends BaseAdapter {
   constructor(effect: EffectRecord, private readonly runtime: InstalledProviderRuntime) { super(effect); }
-  createGeneration(input: unknown) { return this.runtime.call('createGeneration', this.effect, { input: providerInput(input) }); }
+  createGeneration(input: unknown) {
+    if (this.effect.type === 3) validateInstalledAnalysisInput(input);
+    return this.runtime.call('createGeneration', this.effect, { input: providerInput(input) });
+  }
   checkStatus(taskId: string) { return this.runtime.call('checkStatus', this.effect, { taskId }); }
 }

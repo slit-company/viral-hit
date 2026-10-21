@@ -148,7 +148,7 @@ export async function submitEffectGeneration({
     !effect ||
     !binding ||
     (!getWorkspaceEffectRegistryEntryByEffectId(effectId, effect.provider) &&
-      binding.modelId !== VIDEO_ANALYSIS_MODEL_ID)
+      binding.kind !== 'analysis' && binding.modelId !== VIDEO_ANALYSIS_MODEL_ID)
   ) {
     return { status: 404, body: { error: 'Model not found' } };
   }
@@ -167,7 +167,7 @@ export async function submitEffectGeneration({
   const rawInput = asObject(input);
   const { callBackUrl: _callback, callbackUrl: _callbackLower, ...safeInput } = rawInput;
   const promptConstraints = getGenerationPromptConstraints({
-    modelId: effect.model,
+    modelId: effect.type === 3 ? VIDEO_ANALYSIS_MODEL_ID : effect.model,
     provider: effect.provider,
   });
   const prompt = validateGenerationPrompt(
@@ -201,6 +201,8 @@ export async function submitEffectGeneration({
       id: effect.provider,
       modelId: binding?.modelId ?? effect.model,
       upstreamModelId: effect.model,
+      kind: effect.type === 3 ? 'analysis' : effect.type === 2 ? 'image' : 'video',
+      name: effect.name,
       effectId,
     },
   };

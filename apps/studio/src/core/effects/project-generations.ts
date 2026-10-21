@@ -103,7 +103,7 @@ export const toProjectGenerationItem = (
     ? getWorkspaceEffectRegistryEntry(recordedModelId)
     : getWorkspaceEffectRegistryEntryByEffectId(row.effectId);
   const isAnalysis =
-    recordedModelId === 'video-analysis' || isVideoAnalysisEffectId(row.effectId);
+    providerIdentity?.kind === 'analysis' || recordedModelId === 'video-analysis' || isVideoAnalysisEffectId(row.effectId);
   const media = resolveOutputMedia(row.output);
   const analysisModelName =
     input?.analysis_depth === 'deep'
@@ -123,7 +123,7 @@ export const toProjectGenerationItem = (
       readString(input?.model) ??
       entry?.id ??
       (isAnalysis ? 'video-analysis' : null),
-    modelName: entry?.name ?? (isAnalysis ? analysisModelName : null),
+    modelName: entry?.name ?? (providerIdentity?.kind === 'analysis' ? readString(providerIdentity.name) : null) ?? (isAnalysis ? analysisModelName : null),
     mediaType: isAnalysis
       ? 'analysis'
       : entry?.workspaceType === 'ai-image'

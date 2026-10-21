@@ -5,6 +5,9 @@ export type GenerationMediaCapability = 'image' | 'video' | 'audio' | 'analysis'
 export type GenerationProviderModelBinding = {
   /** Stable ViralHit product model id. */
   modelId: string;
+  /** Explicit output type/name for installed analysis models outside the image/video registry. */
+  kind?: 'image' | 'video' | 'analysis';
+  name?: string;
   /** Provider-local numeric id retained for existing DB/API compatibility. */
   effectId: number;
   /** Provider model name sent upstream. */

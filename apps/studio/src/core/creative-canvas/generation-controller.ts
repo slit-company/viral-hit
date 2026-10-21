@@ -1,3 +1,4 @@
+import { buildAnalysisGenerationInput } from './analysis-generation';
 import {
   type EffectClientStatus,
   type EffectMetadata,
@@ -13,13 +14,10 @@ import { resolveOutputMedia } from '@/core/effects/output-media';
 import { buildDraftModelParameters } from '@/core/effects/model-parameters';
 import {
   getGenerationPromptConstraints,
-  getGenerationPromptMaxChars,
   validateGenerationPrompt,
 } from '@/core/effects/validation';
 import {
   resolveVideoAnalysisText,
-  VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS,
-  VIDEO_ANALYSIS_MODEL_ID,
 } from '@/core/effects/video-analysis';
 import {
   findWorkspaceModelOption,
@@ -181,20 +179,6 @@ export const getSelectableModel = (
   models.find((model) => model.available !== false) ??
   null;
 
-const getVideoAnalysisModel = (
-  depth: CanvasDraftCard['analysisDepth'] = 'standard'
-): WorkspaceModelOption => ({
-  id: VIDEO_ANALYSIS_MODEL_ID,
-  name:
-    depth === 'deep'
-      ? 'Video Analysis Pro'
-      : 'Video Analysis Standard',
-  uploadPath: 'effects/video-analysis',
-  imageBucketName: 'video',
-  supportsSourceVideo: true,
-  maxSourceVideos: 1,
-});
-
 type BuildGenerationEffectInputParams = {
   draftCard: CanvasDraftCard;
   canvasCards: Record<string, CanvasCard>;
@@ -220,52 +204,7 @@ export const buildGenerationEffectInput = async ({
   notify,
   loadVideoDurationSecondsImpl = loadVideoDurationSeconds,
 }: BuildGenerationEffectInputParams) => {
-  if (isCanvasAnalysisCard(draftCard)) {
-    const promptValidation = validateGenerationPrompt(draftCard.prompt, {
-      required: true,
-      maxChars: getGenerationPromptMaxChars({
-        modelId: VIDEO_ANALYSIS_MODEL_ID,
-      }),
-    });
-    if (!promptValidation.ok) {
-      throw new Error(
-        promptValidation.code === 'PROMPT_TOO_LONG'
-          ? translate('messages.promptTooLong', {
-              maxChars: promptValidation.maxChars,
-            })
-          : translate('messages.promptRequired')
-      );
-    }
-
-    const videoReferences = draftCard.referenceCardIds
-      .map((cardId) => canvasCards[cardId])
-      .filter(
-        (card): card is CanvasCard =>
-          Boolean(card?.url) && card.type === 'video'
-      );
-    if (videoReferences.length !== 1) {
-      throw new Error(translate('messages.analysisVideoRequired'));
-    }
-
-    const videoReference = videoReferences[0];
-    const videoUrl = videoReference
-      ? referenceUrlOverrides[videoReference.id] ?? videoReference.url
-      : null;
-    const input: Record<string, unknown> = {
-      prompt: promptValidation.trimmedPrompt,
-      analysis_depth: draftCard.analysisDepth ?? 'standard',
-      max_output_tokens: VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS,
-    };
-    if (videoUrl && !isLocalWorkspaceMediaUrl(videoUrl)) {
-      input.video_url = videoUrl;
-    }
-
-    return {
-      modelId: VIDEO_ANALYSIS_MODEL_ID,
-      input,
-      model: getVideoAnalysisModel(draftCard.analysisDepth),
-    };
-  }
+  if (isCanvasAnalysisCard(draftCard)) return buildAnalysisGenerationInput({ draftCard, canvasCards, referenceUrlOverrides, translate });
 
   const models = draftCard.type === 'image' ? imageModels : videoModels;
   const model = getSelectableModel(models, draftCard.modelId);
@@ -607,7 +546,7 @@ export const runDraftGeneration = async ({
             mode: isCanvasAnalysisCard(submittedCard)
               ? 'analysis'
               : submittedCard.type,
-            modelId: isCanvasAnalysisCard(submittedCard) ? VIDEO_ANALYSIS_MODEL_ID : model.id,
+            modelId: model.id,
             prompt: submittedCard.prompt,
             references: buildAssetFirstReferencesFromCanvasCards({
               cards: Object.fromEntries(

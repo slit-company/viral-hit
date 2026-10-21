@@ -10,10 +10,10 @@ import type {
 import { apiJsonGet } from '@/lib/api-client';
 import { useQuery } from '@tanstack/react-query';
 
-export type WorkspaceModelType = WorkspaceType;
+export type WorkspaceModelType = WorkspaceType | 'analysis';
 
 export type WorkspaceModelMetadata = WorkspaceModelOption & {
-  workspaceType: WorkspaceType;
+  workspaceType: WorkspaceModelType;
   inputSchema: unknown;
   defaultProviderModelVariant: string | null;
 };

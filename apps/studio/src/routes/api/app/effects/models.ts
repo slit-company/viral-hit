@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { resolveWorkspaceEffectProviderModelVariant } from '@/core/effects/effect-registry';
-import { getGenerationModelDescriptor } from '@/core/generation-providers/model-catalog';
+import { getGenerationModelDescriptor, listGenerationModelDescriptors } from '@/core/generation-providers/model-catalog';
 import {
   type WorkspaceType,
   getWorkspaceModelsByType,
@@ -38,7 +38,12 @@ async function GET({ request }: { request: Request }) {
     };
   });
 
-  return Response.json({ models });
+  const analysisModels = listGenerationModelDescriptors().filter(model => model.kind === 'analysis').map(model => ({
+    id: model.id, name: model.name, available: model.available, workspaceType: 'analysis',
+    uploadPath: '', imageBucketName: '', supportsSourceVideo: true, maxSourceVideos: 1,
+    inputSchema: model.parameterSchema, defaultProviderModelVariant: null,
+  }));
+  return Response.json({ models: requestedType === 'analysis' ? analysisModels : requestedType ? models : [...models, ...analysisModels] });
 }
 
 export const Route = createFileRoute('/api/app/effects/models')({

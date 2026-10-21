@@ -295,9 +295,17 @@ export const linkGenerationInputAssetsByUrls = async ({
   }
 
   const db = await getDb();
+  const [generation] = await db.select({ projectId: generationHistory.projectId })
+    .from(generationHistory).where(eq(generationHistory.id, generationId)).limit(1);
+  if (!generation?.projectId) return;
+  // A shared delivery URL does not authorize another project's distinct asset record.
   const assets = await db
-    .select({ id: userAsset.id })
+    .selectDistinct({ id: userAsset.id })
     .from(userAsset)
+    .innerJoin(projectAssetMembership, and(
+      eq(projectAssetMembership.assetId, userAsset.id),
+      eq(projectAssetMembership.projectId, generation.projectId)
+    ))
     .where(inArray(userAsset.publicUrl, normalizedUrls));
 
   for (const asset of assets) {

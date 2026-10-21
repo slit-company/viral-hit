@@ -154,3 +154,11 @@ test('Canvas video analysis accepts a generated video output through @Video', as
     'https://media.cloud.test/outputs/generated.mp4'
   );
 });
+
+test('Canvas preserves an independently selected analysis model instead of silently using the built-in one', async () => {
+  const video = makeCard({ id: 'source' });
+  const draft = makeCard({ kind: 'generation', generationMode: 'analysis', modelId: 'independent-review', prompt: 'Review composition', referenceCardIds: [video.id] }) as CanvasDraftCard;
+  const built = await buildGenerationEffectInput({ draftCard: draft, canvasCards: { source: video }, imageModels: [], videoModels: [], metadataMap: {}, runtimeMessages: { missingVideoUrl: '', readVideoDurationFailed: '', videoMetadataLoadFailed: '' }, translate: key => key });
+  assert.equal(built.modelId, 'independent-review'); assert.equal(built.model.id, 'independent-review');
+  assert.equal(built.input.video_url, video.url);
+});
