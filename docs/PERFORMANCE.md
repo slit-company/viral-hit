@@ -134,3 +134,10 @@ Reports retain the 64-observation/256 KB bound and selection retains the 16-shot
 Final build: **203 public files / 8,585,012 bytes**, **2,016,635 raw JavaScript bytes / 594,790 individually gzipped JavaScript bytes**. Increase over source-specific reports: **898 gzip bytes**. Unchanged 10 MB/600 KB gates pass. The new form uses shared SEED controls; no default dependency, inference service, worker or background poller was introduced.
 
 Runtime link downloads have a 12,000,000-byte limit and a 20-second deadline with caller cancellation. Public DNS/socket pinning and redirect validation reuse the streaming downloader. Raw-file hashing streams in 1 MiB chunks before bounded JSON parsing; temporary files are always cleaned up. Package normalization and existing 8 MB aggregate source/entry limits still apply. Discovery transfers metadata only; no runtime is fetched until explicit review. Real small-package activation and WAV processing passed, but these bounds and bundle measurements do not establish peak RSS, large concurrent-download throughput or model/competitor performance.
+
+
+## Independent audio generation — 2026-10-22
+
+Final build: **203 public files / 8,591,337 bytes**, **2,022,882 raw JavaScript bytes / 596,046 individually gzipped JavaScript bytes**. Increase over runtime discovery: **1,256 gzip bytes**. The unchanged 10 MB/600 KB gates pass. Audio uses the existing cached model catalog, generation intents/history, polling and retained asset store. No default engine, dependency, daemon, migration or worker was added; model implementations remain optional.
+
+Output storage caps each generated audio file at 64 MiB; the example caps duration at ten seconds and produces mono 24 kHz PCM16. Real WAV playback and a short mixed image/audio browser export passed. These bounds and short fixtures do not measure whole-host memory, sustained inference speed, long music tracks, high track counts or competitor performance.

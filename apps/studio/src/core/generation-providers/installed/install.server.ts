@@ -1,3 +1,4 @@
+import { validateInstalledAudioInput } from './audio-input';
 import { resolveModelOptions } from '../model-controls';
 import { managedRuntimeEntries } from '@/core/runtime-packages/snapshot.server';
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
@@ -15,7 +16,7 @@ import { installedEffectId, providerManifestSchema, type ProviderManifest } from
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { InstalledProviderAdapter, InstalledProviderRuntime } from './runtime.server';
 
-export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'analysis' }[] };
+export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
 export type InstalledProviderProblem = { location: string; message: string };
 
 class ProviderLoadError extends Error {}
@@ -58,7 +59,7 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
   for (const model of manifest.models) {
     if (model.kind === 'analysis') continue;
     registerInstalledWorkspaceEffectEntry({
-      id: model.id, name: model.name, workspaceType: model.kind === 'image' ? 'ai-image' : 'ai-video', routeSlug: null,
+      id: model.id, name: model.name, workspaceType: model.kind === 'image' ? 'ai-image' : model.kind === 'audio' ? 'ai-audio' : 'ai-video', routeSlug: null,
       supportedAspectRatios: [...model.aspectRatios], defaultAspectRatio: model.defaultAspectRatio ?? model.aspectRatios[0],
       ...(model.durations ? { supportedDurations: model.durations as WorkspaceDuration[], defaultDuration: (model.defaultDuration ?? model.durations[0]) as WorkspaceDuration } : {}),
       requiresImageInput: model.requiresImageInput,
@@ -67,7 +68,7 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
     registerInstalledWorkspaceMediaSchema(model.id, { image: { max: slots.length, slots }, video: { max: 0, slots: [] }, audio: { max: 0, slots: [] } });
   }
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
-  registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); resolveModelOptions(model?.controls, input.provider_options); } });
+  registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input); resolveModelOptions(model?.controls, input.provider_options); } });
   const { id, label, scope, author, license, description, environment, referenceDelivery } = manifest;
   return { id, label, scope, author, license, description, environment, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }

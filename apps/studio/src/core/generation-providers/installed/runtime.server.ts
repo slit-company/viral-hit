@@ -1,3 +1,4 @@
+import { validateInstalledAudioInput } from './audio-input';
 import { resolveModelOptions } from '../model-controls';
 import { createProviderMediaContext } from '../local-media.server';
 import { validateInstalledAnalysisInput } from './analysis-input';
@@ -7,11 +8,11 @@ import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BaseAdapter, type EffectRecord, type GenerationResult } from '@/core/adapters/base-adapter';
 import { getViralHitDataRoot } from '@/config/data-root';
-import { MAX_LOCAL_IMAGE_ASSET_BYTES, MAX_LOCAL_VIDEO_ASSET_BYTES } from '@/core/effects/output-storage';
+import { MAX_LOCAL_IMAGE_ASSET_BYTES, MAX_LOCAL_VIDEO_ASSET_BYTES, MAX_LOCAL_AUDIO_ASSET_BYTES } from '@/core/effects/output-storage';
 import { providerResultSchema, type ProviderManifest, type ProviderModel } from './manifest';
 
 const SCHEME = 'viral-hit-provider:';
-const EXTENSIONS: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'video/mp4': 'mp4', 'video/webm': 'webm' };
+const EXTENSIONS: Record<string, string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp', 'video/mp4': 'mp4', 'video/webm': 'webm', 'audio/wav': 'wav', 'audio/mpeg': 'mp3', 'audio/ogg': 'ogg', 'audio/mp4': 'm4a', 'audio/aac': 'aac' };
 const MIME_TYPES = Object.fromEntries(Object.entries(EXTENSIONS).map(([mimeType, extension]) => [extension, mimeType]));
 const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 
@@ -89,7 +90,7 @@ export class InstalledProviderRuntime {
     if (model.kind === 'analysis') {
       if (result.media?.length) throw new Error('Analysis models return text, not media');
       if (result.status === 'succeeded' && !result.text && !result.report) throw new Error('A succeeded analysis needs text or a structured report');
-    } else if (result.text || result.report || (result.status === 'succeeded' && !result.media?.length)) throw new Error('Image/video models return media, not analysis text');
+    } else if (result.text || result.report || (result.status === 'succeeded' && !result.media?.length)) throw new Error('Image/video/audio models return media, not analysis text');
     const urls: string[] = [];
     for (const item of result.media ?? []) {
       if ('url' in item) { this.checkMediaUrl(item.url); urls.push(item.url); continue; }
@@ -105,7 +106,7 @@ export class InstalledProviderRuntime {
 
   /** Bytes a module returns are kept once by hash until the generation saves them as a project asset. */
   private async storeBytes(data: Uint8Array, mimeType: string) {
-    const limit = mimeType.startsWith('video/') ? MAX_LOCAL_VIDEO_ASSET_BYTES : MAX_LOCAL_IMAGE_ASSET_BYTES;
+    const limit = mimeType.startsWith('video/') ? MAX_LOCAL_VIDEO_ASSET_BYTES : mimeType.startsWith('audio/') ? MAX_LOCAL_AUDIO_ASSET_BYTES : MAX_LOCAL_IMAGE_ASSET_BYTES;
     if (data.byteLength === 0 || data.byteLength > limit) throw new Error('Returned media is empty or too large');
     const name = createHash('sha256').update(data).digest('hex') + '.' + EXTENSIONS[mimeType];
     const directory = join(getViralHitDataRoot(), 'provider-media', this.manifest.id);
@@ -142,6 +143,7 @@ export class InstalledProviderAdapter extends BaseAdapter {
   constructor(effect: EffectRecord, private readonly runtime: InstalledProviderRuntime) { super(effect); }
   createGeneration(input: unknown) {
     const model = this.runtime.manifest.models.find(item => item.id === this.effect.linkName);
+    if (this.effect.type === 4) validateInstalledAudioInput(input);
     if (this.effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs);
     const options = resolveModelOptions(model?.controls, (input as Record<string, unknown> | null)?.provider_options);
     return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId);

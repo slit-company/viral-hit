@@ -150,7 +150,7 @@ export const toRegisteredEffect = (
   return {
     id: binding.effectId,
     name: entry.name,
-    type: isImage ? 2 : 1,
+    type: isImage ? 2 : entry.workspaceType === 'ai-audio' ? 4 : 1,
     model: binding.upstreamModelId,
     version: null,
     linkName: entry.routeSlug ?? entry.id,

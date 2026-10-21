@@ -838,7 +838,7 @@ export function createViralHitMcpServer() {
     'viral_hit_generation_models',
     {
       description: 'List logical generation models and their current parameter/reference capabilities.',
-      inputSchema: z.object({ kind: z.enum(['image', 'video', 'analysis']).optional() }),
+      inputSchema: z.object({ kind: z.enum(['image', 'video', 'audio', 'analysis']).optional() }),
       annotations: { readOnlyHint: true },
     },
     withToolErrors(({ kind }) =>

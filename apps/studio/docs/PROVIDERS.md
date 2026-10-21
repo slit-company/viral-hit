@@ -42,7 +42,7 @@ providers/
     └── provider.mjs
 ```
 
-`provider.json` follows [provider.schema.json](../../../docs/schemas/provider.schema.json): `id` (equal to the folder name), `label`, `scope` (`general` for models that fit any project, `specialized` for one format, job, audience or brand), optional `author` and `license`, `entry` (the module file), `mediaHosts`, optional `environment` and `models`. `environment` is an array of required server variable names; never put values in it. Missing or blank values disable these models in discovery and reject generation preflight before uploads or task creation. Each model declares its id, name, `image` or `video`, aspect ratios, video durations, how many reference images it accepts and whether one is required. Model ids must not reuse a built-in or another provider's id.
+`provider.json` follows [provider.schema.json](../../../docs/schemas/provider.schema.json): `id` (equal to the folder name), `label`, `scope` (`general` for models that fit any project, `specialized` for one format, job, audience or brand), optional `author` and `license`, `entry` (the module file), `mediaHosts`, optional `environment` and `models`. `environment` is an array of required server variable names; never put values in it. Missing or blank values disable these models in discovery and reject generation preflight before uploads or task creation. Each model declares its id, name and output kind. Image/video models declare aspect ratios, video durations and supported reference images. [Audio models](../../../docs/AUDIO-PROVIDERS.md) declare `audio` with typed options and appear in Studio; [analysis models](../../../docs/ANALYSIS-PROVIDERS.md) declare their media input ranges. Model ids must not reuse a built-in or another provider's id.
 
 The module exports `createGeneration` and, for APIs that queue work, `checkStatus`:
 
@@ -57,7 +57,7 @@ export async function checkStatus({ model, taskId, signal }) {
 }
 ```
 
-Media comes back either as bytes (PNG, JPEG, WebP, MP4 or WebM) or as a URL on a host listed in `mediaHosts` (HTTPS, or HTTP for localhost). A URL on any other host fails the generation and is never downloaded. Unfinished work is checked by the same server poller as Cloud API tasks, and each task records its provider, so a restart or a later change of providers does not lose it.
+Media comes back either as bytes (PNG, JPEG, WebP, MP4, WebM or supported audio containers) or as a URL on a host listed in `mediaHosts` (HTTPS, or HTTP for localhost). A URL on any other host fails the generation and is never downloaded. Unfinished work is checked by the same server poller as Cloud API tasks, and each task records its provider, so a restart or a later change of providers does not lose it.
 
 [examples/providers/procedural-images](../../../examples/providers/procedural-images) is a working provider without dependencies: it draws a gradient from the prompt, instantly or as a queued task. Check a folder with `pnpm provider check <folder>`, see what an installation loads with `pnpm provider list`, and find folders that failed to load (with the reason) in the same list. The [Extensions screen, MCP tool and CLI report](../../../docs/EXTENSION-STATUS.md) also show setup requirements and load failures without importing modules. `provider check` explicitly imports the selected module; it can execute top-level code.
 

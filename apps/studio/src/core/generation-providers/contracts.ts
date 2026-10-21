@@ -10,7 +10,7 @@ export type GenerationProviderModelBinding = {
   controls?: ModelControl[];
   analysisInputs?: AnalysisInputs;
   /** Explicit output type/name for installed analysis models outside the image/video registry. */
-  kind?: 'image' | 'video' | 'analysis';
+  kind?: 'image' | 'video' | 'audio' | 'analysis';
   name?: string;
   /** Provider-local numeric id retained for existing DB/API compatibility. */
   effectId: number;

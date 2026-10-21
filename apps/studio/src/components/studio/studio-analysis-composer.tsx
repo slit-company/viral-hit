@@ -26,7 +26,7 @@ export function StudioAnalysisComposer({ projectId, analysis, isBusy, onMediaCha
       </div>}
       <textarea aria-label="Analysis prompt" placeholder="Describe what to review across the selected media." value={draft.prompt} disabled={disabled} onChange={event => analysis.update({ prompt: truncatePromptToMaxChars(event.target.value, 12_000) })} className="h-20 w-full resize-none bg-transparent text-sm leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-2)]" />
       <div className="flex min-w-0 flex-wrap items-center gap-2">
-        <WorkspaceSelect ariaLabel="Media type" value="analysis" options={[{ value: 'image', label: 'Image' }, { value: 'video', label: 'Video' }, { value: 'analysis', label: 'Analysis' }]} onChange={value => { if (!disabled) onMediaChange(value as StudioMedia); }} />
+        <WorkspaceSelect ariaLabel="Media type" value="analysis" options={[{ value: 'image', label: 'Image' }, { value: 'video', label: 'Video' }, { value: 'audio', label: 'Audio' }, { value: 'analysis', label: 'Analysis' }]} onChange={value => { if (!disabled) onMediaChange(value as StudioMedia); }} />
         <NativeSelect className="min-w-0 flex-1 basis-48 sm:max-w-80" aria-label="Analysis model" disabled={disabled} value={draft.modelId} onChange={event => analysis.update({ modelId: event.target.value })}>
           {!model && <option value={draft.modelId}>{draft.modelId} — unavailable</option>}
           {models.map(item => <option key={item.id} value={item.id} disabled={item.available === false}>{item.name}{item.available === false ? ' — not configured' : ''}</option>)}

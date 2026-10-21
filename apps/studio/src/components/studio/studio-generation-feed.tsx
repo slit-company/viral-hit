@@ -1,5 +1,5 @@
 import { Action } from '@/components/base/action';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, Music2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { composerCardClassName } from '@/components/app/composer-styles';
@@ -40,7 +40,7 @@ function StudioHistoryItem({
         className="flex flex-wrap items-center gap-2 text-left"
       >
         <span className={chipClassName}>
-          {isAnalysis ? t('analysis') : isVideo ? t('video') : t('image')}
+          {isAnalysis ? t('analysis') : item.mediaType === 'audio' ? 'Audio' : isVideo ? t('video') : t('image')}
         </span>
         <span className={chipClassName}>
           {item.modelName || item.modelId || t('result')}
@@ -56,7 +56,7 @@ function StudioHistoryItem({
         className="block text-left"
       >
         <div className="h-[240px] w-[min(100%,400px)] overflow-hidden rounded-[16px] bg-[var(--vh-control)]">
-          {isAnalysis && item.resultText ? (
+          {item.mediaType === 'audio' && previewUrl ? <div className="flex h-full flex-col items-center justify-center gap-3 p-5 text-sm text-[var(--vh-text-2)]"><Music2 size={32} /><span>Listen to generated audio</span></div> : isAnalysis && item.resultText ? (
             <div className="h-full overflow-hidden p-5">
               <p className="line-clamp-[8] whitespace-pre-wrap break-words text-[13px] leading-6 text-[var(--vh-text-2)]">
                 {item.resultText}
@@ -160,6 +160,8 @@ export function StudioGenerationFeed({
                       {selected.resultText || (selected.status === 'processing' ? t('generating') : t('failed'))}
                     </p>
                   </div>
+                ) : selected.mediaType === 'audio' && selected.resultUrl ? (
+                  <div className="flex w-full max-w-lg flex-col items-center gap-5"><Music2 size={40} /><audio aria-label="Generated audio" src={selected.resultUrl} controls preload="metadata" className="w-full" /><a href={selected.resultUrl} download className="text-sm underline underline-offset-4">Download audio</a></div>
                 ) : selected.mediaType === 'video' && selected.resultUrl ? (
                   <video
                     src={selected.resultUrl}
@@ -179,6 +181,8 @@ export function StudioGenerationFeed({
                   <span className={chipClassName}>
                     {selected.mediaType === 'analysis'
                       ? t('analysis')
+                      : selected.mediaType === 'audio'
+                        ? 'Audio'
                       : selected.mediaType === 'video'
                         ? t('video')
                         : t('image')}
@@ -195,7 +199,7 @@ export function StudioGenerationFeed({
                   ) : null}
                 </div>
                 <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
-                  <div className="flex h-[min(260px,34vh)] min-h-[180px] flex-col rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4">
+                  <div className={cn("flex flex-col rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4", selected.mediaType === 'audio' ? "max-h-44 min-h-24" : "h-[min(260px,34vh)] min-h-[180px]")}>
                     <p className="shrink-0 text-[13px] text-[var(--vh-text-3)]">
                       {t('prompt')}
                     </p>
@@ -214,15 +218,14 @@ export function StudioGenerationFeed({
                         {selected.modelName || selected.modelId || t('result')}
                       </span>
                     </div>
-                    <div className="flex items-start justify-between gap-6 py-3">
-                      <span className="text-sm text-[var(--vh-text-3)]">
-                        {t('params')}
-                      </span>
-                      <span className="text-right text-sm text-[var(--vh-text-1)]">
-                        {selected.paramsLabel || '—'}
-                      </span>
-                    </div>
+                    {selected.paramsLabel && <div className="flex items-start justify-between gap-6 py-3">
+                      <span className="text-sm text-[var(--vh-text-3)]">{t('params')}</span>
+                      <span className="text-right text-sm text-[var(--vh-text-1)]">{selected.paramsLabel}</span>
+                    </div>}
                   </div>
+                  {selected.modelOptions && <dl aria-label="Saved model options" className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] px-4 py-1">
+                    {Object.entries(selected.modelOptions.values).map(([key, value]) => <div key={key} className="grid min-w-0 grid-cols-2 gap-3 border-b border-[var(--vh-border)] py-3 text-sm last:border-0"><dt className="break-words text-[var(--vh-text-3)]">{key}</dt><dd className="min-w-0 break-words text-right text-[var(--vh-text-1)]">{String(value)}</dd></div>)}
+                  </dl>}
                   {selected.referenceImages.length > 0 ||
                   selected.referenceVideos.length > 0 ? (
                     <div className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4">

@@ -167,6 +167,7 @@ const listModels = (workspaceType: WorkspaceType): WorkspaceModelOption[] =>
 
 const WORKSPACE_LAUNCH_TARGET: Record<WorkspaceType, string> = {
   'ai-video': 'video',
+  'ai-audio': 'audio',
   'ai-image': 'image',
 };
 

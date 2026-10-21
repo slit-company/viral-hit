@@ -5,7 +5,7 @@ import {
 import { IMAGE_MODEL_ENTRIES } from './effect-registry-images';
 import { VIDEO_MODEL_ENTRIES } from './effect-registry-videos';
 
-export type WorkspaceRegistryType = 'ai-video' | 'ai-image';
+export type WorkspaceRegistryType = 'ai-video' | 'ai-image' | 'ai-audio';
 
 type WorkspaceRegistryModelMode = 'quality' | 'fast' | 'lite';
 type WorkspaceRegistryModelVariant = 'standard' | 'pro';

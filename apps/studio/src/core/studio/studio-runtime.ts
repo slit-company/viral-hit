@@ -3,13 +3,13 @@ import {
   type WorkspaceModelOption,
 } from '@/core/effects/workspace-models';
 
-export type StudioMedia = 'image' | 'video' | 'analysis';
+export type StudioMedia = 'image' | 'video' | 'audio' | 'analysis';
 
 export const getStudioModels = (media: StudioMedia) =>
   media === 'analysis'
     ? []
     :
-  getWorkspaceModelsByType(media === 'image' ? 'ai-image' : 'ai-video').filter(
+  getWorkspaceModelsByType(media === 'image' ? 'ai-image' : media === 'audio' ? 'ai-audio' : 'ai-video').filter(
     (model) => model.available !== false
   );
 
@@ -36,6 +36,7 @@ export function buildStudioEffectInput({
   language?: string;
   imageUrls?: string[];
 }): Record<string, unknown> {
+  if (media === 'audio') return { prompt: prompt.trim() };
   const input: Record<string, unknown> = {
     prompt: prompt.trim(),
     aspect_ratio: aspectRatio,

@@ -14,7 +14,7 @@ const hostname = z.string().regex(/^(?:[a-z0-9-]+\.)*[a-z0-9-]+(?::\d{1,5})?$/, 
 export const providerModelSchema = z.object({
   id: z.string().regex(/^[a-z0-9][a-z0-9.-]{1,63}$/, 'Use lowercase letters, numbers, dots and hyphens'),
   name: z.string().trim().min(1).max(80),
-  kind: z.enum(['image', 'video', 'analysis']),
+  kind: z.enum(['image', 'video', 'audio', 'analysis']),
   controls: modelControlsSchema.optional(),
   analysisInputs: analysisInputsSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
@@ -25,8 +25,9 @@ export const providerModelSchema = z.object({
   maxReferenceImages: z.number().int().min(0).max(30).default(0),
   requiresImageInput: z.boolean().default(false),
 }).strict().superRefine((model, ctx) => {
-  if (model.kind !== 'analysis' && !model.aspectRatios.length) ctx.addIssue({ code: 'custom', message: 'Image/video models require aspectRatios' });
+  if ((model.kind === 'image' || model.kind === 'video') && !model.aspectRatios.length) ctx.addIssue({ code: 'custom', message: 'Image/video models require aspectRatios' });
   if (model.kind === 'analysis' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, with no image-generation or output aspect-ratio settings' });
+  if (model.kind === 'audio' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Audio models use prompt/options without visual aspect ratios or reference-image settings' });
   if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });
   if (model.defaultAspectRatio && !model.aspectRatios.includes(model.defaultAspectRatio)) ctx.addIssue({ code: 'custom', message: 'defaultAspectRatio must be one of aspectRatios' });
   if (model.kind !== 'video' && model.durations) ctx.addIssue({ code: 'custom', message: 'Only video models have durations' });
@@ -68,7 +69,7 @@ export const providerResultSchema = z.object({
   taskId: z.string().min(1).max(200).optional(),
   media: z.array(z.union([
     z.object({ url: z.string().url().max(4096) }).strict(),
-    z.object({ data: z.instanceof(Uint8Array), mimeType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'video/webm']) }).strict(),
+    z.object({ data: z.instanceof(Uint8Array), mimeType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'video/webm', 'audio/wav', 'audio/mpeg', 'audio/ogg', 'audio/mp4', 'audio/aac']) }).strict(),
   ])).max(8).optional(),
   report: analysisReport.optional(),
   text: z.string().trim().min(1).max(128_000).optional(),

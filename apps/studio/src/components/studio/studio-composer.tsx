@@ -194,6 +194,7 @@ export function StudioComposer({
                     <Film className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
                   ),
                 },
+                { value: 'audio', label: 'Audio' },
                 {
                   value: 'analysis',
                   label: t('modeLabel'),
@@ -204,7 +205,7 @@ export function StudioComposer({
               ]}
               onChange={(type) =>
                 onMediaChange(
-                  type === 'analysis' ? 'analysis' : type === 'video' ? 'video' : 'image'
+                  type === 'analysis' ? 'analysis' : type === 'audio' ? 'audio' : type === 'video' ? 'video' : 'image'
                 )
               }
             />

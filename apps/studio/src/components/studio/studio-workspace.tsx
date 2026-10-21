@@ -1,3 +1,5 @@
+import { StudioAudioComposer } from './studio-audio-composer';
+import { useStudioAudio } from './use-studio-audio';
 import { StudioAnalysisComposer } from './studio-analysis-composer';
 import { useStudioAnalysis } from './use-studio-analysis';
 import { useEffect, useMemo, useState } from 'react';
@@ -91,6 +93,7 @@ export function StudioWorkspace({
   const initialMedia: StudioMedia =
     initialTarget === 'analysis'
       ? 'analysis'
+      : initialTarget === 'audio' ? 'audio'
       : initialTarget === 'video'
         ? 'video'
         : 'image';
@@ -113,6 +116,7 @@ export function StudioWorkspace({
   const [referenceUrls, setReferenceUrls] = useState<string[]>([]);
   const [error, setError] = useState('');
   const analysis = useStudioAnalysis({ projectId, initialModelId: initialMedia === 'analysis' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
+  const audio = useStudioAudio({ projectId, initialModelId: initialMedia === 'audio' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
   const models = draft.type === 'video' ? videoModels : imageModels;
   const selectedModel =
     findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
@@ -141,11 +145,12 @@ export function StudioWorkspace({
   const generation = useMutation({
     mutationFn: async () => {
       const isAnalysis = media === 'analysis';
-      if (!isAnalysis && !selectedModel) {
+      if (!isAnalysis && media !== 'audio' && !selectedModel) {
         throw new Error('No model is available for this media type.');
       }
       let request;
       if (isAnalysis) request = analysis.request();
+      else if (media === 'audio') request = audio.request();
       else {
         const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id });
         if (promptConstraints.required && !draft.prompt.trim()) throw new Error('Describe what you want to create first.');
@@ -203,7 +208,7 @@ export function StudioWorkspace({
     if (generation.isPending || analysis.busy) return;
     setMedia(nextMedia);
     setReferenceUrls([]);
-    if (nextMedia === 'analysis') return;
+    if (nextMedia === 'analysis' || nextMedia === 'audio') return;
     const nextType = nextMedia === 'video' ? 'video' : 'image';
     const nextModels = nextType === 'video' ? videoModels : imageModels;
     const nextModel = nextModels[0] ?? null;
@@ -229,6 +234,7 @@ export function StudioWorkspace({
               items={feedItems}
               onReuse={(item) => {
                 if (generation.isPending || analysis.busy) return;
+                if (item.mediaType === 'audio') { setMedia('audio'); audio.reuse(item); return; }
                 if (item.mediaType === 'analysis') { setMedia('analysis'); void analysis.reuse(item); return; }
                 const next = applyStudioHistoryItem({
                   item,
@@ -248,7 +254,7 @@ export function StudioWorkspace({
         )}
       </div>
 
-      {media === 'analysis' ? <StudioAnalysisComposer projectId={projectId} analysis={analysis} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : <StudioComposer
+      {media === 'audio' ? <StudioAudioComposer audio={audio} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : media === 'analysis' ? <StudioAnalysisComposer projectId={projectId} analysis={analysis} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : <StudioComposer
         draft={draft}
         media={media}
         imageModels={imageModels}

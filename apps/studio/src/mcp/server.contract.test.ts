@@ -9,7 +9,7 @@ import {
   runCanvasGenerationSubmissionOnce,
 } from './generation-canvas';
 
-const source = ['./server.ts', './publishing-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts', './character-tools.ts', './creative-pack-tools.ts', './extension-tools.ts', './community-tools.ts', './storyboard-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
+const source = ['./server.ts', './asset-generation-tools.ts', './publishing-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts', './character-tools.ts', './creative-pack-tools.ts', './extension-tools.ts', './community-tools.ts', './storyboard-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
 
 test('MCP registers Canvas, Generation, Editor, Publishing and project file tool groups', () => {
   for (const tool of VIRAL_HIT_MCP_TOOL_NAMES) {
@@ -32,7 +32,7 @@ test('MCP writes use a fixed origin and never expose document replacement', () =
   assert.doesNotMatch(source, /saveProjectTimeline/);
 });
 
-test('external generation requires a reviewed Canvas node before provider submission', () => {
+test('Canvas generation requires a reviewed node before provider submission', () => {
   assert.match(source, /submitAssetFirstGeneration/);
   assert.match(source, /sourceCardId: idSchema/);
   assert.match(source, /prepareCanvasGenerationSubmission/);

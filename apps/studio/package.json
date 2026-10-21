@@ -53,6 +53,7 @@
     "character": "tsx scripts/character.ts",
     "skill": "tsx scripts/skill.ts",
     "provider": "tsx scripts/provider.ts",
+    "generation": "tsx scripts/generation.ts",
     "creative-pack": "tsx scripts/creative-pack.ts",
     "extensions": "tsx scripts/extensions.ts",
     "community": "tsx scripts/community.ts",

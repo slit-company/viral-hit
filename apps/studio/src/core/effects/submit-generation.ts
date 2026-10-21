@@ -152,7 +152,7 @@ export async function submitEffectGeneration({
   ) {
     return { status: 404, body: { error: 'Model not found' } };
   }
-  if (effect.type !== 1 && effect.type !== 2 && effect.type !== 3) {
+  if (effect.type !== 1 && effect.type !== 2 && effect.type !== 3 && effect.type !== 4) {
     return { status: 400, body: { error: 'Unsupported task type.' } };
   }
 
@@ -204,7 +204,7 @@ export async function submitEffectGeneration({
       id: effect.provider,
       modelId: binding?.modelId ?? effect.model,
       upstreamModelId: effect.model,
-      kind: effect.type === 3 ? 'analysis' : effect.type === 2 ? 'image' : 'video',
+      kind: effect.type === 3 ? 'analysis' : effect.type === 2 ? 'image' : effect.type === 4 ? 'audio' : 'video',
       name: effect.name,
       effectId,
     },

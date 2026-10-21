@@ -36,6 +36,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_comfy_connection',
   'viral_hit_recipe_library',
   'viral_hit_recipe_check',
+  'viral_hit_asset_generation',
   'viral_hit_publication_list',
   'viral_hit_publication_change',
   'viral_hit_project_file_export',

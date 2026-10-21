@@ -23,7 +23,7 @@ export type ProjectGenerationItem = {
   prompt: string | null;
   modelId: string | null;
   modelName: string | null;
-  mediaType: 'image' | 'video' | 'analysis';
+  mediaType: 'image' | 'video' | 'audio' | 'analysis';
   resultUrl: string | null;
   resultText: string | null;
   paramsLabel: string | null;
@@ -132,9 +132,10 @@ export const toProjectGenerationItem = (
       readString(input?.model) ??
       entry?.id ??
       (isAnalysis ? 'video-analysis' : null),
-    modelName: entry?.name ?? (providerIdentity?.kind === 'analysis' ? readString(providerIdentity.name) : null) ?? (isAnalysis ? analysisModelName : null),
+    modelName: entry?.name ?? (providerIdentity?.kind === 'analysis' || providerIdentity?.kind === 'audio' ? readString(providerIdentity.name) : null) ?? (isAnalysis ? analysisModelName : null),
     mediaType: isAnalysis
       ? 'analysis'
+      : providerIdentity?.kind === 'audio' || entry?.workspaceType === 'ai-audio' ? 'audio'
       : entry?.workspaceType === 'ai-image'
         ? 'image'
         : 'video',

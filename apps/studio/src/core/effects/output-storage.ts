@@ -20,6 +20,7 @@ export const didOutputStorageSyncFail = (_output?: unknown) => false;
 export const shouldRetryOutputStorageSync = (_input?: unknown) => false;
 
 export const MAX_LOCAL_IMAGE_ASSET_BYTES = 25 * 1024 * 1024;
+export const MAX_LOCAL_AUDIO_ASSET_BYTES = 64 * 1024 * 1024;
 export const MAX_LOCAL_VIDEO_ASSET_BYTES = 100 * 1024 * 1024;
 export const LOCAL_MEDIA_DOWNLOAD_TIMEOUT_MS = 180_000;
 
@@ -43,7 +44,7 @@ const filenameFromUrl = (url: string, type: AssetType) => {
   } catch {
     // Fall through to a stable local filename.
   }
-  return type === 'video' ? 'generated-video.mp4' : 'generated-image.png';
+  return type === 'video' ? 'generated-video.mp4' : type === 'audio' ? 'generated-audio.wav' : 'generated-image.png';
 };
 
 const replaceMediaUrls = (
@@ -96,6 +97,8 @@ export const buildOutputStoragePlan = ({
   if (effectType === 1) {
     appendMedia('video', 'output', [...media.videoUrls, media.resultUrl]);
     appendMedia('image', 'thumbnail', [...media.coverUrls, media.coverUrl]);
+  } else if (effectType === 4) {
+    appendMedia('audio', 'output', [...media.resultUrls, media.resultUrl]);
   } else {
     appendMedia(
       'image',
@@ -151,15 +154,17 @@ export async function persistEffectOutputIfNeeded({
     const maxBytes =
       type === 'video'
         ? MAX_LOCAL_VIDEO_ASSET_BYTES
-        : MAX_LOCAL_IMAGE_ASSET_BYTES;
+        : type === 'audio' ? MAX_LOCAL_AUDIO_ASSET_BYTES : MAX_LOCAL_IMAGE_ASSET_BYTES;
     const declaredLength = Number(response.headers.get('content-length'));
     if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
       throw new Error('Generated media is too large to save locally');
     }
     const bytes = await readResponseBodyWithLimit(response, maxBytes);
-    const fallbackMimeType = type === 'video' ? 'video/mp4' : 'image/png';
+    const fallbackMimeType = type === 'video' ? 'video/mp4' : type === 'audio' ? 'audio/wav' : 'image/png';
     const responseMimeType =
       response.headers.get('content-type')?.split(';')[0]?.trim() || '';
+    if (type === 'audio' && !responseMimeType.startsWith('audio/')) throw new Error('An audio model must return an audio content type');
+    if (type === 'audio' && bytes.byteLength === 0) throw new Error('Generated audio is empty');
     const mimeType = responseMimeType.startsWith(`${type}/`)
       ? responseMimeType
       : fallbackMimeType;

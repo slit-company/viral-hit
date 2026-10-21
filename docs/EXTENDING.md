@@ -210,4 +210,8 @@ Installed generation providers can opt into `referenceDelivery: "project-media"`
 
 Independent models can declare typed [model options](MODEL-OPTIONS.md), shared by metadata discovery, Canvas/Studio forms and server admission.
 
-Analysis providers can declare [image/video/audio input ranges](ANALYSIS-PROVIDERS.md#declare-accepted-media). Canvas source selection, MCP discovery and asset-first admission use those declarations; omitting them preserves the one-video contract. The optional [batch inspector](../examples/providers/media-batch-inspector/README.md) exercises real local mixed-media processing without a model download. Multi-source text reports do not yet carry source-specific timed storyboard observations.
+Analysis providers can declare [image/video/audio input ranges](ANALYSIS-PROVIDERS.md#declare-accepted-media). Canvas source selection, MCP discovery and asset-first admission use those declarations; omitting them preserves the one-video contract. The optional [batch inspector](../examples/providers/media-batch-inspector/README.md) exercises real local mixed-media processing without a model download. Versioned [structured reports](STRUCTURED-ANALYSIS.md) carry source-specific observations into reviewed storyboard preparation; semantic model quality remains independently evaluated.
+
+## Add an audio model
+
+[Independent audio providers](AUDIO-PROVIDERS.md) declare `kind: "audio"` and typed model options. Studio, MCP and CLI share admission, single-use intents, polling and project asset storage. General and specialized models use the same interface. The optional procedural example returns real WAV; speech/music quality, reference conditioning and Canvas audio generation nodes remain separate work.

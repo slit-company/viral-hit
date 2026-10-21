@@ -89,6 +89,7 @@
             "enum": [
               "image",
               "video",
+              "audio",
               "analysis"
             ]
           },
