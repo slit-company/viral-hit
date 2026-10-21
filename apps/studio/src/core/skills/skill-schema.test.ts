@@ -21,7 +21,7 @@ test('the published skill.json schema matches the runtime contract and accepts e
     assert.ok(validate(manifest), entry.name + ': ' + JSON.stringify(validate.errors?.slice(0, 3)));
     checked++;
   }
-  assert.equal(checked, 3);
+  assert.equal(checked, 4);
   const official = JSON.parse(await readFile('skills/official/recipe-packs/skill.json', 'utf8'));
   assert.equal(validate({ ...official, scope: 'everyone' }), false);
 });

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "storyboard",
+  "version": "1.0.0",
+  "title": "Storyboard director",
+  "summary": "Plan general or specialized multi-shot work from owned references, review individual results and assemble an editable sequence.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": ["viral_hit_storyboard", "viral_hit_recipes_list"]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    { "id": "intent", "label": "Creative intent", "description": "Audience, format, desired duration and what to preserve or change.", "kind": "text", "required": true }
+  ],
+  "stages": [
+    { "id": "plan", "title": "Plan shots", "description": "Inspect source media and author explicit observations, directions and recipe inputs.", "reviewRequired": true },
+    { "id": "generate", "title": "Generate selected shots", "description": "Use stable requests and inspect real results before acceptance.", "reviewRequired": true },
+    { "id": "assemble", "title": "Build an editable sequence", "description": "Prepare accepted shots and attach with the current timeline revision, then export and review.", "reviewRequired": true }
+  ],
+  "showcase": { "category": "workflows", "tags": ["storyboard", "video", "references"], "featured": true }
+}

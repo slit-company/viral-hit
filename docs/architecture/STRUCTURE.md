@@ -14,6 +14,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/projects/`, `src/core/editor/`, `src/core/creative-canvas/` | Project, asset, timeline and canvas behavior; pure contracts beside their owners | Imports from UI or routes |
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
 | `src/core/references/` | Explicit source acquisition, verified original and sampled-frame project assets | Inbox session management, sending messages, pretending previews are full media |
+| `src/core/storyboards/` | Revisioned creative plans, source observations, accepted shot identities and orchestration through existing runs/sequences | A second execution engine, invented visual inspection or brand-specific format constraints |
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, unchecked cross-library overwrite or silent runtime installation |
 | `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
 | `src/core/community/` | Bounded independent catalog metadata, review diffs and local snapshots | Artifact execution/installation, background network discovery or a second package library |
@@ -80,3 +81,5 @@ Recipe-pack maintenance follows [the atomic composition lifecycle](PACK-LIFECYCL
 Creative-pack releases follow [the composition lifecycle](CREATIVE-PACK-LIFECYCLE.md): explicit selected replacements through library owners, partial recovery with fresh review, immutable historical exports and removal that retains reusable contents.
 
 Managed executable releases follow [the runtime package decision](RUNTIME-PACKAGES.md). Runtime owners consume captured source through their existing contracts; lifecycle changes never execute source and require coordinated process restart.
+
+Project storyboards follow [the planning boundary](STORYBOARDS.md): retain reference context and exact shot definitions, reserve pinned actions before enqueue, explicitly accept results, then hand editable sequences to the existing worker and editor.

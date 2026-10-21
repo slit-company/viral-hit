@@ -77,6 +77,9 @@ Built-in [editable sequences](docs/EDITABLE-SEQUENCES.md) let any workflow prepa
 
 Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE.md). Runs includes portable YouTube collection and project-video sampling recipes, with five frame previews and timeline attachment. CLI also accepts explicit Instagram direct-video items. Independent adapters can consume the resulting project video; automatic Instagram inbox collection remains pending.
 
+Use [storyboards](docs/STORYBOARDS.md) to keep a general or specialized shot plan, reference observations and accepted results together. MCP/CLI/API can generate selected shots through independently authored recipes, resume pinned attempts, and assemble accepted media into an editable sequence. The bundled Storyboard director skill guides the workflow; browser planning and automatic visual analysis remain pending.
+
+
 Manage optional YouTube and Instagram connections from the workspace header or `/connections`. Operator-configured Google and Meta login keep credentials encrypted on the server; Instagram requires an explicit Page-linked account selection. Connecting does not publish. Each project now has a Publish screen for retained-video review, explicit revision-bound approval and delivery status, backed by a separate resumable upload worker. YouTube and Instagram Reels/video Stories share this flow. Instagram supports local scheduling; images/carousels and live-provider verification remain pending. See [publishing setup and status](docs/PUBLISHING.md).
 
 Share recipes, skills and character reference images together through **Packs**. [Creative packs](docs/CREATIVE-PACKS.md) support both general toolkits and specialized setups, with reviewed installation and portable files.

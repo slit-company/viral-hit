@@ -40,7 +40,7 @@ test('reviewed skill files install atomically, are immediately discoverable, exp
     assert.throws(() => validateSkillFile({ ...file, instructions: '가'.repeat(200_000) }), /too large/);
     assert.throws(() => validateSkillFile({ ...file, entry: 'run.sh' }));
     const registry = await getSkillRegistry();
-    assert.deepEqual(registry.catalog().skills.map(skill => skill.source).sort(), ['installed', 'official', 'official']);
+    assert.deepEqual(registry.catalog().skills.map(skill => skill.source).sort(), ['installed', 'official', 'official', 'official']);
   } finally {
     if (previous === undefined) delete process.env.VIRAL_HIT_DATA_DIR; else process.env.VIRAL_HIT_DATA_DIR = previous;
     await rm(root, { recursive: true, force: true });

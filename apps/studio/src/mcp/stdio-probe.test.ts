@@ -143,6 +143,7 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
       ['consistent-characters', 'official', 'general', true],
       ['product-ad-shots', 'local', 'specialized', true],
       ['recipe-packs', 'official', 'general', true],
+      ['storyboard', 'official', 'general', true],
     ]);
     assert.deepEqual(catalog.problems, []);
 
@@ -156,7 +157,7 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     const skillPayload = listedSkills.result as {
       structuredContent?: { result?: { skills?: { manifest: { id: string } }[] } };
     };
-    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), ['consistent-characters', 'product-ad-shots', 'recipe-packs']);
+    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), ['consistent-characters', 'product-ad-shots', 'recipe-packs', 'storyboard']);
 
     send(child, {
       jsonrpc: '2.0',

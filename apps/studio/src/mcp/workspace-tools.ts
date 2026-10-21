@@ -6,6 +6,7 @@ import { registerCreativePackTools } from './creative-pack-tools';
 import { registerExtensionTools } from './extension-tools';
 import { registerCommunityTools } from './community-tools';
 import { registerCharacterTools } from './character-tools';
+import { registerStoryboardTools } from './storyboard-tools';
 /** Registration seam for project transfer, recipe pack, character and delivery tools. */
 export function registerWorkspaceTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   registerPublishingTools(server, project);
@@ -15,4 +16,5 @@ export function registerWorkspaceTools(server: McpServer, project: (projectId?: 
   registerCreativePackTools(server);
   registerExtensionTools(server);
   registerCommunityTools(server);
+  registerStoryboardTools(server, project);
 }
