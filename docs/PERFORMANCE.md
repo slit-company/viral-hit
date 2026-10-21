@@ -93,3 +93,10 @@ The optional technical inspector streams at most 64 MiB into a private temporary
 The final public bundle remains **204 files / 8,556,038 bytes**, **1,988,094 raw JavaScript bytes / 586,862 summed gzip bytes**, with no increase over independent analysis. No default dependency, service or poller was added. Existing 10 MB/600 KB gates pass.
 
 Project-media preflight now verifies content with a reusable 64 KiB buffer. A module reads only requested verified copies: 64 MiB per input, 256 MiB across at most 20 unique references, and 256 MiB cumulative returned bytes per create call. These are interface bounds, not whole-process RAM measurements. Revalidation deliberately rereads sources before invocation and on each read. Async providers must retain necessary inputs before returning a task ID. The inspector makes a temporary copy for FFprobe and restricts demuxing to local file/pipe protocols and supported video containers. Actual small-media processing and restart persistence passed; large-project throughput and representative model performance remain unmeasured. This supersedes the preceding limitation that all local model-provider inputs need managed uploads.
+
+
+## Structured analysis handoff — 2026-10-22
+
+Final build: **204 public files / 8,560,884 bytes**, **1,992,915 raw JavaScript bytes / 587,740 individually gzipped JavaScript bytes**. The increase is **878 gzip bytes** over local provider media; unchanged 10 MB/600 KB gates pass. No default dependency, model service, worker or background poller was added.
+
+A report is bounded to 256 KB UTF-8 and 64 observations. Discovery examines at most 100 recent completed generations and discloses older candidates; preparation selects at most 16 observations and rejects a draft that cannot fit the existing storyboard storage bound. Source bytes are verified and probed only when preparing a draft. These bounds and bundle measurements are not a large-history latency, whole-process memory or competitor benchmark.

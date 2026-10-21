@@ -1,3 +1,4 @@
+import { prepareAnalysis } from './analysis-input';
 import { z } from 'zod';
 import { prepareReference, referenceEvidence } from './reference-input';
 
@@ -55,6 +56,8 @@ export const storyboardRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
   z.object({ action: z.literal('reference-sources') }).strict(),
   prepareReference,
+  z.object({ action: z.literal('analysis-sources') }).strict(),
+  prepareAnalysis,
   z.object({ action: z.literal('read'), id: storyboardId, revision: revision.optional() }).strict(),
   z.object({ action: z.literal('save'), id: storyboardId, expectedRevision: revision, plan: storyboardPlan }).strict(),
   z.object({ action: z.literal('generate'), id: storyboardId, expectedRevision: revision, shotId: storyboardId, requestId: z.string().uuid() }).strict(),

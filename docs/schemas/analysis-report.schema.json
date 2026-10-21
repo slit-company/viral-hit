@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "observations": {
+      "minItems": 1,
+      "maxItems": 64,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,39}$"
+          },
+          "start": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3600,
+            "multipleOf": 0.001
+          },
+          "end": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 3600,
+            "multipleOf": 0.001
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4000
+          },
+          "proposal": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "direction": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 4000
+              },
+              "duration": {
+                "type": "number",
+                "minimum": 0.01,
+                "maximum": 3600
+              },
+              "preserve": {
+                "default": [],
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                }
+              },
+              "change": {
+                "default": [],
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                }
+              },
+              "avoid": {
+                "default": [],
+                "maxItems": 20,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 4000
+                }
+              },
+              "caption": {
+                "default": "",
+                "type": "string",
+                "maxLength": 4000
+              }
+            },
+            "required": [
+              "title",
+              "direction"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "start",
+          "end",
+          "description"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "summary",
+    "observations"
+  ],
+  "additionalProperties": false
+}

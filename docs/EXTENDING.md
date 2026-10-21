@@ -205,3 +205,5 @@ Installed recipe-only packs can publish same-ID releases through [reviewed pack 
 ## Local model inputs
 
 Installed generation providers can opt into `referenceDelivery: "project-media"` to consume verified project files through `readMedia`, without a cloud upload dependency. Use the same contract for general models and specialized processors. See [local provider media](architecture/LOCAL-PROVIDER-MEDIA.md) for limits, reader lifetime, queued-job behavior and the trust boundary. The optional [technical inspector](../examples/providers/media-inspector/README.md) is a standalone implementation using this interface.
+
+[Structured analysis reports](STRUCTURED-ANALYSIS.md) let independent providers supply timed observations and optional editable shot proposals. General and specialized outputs use the same versioned schema and reviewed storyboard handoff, with original-source verification and retained generation fingerprints.

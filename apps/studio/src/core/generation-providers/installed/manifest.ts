@@ -1,3 +1,4 @@
+import { analysisReport } from '../analysis-report';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
@@ -64,10 +65,12 @@ export const providerResultSchema = z.object({
     z.object({ url: z.string().url().max(4096) }).strict(),
     z.object({ data: z.instanceof(Uint8Array), mimeType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'video/webm']) }).strict(),
   ])).max(8).optional(),
+  report: analysisReport.optional(),
   text: z.string().trim().min(1).max(128_000).optional(),
   error: z.string().max(1000).optional(),
 }).strict().superRefine((result, ctx) => {
-  if (result.status === 'succeeded' && !result.media?.length && !result.text) ctx.addIssue({ code: 'custom', message: 'A succeeded result needs media or analysis text' });
+  if (result.status === 'succeeded' && !result.media?.length && !result.text && !result.report) ctx.addIssue({ code: 'custom', message: 'A succeeded result needs media or analysis text' });
+  if (result.report && result.status !== 'succeeded') ctx.addIssue({ code: 'custom', message: 'Structured reports require succeeded status' });
   if ((result.status === 'processing' || result.status === 'pending') && !result.taskId) ctx.addIssue({ code: 'custom', message: 'An unfinished result needs a taskId to check later' });
 });
 export type ProviderResult = z.infer<typeof providerResultSchema>;

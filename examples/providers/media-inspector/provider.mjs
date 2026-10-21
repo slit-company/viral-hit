@@ -68,6 +68,12 @@ export async function createGeneration({ model, input, signal, readMedia }) {
     }
     lines.push('Limits: no visual, dialogue, timing-quality or platform-policy review. Nominal frame rate does not establish constant cadence. No pixels/audio were assessed for creative quality.');
     lines.push('Requested focus (recorded, not interpreted by this processor): ' + String(input.prompt).slice(0, 12_000));
-    return { status: 'succeeded', text: lines.join('\n') };
+    const end = Math.round(duration * 1000) / 1000;
+    const structuredReport = end >= .01 && end <= 3600 ? {
+      schemaVersion: 1, summary: 'Measured file metadata; inspect the source before making creative decisions.',
+      observations: [{ id: 'whole-video', start: 0, end,
+        description: `${video.width} × ${video.height} ${video.codec_name} video, ${duration.toFixed(3)} seconds, ${audio.length} audio stream(s). No scene or narrative interpretation was performed.` }],
+    } : undefined;
+    return { status: 'succeeded', text: lines.join('\n'), ...(structuredReport ? { report: structuredReport } : {}) };
   } finally { await rm(directory, { recursive: true, force: true }); }
 }

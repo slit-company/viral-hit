@@ -45,10 +45,10 @@ const sourcePath = join(directory, 'source.mp4');
 execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'color=c=orange:s=180x320:r=12:d=1', '-f', 'lavfi', '-i', 'sine=frequency=220:duration=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', sourcePath]);
 const video = await readFile(sourcePath);
 const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z+uIAAAAASUVORK5CYII=', 'base64');
-async function fixture(kind: 'video' | 'image' = 'video') {
+async function fixture(kind: 'video' | 'image' = 'video', videoBytes: Uint8Array = video) {
   const project = await createProject({ name: 'Local provider input' });
   const mimeType = kind === 'video' ? 'video/mp4' : 'image/png';
-  const saved = await persistLocalProjectAsset({ projectId: project.id, filename: kind === 'video' ? 'input.mp4' : 'input.png', mimeType, bytes: kind === 'video' ? video : png });
+  const saved = await persistLocalProjectAsset({ projectId: project.id, filename: kind === 'video' ? 'input.mp4' : 'input.png', mimeType, bytes: kind === 'video' ? videoBytes : png });
   await recordUserAsset({ id: saved.assetId, type: kind, source: 'upload', bucket: 'local-project-assets', storageProvider: 'local', objectKey: saved.objectKey, publicUrl: saved.publicUrl, sha256: saved.sha256, sizeBytes: saved.sizeBytes, filename: saved.filename, mimeType });
   await linkProjectAsset({ projectId: project.id, assetId: saved.assetId, role: 'upload' });
   const request = normalizeAssetFirstGenerationRequest({ version: 2, projectId: project.id, mode: kind === 'video' ? 'analysis' : 'image', modelId: kind === 'video' ? 'vertical-delivery-review' : 'local-image-copy', prompt: 'Check this original', references: [{ assetId: saved.assetId, role: 'reference' }], parameters: kind === 'video' ? {} : { aspect_ratio: '1:1', _referenceProjectId: 'forged-caller-project' } });
@@ -130,4 +130,55 @@ test('runtime closes readers even on module failure and never gives them to poll
   assert.equal((await runtime.call('checkStatus', effect, { taskId: 'test' })).error, 'Reader correctly closed');
   const invalid = new InstalledProviderRuntime(manifest, 'throw Error("Module executed before validation");');
   assert.match((await invalid.call('createGeneration', effect, { input: { imageUrls: [url] } }, 'other-project')).error!, /authorized local reference/);
+});
+
+test('real structured analysis prepares an unsaved plan and saves through the same revision boundary', async () => {
+  const { request, saved } = await fixture();
+  const { changeStoryboards } = await import('../storyboards/service.server');
+  const { listAnalysisSources } = await import('../storyboards/analysis.server');
+  const result = await submitAssetFirstGeneration({ generation: request, origin: 'mcp' });
+  assert.equal(result.body.status, 'succeeded');
+  const [source] = (await listAnalysisSources(request.projectId)).sources;
+  assert.equal(source.generationId, result.body.wmTaskId); assert.equal(source.assetId, saved.assetId);
+  const prepared = await changeStoryboards(request.projectId, { action: 'prepare-analysis', analysis: { generationId: source.generationId, outputSha256: source.outputSha256 }, observationIds: ['whole-video'], title: 'Technical review plan', intent: 'Review the original framing', scope: 'specialized' }) as { plan: import('../storyboards/contract').StoryboardPlan };
+  assert.equal(prepared.plan.references[0].evidence?.kind, 'provider-analysis');
+  assert.match(prepared.plan.references[0].observation, /180 × 320/);
+  assert.deepEqual(await changeStoryboards(request.projectId, { action: 'list' }), []);
+  const state = await changeStoryboards(request.projectId, { action: 'save', id: 'technical-plan', expectedRevision: 0, plan: prepared.plan }) as { revision: number; accepted: unknown };
+  assert.equal(state.revision, 1); assert.deepEqual(state.accepted, {});
+});
+
+test('report handoff rejects changed reports, foreign projects and changed source content', async () => {
+  const { request, saved } = await fixture();
+  const { changeStoryboards } = await import('../storyboards/service.server');
+  const { listAnalysisSources } = await import('../storyboards/analysis.server');
+  const { getGenerationById, updateGenerationById } = await import('../effects/record-generation');
+  await submitAssetFirstGeneration({ generation: request, origin: 'ui' });
+  const [source] = (await listAnalysisSources(request.projectId)).sources;
+  const prepare = { action: 'prepare-analysis', analysis: { generationId: source.generationId, outputSha256: source.outputSha256 }, observationIds: ['whole-video'], title: 'Review', intent: 'A general study', scope: 'general' };
+  const foreign = await createProject({ name: 'Foreign report project' });
+  assert.deepEqual((await listAnalysisSources(foreign.id)).sources, []);
+  await assert.rejects(changeStoryboards(foreign.id, prepare), /another project/);
+  const generation = await getGenerationById({ id: source.generationId });
+  const output = generation!.output as { analysis_report: { summary: string } };
+  await updateGenerationById({ id: source.generationId, status: 'succeeded', output: { ...output, analysis_report: { ...output.analysis_report, summary: 'Altered report' } } });
+  await assert.rejects(changeStoryboards(request.projectId, prepare), /changed/);
+  await updateGenerationById({ id: source.generationId, status: 'succeeded', output });
+  await writeFile(saved.filePath, Buffer.alloc(saved.sizeBytes));
+  await assert.rejects(changeStoryboards(request.projectId, prepare), /hash changed/);
+});
+
+
+test('fractional container durations use the editor millisecond timebase and remain savable', async () => {
+  const path = join(directory, 'fractional.mp4');
+  execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v','error','-f','lavfi','-i','color=c=orange:s=180x320:r=3','-frames:v','1','-c:v','libx264','-pix_fmt','yuv420p',path]);
+  const {request} = await fixture('video', await readFile(path));
+  const result = await submitAssetFirstGeneration({generation:request,origin:'mcp'});
+  assert.equal(result.body.status,'succeeded',JSON.stringify(result));
+  const {changeStoryboards} = await import('../storyboards/service.server');
+  const {listAnalysisSources} = await import('../storyboards/analysis.server');
+  const [source] = (await listAnalysisSources(request.projectId)).sources;
+  const prepared = await changeStoryboards(request.projectId,{action:'prepare-analysis',analysis:{generationId:source.generationId,outputSha256:source.outputSha256},observationIds:['whole-video'],title:'Fractional source',intent:'Retain the measured interval',scope:'general'}) as {plan:import('../storyboards/contract').StoryboardPlan};
+  assert.equal(prepared.plan.references[0].endTime,.333);
+  await changeStoryboards(request.projectId,{action:'save',id:'fractional',expectedRevision:0,plan:prepared.plan});
 });

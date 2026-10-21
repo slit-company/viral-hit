@@ -19,10 +19,16 @@ test('the independent inspector measures real encoded media and bounds downloads
   try {
     execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', 'color=c=orange:s=180x320:r=12:d=1', '-f', 'lavfi', '-i', 'sine=frequency=220:duration=1', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', sourcePath]);
     const bytes = await readFile(sourcePath);
+    const extra = new Map<string, Buffer>();
+    for (const [name, rate] of [['short', '120'], ['long', '1/7200']]) {
+      const file = join(directory, name + '.mp4');
+      execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v','error','-f','lavfi','-i','color=c=orange:s=180x320:r='+rate,'-frames:v','1','-c:v','libx264','-pix_fmt','yuv420p',file]);
+      extra.set('/'+name, await readFile(file));
+    }
     server = createServer((req, res) => {
       if (req.url === '/large') { res.writeHead(200, { 'content-length': String(65 * 1024 * 1024) }); res.end(); }
       else if (req.url === '/redirect') { res.writeHead(302, {location:'/source'}); res.end(); }
-      else res.end(bytes);
+      else res.end(extra.get(req.url ?? '') ?? bytes);
     });
     await new Promise<void>(resolve => server!.listen(0, '127.0.0.1', resolve));
     const address = server.address(); assert.ok(address && typeof address !== 'string');
@@ -38,6 +44,12 @@ test('the independent inspector measures real encoded media and bounds downloads
     assert.match(text, /180 × 320/); assert.match(text, /approximately 9:16/); assert.match(text, /Audio: 1 stream/);
     assert.ok(text.includes(createHash('sha256').update(bytes).digest('hex')));
     assert.match(text, /not interpreted/); assert.match(text, /no visual/);
+    for (const path of ['/short', '/long']) {
+      const result = await runtime.call('createGeneration', effect, {input:{videoUrl:url+path,prompt:'Check bounds'}});
+      assert.equal(result.status, 'succeeded', JSON.stringify(result));
+      assert.equal((result.output as {analysis_report?:unknown}).analysis_report, undefined);
+      assert.match((result.output as {analysis_text:string}).analysis_text, /measured file metadata/);
+    }
     for (const path of ['/large', '/redirect']) assert.equal((await runtime.call('createGeneration', effect, {input:{videoUrl:url+path, prompt:'Check'}})).status, 'failed');
   } finally {
     if (server) { server.closeAllConnections(); await new Promise<void>(resolve => server!.close(() => resolve())); }

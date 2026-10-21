@@ -87,8 +87,8 @@ export class InstalledProviderRuntime {
     const result = providerResultSchema.parse(raw);
     if (model.kind === 'analysis') {
       if (result.media?.length) throw new Error('Analysis models return text, not media');
-      if (result.status === 'succeeded' && !result.text) throw new Error('A succeeded analysis needs text');
-    } else if (result.text || (result.status === 'succeeded' && !result.media?.length)) throw new Error('Image/video models return media, not analysis text');
+      if (result.status === 'succeeded' && !result.text && !result.report) throw new Error('A succeeded analysis needs text or a structured report');
+    } else if (result.text || result.report || (result.status === 'succeeded' && !result.media?.length)) throw new Error('Image/video models return media, not analysis text');
     const urls: string[] = [];
     for (const item of result.media ?? []) {
       if ('url' in item) { this.checkMediaUrl(item.url); urls.push(item.url); continue; }
@@ -97,7 +97,7 @@ export class InstalledProviderRuntime {
     }
     return {
       status: result.status,
-      output: { ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text ? { analysis_text: result.text } : {}) },
+      output: { ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text || result.report ? { analysis_text: result.text ?? result.report!.summary } : {}), ...(result.report ? { analysis_report: result.report } : {}) },
       ...(result.error ? { error: result.error } : {}),
     };
   }

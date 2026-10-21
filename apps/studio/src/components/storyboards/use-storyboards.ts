@@ -1,3 +1,4 @@
+import type { AnalysisSources, PrepareAnalysis } from '@/core/storyboards/analysis-input';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { StoryboardPlan, StoryboardState, StoryboardView, StoryboardSummary, StoryboardActionView, StoryboardRequest } from '@/core/storyboards/contract';
@@ -7,7 +8,7 @@ import type { PrepareReference, ReferenceSources } from '@/core/storyboards/refe
 import { newDraft, readDraft, readPending, planToSave, type BoardDraft, type PendingShotAction } from './draft';
 
 export type BoardAsset = RecipeInputAsset & { sha256: string | null; durationMs: number | null };
-type Catalog = { referenceSources: ReferenceSources; boards: StoryboardSummary[]; assets: BoardAsset[]; recipes: RecipeCatalog; capabilities: AssetCapability[] };
+type Catalog = { analysisSources: AnalysisSources; referenceSources: ReferenceSources; boards: StoryboardSummary[]; assets: BoardAsset[]; recipes: RecipeCatalog; capabilities: AssetCapability[] };
 export function useStoryboards(projectId: string) {
   const endpoint = '/api/app/projects/' + encodeURIComponent(projectId);
   const storageKey = 'viral-hit:storyboard:' + projectId;
@@ -30,14 +31,15 @@ export function useStoryboards(projectId: string) {
     finally { if (current()) { locked.current = false; setBusy(false); } }
   }, []);
   const loadCatalog = useCallback(async (signal: AbortSignal): Promise<Catalog> => {
-    const [boards, media, recipes, runs, referenceSources] = await Promise.all([
+    const [boards, media, recipes, runs, referenceSources, analysisSources] = await Promise.all([
       apiJsonGet<StoryboardSummary[]>(endpoint + '/storyboards', { signal }),
       apiJsonGet<{ assets: BoardAsset[] }>(endpoint + '/assets', { signal }),
       apiJsonGet<RecipeCatalog>('/api/app/recipes', { signal }),
       apiJsonGet<{ capabilities: AssetCapability[] }>(endpoint + '/runs', { signal }),
       apiJsonPost<ReferenceSources>(endpoint + '/storyboards', { action: 'reference-sources' }, { signal }),
+      apiJsonPost<AnalysisSources>(endpoint + '/storyboards', { action: 'analysis-sources' }, { signal }),
     ]);
-    return { referenceSources, boards, assets: media.assets, recipes, capabilities: runs.capabilities };
+    return { analysisSources, referenceSources, boards, assets: [...new Map(media.assets.map(asset => [asset.id, asset])).values()], recipes, capabilities: runs.capabilities };
   }, [endpoint]);
   const post = <T,>(request: StoryboardRequest, signal: AbortSignal) => apiJsonPost<T>(endpoint + '/storyboards', request, { signal });
   useEffect(() => {
@@ -75,6 +77,15 @@ export function useStoryboards(projectId: string) {
       // Send only the reviewed identity fields, not catalog presentation metadata.
       const identity = (item: PrepareReference['scenes']) => ({ runId: item.runId, jobId: item.jobId, outputSha256: item.outputSha256 });
       const result = await post<{ plan: StoryboardPlan; warnings: string[] }>({ ...request, scenes: identity(request.scenes), ...(request.transcript ? { transcript: identity(request.transcript) } : {}) }, signal);
+      if (current()) { setView(undefined); setDraft({ ...newDraft(), plan: result.plan }); setNotice(result.warnings.join(' ')); prepared = true; }
+    });
+    return prepared;
+  }
+  async function prepareFromAnalysis(request: PrepareAnalysis) {
+    if (busy || dirty || pending) return false;
+    let prepared = false;
+    await work(async (signal, current) => {
+      const result = await post<{ plan: StoryboardPlan; warnings: string[] }>(request, signal);
       if (current()) { setView(undefined); setDraft({ ...newDraft(), plan: result.plan }); setNotice(result.warnings.join(' ')); prepared = true; }
     });
     return prepared;
@@ -148,6 +159,6 @@ export function useStoryboards(projectId: string) {
       const next = await loadCatalog(signal); if (current()) setCatalog(next);
     });
   }
-  return { prepareReference, catalog, view, draft, busy, dirty, stale, pending, error, notice, update, create, open, refresh, useServer, save, generate, assemble, recover, accept };
+  return { prepareFromAnalysis, prepareReference, catalog, view, draft, busy, dirty, stale, pending, error, notice, update, create, open, refresh, useServer, save, generate, assemble, recover, accept };
 }
 export type StoryboardController = ReturnType<typeof useStoryboards>;

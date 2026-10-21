@@ -86,3 +86,5 @@ Managed executable releases follow [the runtime package decision](RUNTIME-PACKAG
 Project storyboards follow [the planning boundary](STORYBOARDS.md): retain reference context and exact shot definitions, reserve pinned actions before enqueue, explicitly accept results, then hand editable sequences to the existing worker and editor.
 
 Installed generation providers follow [the local-input boundary](LOCAL-PROVIDER-MEDIA.md) when opting into project media: shared ownership/hash checks, bounded call-scoped readers and the existing generation/polling ledger.
+
+Structured provider reports follow [the analysis-to-plan decision](STRUCTURED-ANALYSIS.md): pure bounded output contracts, identity-checked discovery, source-byte verification on preparation and an unsaved storyboard handoff through existing operations.

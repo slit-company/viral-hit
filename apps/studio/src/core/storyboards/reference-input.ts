@@ -1,3 +1,4 @@
+import { analysisEvidence } from './analysis-input';
 import { z } from 'zod';
 const identity = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
 export const referenceJob = z.object({ runId: identity, jobId: identity, outputSha256: z.string().regex(/^[a-f0-9]{64}$/) }).strict();
@@ -10,4 +11,4 @@ export type PrepareReference = z.infer<typeof prepareReference>;
 export type ReferenceJob = z.infer<typeof referenceJob>;
 export type ReferenceSource = ReferenceJob & { assetId: string; sha256: string; kind: 'scenes' | 'transcript'; label: string; count: number; start: number; end: number };
 export type ReferenceSources = { sources: ReferenceSource[]; omitted: number };
-export const referenceEvidence = z.object({ ...referenceJob.shape, kind: z.enum(['scene-detection', 'speech-transcript']), engine: z.string().min(1).max(200) }).strict();
+export const referenceEvidence = z.union([z.object({ ...referenceJob.shape, kind: z.enum(['scene-detection', 'speech-transcript']), engine: z.string().min(1).max(200) }).strict(), analysisEvidence]);

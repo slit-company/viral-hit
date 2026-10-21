@@ -1,10 +1,11 @@
+import { analysisReport } from '../src/core/generation-providers/analysis-report';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { z } from 'zod';
 import { providerManifestSchema } from '../src/core/generation-providers/installed/manifest';
 import { installGenerationProviders, readProviderFolder } from '../src/core/generation-providers/installed/install.server';
 
-// Usage: pnpm provider list | check <provider-folder> | schema <out.json>
+// Usage: pnpm provider list | check <provider-folder> | schema <out.json> | report-schema <out.json>
 // list shows what VIRAL_HIT_PROVIDERS_DIR installs; check validates one folder and loads its module without generating.
 const [command, target] = process.argv.slice(2);
 const nativeImport = new Function('url', 'return import(url)') as (url: string) => Promise<Record<string, unknown>>;
@@ -20,11 +21,11 @@ try {
     if (typeof module.createGeneration !== 'function') throw new Error('The provider module must export createGeneration');
     const { id, label, scope, author, license, mediaHosts } = manifest;
     console.log(JSON.stringify({ id, label, scope, author: author ?? null, license: license ?? null, mediaHosts, checkStatus: typeof module.checkStatus === 'function', models: manifest.models.map(model => ({ id: model.id, kind: model.kind })) }, null, 2));
-  } else if (command === 'schema' && target) {
+  } else if ((command === 'schema' || command === 'report-schema') && target) {
     // Describes what authors write, so defaulted fields stay optional.
-    await writeFile(resolve(target), JSON.stringify(z.toJSONSchema(providerManifestSchema, { io: 'input' }), null, 2) + '\n', { flag: 'wx' });
+    await writeFile(resolve(target), JSON.stringify(z.toJSONSchema(command === 'report-schema' ? analysisReport : providerManifestSchema, { io: 'input' }), null, 2) + '\n', { flag: 'wx' });
   } else {
-    throw new Error('Usage: provider list | check <provider-folder> | schema <out.json>');
+    throw new Error('Usage: provider list | check <provider-folder> | schema <out.json> | report-schema <out.json>');
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Provider command failed');

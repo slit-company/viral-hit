@@ -1,3 +1,4 @@
+import { AnalysisImport } from './analysis-import';
 import { useState } from 'react';
 import { Action } from '@/components/base/action';
 import { ProductShell } from '@/components/marketing/product-shell';
@@ -37,6 +38,7 @@ export function StoryboardsPage({ projectId, locale }: { projectId: string; loca
       <Action className="vh-secondary" disabled={c.busy} onClick={() => void c.refresh()}>Refresh status</Action>
     </div>
     <ReferenceImport controller={c} onPrepared={() => setTab('plan')} />
+    <AnalysisImport controller={c} onPrepared={() => setTab('plan')} />
     {!c.catalog && <p role="status">Loading project storyboards…</p>}
     {c.error && <p role="alert" className="whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-4 text-sm text-red-800">{c.error}</p>}
     {c.notice && <p role="status" className="break-words rounded-xl bg-[var(--color-brand-lime-soft)] p-4 text-sm leading-6 text-[var(--color-lime-text)]">{c.notice}</p>}
