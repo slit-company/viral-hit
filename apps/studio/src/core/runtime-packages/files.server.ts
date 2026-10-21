@@ -25,5 +25,6 @@ export function buildRuntimePackage(raw:unknown) {
 }
 export function writeRuntimePackage(path:string,pkg:RuntimePackage) {
   if (!isAbsolute(path)) throw new Error('Use an absolute new file path');
-  writeFileSync(path,JSON.stringify(pkg,null,2)+'\n',{flag:'wx',mode:0o600});return {path,id:pkg.id};
+  // Compact output stays inside the same byte bound accepted by readers.
+  writeFileSync(path,JSON.stringify(pkg),{flag:'wx',mode:0o600});return {path,id:pkg.id};
 }

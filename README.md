@@ -51,7 +51,7 @@ A workflow for one campaign or brand belongs in its own recipes and adapters, ke
 
 **Extensions** shows installed model providers, workflow adapters, publishing connectors and skills, including missing settings and load failures. [The same diagnostics](docs/EXTENSION-STATUS.md) are available through MCP and CLI. Checking metadata never starts generation or publishing; loaded metadata does not mean execution has been tested.
 
-[Runtime packages](docs/RUNTIME-PACKAGES.md) carry complete provider, adapter and publishing modules for either general or specialized use. CLI/MCP/API support reviewed installation, replacement, removal and historical restoration. The Extensions page separates loaded capabilities from pending restart changes. Executable package installation requires trusted source and coordinated process restart; browser installation is still pending.
+[Runtime packages](docs/RUNTIME-PACKAGES.md) carry complete provider, adapter and publishing modules for either general or specialized use. **Extensions → Manage runtime packages**, CLI/MCP/API support reviewed installation, replacement, removal and historical restoration. The library separates installed versions from the code currently loaded. Executable package installation requires trusted source and coordinated process restart.
 
 Install a versioned JSON recipe to add a workflow and its typed form without modifying the studio. UI and MCP discover the same recipes. [Extension guide](docs/EXTENDING.md) covers recipe authoring, output bindings, adapter contracts and current limits. Specialized recipes and general creative projects share the same core.
 

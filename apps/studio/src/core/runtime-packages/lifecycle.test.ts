@@ -8,7 +8,9 @@ import { execFileSync, execFile } from 'node:child_process';
 import { changeRuntimePackages, inspectRuntimePackage, reviewRuntimeRemoval } from './service.server';
 import { readRuntimeRelease, readRuntimeCatalog, runtimeHistory } from './storage.server';
 import { managedRuntimeEntries } from './snapshot.server';
-import { buildRuntimePackage } from './files.server';
+import { buildRuntimePackage, writeRuntimePackage, readRuntimeJson } from './files.server';
+import { validateRuntimePackage } from './validation.server';
+import { MAX_RUNTIME_PACKAGE_BYTES } from './limits';
 import type { RuntimePackage } from './contract';
 const keys=['VIRAL_HIT_DATA_DIR','VIRAL_HIT_ADAPTERS_DIR','VIRAL_HIT_PROVIDERS_DIR','VIRAL_HIT_PUBLISHING_CONNECTORS_DIR'] as const;
 function fixture(run:(root:string)=>void|Promise<void>) {
@@ -84,4 +86,16 @@ test('diagnostic refresh clears a removed pending package without contaminating 
   }
   const removal=reviewRuntimeRemoval(pkg.id);changeRuntimePackages({action:'remove',id:pkg.id,expectedStateDigest:removal.stateDigest});
   const after=await extensionDiagnostics();assert.equal(after.restartRequired,false);assert.deepEqual(after.groups,before.groups);
+}));
+
+test('a package at the serialized byte limit exports and reimports without formatting exceeding the reader bound',()=>fixture(root=>{
+  const pkg=mixed(), template=pkg.entries[0];
+  pkg.entries=Array.from({length:6},(_,index)=>({...template,manifest:{...template.manifest,operation:'ext.portable-limit-'+index},source:'"'.repeat(999_000)}));
+  const padding=MAX_RUNTIME_PACKAGE_BYTES-Buffer.byteLength(JSON.stringify(pkg));
+  assert.ok(padding>0);pkg.entries[0].source+='x'.repeat(padding);
+  for(const entry of pkg.entries)entry.manifest.sha256=createHash('sha256').update(entry.source).digest('hex');
+  const normalized=validateRuntimePackage(pkg);
+  assert.equal(Buffer.byteLength(JSON.stringify(normalized)),MAX_RUNTIME_PACKAGE_BYTES);
+  const file=join(root,'at-limit.json');writeRuntimePackage(file,normalized);
+  assert.deepEqual(readRuntimeJson(file),normalized);
 }));

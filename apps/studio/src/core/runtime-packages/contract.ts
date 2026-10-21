@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const MAX_RUNTIME_PACKAGE_BYTES = 12_000_000;
+export { MAX_RUNTIME_PACKAGE_BYTES } from './limits';
 export const runtimePackageId = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
 export const runtimeKind = z.enum(['adapter', 'provider', 'publishing']);
 export const runtimeEntrySchema = z.object({
@@ -27,3 +27,6 @@ export const runtimePackageRequest = z.discriminatedUnion('action', [
 ]);
 export type RuntimePackageRequest = z.infer<typeof runtimePackageRequest>;
 export type RuntimePackageSummary = Pick<RuntimePackage, 'id' | 'version' | 'title' | 'description' | 'author' | 'license' | 'scope'> & { digest: string; entries: { kind: RuntimeEntry['kind']; id: string; label: string }[] };
+
+export type RuntimePackageCatalog = { installed: RuntimePackageSummary[]; removed: RuntimePackageSummary[]; loaded: RuntimePackageSummary[]; restartRequired: boolean; restart: string };
+export type RuntimePackageHistory = { id: string; currentDigest: string | null; releases: RuntimePackageSummary[] };

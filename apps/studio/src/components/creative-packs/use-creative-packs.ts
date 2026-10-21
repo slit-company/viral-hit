@@ -2,7 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { packContentsLabel } from './pack-labels';
 import type { CreativeLifecycleReview, CreativeReleaseHistory } from '@/core/creative-packs/lifecycle-contract';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
-import { MAX_CREATIVE_PACK_BYTES, type CreativePackBuild, type CreativePackCatalog, type CreativePackInspection, type CreativePackResult } from '@/core/creative-packs/contract';
+import type { CreativePackBuild, CreativePackCatalog, CreativePackInspection, CreativePackResult } from '@/core/creative-packs/contract';
+import { MAX_CREATIVE_PACK_BYTES } from '@/core/creative-packs/limits';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
 async function readJson<T>(response: Response): Promise<T> {

@@ -7,18 +7,18 @@
  * use dot notation: t('sidebar.addNode').
  */
 
-// Paraglide compiles messages into typed accessor functions. For the shim we
-// load the raw JSON tree at runtime and resolve keys by path — simpler than
-// mapping every key to a paraglide function and covers arbitrary namespaces.
-import zhMessages from '@/../messages/zh.json';
-import enMessages from '@/../messages/en.json';
-import jaMessages from '@/../messages/ja.json';
+// Keep the nested legacy namespaces only. Flat product.* messages already use
+// Paraglide accessors; importing whole JSON trees duplicated those translations.
+import { AppShell as zhAppShell, Projects as zhProjects, Common as zhCommon } from '@/../messages/zh.json';
+import { AppShell as enAppShell, Projects as enProjects, Common as enCommon } from '@/../messages/en.json';
+import { AppShell as jaAppShell, Projects as jaProjects, Common as jaCommon } from '@/../messages/ja.json';
+import type enMessages from '@/../messages/en.json';
 import { getLocale } from '@/paraglide/runtime.js';
 
 const MESSAGE_TREES: Record<string, Record<string, unknown>> = {
-  zh: zhMessages,
-  en: enMessages,
-  ja: jaMessages,
+  zh: { AppShell: zhAppShell, Projects: zhProjects, Common: zhCommon },
+  en: { AppShell: enAppShell, Projects: enProjects, Common: enCommon },
+  ja: { AppShell: jaAppShell, Projects: jaProjects, Common: jaCommon },
 };
 
 function resolveKey(tree: unknown, path: string): string | undefined {

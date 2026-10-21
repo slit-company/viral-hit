@@ -45,3 +45,4 @@ export function changeRuntimePackages(raw: RuntimePackageRequest) {
   return { installed:runtimeSummary(review.package),restartRequired:runtimeRestartRequired(),restart };
 }
 export type RuntimePackageInspection = ReturnType<typeof inspectRuntimePackage>;
+export type RuntimePackageRemoval = ReturnType<typeof reviewRuntimeRemoval>;

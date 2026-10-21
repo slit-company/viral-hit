@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { ViralHitSkill, ViralHitSkillCatalog } from '@/core/skills/contract';
-import { MAX_SKILL_FILE_BYTES, type SkillInspection, type SkillPackage, type SkillReview, type SkillRemovalReview } from '@/core/skills/package';
+import type { SkillInspection, SkillPackage, SkillReview, SkillRemovalReview } from '@/core/skills/package';
+import { MAX_SKILL_FILE_BYTES } from '@/core/skills/limits';
 
 export function useSkills() {
   const [catalog, setCatalog] = useState<ViralHitSkillCatalog>();

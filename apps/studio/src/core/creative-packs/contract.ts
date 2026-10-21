@@ -5,8 +5,7 @@ import { characterFileManifestSchema, characterId, type CharacterFileManifest } 
 import { skillPackageSchema, type SkillPackage, type SkillInspection } from '@/core/skills/package';
 import type { PackInspection } from '@/core/harness/recipe-packs';
 
-export const MAX_CREATIVE_PACK_BYTES = 512 * 1024 * 1024;
-export const MAX_CREATIVE_MANIFEST_BYTES = 5 * 1024 * 1024;
+export { MAX_CREATIVE_PACK_BYTES, MAX_CREATIVE_MANIFEST_BYTES } from './limits';
 const identity = packManifestSchema.omit({ recipes: true, kind: true, schemaVersion: true });
 const uniqueIds = (max: number) => z.array(z.string().min(1).max(80)).max(max).refine(ids => new Set(ids).size === ids.length, 'Choose each item once');
 export const creativePackBuildSchema = identity.extend({

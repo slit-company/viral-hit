@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { MAX_INSTRUCTIONS_BYTES, viralHitSkillIdSchema, viralHitSkillManifestSchema, type ViralHitSkillDescriptor } from './contract';
 
-export const MAX_SKILL_FILE_BYTES = 700_000;
+export { MAX_SKILL_FILE_BYTES } from './limits';
 export const skillPackageSchema = z.object({
   schemaVersion: z.literal(1), kind: z.literal('viral-hit-skill'),
   manifest: viralHitSkillManifestSchema,

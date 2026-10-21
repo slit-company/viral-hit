@@ -36,3 +36,5 @@ This is a field fragment, not a complete provider manifest. Omission means no de
 Diagnostics do not install, update or remove runtime code. Automated dependency installation, version management, community discovery and live provider acceptance remain separate work.
 
 Managed [runtime packages](RUNTIME-PACKAGES.md) appear as installed sources after process restart. Changes to desired package state appear as pending restart diagnostics; Refresh does not replace a loaded runtime. CLI/MCP/HTTP manage package review/install/update/removal and retained history. The package list distinguishes this process snapshot from desired state.
+
+Use **Manage runtime packages** to review full package source, install/update, inspect retained releases, restore and remove managed packages. Its list separately reports the installed version and the snapshot loaded by this studio process; file-based operator extensions remain managed outside the package library. See [the browser workflow](RUNTIME-PACKAGES.md#use-the-browser-library).

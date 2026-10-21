@@ -2,7 +2,17 @@
 
 A runtime package distributes complete, self-contained modules for image/video providers, workflow adapters and publishing connectors. It can combine any of those kinds, and its scope can be general or specialized for one format/team/job. Existing recipes, skills and creative packs remain data-only; installing them cannot install executable code.
 
-Use `pnpm runtime-package` from `apps/studio`, the `viral_hit_runtime_package` MCP tool, or the trusted local `/api/app/runtime-packages` HTTP endpoint. The Extensions page reports loaded capabilities and pending restart changes. A browser installer and catalog download flow for executable packages are not yet implemented.
+Use **Extensions → Manage runtime packages**, `pnpm runtime-package` from `apps/studio`, the `viral_hit_runtime_package` MCP tool, or the trusted local `/api/app/runtime-packages` HTTP endpoint. The browser library distinguishes the installed set from the version loaded by this studio process. Independent catalog downloads for executable packages are not yet implemented.
+
+## Use the browser library
+
+1. Choose **Import runtime file** and a portable JSON package. This opens inspection only. Review the package ID, version, scope, requirements and every added/replaced/removed entry. Open each entry to read its complete manifest and source; download either definition if you want to review it elsewhere.
+2. For an update, both the installed and incoming definitions are retained in the review. Confirm trust in the exact package source, then choose **Install package** or **Update package**. Blocking conflicts disable the action. If another operator changes the catalog, the old review is rejected; **Review again** reads current state and clears the prior confirmation.
+3. The library shows the saved version and what this studio process loaded. Restart the studio, MCP and workers together to activate changes; refreshing only reads metadata. An installed package may still need its declared settings or external engine.
+4. **Versions & downloads** exports any retained release. **Review restoration** inspects that exact historical package against current state; trust confirmation and normal conflict checks apply again.
+5. **Remove…** opens the complete installed definition and removal consequences. Confirm the package ID before removal. The card remains as a history entry, while loaded code stays until restart. General and specialized filters apply to both installed and removed packages.
+
+Sources are shown as plain text, never evaluated or rendered as HTML. Long module text is mounted only when that entry is expanded. The browser sends the same digest-bound requests as CLI/MCP; it does not implement its own package storage, execution or activation.
 
 ## Author a package
 
@@ -69,4 +79,4 @@ Workflow jobs retain existing adapter/configuration fingerprints. Approved publi
 
 ## Limits and transport
 
-Up to 16 entries/package, 12 MB compact serialized input, 8 MB source/package, 32 active entries and 8 MB source per kind across managed packages. Operator and managed entries share the existing loader caps. Manifests are at most 64 KB; adapter/connector modules at most 2 MB; provider modules at most 5 MiB. Storage retains at most 64 package identities and 128 MiB of release documents; historical purge is not implemented. The CLI writes new files only. HTTP requires the workspace trust header, bounded JSON and rejects host paths; it does not accept an executable URL. No new runtime dependency or background poller is added.
+Up to 16 entries/package, 12 MB compact serialized input, 8 MB source/package, 32 active entries and 8 MB source per kind across managed packages. Operator and managed entries share the existing loader caps. Manifests are at most 64 KB; adapter/connector modules at most 2 MB; provider modules at most 5 MiB. Storage retains at most 64 package identities and 128 MiB of release documents; historical purge is not implemented. Downloads use compact JSON so a package at the byte limit can be imported again. The CLI writes new files only. HTTP requires the workspace trust header, bounded JSON and rejects host paths; it does not accept an executable URL. No new runtime dependency or background poller is added.
