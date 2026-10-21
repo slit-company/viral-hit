@@ -13,7 +13,7 @@ export const skillLibraryRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('get'), skillId: viralHitSkillIdSchema }).strict(),
   z.object({ action: z.literal('export'), skillId: viralHitSkillIdSchema }).strict(),
   z.object({ action: z.literal('inspect'), file: z.unknown() }).strict(),
-  z.object({ action: z.literal('fetch'), url: z.string().url().max(2000) }).strict(),
+  z.object({ action: z.literal('fetch'), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), url: z.string().url().max(2000) }).strict(),
   z.object({ action: z.literal('install'), file: z.unknown(), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('update'), file: z.unknown(), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/), expectedInstalledDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('review-remove'), skillId: viralHitSkillIdSchema }).strict(),

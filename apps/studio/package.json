@@ -54,7 +54,8 @@
     "skill": "tsx scripts/skill.ts",
     "provider": "tsx scripts/provider.ts",
     "creative-pack": "tsx scripts/creative-pack.ts",
-    "extensions": "tsx scripts/extensions.ts"
+    "extensions": "tsx scripts/extensions.ts",
+    "community": "tsx scripts/community.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

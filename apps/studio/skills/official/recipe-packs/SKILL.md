@@ -9,6 +9,16 @@ Use this skill when someone wants a ready-made workflow, wants Viral Hit set up 
 3. If the user gave a pack link, call `{ "action": "fetch", "url": "..." }` instead. Only HTTPS links on the public internet work; a GitHub file page is converted to its raw file. Report the returned error as is if the link is not a pack.
 4. If nothing fits, say so and offer to build a pack from recipes the user already has (see below). Do not invent pack names.
 
+## Discover independent catalogs
+
+Use this path when the user supplies a catalog or wants options beyond this installation's offered packs. A catalog is metadata hosted by its author; it can mix general and specialized skills, recipe packs and creative packs.
+
+1. Call `viral_hit_community` with `{ "request": { "action": "list" } }` to read saved catalogs without networking. Match entries by `scope`, `kind`, title, summary and tags. Always identify an entry by both catalog ID and entry ID; titles can repeat. Do not claim its author descriptions establish runtime compatibility or creative quality.
+2. For a catalog link, call `{ "request": { "action": "fetch", "url": "..." } }`. For a local catalog JSON, use `inspect` with `catalog`. Review source, author, full entries, `changes` and both digests. Saving is optional; when the user asks to add it, use `save` with the exact `catalog`, `source`, `expectedDigest` and `expectedPreviousDigest` from review. This installs nothing. `fetch` again checks a saved source only when requested; an old snapshot is still usable offline.
+3. To use a selected entry, call the matching library's `fetch`: `viral_hit_skill_library` for `skill`, `viral_hit_recipe_pack` for `recipe-pack`, `viral_hit_creative_pack` for `creative-pack`. Pass `url: entry.url` and **`expectedSha256: entry.sha256`**. Creative packs additionally need a new absolute `path`. Never drop the checksum after a mismatch or substitute a different download. Refresh the catalog and review its change, or report the mismatch.
+4. Read the returned skill/recipe inspection, or inspect the retained creative-pack file, then follow that library's installation flow. Keep retained contents and the inspection digest; do not refetch between review and install. Check actual library state afterward. Catalog scope/version are author labels; the inspected artifact is authoritative.
+5. If asked to remove a discovery source, use `remove` with catalog `id` and its reviewed `expectedDigest`. Installed skills, recipes and characters remain. Removing an installed item uses that library's separate lifecycle.
+
 ## Review before installing
 
 1. For an offered pack, call `{ "action": "inspect", "pack": <available[i].manifest> }`. A fetched link already returns `inspection`.

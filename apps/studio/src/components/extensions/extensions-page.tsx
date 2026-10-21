@@ -4,6 +4,7 @@ import { Action } from '@/components/base/action';
 import { ProductShell } from '@/components/marketing/product-shell';
 import type { ExtensionKind } from '@/core/extensions/contract';
 import { useExtensionDiagnostics } from './use-extension-diagnostics';
+import { Link } from '@/core/i18n/navigation';
 import { ExtensionCard } from './extension-card';
 
 const categories: { kind: ExtensionKind; title: string; description: string; empty: string }[] = [
@@ -18,6 +19,7 @@ export function ExtensionsPage({ locale }: { locale: string }) {
   const category = categories.find(item => item.kind === selected)!, group = status.data?.groups.find(item => item.kind === selected);
   return <ProductShell active="extensions" locale={locale}><main className="mx-auto w-full max-w-[1120px] space-y-8 px-5 pb-12 pt-14 sm:px-6">
     <header className="flex flex-wrap items-end justify-between gap-5"><div className="max-w-2xl space-y-4"><p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--vh-accent)]">EXTENSIONS</p><h1 className="vh-product-display text-[clamp(2.25rem,4.5vw,3.25rem)] font-semibold leading-[1.1] tracking-[-0.04em]">Know what’s connected.</h1><p className="text-[15px] leading-6 text-[var(--vh-text-2)]">Inspect the models, workflow steps and skills added to your studio. See what loaded and what needs setup.</p></div><Action className="vh-secondary" disabled={status.busy} onClick={() => void status.refresh()}><RefreshCw size={16} />{status.busy ? 'Checking…' : 'Refresh status'}</Action></header>
+    <Link href="/community" className="inline-block text-sm underline underline-offset-4">Browse community catalogs</Link>
     <div className="flex items-start gap-3 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 text-sm leading-6 text-[var(--vh-text-2)]"><Puzzle size={18} className="mt-1 shrink-0 text-[var(--vh-text-1)]" /><p><strong className="font-semibold text-[var(--vh-text-1)]">Execution is not tested here.</strong> Metadata and setting presence do not verify credentials or output quality. Refresh does not run extensions or contact providers.</p></div>
     {status.error && <p role="alert" className="rounded-xl bg-red-500/10 p-4 text-sm text-red-800">{status.error} {status.data && 'Showing the previous check.'}</p>}
     <div role="group" aria-label="Extension categories" className="grid grid-cols-2 gap-3 sm:grid-cols-4">{categories.map(item => {

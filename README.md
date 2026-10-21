@@ -78,3 +78,5 @@ Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE
 Manage optional YouTube and Instagram connections from the workspace header or `/connections`. Operator-configured Google and Meta login keep credentials encrypted on the server; Instagram requires an explicit Page-linked account selection. Connecting does not publish. Each project now has a Publish screen for retained-video review, explicit revision-bound approval and delivery status, backed by a separate resumable upload worker. YouTube and Instagram Reels/video Stories share this flow. Instagram supports local scheduling; images/carousels and live-provider verification remain pending. See [publishing setup and status](docs/PUBLISHING.md).
 
 Share recipes, skills and character reference images together through **Packs**. [Creative packs](docs/CREATIVE-PACKS.md) support both general toolkits and specialized setups, with reviewed installation and portable files.
+
+Discover independently authored skills and packs through [Community catalogs](docs/COMMUNITY.md). General and specialized entries use the same reviewed, checksum-pinned handoff; creators host their own JSON lists.

@@ -5,11 +5,13 @@ import { ProductShell } from '@/components/marketing/product-shell';
 import { Action } from '@/components/base/action';
 import { SkillDetail, scopeLabel, sourceLabel } from './skill-detail';
 import { SkillRemoval } from './skill-removal';
+import { Link } from '@/core/i18n/navigation';
+import type { CatalogHandoff } from '@/core/community/contract';
 import { useSkills } from './use-skills';
 
-export function SkillsPage({ locale }: { locale: string }) {
+export function SkillsPage({ locale, shared = {} }: { locale: string; shared?: CatalogHandoff }) {
   const library = useSkills(), fileInput = useRef<HTMLInputElement>(null);
-  const [link, setLink] = useState(''), [scope, setScope] = useState<'all' | 'general' | 'specialized'>('all');
+  const [link, setLink] = useState(shared.source ?? ''), [scope, setScope] = useState<'all' | 'general' | 'specialized'>('all');
   const skills = library.catalog?.skills.filter(skill => scope === 'all' || skill.manifest.scope === scope);
   return <ProductShell active="skills" locale={locale}>
     <main className="mx-auto w-full max-w-[1280px] px-5 pb-12 pt-14 sm:px-6">
@@ -18,7 +20,9 @@ export function SkillsPage({ locale }: { locale: string }) {
         <input ref={fileInput} type="file" accept=".json,application/json" aria-label="Import skill file" className="hidden" onChange={event => { void library.importFile(event.target.files?.[0]); event.target.value = ''; }} />
         <Action disabled={library.busy || !library.catalog} onClick={() => fileInput.current?.click()} className="vh-primary self-start"><FileUp size={16} aria-hidden="true" />Import skill file</Action>
       </section>
-      <form className="mt-8 flex flex-col gap-2 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 sm:flex-row sm:items-end" onSubmit={event => { event.preventDefault(); void library.fetchLink(link); }}>
+      <Link href="/community" className="mt-5 inline-block text-sm underline underline-offset-4">Browse community catalogs</Link>
+      {shared.source && link.trim() === shared.source && <p className="mt-3 text-xs text-[var(--vh-text-2)]">Selected from a catalog. Review the downloaded definition before installing.</p>}
+      <form className="mt-8 flex flex-col gap-2 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 sm:flex-row sm:items-end" onSubmit={event => { event.preventDefault(); void library.fetchLink(link, link.trim() === shared.source ? shared.sha256 : undefined); }}>
         <div className="min-w-0 flex-1 space-y-2"><label htmlFor="skill-link" className="block text-xs font-medium">Add from link</label><TextField.Root className="vh-field"><TextField.Input id="skill-link" aria-label="Add from link" type="url" placeholder="https://github.com/…/my.viralhit-skill.json" value={link} maxLength={2000} onChange={event => setLink(event.target.value)} /></TextField.Root></div><Action type="submit" disabled={!library.catalog || library.busy || !/^https:\/\/\S+$/.test(link.trim())} className="vh-secondary">Review link</Action>
       </form>
       {library.notice && <p role="status" className="mt-4 rounded-xl bg-[var(--color-brand-lime-soft)] p-3 text-sm text-[var(--color-lime-text)]">{library.notice}</p>}

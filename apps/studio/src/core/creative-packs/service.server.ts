@@ -86,7 +86,7 @@ export async function changeCreativePacks(raw: z.infer<typeof creativePackReques
   const request = creativePackRequest.parse(raw);
   switch (request.action) {
     case 'list': return listCreativePacks();
-    case 'fetch': return fetchCreativePack(request.url, request.path, signal);
+    case 'fetch': return fetchCreativePack(request.url, request.path, signal, undefined, request.expectedSha256);
     case 'build': return writeCreativePack(await composeCreativePack(request.pack), request.path, signal);
     case 'export': {
       const manifest = await readStoredCreativePack(request.id);

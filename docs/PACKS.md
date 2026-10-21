@@ -70,3 +70,7 @@ Installation is all or nothing. If any recipe conflicts with a different recipe 
 
 Keep private rules, account details and brand assets out of shared packs. A pack built for one team can live in that team's own repository and still install into any Viral Hit installation.
 
+
+## Independent discovery
+
+[Community catalogs](COMMUNITY.md) list recipe packs alongside skills and combined packs. `/recipe-packs` also opens the shared recipe-pack library and builder without a project. Catalog handoffs retain `expectedSha256` in fetch; CLI: `pnpm recipe fetch-pack <url> <new-file.json> [sha256]`. The normal manifest review and digest-pinned installation follow.

@@ -19,7 +19,7 @@ A selected character includes all its references and profile fields, and a selec
 | Action | Inputs | Result |
 |---|---|---|
 | `list` | None | Existing recipes, skills and characters to select, plus installed creative pack summaries |
-| `fetch` | Public HTTPS `url`, new `path` | Retained file path, size and source (query omitted); `inspected: false`, inspect next |
+| `fetch` | Public HTTPS `url`, new `path`, optional `expectedSha256` | Retained file path, size and source (query omitted); `inspected: false`, inspect next |
 | `build` | `pack`, new `path` | File path, bytes and summary/digest; no installation |
 | `inspect` | `path` | Verified contents, image positions for file previews, digest and all current conflicts |
 | `install` | Same `path`, `expectedDigest` | `complete`, successful `items` and optional error |
@@ -71,3 +71,5 @@ Limits: 24 recipes, 12 skills, 12 characters, at most 20 references per characte
 Every definition, reference hash and image's actual type/dimensions is verified before installation. The digest covers the normalized manifest, including all reference hashes. Changes between review and installation are refused. Each library retains its own atomic writes; the entire multi-library installation is **not one transaction**. A disk error, cancellation or concurrent conflict can leave some items installed. The response explicitly returns `complete: false`, the successful `items` and an error; the CLI exits nonzero. Resolve the cause, inspect and retry the same file. Exact contents are reused. The completion record is published only after every library operation succeeds. A process crash before that record is also recoverable by reimporting the same file.
 
 Creative packs transfer through files or public HTTPS/GitHub links. Authenticated downloads, managed version updates/uninstall and a hosted community catalog are not implemented. Publish the built tar as a downloadable asset in your own repository or hosting; ordinary HTML repository pages without a downloadable file and Git LFS pointer files are not pack archives. Packs do not bundle a project timeline; use an editable project file for that. Recipe-only JSON packs and their existing HTTPS/GitHub link flow remain available.
+
+[Community catalogs](COMMUNITY.md) discover creative packs from independent sources. Catalog entry hashes are checked against the raw downloaded archive before it reaches review. CLI `fetch` accepts the hash as its final optional argument. Inspection and installation then use the retained archive and its reviewed content digest.

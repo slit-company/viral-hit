@@ -2,35 +2,36 @@ import { useEffect, useRef, useState } from 'react';
 import { TextField } from '@seed-design/react';
 import { Check, FileJson, Package, PackagePlus } from 'lucide-react';
 import { Action } from '@/components/base/action';
+import type { CatalogHandoff } from '@/core/community/contract';
 import type { PackSummary } from '@/core/harness/recipe-packs';
 import { useRecipePacks } from './use-recipe-packs';
 import { packScopeLabel } from './pack-labels';
 
 const words = (value: string) => value.replace(/-/g, ' ');
 
-export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: PackSummary) => Promise<void>; onMakePack: () => void }) {
+export function RecipePacks({ onInstalled, onMakePack, shared = {} }: { onInstalled: (pack: PackSummary) => Promise<void>; onMakePack: () => void; shared?: CatalogHandoff }) {
   const packs = useRecipePacks(onInstalled);
   const fileInput = useRef<HTMLInputElement>(null);
   const review = packs.review?.inspection;
   const reviewPanel = useRef<HTMLElement>(null);
-  const [link, setLink] = useState('');
+  const [link, setLink] = useState(shared.source ?? '');
   useEffect(() => { if (review) reviewPanel.current?.scrollIntoView({ block: 'nearest' }); }, [review]);
   return <section aria-label="Recipe packs" className="space-y-3">
     <div className="flex items-center justify-between gap-3">
       <h3 className="flex items-center gap-2 text-sm font-semibold"><Package size={16} aria-hidden="true" />Packs</h3>
       <input ref={fileInput} type="file" accept="application/json,.json" className="hidden" aria-label="Import pack file" onChange={event => { void packs.importFile(event.target.files?.[0]); event.target.value = ''; }} />
       <div className="flex flex-wrap items-center justify-end gap-3">
-        <Action disabled={packs.busy} onClick={onMakePack} className="inline-flex items-center gap-1.5 text-xs"><PackagePlus size={14} />Make a pack</Action>
-        <Action disabled={packs.busy} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-1.5 text-xs"><FileJson size={14} />Import pack file</Action>
+        <Action disabled={packs.busy || !packs.catalog} onClick={onMakePack} className="inline-flex items-center gap-1.5 text-xs"><PackagePlus size={14} />Make a pack</Action>
+        <Action disabled={packs.busy || !packs.catalog} onClick={() => fileInput.current?.click()} className="inline-flex items-center gap-1.5 text-xs"><FileJson size={14} />Import pack file</Action>
       </div>
     </div>
     <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">General packs fit any project. Packs for a specific job set up one kind of work, such as vertical reels or slide stories. Installing adds recipes to this library; nothing runs.</p>
-    <form className="flex flex-col gap-2 sm:flex-row sm:items-end" onSubmit={event => { event.preventDefault(); void packs.fetchLink(link); }}>
+    <form className="flex flex-col gap-2 sm:flex-row sm:items-end" onSubmit={event => { event.preventDefault(); void packs.fetchLink(link, link.trim() === shared.source ? shared.sha256 : undefined); }}>
       <div className="min-w-0 flex-1 space-y-1.5">
         <label htmlFor="pack-link" className="block text-xs text-[var(--vh-text-2)]">Add from link</label>
         <TextField.Root className="vh-field"><TextField.Input id="pack-link" type="url" inputMode="url" placeholder="https://github.com/…/my-pack.json" value={link} maxLength={2000} onChange={event => setLink(event.target.value)} /></TextField.Root>
       </div>
-      <Action type="submit" disabled={packs.busy || !/^https:\/\/\S+$/.test(link.trim())} className="vh-secondary text-xs">Review link</Action>
+      <Action type="submit" disabled={!packs.catalog || packs.busy || !/^https:\/\/\S+$/.test(link.trim())} className="vh-secondary text-xs">Review link</Action>
     </form>
     <ul className="grid gap-2 sm:grid-cols-2">
       {packs.catalog?.available.map(({ manifest, summary, state }) => <li key={summary.id} className="flex flex-col gap-2 rounded-xl border border-[var(--vh-border)] p-3">
@@ -59,7 +60,7 @@ export function RecipePacks({ onInstalled, onMakePack }: { onInstalled: (pack: P
       {review.blocking.map(reason => <p key={reason} className="text-amber-800">{reason}</p>)}
       {!review.blocking.length && <p className="text-[var(--vh-text-2)]">Recipes, inputs and bindings checked. Installing adds them to this library; no jobs start.</p>}
       <div className="flex gap-2 pt-1">
-        <Action disabled={packs.busy} onClick={packs.dismiss} className="h-11 min-w-0 flex-1 rounded-xl border border-[var(--vh-border)] px-3 text-xs">Cancel</Action>
+        <Action disabled={packs.busy || !packs.catalog} onClick={packs.dismiss} className="h-11 min-w-0 flex-1 rounded-xl border border-[var(--vh-border)] px-3 text-xs">Cancel</Action>
         <Action disabled={packs.busy || review.blocking.length > 0} onClick={() => void packs.install()} className="vh-primary min-w-0 flex-1 text-xs">{packs.busy ? 'Working…' : review.collision === 'same' ? 'Use installed pack' : 'Install pack'}</Action>
       </div>
     </section>}

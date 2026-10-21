@@ -16,7 +16,7 @@ export const recipePackRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('inspect'), pack: z.unknown() }).strict(),
   z.object({ action: z.literal('install'), pack: z.unknown(), expectedDigest: digest }).strict(),
   z.object({ action: z.literal('build'), pack: packBuildSchema }).strict(),
-  z.object({ action: z.literal('fetch'), url: z.string().url().max(2000) }).strict(),
+  z.object({ action: z.literal('fetch'), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), url: z.string().url().max(2000) }).strict(),
 ]);
 
 export function validatePack(raw: unknown) {
@@ -133,7 +133,7 @@ export async function changeRecipePacks(request: z.infer<typeof recipePackReques
     case 'install': return installPack(request.pack, request.expectedDigest);
     case 'build': return buildPack(request.pack);
     case 'fetch': {
-      const fetched = await fetchPackFromLink(request.url);
+      const fetched = await fetchPackFromLink(request.url, undefined, undefined, request.expectedSha256);
       return { ...fetched, inspection: await inspectPack(fetched.manifest) };
     }
   }

@@ -24,10 +24,10 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not review pack'); }
     finally { if (current === epoch.current) setBusy(false); }
   }
-  async function fetchLink(url: string) {
+  async function fetchLink(url: string, expectedSha256?: string) {
     const current = ++epoch.current; setBusy(true); setError(''); setReview(undefined);
     try {
-      const result = await apiJsonPost<{ source: string; manifest: unknown; inspection: PackInspection }>('/api/app/recipe-packs', { action: 'fetch', url: url.trim() });
+      const result = await apiJsonPost<{ source: string; manifest: unknown; inspection: PackInspection }>('/api/app/recipe-packs', { action: 'fetch', url: url.trim(), expectedSha256 });
       if (current === epoch.current) setReview(result);
     } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not download pack'); }
     finally { if (current === epoch.current) setBusy(false); }

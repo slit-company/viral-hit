@@ -66,7 +66,7 @@ export async function changeSkillLibrary(raw: z.infer<typeof skillLibraryRequest
     }
     case 'inspect': return inspectSkillFile(request.file);
     case 'fetch': {
-      const fetched = await fetchSkillFromLink(request.url);
+      const fetched = await fetchSkillFromLink(request.url, undefined, undefined, request.expectedSha256);
       return { ...fetched, inspection: await inspectSkillFile(fetched.file) };
     }
     case 'install': return installSkillFile(request.file, request.expectedDigest);

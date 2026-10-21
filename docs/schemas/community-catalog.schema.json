@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "number",
+      "const": 1
+    },
+    "kind": {
+      "type": "string",
+      "const": "viral-hit-catalog"
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,79}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 600
+    },
+    "author": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "homepage": {
+      "type": "string",
+      "maxLength": 2000,
+      "format": "uri"
+    },
+    "entries": {
+      "maxItems": 200,
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]{0,79}$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "skill",
+              "recipe-pack",
+              "creative-pack"
+            ]
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "summary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "general",
+              "specialized"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+(?:-[0-9A-Za-z.-]+)?$"
+          },
+          "tags": {
+            "default": [],
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 40
+            }
+          },
+          "url": {
+            "type": "string",
+            "maxLength": 2000,
+            "format": "uri"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "summary",
+          "scope",
+          "version",
+          "url",
+          "sha256"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "title",
+    "description",
+    "author",
+    "entries"
+  ],
+  "additionalProperties": false
+}

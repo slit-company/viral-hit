@@ -34,7 +34,7 @@ export type CreativePackCatalog = {
 };
 export const creativePackRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
-  z.object({ action: z.literal('fetch'), url: z.string().url().max(2000), path: z.string().min(1).max(4096) }).strict(),
+  z.object({ action: z.literal('fetch'), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), url: z.string().url().max(2000), path: z.string().min(1).max(4096) }).strict(),
   z.object({ action: z.literal('build'), pack: creativePackBuildSchema, path: z.string().min(1).max(4096) }).strict(),
   z.object({ action: z.literal('export'), id: identity.shape.id, path: z.string().min(1).max(4096) }).strict(),
   z.object({ action: z.literal('inspect'), path: z.string().min(1).max(4096) }).strict(),

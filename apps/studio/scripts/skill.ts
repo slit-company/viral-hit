@@ -25,6 +25,11 @@ try {
     const definition = await readViralHitSkillDirectory(resolve(target), 'local');
     const file = validateSkillFile({ schemaVersion: 1, kind: 'viral-hit-skill', manifest: definition.manifest, instructions: definition.instructions });
     await writeFile(resolve(extra), JSON.stringify(file, null, 2) + '\n', { flag: 'wx' });
+  } else if (command === 'fetch' && target && extra) {
+    const result = await changeSkillLibrary({ action: 'fetch', url: target, expectedSha256: installedDigest });
+    if (!('file' in result) || !('inspection' in result)) throw new Error('Skill fetch did not return a review');
+    await writeFile(resolve(extra), JSON.stringify(result.file, null, 2) + '\n', { flag: 'wx' });
+    console.log(JSON.stringify({ path: resolve(extra), inspection: result.inspection }, null, 2));
   } else if (command === 'export' && target && extra) {
     const file = await changeSkillLibrary({ action: 'export', skillId: target });
     await writeFile(resolve(extra), JSON.stringify(file, null, 2) + '\n', { flag: 'wx' });
@@ -42,7 +47,7 @@ try {
     // Describes what authors write, so defaulted fields stay optional.
     await writeFile(resolve(target), JSON.stringify(z.toJSONSchema(command === 'schema' ? viralHitSkillManifestSchema : skillPackageSchema, { io: 'input' }), null, 2) + '\n', { flag: 'wx' });
   } else {
-    throw new Error('Usage: skill list | check <folder> | pack <folder> <out.json> | inspect <file> | install <file> <digest> | update <file> <incoming-digest> <installed-digest> | review-remove <id> | remove <id> <digest> | export <id> <out.json> | schema <out.json> | file-schema <out.json>');
+    throw new Error('Usage: skill list | fetch <url> <new-file> [sha256] | check <folder> | pack <folder> <out.json> | inspect <file> | install <file> <digest> | update <file> <incoming-digest> <installed-digest> | review-remove <id> | remove <id> <digest> | export <id> <out.json> | schema <out.json> | file-schema <out.json>');
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Skill command failed');

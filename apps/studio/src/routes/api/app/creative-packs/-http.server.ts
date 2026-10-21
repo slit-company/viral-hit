@@ -13,7 +13,7 @@ import { readRequestJsonWithLimit } from '@/lib/request-body-limit';
 const downloadRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('build'), pack: creativePackBuildSchema }).strict(),
   z.object({ action: z.literal('export'), id: z.string().regex(/^[a-z][a-z0-9-]{0,39}$/) }).strict(),
-  z.object({ action: z.literal('fetch'), url: z.string().url().max(2000) }).strict(),
+  z.object({ action: z.literal('fetch'), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), url: z.string().url().max(2000) }).strict(),
 ]);
 const failure = (error: unknown) => Response.json({ error: (error instanceof Error ? error.message : 'Could not read creative pack').slice(0, 1000) }, { status: 400 });
 export async function downloadPack(request: Request) {

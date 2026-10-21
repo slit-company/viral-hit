@@ -30,9 +30,9 @@ export function useSkills() {
       return { file: parsed, inspection };
     }, setReview);
   }
-  function fetchLink(url: string) {
+  function fetchLink(url: string, expectedSha256?: string) {
     setDetail(undefined); setReview(undefined); setRemoval(undefined);
-    return work(() => apiJsonPost<SkillReview>('/api/app/skills', { action: 'fetch', url: url.trim() }), setReview);
+    return work(() => apiJsonPost<SkillReview>('/api/app/skills', { action: 'fetch', url: url.trim(), expectedSha256 }), setReview);
   }
   function open(skillId: string) {
     setReview(undefined); setDetail(undefined); setRemoval(undefined);

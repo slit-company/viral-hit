@@ -9,7 +9,7 @@ import {
   runCanvasGenerationSubmissionOnce,
 } from './generation-canvas';
 
-const source = ['./server.ts', './publishing-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts', './character-tools.ts', './creative-pack-tools.ts', './extension-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
+const source = ['./server.ts', './publishing-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts', './character-tools.ts', './creative-pack-tools.ts', './extension-tools.ts', './community-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
 
 test('MCP registers Canvas, Generation, Editor, Publishing and project file tool groups', () => {
   for (const tool of VIRAL_HIT_MCP_TOOL_NAMES) {

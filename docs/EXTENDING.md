@@ -2,6 +2,10 @@
 
 The core must support both general creative work and specialized workflows. A new use case must not require forking the editor or inheriting advertising-specific assumptions. There are two extension levels: **data recipes** (implemented) and **execution adapters** (explicitly installed, versioned server modules shared by the UI, MCP and worker).
 
+## Discover independent catalogs
+
+[Community catalogs](COMMUNITY.md) let anyone host a searchable list of general or specialized skills, recipe packs and creative packs in their own repository. Add a catalog in the studio, review its metadata, then open an entry in its library with its raw-file checksum. Discovery installs and runs nothing.
+
 ## Share several recipes as a pack
 
 Group related recipes into a [recipe pack](PACKS.md) labeled general or for a specific job. Packs install all at once after review, appear grouped in the Runs picker, and are shared through the same UI, HTTP, MCP and CLI service.

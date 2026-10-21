@@ -6,15 +6,18 @@ import { useCreativePacks } from './use-creative-packs';
 import { CreativePackBuilder } from './pack-builder';
 import { CreativePackReview } from './pack-review';
 import { PackLinkForm } from './pack-link-form';
+import { Link } from '@/core/i18n/navigation';
+import type { CatalogHandoff } from '@/core/community/contract';
 import { packContentsLabel } from './pack-labels';
 
-export function CreativePacksPage({ locale }: { locale: string }) {
+export function CreativePacksPage({ locale, shared = {} }: { locale: string; shared?: CatalogHandoff }) {
   const library = useCreativePacks(), input = useRef<HTMLInputElement>(null), review = useRef<HTMLDivElement>(null);
   const [building, setBuilding] = useState(false);
   useEffect(() => { if (library.review) { setBuilding(false); review.current?.scrollIntoView({ block: 'start' }); } }, [library.review]);
   return <ProductShell active="packs" locale={locale}><main className="mx-auto w-full max-w-[1120px] space-y-8 px-5 pb-12 pt-14 sm:px-6">
     <header className="space-y-5"><p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--vh-accent)]">CREATIVE PACKS</p><h1 className="vh-product-display text-[clamp(2.25rem,4.5vw,3.25rem)] font-semibold leading-[1.1] tracking-[-0.04em]">Share a way to create.</h1><p className="max-w-2xl text-[15px] leading-6 text-[var(--vh-text-2)]">Bring recipes, agent skills and characters together. Build a general toolkit or a setup for one particular job, then share one file.</p><div className="flex flex-wrap gap-3"><Action disabled={!library.catalog || library.busy} onClick={() => { library.dismiss(); setBuilding(value => !value); }} className="vh-primary"><PackagePlus size={16} />{building ? 'Close builder' : 'Make a creative pack'}</Action><Action disabled={!library.catalog || library.busy} onClick={() => input.current?.click()} className="vh-secondary"><FileUp size={16} />Import creative pack</Action></div><input ref={input} type="file" accept=".tar,application/x-tar" aria-label="Import creative pack file" className="hidden" onChange={event => { void library.inspect(event.target.files?.[0]); event.target.value = ''; }} /></header>
-    {!building && !library.review && <PackLinkForm disabled={!library.catalog || library.busy} fetchLink={library.fetchLink} />}
+    <div className="flex flex-wrap gap-4 text-sm"><Link href="/community" className="underline underline-offset-4">Browse community catalogs</Link><Link href="/recipe-packs" className="underline underline-offset-4">Recipe packs</Link></div>
+    {!building && !library.review && <PackLinkForm shared={shared} disabled={!library.catalog || library.busy} fetchLink={library.fetchLink} />}
     {library.notice && <p role="status" className="rounded-xl bg-[var(--color-brand-lime-soft)] p-4 text-sm text-[var(--color-lime-text)]">{library.notice}</p>}
     {library.error && !library.review && <p role="alert" className="break-words rounded-xl bg-red-500/10 p-4 text-sm text-red-800">{library.error}</p>}
     {library.busy && !library.review && <div className="flex flex-wrap items-center gap-3"><p role="status" className="text-sm text-[var(--vh-text-2)]">{library.activity}</p>{library.canCancel && <Action className="vh-secondary" onClick={library.cancelRead}>Cancel review</Action>}</div>}

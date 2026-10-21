@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-catalog",
+  "id": "my-creative-tools",
+  "title": "My creative tools",
+  "description": "General toolkits and workflows for a particular job. Add entries for files you publish.",
+  "author": "Your name or team",
+  "entries": []
+}

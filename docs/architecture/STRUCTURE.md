@@ -16,6 +16,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/references/` | Explicit source acquisition, verified original and sampled-frame project assets | Inbox session management, sending messages, pretending previews are full media |
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, cross-library overwrite or silent runtime installation |
 | `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
+| `src/core/community/` | Bounded independent catalog metadata, review diffs and local snapshots | Artifact execution/installation, background network discovery or a second package library |
 | `src/core/extensions/` | Read-only public diagnostic projections of installed extension catalogs, shared by UI/MCP/CLI | Runtime installation, module execution, provider probes, configuration values or independent registration state |
 | `src/core/publishing/` | Approved media/destination intents, leases, resumable transfer, remote receipts and reconciliation | Generation, shared UI, credentials in public views or remote calls inside transactions |
 | `src/core/db/`, `src/core/workspace-db/`, storage modules | Database/file persistence and transaction boundaries | UI or provider workflows |
@@ -68,3 +69,5 @@ Approval pins a fingerprint of connector manifest, source and declared environme
 Creative packs follow [the composition decision](CREATIVE-PACKS.md): preflight all content, retain each library's atomic mutations, report partial completion and reuse exact items on retry. Their completion record is an immutable snapshot, not a mutable link to current character profiles.
 
 Managed skills follow [the lifecycle decision](SKILL-LIFECYCLE.md): whole-definition SQLite replacement, digest comparison under the write transaction, and managed overlays for unchanged legacy folders.
+
+Community discovery follows [the catalog boundary](COMMUNITY-CATALOGS.md): metadata snapshots hand off checksum-pinned files to existing reviewed library operations.

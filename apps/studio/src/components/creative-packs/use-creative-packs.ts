@@ -48,12 +48,12 @@ export function useCreativePacks() {
     dismiss();
     await run('Reading and verifying pack contents…', signal => inspectFile(incoming, signal));
   }
-  async function fetchLink(raw: string) {
+  async function fetchLink(raw: string, expectedSha256?: string) {
     dismiss();
     await run('Downloading shared pack…', async signal => {
       const response = await fetch('/api/app/creative-packs', {
         method: 'POST', headers: { ...headers, 'content-type': 'application/json' },
-        body: JSON.stringify({ action: 'fetch', url: raw.trim() }), signal,
+        body: JSON.stringify({ action: 'fetch', url: raw.trim(), expectedSha256 }), signal,
       });
       if (!response.ok) { await readJson(response); return; }
       if (Number(response.headers.get('content-length')) > MAX_CREATIVE_PACK_BYTES) throw new Error('Creative packs must be 512 MB or smaller.');
