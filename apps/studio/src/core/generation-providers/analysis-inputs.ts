@@ -31,7 +31,7 @@ export function validateAnalysisReferenceCounts(counts: Record<AnalysisMediaKind
   }
 }
 
-/** A timed report currently has one timeline, not a per-observation source identity. */
+/** Legacy v1 reports have one timeline, without a per-observation source identity. */
 export function singleAnalysisVideo(input: Record<string, unknown>): string | null {
   if ([input.image_urls, input.audio_urls].some(value => Array.isArray(value) && value.length > 0)) return null;
   const videos = Array.isArray(input.video_urls) ? input.video_urls : [];

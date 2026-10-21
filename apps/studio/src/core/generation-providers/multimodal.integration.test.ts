@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, test } from 'node:test';
@@ -21,6 +21,9 @@ const { listProjectGenerations } = await import('../effects/project-generations'
 const { getGenerationById, updateGenerationById } = await import('../effects/record-generation');
 const { listAnalysisRecords } = await import('./analysis-records.server');
 const { listGenerationModelDescriptors } = await import('./model-catalog');
+const { changeStoryboards } = await import('../storyboards/service.server');
+const { listAnalysisSources } = await import('../storyboards/analysis.server');
+type StoryboardPlan = import('../storyboards/contract').StoryboardPlan;
 
 async function fixture() {
   const project = await createProject({ name: 'Mixed original media' });
@@ -91,4 +94,53 @@ test('multiple real videos retain declared order without a misleading singular t
   assert.match(history.resultText!, /1\. video: second\.mp4[\s\S]*320 × 180[\s\S]*2\. video: source\.mp4[\s\S]*180 × 320/);
   const record = await getGenerationById({ id: history.id });
   assert.equal((record!.input as Record<string, unknown>).video_url, undefined);
+  const [report] = (await listAnalysisSources(generation.projectId)).sources;
+  assert.equal(report.reportVersion, 2);
+  assert.deepEqual(report.media.map(item => item.assetId), [second.assetId, assets[1].assetId]);
+  const prepared = await changeStoryboards(generation.projectId, { action: 'prepare-analysis', analysis: { generationId: report.generationId, outputSha256: report.outputSha256 }, observationIds: ['video-1', 'video-0'], title: 'Reverse selection', intent: 'Keep each source timeline independent', scope: 'general' }) as { plan: StoryboardPlan };
+  assert.deepEqual(prepared.plan.references.map(item => item.assetId), [assets[1].assetId, second.assetId]);
+  assert.match(prepared.plan.references[0].observation, /180 × 320/);
+  assert.match(prepared.plan.references[1].observation, /320 × 180/);
+});
+
+test('real mixed, still-only and sound-only reports prepare and save explicitly with their original source semantics', async () => {
+  const { generation, assets } = await fixture();
+  for (const [index, selection] of [assets, [assets[0]], [assets[2]]].entries()) {
+    const result = await submitAssetFirstGeneration({ generation: { ...generation, references: selection.map(asset => ({ assetId: asset.assetId, role: 'source' })) }, origin: 'mcp' });
+    assert.equal(result.body.status, 'succeeded');
+    const report = (await listAnalysisSources(generation.projectId)).sources.find(source => source.generationId === result.body.wmTaskId)!;
+    assert.equal(report.reportVersion, 2); assert.equal(report.observations.length, selection.length);
+    const prepared = await changeStoryboards(generation.projectId, { action: 'prepare-analysis', analysis: { generationId: report.generationId, outputSha256: report.outputSha256 }, observationIds: report.observations.map(item => item.id), title: 'Source study', intent: 'Author from verified originals', scope: index === 1 ? 'specialized' : 'general' }) as { plan: StoryboardPlan };
+    assert.deepEqual(prepared.plan.references.map(item => item.assetId), selection.map(asset => asset.assetId));
+    assert.deepEqual(prepared.plan.audio, []);
+    for (const [i, asset] of selection.entries()) {
+      assert.equal(prepared.plan.references[i].sha256, asset.sha256);
+      assert.equal(prepared.plan.references[i].startTime, asset.kind === 'image' ? undefined : 0);
+      assert.equal(prepared.plan.references[i].endTime, asset.kind === 'image' ? undefined : 1);
+      assert.equal(prepared.plan.shots[i].duration, asset.kind === 'image' ? 3 : 1);
+    }
+    const saved = await changeStoryboards(generation.projectId, { action: 'save', id: 'mixed-' + index, expectedRevision: 0, plan: prepared.plan }) as { revision: number; accepted: unknown };
+    assert.equal(saved.revision, 1); assert.deepEqual(saved.accepted, {});
+  }
+});
+
+test('batch preparation rejects altered unselected companions, stale report identities and out-of-original ranges', async () => {
+  const { generation, assets } = await fixture();
+  const result = await submitAssetFirstGeneration({ generation, origin: 'ui' });
+  const id = String(result.body.wmTaskId), original = (await getGenerationById({ id }))!;
+  const [source] = (await listAnalysisSources(generation.projectId)).sources;
+  const request = { action: 'prepare-analysis', analysis: { generationId: id, outputSha256: source.outputSha256 }, observationIds: ['video-0'], title: 'Video only', intent: 'Retain complete original context', scope: 'general' };
+  const foreign = await createProject({ name: 'Foreign context' });
+  await assert.rejects(changeStoryboards(foreign.id, request), /another project/);
+  const output = original.output as { analysis_report: import('./analysis-report').AnalysisReport };
+  await updateGenerationById({ id, status: 'succeeded', output: { ...output, analysis_report: { ...output.analysis_report, summary: 'Changed report context' } } });
+  await assert.rejects(changeStoryboards(generation.projectId, request), /changed/);
+  await updateGenerationById({ id, status: 'succeeded', output: { ...output, analysis_report: { ...output.analysis_report, observations: output.analysis_report.observations.map(item => item.id === 'video-0' ? { ...item, end: 2 } : item) } } });
+  const [outOfRange] = (await listAnalysisSources(generation.projectId)).sources;
+  await assert.rejects(changeStoryboards(generation.projectId, { ...request, analysis: { generationId: id, outputSha256: outOfRange.outputSha256 } }), /duration/);
+  await updateGenerationById({ id, status: 'succeeded', output: original.output });
+  // The selected shot is a video, but the report also consumed this image.
+  await writeFile(assets[0].filePath, Buffer.alloc(assets[0].sizeBytes));
+  await assert.rejects(changeStoryboards(generation.projectId, request), /hash changed/);
+  assert.deepEqual(await changeStoryboards(generation.projectId, { action: 'list' }), []);
 });

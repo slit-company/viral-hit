@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -140,6 +141,11 @@ test('real structured analysis prepares an unsaved plan and saves through the sa
   assert.equal(result.body.status, 'succeeded');
   const [source] = (await listAnalysisSources(request.projectId)).sources;
   assert.equal(source.generationId, result.body.wmTaskId); assert.equal(source.assetId, saved.assetId);
+  const { getGenerationById } = await import('../effects/record-generation');
+  const retained = (await getGenerationById({ id: source.generationId }))!;
+  const legacyInput = retained.input as { video_url: string; _provider: { id: string; modelId: string } };
+  const legacyIdentity = { report: (retained.output as { analysis_report: unknown }).analysis_report, source: parseLocalReference(legacyInput.video_url), providerId: legacyInput._provider.id, modelId: legacyInput._provider.modelId };
+  assert.equal(source.outputSha256, createHash('sha256').update(JSON.stringify(legacyIdentity)).digest('hex'), 'v1 report fingerprint must remain compatible');
   const prepared = await changeStoryboards(request.projectId, { action: 'prepare-analysis', analysis: { generationId: source.generationId, outputSha256: source.outputSha256 }, observationIds: ['whole-video'], title: 'Technical review plan', intent: 'Review the original framing', scope: 'specialized' }) as { plan: import('../storyboards/contract').StoryboardPlan };
   assert.equal(prepared.plan.references[0].evidence?.kind, 'provider-analysis');
   assert.match(prepared.plan.references[0].observation, /180 × 320/);
