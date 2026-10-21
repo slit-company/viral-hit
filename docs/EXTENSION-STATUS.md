@@ -34,3 +34,5 @@ Model providers can declare required environment names in `provider.json`:
 This is a field fragment, not a complete provider manifest. Omission means no declared required variables. Blank/whitespace values count as missing. Missing required values make installed models unavailable in discovery and block generation preflight before an upload intent, remote reference upload or generation record is created. Presence does not validate a value. The module reads its own settings from `process.env`; none are copied into browser metadata.
 
 Diagnostics do not install, update or remove runtime code. Automated dependency installation, version management, community discovery and live provider acceptance remain separate work.
+
+Managed [runtime packages](RUNTIME-PACKAGES.md) appear as installed sources after process restart. Changes to desired package state appear as pending restart diagnostics; Refresh does not replace a loaded runtime. CLI/MCP/HTTP manage package review/install/update/removal and retained history. The package list distinguishes this process snapshot from desired state.

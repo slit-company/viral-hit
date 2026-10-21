@@ -1,3 +1,4 @@
+import { managedRuntimeEntries } from '@/core/runtime-packages/snapshot.server';
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { z } from 'zod';
@@ -41,7 +42,7 @@ export function readProviderFolder(path: string) {
   return { manifest, source: readFileSync(entryPath, 'utf8') };
 }
 
-function install({ manifest, source }: ReturnType<typeof readProviderFolder>): InstalledProviderSummary {
+function install({ manifest, source }: ReturnType<typeof readProviderFolder>, managed = false): InstalledProviderSummary {
   if (getGenerationProviderMetadata(manifest.id)) throw new ProviderLoadError('Provider id ' + manifest.id + ' is already used');
   const modelBindings = manifest.models.map(model => ({ modelId: model.id, effectId: installedEffectId(manifest.id, model.id), upstreamModelId: model.upstreamModelId ?? model.id, uploadPath: '', imageBucketName: '' }));
   // Check every model before registering anything, so a rejected provider leaves no partial state.
@@ -61,7 +62,7 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>): I
     const slots = Array.from({ length: model.maxReferenceImages }, () => ({ kind: 'reference-image' as const }));
     registerInstalledWorkspaceMediaSchema(model.id, { image: { max: slots.length, slots }, video: { max: 0, slots: [] }, audio: { max: 0, slots: [] } });
   }
-  const runtime = new InstalledProviderRuntime(manifest, source);
+  const runtime = new InstalledProviderRuntime(manifest, source, managed);
   registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia });
   const { id, label, scope, author, license, description, environment } = manifest;
   return { id, label, scope, author, license, description, environment, models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
@@ -78,24 +79,33 @@ export function installGenerationProviders(directory = process.env.VIRAL_HIT_PRO
   if (installed) return installed;
   const state: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] } = { providers: [], problems: [] };
   installed = state; loadedDirectory = directory; sourceStamp = providerSourceStamp(directory);
-  if (!directory) return state;
+  const managed = managedRuntimeEntries('provider');
+  if (!directory && !managed.length) return state;
   let folders: string[];
   try {
-    folders = readdirSync(directory, { withFileTypes: true }).filter(entry => entry.isDirectory() && !entry.name.startsWith('.')).map(entry => entry.name).sort();
+    folders = directory ? readdirSync(directory, { withFileTypes: true }).filter(entry => entry.isDirectory() && !entry.name.startsWith('.')).map(entry => entry.name).sort() : [];
   } catch {
-    state.problems.push({ location: basename(directory), message: 'Providers folder not found.' });
+    state.problems.push({ location: basename(directory ?? 'managed'), message: 'Providers folder not found.' });
     return state;
   }
-  if (folders.length > 32) { state.problems.push({ location: basename(directory), message: 'At most 32 generation providers may be installed' }); return state; }
+  if (folders.length + managed.length > 32) { state.problems.push({ location: basename(directory ?? 'managed'), message: 'At most 32 generation providers may be installed' }); return state; }
   let bytes = 0;
   for (const folder of folders) {
     try {
-      const files = readProviderFolder(resolve(directory, folder));
+      const files = readProviderFolder(resolve(directory!, folder));
       bytes += Buffer.byteLength(files.source);
       if (bytes > 8_000_000) { state.problems.push({ location: folder, message: 'Installed provider modules exceed 8 MB; remaining folders were not loaded' }); break; }
       state.providers.push(install(files));
     }
     catch (error) { state.problems.push({ location: folder, message: problemMessage(error) }); }
+  }
+  for (const entry of managed) {
+    try {
+      const manifest = providerManifestSchema.parse(entry.manifest);
+      bytes += Buffer.byteLength(entry.source);
+      if (bytes > 8_000_000) throw new ProviderLoadError('Combined provider modules exceed 8 MB');
+      state.providers.push(install({ manifest, source: entry.source }, true));
+    } catch(error) { state.problems.push({ location: String(entry.manifest.id), message: problemMessage(error) }); }
   }
   return state;
 }

@@ -76,3 +76,13 @@ For a later run, read `viral_hit_recipes_list` and pass `recipeDigests[recipeId]
 - Do not retry an install that failed with a conflict. Explain the conflict and use a fresh lifecycle review for same-ID recipe-pack updates, or a new ID for an independent fork.
 - The same operations exist in the Recipe library UI (**Runs → Recipe library**) and the CLI (`recipe packs`, `inspect-pack`, `install-pack`, `build-pack`, `review-update-pack`, `review-remove-pack`, `pack-request`), so the user can finish any step themselves.
 
+
+## Install an explicitly requested executable runtime
+
+Use `viral_hit_runtime_package` only when the operator asks to install/update/remove trusted executable runtimes, not merely to import recipes or make media. A portable runtime package contains complete provider/adapter/publishing manifests and source. It is distinct from a data-only creative pack. General and specialized implementations follow the same path; separate engine requirements remain operator setup.
+
+1. Call `list` and `inspect` with the exact package JSON. Read its full source and manifest differences, required environment names, engine requirements and blocking identity/capacity conflicts. Explain that modules have normal host privileges and restart is required; inspection does not prove code safety, credentials or output quality. Do not run code to inspect it. Existing authorization to install the specific reviewed trusted code suffices; do not ask repeatedly.
+2. When authorized to trust/apply that package and there are no blockers, call `apply` with `package`, `expectedDigest`, `expectedStateDigest` from inspection and `trustCode: true`. Changed tokens require fresh review. This stores desired state only and executes no install script or provider call. Never add credentials or environment values to a package.
+3. Confirm `list` and the desired version. `loaded` is this server process's snapshot; if `restartRequired` is true, explain that studio, MCP and workers must restart together. Do not claim capabilities are active until a fresh-process status confirms them. Old queued jobs and provider tasks require their pinned original runtime/configuration; an update does not migrate them.
+4. For removal, call `review-remove` with `id`, then authorized `remove` with `id` and `expectedStateDigest`. Retained releases, projects/jobs and receipts remain. Active processes keep their loaded code until restarted.
+5. To restore, call `history`, then `export` with `id` and a selected `digest`; inspect and apply that exact returned package with fresh tokens, then restart. Do not silently downgrade. There is no executable-package URL fetch, dependency installation, hot reload or sandbox in this flow.

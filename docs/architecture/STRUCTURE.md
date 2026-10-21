@@ -17,6 +17,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, unchecked cross-library overwrite or silent runtime installation |
 | `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
 | `src/core/community/` | Bounded independent catalog metadata, review diffs and local snapshots | Artifact execution/installation, background network discovery or a second package library |
+| `src/core/runtime-packages/` | Reviewed executable package metadata/source, immutable releases, atomic desired-state changes and process snapshots | A second execution engine, install scripts, dependency downloads or hot task migration |
 | `src/core/extensions/` | Read-only public diagnostic projections of installed extension catalogs, shared by UI/MCP/CLI | Runtime installation, module execution, provider probes, configuration values or independent registration state |
 | `src/core/publishing/` | Approved media/destination intents, leases, resumable transfer, remote receipts and reconciliation | Generation, shared UI, credentials in public views or remote calls inside transactions |
 | `src/core/db/`, `src/core/workspace-db/`, storage modules | Database/file persistence and transaction boundaries | UI or provider workflows |
@@ -77,3 +78,5 @@ Recipe lifecycle follows [the storage/execution decision](RECIPE-LIFECYCLE.md): 
 Recipe-pack maintenance follows [the atomic composition lifecycle](PACK-LIFECYCLE.md): preserve existing definitions by default, pin affected state and membership, replace/delete only explicit eligible selections, and keep saved execution plans independent.
 
 Creative-pack releases follow [the composition lifecycle](CREATIVE-PACK-LIFECYCLE.md): explicit selected replacements through library owners, partial recovery with fresh review, immutable historical exports and removal that retains reusable contents.
+
+Managed executable releases follow [the runtime package decision](RUNTIME-PACKAGES.md). Runtime owners consume captured source through their existing contracts; lifecycle changes never execute source and require coordinated process restart.

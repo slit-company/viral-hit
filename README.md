@@ -51,6 +51,8 @@ A workflow for one campaign or brand belongs in its own recipes and adapters, ke
 
 **Extensions** shows installed model providers, workflow adapters, publishing connectors and skills, including missing settings and load failures. [The same diagnostics](docs/EXTENSION-STATUS.md) are available through MCP and CLI. Checking metadata never starts generation or publishing; loaded metadata does not mean execution has been tested.
 
+[Runtime packages](docs/RUNTIME-PACKAGES.md) carry complete provider, adapter and publishing modules for either general or specialized use. CLI/MCP/API support reviewed installation, replacement, removal and historical restoration. The Extensions page separates loaded capabilities from pending restart changes. Executable package installation requires trusted source and coordinated process restart; browser installation is still pending.
+
 Install a versioned JSON recipe to add a workflow and its typed form without modifying the studio. UI and MCP discover the same recipes. [Extension guide](docs/EXTENDING.md) covers recipe authoring, output bindings, adapter contracts and current limits. Specialized recipes and general creative projects share the same core.
 
 Native, self-hosted ComfyUI graphs are also supported through `comfy.workflow`: see [setup, recipes and recovery semantics](docs/LOCAL-COMFYUI.md). Import your own API-format graph in **Runs → Recipe library → Import ComfyUI workflow** or with `recipe import-comfy`; the [import guide](docs/EXTENDING.md#import-your-own-comfyui-graph) includes input/output mapping and an offline example. **Runs → Connections** saves and checks your native server address without editing code or restarting the worker; managed environment overrides remain read-only. Project image parameters add a previewable selection and durable transfer to your configured ComfyUI server; try **Resize a project image** in Runs. **Check server** inspects installed native nodes and current input/model choices without submitting work; the same check is available in CLI and MCP.
@@ -65,7 +67,7 @@ Move an editable project between installations with a [project file](docs/PROJEC
 
 Unsaved timeline edits are backed up in the current browser. **Drafts** reviews and restores interrupted edits while preserving concurrent saved changes; see [editing recovery and storage limits](docs/EDITING-RECOVERY.md).
 
-Install a new execution engine without editing the app: [external adapters](docs/EXTERNAL-ADAPTERS.md) share typed input discovery, pinned jobs, binary output receipts and editor integration. A standalone procedural WAV example is included; executable modules are enabled only by an operator-configured directory.
+Install a new execution engine without editing the app: [external adapters](docs/EXTERNAL-ADAPTERS.md) share typed input discovery, pinned jobs, binary output receipts and editor integration. A standalone procedural WAV example is included; enable trusted modules through an operator-configured directory or a reviewed runtime package.
 
 Optional [ima2 image recipes](extensions/ima2/README.md) connect a separately configured ima2 server for prompt-based and reference-guided image generation. Results enter the same project Assets and timeline. The bridge uses explicit provider/model selection and read-only recovery of interrupted requests; real provider quality validation remains pending.
 

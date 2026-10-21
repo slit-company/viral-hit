@@ -1,3 +1,5 @@
+import { managedRuntimeSnapshot, runtimeRestartRequired } from '@/core/runtime-packages/snapshot.server';
+import { readRuntimeCatalog, runtimeEntryId } from '@/core/runtime-packages/storage.server';
 import { generationProviderDiagnostics } from '@/core/generation-providers/installed/install.server';
 import { externalCatalog, externalConfigured } from '@/core/harness/external-catalog';
 import { installedConnectorCatalog } from '@/core/publishing/installed/catalog.server';
@@ -10,16 +12,19 @@ const failure = (kind: ExtensionKind, refresh: 'restart' | 'live', message: stri
 /** Read-only aggregation. Partial catalog failures never hide the other extension layers. No module import or network request. */
 export async function extensionDiagnostics(): Promise<ExtensionDiagnostics> {
   const groups: ExtensionGroup[] = [];
+  const loaded = managedRuntimeSnapshot(), desired = readRuntimeCatalog();
+  const managed = new Set(loaded.packages.flatMap(pkg => pkg.entries.map(entry => entry.kind + ':' + runtimeEntryId(entry))));
+  const changed = runtimeRestartRequired(desired);
   try {
     const catalog = generationProviderDiagnostics();
     groups.push({ kind: 'providers', refresh: 'restart', sourceChanged: catalog.sourceChanged, problems: catalog.problems,
-      items: catalog.providers.map(provider => ({ id: provider.id, label: provider.label, description: provider.description, scope: provider.scope, source: 'operator',
+      items: catalog.providers.map(provider => ({ id: provider.id, label: provider.label, description: provider.description, scope: provider.scope, source: managed.has('provider:' + provider.id) ? 'installed' : 'operator',
         state: provider.missingEnvironment.length ? 'needs-setup' : 'loaded', configuration: presence(provider.environment),
         capabilities: provider.models.map(model => ({ id: model.id, label: model.name + ' · ' + model.kind })), issues: [] })) });
   } catch { groups.push(failure('providers', 'restart', 'Provider discovery failed. Check provider files on the server.')); }
   try {
     groups.push({ kind: 'adapters', refresh: 'restart', problems: [], items: externalCatalog().map(entry => ({
-      id: entry.descriptor.operation, label: entry.descriptor.label, version: entry.descriptor.version, source: 'operator',
+      id: entry.descriptor.operation, label: entry.descriptor.label, version: entry.descriptor.version, source: managed.has('adapter:' + entry.descriptor.operation) ? 'installed' : 'operator',
       state: externalConfigured(entry) ? 'loaded' : 'needs-setup', configuration: presence(entry.descriptor.configuration.filter(setting => setting.required).map(setting => setting.name)),
       capabilities: [{ id: entry.descriptor.operation, label: entry.descriptor.generation ? 'Generation workflow step' : 'Processing workflow step' }], issues: [],
     })) });
@@ -27,7 +32,7 @@ export async function extensionDiagnostics(): Promise<ExtensionDiagnostics> {
   try {
     const catalog = installedConnectorCatalog();
     groups.push({ kind: 'publishing', refresh: 'live', problems: catalog.problems, items: catalog.connectors.map(connector => ({
-      id: connector.id, label: connector.label, description: connector.description, scope: connector.scope, version: connector.version, source: 'operator',
+      id: connector.id, label: connector.label, description: connector.description, scope: connector.scope, version: connector.version, source: managed.has('publishing:' + connector.id) ? 'installed' : 'operator',
       state: connector.configured ? 'loaded' : 'needs-setup', configuration: connector.missingEnvironment.map(name => ({ name, present: false })),
       capabilities: connector.destinations.map(destination => ({ id: destination.id, label: destination.label })), issues: [],
     })) });
@@ -39,5 +44,5 @@ export async function extensionDiagnostics(): Promise<ExtensionDiagnostics> {
         source: skill.source === 'local' ? 'operator' : skill.source, state: skill.compatible ? 'loaded' : 'needs-setup', configuration: [],
         capabilities: skill.manifest.compatibility.requiredMcpTools.map(name => ({ id: name, label: name })), issues: skill.incompatibilities })) });
   } catch { groups.push(failure('skills', 'live', 'Skill catalog could not load. Check the bundled and operator skill folders.')); }
-  return { checkedAt: new Date().toISOString(), groups };
+  return { checkedAt: new Date().toISOString(), restartRequired: changed, groups };
 }

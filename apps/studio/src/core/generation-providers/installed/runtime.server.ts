@@ -1,3 +1,4 @@
+import { pinProviderTask, providerRuntimeDigest, unpinProviderTask } from './task-pin.server';
 import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -35,7 +36,7 @@ const message = (error: unknown) => (error instanceof Error ? error.message : St
 export class InstalledProviderRuntime {
   private module?: Promise<ProviderModule>;
   /** source is the module text read at install time; edits on disk take effect after a restart. */
-  constructor(readonly manifest: ProviderManifest, private readonly source: string) {}
+  constructor(readonly manifest: ProviderManifest, private readonly source: string, private readonly managed = false) {}
 
   load() {
     this.module ??= nativeImport('data:text/javascript;base64,' + Buffer.from(this.source).toString('base64')).then((loaded) => {
@@ -49,7 +50,12 @@ export class InstalledProviderRuntime {
   async call(method: 'createGeneration' | 'checkStatus', effect: EffectRecord, request: Record<string, unknown>): Promise<GenerationResult> {
     const { label } = this.manifest;
     const model = this.manifest.models.find(item => item.id === effect.linkName);
-    if (!model) return { status: 'failed', error: label + ' does not offer ' + effect.linkName };
+    if (!model) {
+      if(method==='checkStatus') throw Error(label+' no longer offers this task model. Restore its original runtime.');
+      return { status:'failed',error:label+' does not offer '+effect.linkName };
+    }
+    const runtime = this.managed ? providerRuntimeDigest(this.manifest,this.source) : undefined;
+    if(runtime && method==='checkStatus') request={...request,taskId:unpinProviderTask(request.taskId,runtime,model.id)};
     const missing = this.manifest.environment.filter(name => !process.env[name]?.trim());
     if (missing.length) throw new Error('Provider configuration is missing: ' + missing.join(', '));
     let raw: unknown;
@@ -62,11 +68,11 @@ export class InstalledProviderRuntime {
       if (method === 'checkStatus') throw error;
       return { status: 'failed', error: label + ': ' + message(error) };
     }
-    try { return await this.toResult(raw, model); }
+    try { return await this.toResult(raw, model, runtime); }
     catch (error) { return { status: 'failed', error: label + ' returned an unusable result: ' + message(error) }; }
   }
 
-  private async toResult(raw: unknown, model: ProviderModel): Promise<GenerationResult> {
+  private async toResult(raw: unknown, model: ProviderModel, runtime?:string): Promise<GenerationResult> {
     const result = providerResultSchema.parse(raw);
     const urls: string[] = [];
     for (const item of result.media ?? []) {
@@ -76,7 +82,7 @@ export class InstalledProviderRuntime {
     }
     return {
       status: result.status,
-      output: { ...(result.taskId ? { taskId: result.taskId } : {}), ...(urls.length ? { resultUrls: urls } : {}) },
+      output: { ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}) },
       ...(result.error ? { error: result.error } : {}),
     };
   }

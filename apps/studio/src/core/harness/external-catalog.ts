@@ -1,3 +1,5 @@
+import { managedRuntimeEntries } from '@/core/runtime-packages/snapshot.server';
+import { getViralHitDataRoot } from '@/config/data-root';
 import { pointerParts } from './bindings';
 import { executionPolicy } from './execution-policy';
 import { MAX_ADAPTER_INPUT_BYTES, projectMediaPin } from './project-media-input-schema';
@@ -38,29 +40,41 @@ export function readExternalCatalog(directory: string | undefined) {
     const descriptor = externalDescriptor.parse(JSON.parse(boundedRead(join(directory, file), 64_000).toString('utf8')));
     if (operations.has(descriptor.operation)) throw new Error(`Duplicate adapter operation: ${descriptor.operation}`);
     operations.add(descriptor.operation);
-    if (new Set(descriptor.configuration.map(item => item.name)).size !== descriptor.configuration.length) throw new Error('Duplicate adapter configuration variable');
-    const inputs = descriptor.assetInputs ?? [];
-    if (new Set(inputs.map(input => input.id)).size !== inputs.length) throw new Error('Duplicate adapter asset input');
-    const pointers = inputs.map(input => pointerParts(input.pointer));
-    if (pointers.some((pointer, index) => !pointer.length || pointers.slice(0, index).some(other => other.slice(0, Math.min(other.length, pointer.length)).every((part, i) => part === pointer[i])))) throw new Error('Adapter asset input pointers overlap');
-    if (inputs.reduce((sum, input) => sum + input.maxBytes, 0) > MAX_ADAPTER_INPUT_BYTES) throw new Error('Adapter asset inputs exceed 512 MiB aggregate');
     const bytes = boundedRead(join(directory, descriptor.entry), 2_000_000);
     totalBytes += bytes.length;
     if (totalBytes > 8_000_000) throw new Error('Adapter modules exceed 8 MB aggregate');
-    if (createHash('sha256').update(bytes).digest('hex') !== descriptor.sha256) throw new Error(`Adapter SHA-256 mismatch: ${descriptor.operation}`);
-    if (descriptor.inputSchema.$async) throw new Error('Adapter input schema must be synchronous');
-    const validate = new Ajv({ strict: true, allErrors: false, ownProperties: true }).compile(descriptor.inputSchema);
-    // No module import occurs here. UI/HTTP/MCP only inspect data and pinned source bytes.
-    return { descriptor, source: bytes.toString('utf8'), digest: fingerprint(descriptor as unknown as Json), validate };
+    return validateExternalEntry(descriptor, bytes.toString('utf8'));
   });
+}
+/** Validates captured bytes without importing executable source. */
+export function validateExternalEntry(raw: unknown, source: string) {
+  const descriptor = externalDescriptor.parse(raw);
+  if (new Set(descriptor.configuration.map(item => item.name)).size !== descriptor.configuration.length) throw new Error('Duplicate adapter configuration variable');
+  const inputs = descriptor.assetInputs ?? [];
+  if (new Set(inputs.map(input => input.id)).size !== inputs.length) throw new Error('Duplicate adapter asset input');
+  const pointers = inputs.map(input => pointerParts(input.pointer));
+  if (pointers.some((pointer, index) => !pointer.length || pointers.slice(0, index).some(other => other.slice(0, Math.min(other.length, pointer.length)).every((part, i) => part === pointer[i])))) throw new Error('Adapter asset input pointers overlap');
+  if (inputs.reduce((sum, input) => sum + input.maxBytes, 0) > MAX_ADAPTER_INPUT_BYTES) throw new Error('Adapter asset inputs exceed 512 MiB aggregate');
+  const bytes = Buffer.from(source);
+  if (bytes.length < 1 || bytes.length > 2_000_000) throw new Error('Adapter module must contain 1 byte to 2 MB');
+  if (createHash('sha256').update(bytes).digest('hex') !== descriptor.sha256) throw new Error(`Adapter SHA-256 mismatch: ${descriptor.operation}`);
+  if (descriptor.inputSchema.$async) throw new Error('Adapter input schema must be synchronous');
+  const validate = new Ajv({ strict: true, allErrors: false, ownProperties: true }).compile(descriptor.inputSchema);
+  // No module import occurs here. UI/HTTP/MCP only inspect data and pinned source bytes.
+  return { descriptor, source: bytes.toString('utf8'), digest: fingerprint(descriptor as unknown as Json), validate };
 }
 export type ExternalEntry = ReturnType<typeof readExternalCatalog>[number];
 const catalogs = new Map<string, ReturnType<typeof readExternalCatalog>>();
 /** Process-lifetime snapshot. Restart app, MCP and worker together after installation/update. */
 export function externalCatalog() {
-  const directory = process.env.VIRAL_HIT_ADAPTERS_DIR ?? '';
-  if (!catalogs.has(directory)) catalogs.set(directory, readExternalCatalog(directory));
-  return catalogs.get(directory)!;
+  const directory = process.env.VIRAL_HIT_ADAPTERS_DIR ?? '', key = getViralHitDataRoot() + ':' + directory;
+  if (!catalogs.has(key)) {
+    const entries = [...readExternalCatalog(directory), ...managedRuntimeEntries('adapter').map(entry => validateExternalEntry(entry.manifest, entry.source))];
+    if (entries.length > 32 || entries.reduce((sum,entry) => sum + Buffer.byteLength(entry.source),0) > 8_000_000) throw new Error('Combined adapter capacity exceeded (32 entries / 8 MB)');
+    if (new Set(entries.map(entry => entry.descriptor.operation)).size !== entries.length) throw new Error('Managed adapter conflicts with an operator operation');
+    catalogs.set(key, entries);
+  }
+  return catalogs.get(key)!;
 }
 export function externalConfigured(entry: ExternalEntry) {
   return entry.descriptor.configuration.every(item => !item.required || Boolean(process.env[item.name]?.trim()));

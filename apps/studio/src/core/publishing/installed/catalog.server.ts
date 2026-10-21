@@ -1,3 +1,4 @@
+import { managedRuntimeEntries } from '@/core/runtime-packages/snapshot.server';
 import { createHash } from 'node:crypto';
 import { lstatSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
@@ -32,6 +33,17 @@ export function readConnectorFolder(path: string): InstalledConnector {
     if (cache.size >= 32 && !cache.has(path)) cache.delete(cache.keys().next().value!);
     cache.set(path, { stamp: signature, files });
   }
+  return configuredConnector(files);
+}
+
+export function validateConnectorSource(raw: unknown, source: string): Files {
+  const manifest = connectorManifestSchema.parse(raw);
+  if (Buffer.byteLength(source) < 1 || Buffer.byteLength(source) > 2_000_000) throw new Error('Connector module must contain 1 byte to 2 MB');
+  const validate = new Ajv({ strict: true, allErrors: false, ownProperties: true }).compile(manifest.metadataSchema);
+  return { manifest, source, validate, definitionHash: createHash('sha256').update(canonicalJson({ manifest, source })).digest('hex') };
+}
+function configuredConnector(files: Files): InstalledConnector {
+  const { manifest } = files;
   const environment = Object.fromEntries(manifest.environment.map(name => [name, process.env[name] ?? '']));
   // Pin code, configuration, destinations and environment values. Public discovery never returns those values.
   const hash = createHash('sha256').update(canonicalJson({ definitionHash: files.definitionHash, environment })).digest('hex');
@@ -44,20 +56,30 @@ export function readConnectorFolder(path: string): InstalledConnector {
   return { ...files, runtimeVersion, environment, descriptor };
 }
 
-export function readInstalledConnectors(directory = process.env.VIRAL_HIT_PUBLISHING_CONNECTORS_DIR?.trim()) {
+export function readInstalledConnectors(directory = process.env.VIRAL_HIT_PUBLISHING_CONNECTORS_DIR?.trim(), includeManaged = true) {
   const entries: InstalledConnector[] = [], problems: InstalledConnectorCatalog['problems'] = [];
-  if (!directory) return { entries, problems };
+  const managed = includeManaged ? managedRuntimeEntries('publishing') : [];
+  if (!directory && !managed.length) return { entries, problems };
   let folders: string[];
-  try { folders = readdirSync(directory, { withFileTypes: true }).filter(item => item.isDirectory() && !item.name.startsWith('.')).map(item => item.name).sort(); }
-  catch { return { entries, problems: [{ location: basename(directory), message: 'Publishing connector folder is unavailable' }] }; }
-  if (folders.length > 32) return { entries, problems: [{ location: basename(directory), message: 'At most 32 publishing connectors may be installed' }] };
+  try { folders = directory ? readdirSync(directory, { withFileTypes: true }).filter(item => item.isDirectory() && !item.name.startsWith('.')).map(item => item.name).sort() : []; }
+  catch { return { entries, problems: [{ location: basename(directory ?? 'managed'), message: 'Publishing connector folder is unavailable' }] }; }
+  if (folders.length + managed.length > 32) return { entries, problems: [{ location: basename(directory ?? 'managed'), message: 'At most 32 publishing connectors may be installed' }] };
   let bytes = 0;
   for (const folder of folders) {
     try {
-      const entry = readConnectorFolder(resolve(directory, folder)); bytes += Buffer.byteLength(entry.source);
-      if (bytes > 8_000_000) { cache.delete(resolve(directory, folder)); problems.push({ location: folder, message: 'Installed publishing modules exceed 8 MB' }); break; }
+      const entry = readConnectorFolder(resolve(directory!, folder)); bytes += Buffer.byteLength(entry.source);
+      if (bytes > 8_000_000) { cache.delete(resolve(directory!, folder)); problems.push({ location: folder, message: 'Installed publishing modules exceed 8 MB' }); break; }
       entries.push(entry);
     } catch { problems.push({ location: folder, message: 'Connector files or metadata schema are invalid; run the connector check command for details' }); }
+  }
+  for (const source of managed) {
+    try {
+      const entry = configuredConnector(validateConnectorSource(source.manifest, source.source));
+      bytes += Buffer.byteLength(source.source);
+      if (bytes > 8_000_000) throw new Error('Combined publishing modules exceed 8 MB');
+      if (entries.some(item => item.manifest.id === entry.manifest.id)) throw new Error('Managed connector conflicts with operator ID');
+      entries.push(entry);
+    } catch { problems.push({ location: String(source.manifest.id), message: 'Managed connector conflicts or exceeds capacity; review runtime packages' }); }
   }
   return { entries, problems };
 }

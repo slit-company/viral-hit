@@ -10,4 +10,4 @@ export type ExtensionGroup = {
   kind: ExtensionKind; items: ExtensionDiagnostic[]; problems: { location: string; message: string }[];
   refresh: 'restart' | 'live'; sourceChanged?: boolean;
 };
-export type ExtensionDiagnostics = { checkedAt: string; groups: ExtensionGroup[] };
+export type ExtensionDiagnostics = { checkedAt: string; restartRequired?: boolean; groups: ExtensionGroup[] };

@@ -1,8 +1,10 @@
+import { managedRuntimeSnapshot } from '../src/core/runtime-packages/snapshot.server';
 import { setTimeout } from 'node:timers/promises';
 import { openPublications } from '../src/core/publishing/publication-files.server';
 import { openPublicationRuntime } from '../src/core/publishing/runtime.server';
 import { runPublicationStep } from '../src/core/publishing/worker.server';
 
+managedRuntimeSnapshot();
 const shutdown = new AbortController();
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => shutdown.abort());
 const store = openPublications();

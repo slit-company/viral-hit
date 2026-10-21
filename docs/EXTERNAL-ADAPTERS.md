@@ -19,7 +19,7 @@ pnpm dev
 
 In a project, open **Runs**, select **Procedural tone**, choose frequency and duration, then **Queue workflow**. Once the materializer reports **Asset ready**, choose **Add to timeline**. The normal development/production launcher starts the worker automatically. If you start the app, MCP or worker separately, provide the same environment to each. To keep the standard recipe catalog, omit `VIRAL_HIT_RECIPES_DIR` and install `examples/adapter-recipes/procedural-tone.json` through **Recipe library** instead.
 
-Without `VIRAL_HIT_ADAPTERS_DIR`, no external code is enabled. The directory is a process-lifetime snapshot: after installing/updating adapters, restart the studio, MCP and worker together. There is no browser-side code upload, automatic package download or hot replacement.
+Without an operator directory or a managed runtime package, no external adapter code is enabled. [Managed runtime packages](RUNTIME-PACKAGES.md) provide reviewed installation/update/removal and retained release restoration through CLI/MCP/HTTP. The directory is a process-lifetime snapshot: after installing/updating adapters, restart the studio, MCP and worker together. There is no browser-side code upload, automatic package download or hot replacement.
 
 ## Package contract
 

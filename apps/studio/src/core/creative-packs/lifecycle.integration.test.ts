@@ -168,7 +168,7 @@ test('separate CLI processes serialize competing release heads and preserve the 
   });
   const outcomes = await Promise.allSettled([run(0), run(1)]);
   assert.equal(outcomes.filter(result => result.status === 'fulfilled').length, 1);
-  assert.match(String((outcomes.find(result => result.status === 'rejected') as PromiseRejectedResult).reason), /changed after review|membership changed/);
+  assert.match(String((outcomes.find(result => result.status === 'rejected') as PromiseRejectedResult).reason), /changed after review|membership changed|changed during this update/);
   const history = await changeCreativePacks({ action: 'history', id: first.id }); assert.ok('releases' in history);
   assert.equal(history.releases.length, 2); assert.ok(history.releases.some(release => release.digest === summarizeCreativePack(first).digest));
 }));

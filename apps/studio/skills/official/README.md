@@ -7,7 +7,7 @@ MCP workflow test.
 | Skill | What it helps an agent do | Evidence |
 |---|---|---|
 | [consistent-characters](consistent-characters/SKILL.md) | Define a character from images and keep/never rules, add it to projects and attach it to Canvas drafts without duplicates | Three-scenario evaluation recorded under research/evidence/skills; browser test `choosing a character in the Canvas composer…` |
-| [recipe-packs](recipe-packs/SKILL.md) | Find, review, install, build and share general or job-specific recipe packs | Four-scenario evaluation recorded under research/evidence/skills; browser test `the recipe-packs skill workflow through MCP…` |
+| [recipe-packs](recipe-packs/SKILL.md) | Find, share and maintain general or job-specific packs; review explicitly requested executable runtimes | Four-scenario evaluation under research/evidence/skills; MCP/browser pack workflows and `runtime skill flow stages reviewed code…`; lifecycle evidence under research/evidence/runtime-packages |
 
 Each accepted Skill lives in `skills/official/<skill-id>/` and contains exactly
 the two required source files:

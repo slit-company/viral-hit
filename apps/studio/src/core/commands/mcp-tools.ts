@@ -44,6 +44,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_recipe_pack',
   'viral_hit_character',
   'viral_hit_creative_pack',
+  'viral_hit_runtime_package',
   'viral_hit_extension_status',
   'viral_hit_community',
 ] as const;
