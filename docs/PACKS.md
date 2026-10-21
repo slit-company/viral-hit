@@ -28,7 +28,7 @@ pnpm --dir apps/studio recipe inspect-pack ../../packs/slide-story.json
 pnpm --dir apps/studio recipe install-pack ../../packs/slide-story.json DIGEST_FROM_INSPECT
 ```
 
-Agents connected over MCP can read the bundled [recipe-packs skill](../apps/studio/skills/official/recipe-packs/SKILL.md) (`viral_hit_skill_get` or `viral-hit://skills/recipe-packs`). It walks them through matching a request to a general or job-specific pack, showing the review, installing with the reviewed digest and building a pack to share. MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, `fetch` (a pack link), `inspect`, `install` and `build`. HTTP uses `GET/POST /api/app/recipe-packs` with the trusted workspace header.
+Agents connected over MCP can read the bundled [recipe-packs skill](../apps/studio/skills/official/recipe-packs/SKILL.md) (`viral_hit_skill_get` or `viral-hit://skills/recipe-packs`). It walks them through matching a request to a general or job-specific pack, showing the review, installing with the reviewed digest and building a pack to share. MCP exposes `viral_hit_recipe_pack` with `{ "request": { "action": "list" } }`, `fetch` (a pack link), `inspect`, `install`, `build`, `review-update`, `update`, `review-remove` and `remove`. HTTP uses `GET/POST /api/app/recipe-packs` with the trusted workspace header.
 
 ## Make your own pack
 
@@ -66,7 +66,7 @@ You can also write the file by hand. A pack is one JSON file of up to 1 MB:
 - `requirements` is an optional plain-language note (up to 600 characters) about setup beyond the studio, such as an adapter, a server or an environment variable. It appears on the pack card and in the review.
 - Put pack files in `packs/`, or ship one as `extensions/<name>/pack.json` beside an extension, to offer them in every project of an installation. Setting `VIRAL_HIT_PACKS_DIR` replaces both with your own folder. Offered packs are reviewed before install and never installed automatically.
 
-Installation is all or nothing. If any recipe conflicts with a different recipe already installed, nothing from the pack is added. An installed pack is immutable: reinstalling the same file is a no-op, and a changed file under the same ID is rejected. Publish updates under a new pack ID (for example `my-campaign-v2`) so projects that used the earlier recipes stay reproducible.
+Installation is all or nothing. If any recipe conflicts with a different recipe already installed, nothing from the pack is added. Plain installation never overwrites a release: reinstalling unchanged members is a no-op and a changed file under the same ID requires a separate [reviewed update](PACK-LIFECYCLE.md). Pack updates selectively replace chosen definitions and preserve dropped recipes. Saved execution plans remain reproducible independently of the current library.
 
 Keep private rules, account details and brand assets out of shared packs. A pack built for one team can live in that team's own repository and still install into any Viral Hit installation.
 
@@ -77,4 +77,4 @@ Keep private rules, account details and brand assets out of shared packs. A pack
 
 ## Maintain installed members
 
-Recipes inside a pack support [reviewed updates and removal](RECIPE-LIFECYCLE.md). The pack catalog then reports modified or missing contents. Reimporting the original pack can restore missing recipes after review; any existing changed member blocks restoration instead of being overwritten. Pack-wide updates/removal remain separate operations.
+Recipes inside a pack support [reviewed updates and removal](RECIPE-LIFECYCLE.md). The pack catalog then reports modified or missing contents. Reimporting the original pack can restore missing recipes after review; any existing changed member blocks restoration instead of being overwritten. Pack-wide updates/removal use the [pack lifecycle](PACK-LIFECYCLE.md), with full definition review and explicit per-recipe choices.

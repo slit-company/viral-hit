@@ -11,7 +11,7 @@ export type { RecipeInspection } from '@/core/harness/recipe-library-contract';
 import { useRecipeLibrary, downloadRecipe as download } from './use-recipe-library';
 import { RecipeUpdateReview, RecipeRemovalPanel } from './recipe-lifecycle-review';
 
-export function RecipeLibrary({ selected, installed = false, onInstalled, onRemoved, onPackInstalled, onBack }: { selected?: Recipe; installed?: boolean; onInstalled: (recipe: Recipe) => Promise<void>; onRemoved: (recipe: Recipe) => Promise<void>; onPackInstalled: (pack: PackSummary) => Promise<void>; onBack: () => void }) {
+export function RecipeLibrary({ selected, installed = false, onInstalled, onRemoved, onPackInstalled, onPackRemoved, onBack }: { selected?: Recipe; installed?: boolean; onInstalled: (recipe: Recipe) => Promise<void>; onRemoved: (recipe: Recipe) => Promise<void>; onPackInstalled: (pack: PackSummary) => Promise<void>; onPackRemoved: (pack: PackSummary) => Promise<void>; onBack: () => void }) {
   const library = useRecipeLibrary(selected, onInstalled, onRemoved);
   const { text, inspection, removal, error, busy, edit, fork, loadFile, inspect, install } = library;
   const [graphBuilder, setGraphBuilder] = useState(false), [packBuilder, setPackBuilder] = useState(false);
@@ -24,7 +24,7 @@ export function RecipeLibrary({ selected, installed = false, onInstalled, onRemo
   }} />;
   return <div className="space-y-4">
     <Action onClick={onBack} disabled={busy} className="inline-flex items-center gap-1.5 text-xs text-[var(--vh-text-2)]"><ArrowLeft size={14} />Back to runs</Action>
-    <RecipePacks onInstalled={onPackInstalled} onMakePack={() => { setPackBuilder(true); }} />
+    <RecipePacks onInstalled={onPackInstalled} onRemoved={onPackRemoved} onMakePack={() => { setPackBuilder(true); }} />
     <h3 className="border-t border-[var(--vh-border)] pt-4 text-sm font-semibold">Your own recipe</h3>
     <Action disabled={busy} onClick={() => { setGraphBuilder(true); }} className="flex w-full items-center justify-between rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-left text-xs"><span><strong className="block text-sm">Import ComfyUI workflow</strong><span className="mt-1 block text-[var(--vh-text-2)]">Choose graph inputs and an output, then build a portable recipe.</span></span><FileJson size={18} className="ml-3 shrink-0" /></Action>
     {selected && <section className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3">

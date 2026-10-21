@@ -8,4 +8,4 @@ Recipe packs preserve their original summary/composition digest. Read projection
 
 A recipe catalog is an authoring source. Durable jobs already contain their compiled inputs, bindings and fingerprints; lifecycle never edits the jobs database or project state. New UI check/run requests pin the digest loaded with the input form so a concurrent recipe edit fails before enqueue. The optional field keeps direct agent requests that intentionally select the latest definition compatible. It does not pin an entire future job to a mutable recipe lookup: compilation reads one definition and persists the resulting plan as before.
 
-The feature does not implement pack-wide lifecycle, runtime module updates, automatic release polling or revocation of already queued work. Those boundaries require their own contracts.
+Pack-wide changes now follow [the separate pack lifecycle contract](PACK-LIFECYCLE.md). Runtime module updates, automatic release polling and revocation of already queued work remain outside this boundary.

@@ -50,7 +50,7 @@ test('bundled packs separate general and situation-specific workflows and valida
   assert.throws(() => validatePack({ ...reel, description: 'x'.repeat(1_000_001) }), /1 MB/);
 });
 
-test('installation is reviewed, atomic, idempotent and immutable', async () => {
+test('installation is reviewed, atomic, idempotent and cannot overwrite a release', async () => {
   const reel = await read('short-form-reel');
   const review = await inspectPack(reel);
   assert.equal(review.collision, 'none'); assert.deepEqual(review.blocking, []);
@@ -72,7 +72,7 @@ test('installation is reviewed, atomic, idempotent and immutable', async () => {
   assert.deepEqual(await installPack(reel, review.pack.digest), { pack: review.pack, installed: false, added: [] });
   assert.equal((await inspectPack(reel)).collision, 'same');
   const update = structuredClone(reel); update.version = '1.1.0';
-  assert.match((await inspectPack(update)).blocking[0], /new pack ID/);
+  assert.match((await inspectPack(update)).blocking[0], /Review pack update/);
   await assert.rejects(installPack(update, (await inspectPack(update)).pack.digest), /different contents/);
   const listed = await changeRecipePacks({ action: 'list' }) as Awaited<ReturnType<typeof listRecipePacks>>;
   assert.equal(listed.available.find(item => item.summary.id === 'short-form-reel')?.state, 'installed');

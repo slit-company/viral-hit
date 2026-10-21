@@ -50,6 +50,7 @@ export function RecipePacksPage({
             <PackBuilder onBack={() => setBuilding(false)} />
           ) : (
             <RecipePacks
+              onRemoved={async (pack) => setNotice(pack.title + ' was removed. Unselected recipes and saved work are kept.')}
               shared={shared}
               onMakePack={() => setBuilding(true)}
               onInstalled={async (pack) =>

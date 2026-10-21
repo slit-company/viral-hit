@@ -62,7 +62,7 @@ test('general and job-specific packs are reviewed, installed together and groupe
   expect(replay.installed).toBe(false);
   const changed = structuredClone(reel.manifest); changed.version = '1.0.1';
   const conflict = await request.post('/api/app/recipe-packs', { headers, data: { action: 'inspect', pack: changed } });
-  expect((await conflict.json()).blocking[0]).toContain('new pack ID');
+  expect((await conflict.json()).blocking[0]).toContain('Review pack update');
   const untrusted = await request.post('/api/app/recipe-packs', { data: { action: 'list' } });
   expect(untrusted.status()).toBe(403);
   await request.delete('/api/app/projects', { headers, data: { projectIds: [id] } });

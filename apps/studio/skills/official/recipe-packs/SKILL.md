@@ -23,7 +23,7 @@ Use this path when the user supplies a catalog or wants options beyond this inst
 
 1. For an offered pack, call `{ "action": "inspect", "pack": <available[i].manifest> }`. A fetched link already returns `inspection`.
 2. Show the user: title, version, scope, each recipe title with its input count, `requirements` (setup outside the studio), `unavailableOperations` (steps this installation cannot run yet) and every `blocking` reason.
-3. Do not install when `blocking` is non-empty. A different version of an installed pack cannot replace it; the publisher must use a new pack ID.
+3. Do not install when `blocking` is non-empty. For a different version of an installed recipe pack, use the reviewed pack-update workflow below. Plain installation still cannot overwrite it.
 4. Install when the user asks for it or the request clearly includes installing: `{ "action": "install", "pack": <the exact reviewed manifest>, "expectedDigest": <inspection.pack.digest> }`. Never edit the manifest between review and install; a changed manifest is rejected.
 5. Confirm with `viral_hit_recipes_list` that every `recipeIds` entry is present. Tell the user the recipes appear in **Runs** grouped under the pack name. If `requirements` or `unavailableOperations` were present, repeat what still needs to be installed before those recipes can run.
 
@@ -46,6 +46,14 @@ Use this path when a pack needs skills or characters as well as recipes, or when
 5. Call `list` to verify the installed pack and every selected library entry. An installed pack exports its original snapshot with `{ "request": { "action": "export", "id": "<pack-id>", "path": "/absolute/new-copy.viralhit-pack.tar" } }`, even if a local character has been edited since installation. Return the actual file path and say whether it was merely built or actually installed.
 6. No skills execute, jobs queue, models generate or posts publish during these steps. Creative pack `fetch` downloads a tar file to a new path; recipe-only `fetch` reads a JSON recipe pack. Choose the tool by the shared format, not by whether its contents are general or specialized.
 
+## Maintain a recipe pack
+
+For an authorized same-ID update, keep the exact incoming JSON and call `viral_hit_recipe_pack` with `{ "request": { "action": "review-update", "pack": <manifest> } }`. Show installed/incoming metadata and complete definitions for each `changes` entry. Explain additions, identical recipes, differing definitions and dropped recipes. Download or retain the review as a backup. `blocking` must be empty. Existing recipes are preserved by default; only include differing IDs the user wants replaced in `replaceRecipeIds`. Shared replacements also affect the listed `otherPacks`. Recipes dropped from the release remain independently installed.
+
+Apply `{ "request": { "action": "update", "pack": <same manifest>, "expectedDigest": <review.incoming.digest>, "expectedStateDigest": <review.stateDigest>, "replaceRecipeIds": [] } }`. Empty selection keeps all existing definitions while adding missing recipes and adopting the release metadata. Kept custom definitions can correctly leave the pack `content.state` modified. Verify `list` and the actual recipes afterward. Stale reviews and unknown outcomes require reading current state before retrying; do not automatically reuse a stale token.
+
+For pack removal, call `review-remove` with `packId`. Explain that the listing will be removed and recipes kept unless explicitly selected. Apply `remove` with `packId`, `expectedStateDigest` and `deleteRecipeIds` containing only authorized present members. Other-pack members and file-catalog IDs cannot be deleted here. Missing recipes are already absent. Verify both pack absence and remaining recipes. Saved runs, project edits and immutable creative-pack export snapshots remain intact. Creative-pack and runtime-extension lifecycle are separate; do not use this operation to remove them.
+
 ## Maintain an installed recipe
 
 When asked to revise an installed recipe, use `viral_hit_recipe_library` with `inspect` and the incoming `manifest`. If it returns `update`, show both full definitions, their versions and affected packs; offer the retained current JSON as a backup. For authorized replacement call `update` with that same manifest, incoming `expectedDigest` and `expectedInstalledDigest: inspection.update.digest`. File-catalog definitions remain protected; use a new ID for a fork. Read `get` afterward to verify the current version and digest.
@@ -57,6 +65,6 @@ For a later run, read `viral_hit_recipes_list` and pass `recipeDigests[recipeId]
 ## Boundaries
 
 - Recipe packs change the recipe library; creative packs can also add skills and characters. Running a recipe is a separate request; queueing, paid generation and publishing need their own authorization.
-- Do not retry an install that failed with a conflict. Explain the conflict and the options (use the installed version, or ask the publisher for a new pack ID).
-- The same operations exist in the Recipe library UI (**Runs → Recipe library**) and the CLI (`recipe packs`, `inspect-pack`, `install-pack`, `build-pack`), so the user can finish any step themselves.
+- Do not retry an install that failed with a conflict. Explain the conflict and use a fresh lifecycle review for same-ID recipe-pack updates, or a new ID for an independent fork.
+- The same operations exist in the Recipe library UI (**Runs → Recipe library**) and the CLI (`recipe packs`, `inspect-pack`, `install-pack`, `build-pack`, `review-update-pack`, `review-remove-pack`, `pack-request`), so the user can finish any step themselves.
 

@@ -1,48 +1,29 @@
 import { lstat, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { z } from 'zod';
-import { fingerprint, type Json } from './durable';
+import { reviewPackUpdate, updatePack, reviewPackRemoval, removePack } from './recipe-pack-lifecycle.server';
+import { packManifestSchema } from './recipe-packs';
+import { recipeSchema } from './recipes';
 import { loadRecipeDirectory, loadRecipes } from './recipe-registry';
-import { validateRecipeManifest } from './recipe-library';
 import { readInstalledPacks, readInstalledRecipes, recipeDigest, RecipeConflictError, storeInstalledPack } from './recipe-storage';
 import { supportedOperations } from './capabilities';
 import { fetchPackFromLink } from './recipe-pack-source';
-import { composePack, MAX_PACK_BYTES, packBuildSchema, packManifestSchema, type PackInspection, type PackSummary } from './recipe-packs';
-import type { Recipe } from './recipes';
+import { composePack, MAX_PACK_BYTES, packBuildSchema, type PackInspection } from './recipe-packs';
+import { validatePack } from './recipe-pack-definition.server';
+export { validatePack } from './recipe-pack-definition.server';
 
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
 export const recipePackRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
+  z.object({ action: z.literal('review-update'), pack: z.unknown() }).strict(),
+  z.object({ action: z.literal('update'), pack: z.unknown(), expectedDigest: digest, expectedStateDigest: digest, replaceRecipeIds: z.array(recipeSchema.shape.id).max(24) }).strict(),
+  z.object({ action: z.literal('review-remove'), packId: packManifestSchema.shape.id }).strict(),
+  z.object({ action: z.literal('remove'), packId: packManifestSchema.shape.id, expectedStateDigest: digest, deleteRecipeIds: z.array(recipeSchema.shape.id).max(24) }).strict(),
   z.object({ action: z.literal('inspect'), pack: z.unknown() }).strict(),
   z.object({ action: z.literal('install'), pack: z.unknown(), expectedDigest: digest }).strict(),
   z.object({ action: z.literal('build'), pack: packBuildSchema }).strict(),
   z.object({ action: z.literal('fetch'), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), url: z.string().url().max(2000) }).strict(),
 ]);
-
-export function validatePack(raw: unknown) {
-  const bytes = JSON.stringify(raw);
-  if (!bytes || Buffer.byteLength(bytes) > MAX_PACK_BYTES) throw new Error('Recipe pack exceeds 1 MB');
-  const parsed = packManifestSchema.safeParse(raw);
-  if (!parsed.success) {
-    const fields = parsed.error.issues.slice(0, 6).map(issue => (issue.path.length ? issue.path.join('.') + ': ' : '') + issue.message).join('; ');
-    throw new Error(raw && typeof raw === 'object' && (raw as { kind?: unknown }).kind === 'viral-hit-pack' ? 'Invalid pack: ' + fields : 'This file is not a Viral Hit pack (' + fields + ')');
-  }
-  const manifest = parsed.data;
-  const recipes: Recipe[] = manifest.recipes.map((recipe, index) => {
-    try { return validateRecipeManifest(recipe); }
-    catch (error) { throw new Error(`Recipe ${index + 1}: ${error instanceof Error ? error.message : 'invalid'}`); }
-  });
-  const ids = new Set<string>();
-  for (const recipe of recipes) {
-    // The prefix keeps packs from claiming each other's or built-in recipe IDs.
-    if (!recipe.id.startsWith(`${manifest.id}-`)) throw new Error(`Recipe ${recipe.id} must start with "${manifest.id}-"`);
-    if (ids.has(recipe.id)) throw new Error(`Duplicate recipe ID in pack: ${recipe.id}`);
-    ids.add(recipe.id);
-  }
-  const { recipes: _, ...meta } = manifest;
-  const summary: PackSummary = { ...meta, recipeIds: recipes.map(recipe => recipe.id), digest: fingerprint({ ...meta, recipes } as unknown as Json) };
-  return { summary, recipes };
-}
 
 export async function inspectPack(raw: unknown): Promise<PackInspection> {
   const { summary, recipes } = validatePack(raw);
@@ -59,7 +40,7 @@ export async function inspectPack(raw: unknown): Promise<PackInspection> {
   const previous = packs.find(pack => pack.id === summary.id);
   const collision = !previous ? 'none' as const : previous.digest === summary.digest ? 'same' as const : 'different' as const;
   const blocking = [
-    ...(collision === 'different' ? ['A different version of this pack is installed. Publish updates under a new pack ID.'] : []),
+    ...(collision === 'different' ? ['A different version of this pack is installed. Use Review pack update to maintain the same pack ID.'] : []),
     ...reviews.filter(review => review.collision === 'reserved' || review.collision === 'different').map(review => `${review.id} conflicts with an existing recipe.`),
   ];
   const operations = [...new Set(reviews.flatMap(review => review.operations))];
@@ -127,7 +108,12 @@ export async function listRecipePacks() {
 
 /** Shared by HTTP, MCP and CLI. Installing never queues work. */
 export async function changeRecipePacks(request: z.infer<typeof recipePackRequest>) {
+  request = recipePackRequest.parse(request);
   switch (request.action) {
+    case 'review-update': return reviewPackUpdate(request.pack);
+    case 'update': return updatePack(request.pack, request.expectedDigest, request.expectedStateDigest, request.replaceRecipeIds);
+    case 'review-remove': return reviewPackRemoval(request.packId);
+    case 'remove': return removePack(request.packId, request.expectedStateDigest, request.deleteRecipeIds);
     case 'list': return listRecipePacks();
     case 'inspect': return inspectPack(request.pack);
     case 'install': return installPack(request.pack, request.expectedDigest);

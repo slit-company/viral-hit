@@ -49,8 +49,9 @@ export function storeInstalledPack(summary: PackSummary, recipes: Recipe[]) {
     db.exec('BEGIN IMMEDIATE');
     const current = db.prepare('SELECT digest FROM packs WHERE id=?').get(summary.id) as { digest: string } | undefined;
     if (current) {
-      if (current.digest !== summary.digest) throw new RecipeConflictError('This pack ID is already installed with different contents. Publish an update under a new pack ID.');
+      if (current.digest !== summary.digest) throw new RecipeConflictError('This pack ID is already installed with different contents. Review a pack update to maintain this ID.');
     }
+    if (!current && (db.prepare('SELECT COUNT(*) AS n FROM packs').get() as { n: number }).n >= 200) throw new RecipeConflictError('The local library is full (200 packs).');
     const added: Recipe[] = [];
     for (const recipe of recipes) {
       const row = db.prepare('SELECT manifest FROM recipes WHERE id=?').get(recipe.id) as { manifest: string } | undefined;

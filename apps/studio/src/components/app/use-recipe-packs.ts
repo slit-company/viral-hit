@@ -15,7 +15,7 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     try { setCatalog(await apiJsonGet<PackCatalog>('/api/app/recipe-packs')); }
     catch (cause) { setError(cause instanceof Error ? cause.message : 'Packs are unavailable'); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(); return () => { epoch.current++; }; }, [load]);
   async function inspect(manifest: unknown) {
     const current = ++epoch.current; setBusy(true); setError(''); setReview(undefined);
     try {
@@ -47,5 +47,5 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not install pack'); }
     finally { setBusy(false); }
   }
-  return { catalog, review, busy, error, inspect, fetchLink, importFile, install, dismiss: () => { epoch.current++; setReview(undefined); setBusy(false); } };
+  return { catalog, review, busy, error, load, inspect, fetchLink, importFile, install, dismiss: () => { epoch.current++; setReview(undefined); setBusy(false); } };
 }
