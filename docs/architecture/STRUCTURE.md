@@ -14,7 +14,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/projects/`, `src/core/editor/`, `src/core/creative-canvas/` | Project, asset, timeline and canvas behavior; pure contracts beside their owners | Imports from UI or routes |
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
 | `src/core/references/` | Explicit source acquisition, verified original and sampled-frame project assets | Inbox session management, sending messages, pretending previews are full media |
-| `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, cross-library overwrite or silent runtime installation |
+| `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, unchecked cross-library overwrite or silent runtime installation |
 | `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
 | `src/core/community/` | Bounded independent catalog metadata, review diffs and local snapshots | Artifact execution/installation, background network discovery or a second package library |
 | `src/core/extensions/` | Read-only public diagnostic projections of installed extension catalogs, shared by UI/MCP/CLI | Runtime installation, module execution, provider probes, configuration values or independent registration state |
@@ -75,3 +75,5 @@ Community discovery follows [the catalog boundary](COMMUNITY-CATALOGS.md): metad
 Recipe lifecycle follows [the storage/execution decision](RECIPE-LIFECYCLE.md): compare definitions in one SQLite transaction, project pack completeness from current members, and pin the loaded recipe digest before new UI runs. Saved execution plans remain independent.
 
 Recipe-pack maintenance follows [the atomic composition lifecycle](PACK-LIFECYCLE.md): preserve existing definitions by default, pin affected state and membership, replace/delete only explicit eligible selections, and keep saved execution plans independent.
+
+Creative-pack releases follow [the composition lifecycle](CREATIVE-PACK-LIFECYCLE.md): explicit selected replacements through library owners, partial recovery with fresh review, immutable historical exports and removal that retains reusable contents.

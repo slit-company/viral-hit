@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { packContentsLabel } from './pack-labels';
-import { apiJsonGet } from '@/lib/api-client';
+import type { CreativeLifecycleReview, CreativeReleaseHistory } from '@/core/creative-packs/lifecycle-contract';
+import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import { MAX_CREATIVE_PACK_BYTES, type CreativePackBuild, type CreativePackCatalog, type CreativePackInspection, type CreativePackResult } from '@/core/creative-packs/contract';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
@@ -9,6 +10,8 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 export function useCreativePacks() {
   const [catalog, setCatalog] = useState<CreativePackCatalog>(), [review, setReview] = useState<CreativePackInspection>();
+  const [maintenance, setMaintenance] = useState<{ kind: 'history'; data: CreativeReleaseHistory } | { kind: 'remove'; data: CreativeLifecycleReview }>();
+  const [partial, setPartial] = useState<CreativePackResult>();
   const [activity, setActivity] = useState(''), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const [source, setSource] = useState(''), [previews, setPreviews] = useState<Record<string, string>>({});
   const file = useRef<File | undefined>(undefined), urls = useRef<string[]>([]), active = useRef<AbortController | null>(null);
@@ -18,7 +21,7 @@ export function useCreativePacks() {
     void load().catch(error => setError(error.message));
     return () => { active.current?.abort(); file.current = undefined; clearUrls(); };
   }, [load, clearUrls]);
-  const dismiss = () => { file.current = undefined; clearUrls(); setSource(''); setPreviews({}); setReview(undefined); setError(''); };
+  const dismiss = () => { setMaintenance(undefined); setPartial(undefined); file.current = undefined; clearUrls(); setSource(''); setPreviews({}); setReview(undefined); setError(''); };
   async function run(label: string, task: (signal: AbortSignal) => Promise<void>) {
     active.current?.abort();
     const controller = new AbortController(); active.current = controller;
@@ -75,7 +78,45 @@ export function useCreativePacks() {
       dismiss(); setNotice(result.pack.title + ' is ready: ' + packContentsLabel(result.pack) + '.');
     });
   }
-  async function download(request: { action: 'build'; pack: CreativePackBuild } | { action: 'export'; id: string }) {
+  async function refreshReview() {
+    if (!file.current) return;
+    const retained = file.current;
+    await run('Reading and verifying pack contents…', async signal => { clearUrls(); await inspectFile(retained, signal, source); });
+  }
+  async function update(replaceKeys: string[]) {
+    if (!file.current || !review?.update) return;
+    const retained = file.current, checked = review;
+    await run('Updating creative pack…', async signal => {
+      const result = await readJson<CreativePackResult>(await fetch('/api/app/creative-packs/file?action=update&digest=' + checked.pack.digest, {
+        method: 'POST', headers: { ...headers, 'content-type': 'application/x-tar', 'x-viral-hit-pack-update': JSON.stringify({ expectedStateDigest: checked.update!.stateDigest, replaceKeys }) }, body: retained, signal,
+      }));
+      signal.throwIfAborted(); await load(); signal.throwIfAborted();
+      if (!result.complete) {
+        setPartial(result); clearUrls(); await inspectFile(retained, signal, source);
+        setError('Update is incomplete. Applied items remain available; the previous release is still active. Review these current definitions and select remaining changes. ' + result.error); return;
+      }
+      dismiss(); setNotice(result.pack.title + ' updated. Unselected definitions and previous releases are kept.');
+    });
+  }
+  async function reviewMaintenance(kind: 'history' | 'remove', id: string) {
+    dismiss();
+    await run('Reading retained pack…', async signal => {
+      const result = kind === 'history'
+        ? { kind, data: await apiJsonPost<CreativeReleaseHistory>('/api/app/creative-packs', { action: 'history', id }) }
+        : { kind, data: await apiJsonPost<CreativeLifecycleReview>('/api/app/creative-packs', { action: 'review-remove', id }) };
+      signal.throwIfAborted(); setMaintenance(result);
+    });
+  }
+  async function remove() {
+    if (maintenance?.kind !== 'remove') return;
+    const checked = maintenance.data;
+    await run('Removing pack listing…', async signal => {
+      await apiJsonPost('/api/app/creative-packs', { action: 'remove', id: checked.current.id, expectedStateDigest: checked.stateDigest });
+      signal.throwIfAborted(); await load(); signal.throwIfAborted(); dismiss();
+      setNotice(checked.current.title + ' removed from active packs. Library entries and previous releases are kept.');
+    });
+  }
+  async function download(request: { action: 'build'; pack: CreativePackBuild } | { action: 'export'; id: string; digest?: string }) {
     await run('Preparing pack download…', async signal => {
       const response = await fetch('/api/app/creative-packs', { method: 'POST', headers: { ...headers, 'content-type': 'application/json' }, body: JSON.stringify(request), signal });
       if (!response.ok) { await readJson(response); return; }
@@ -90,7 +131,7 @@ export function useCreativePacks() {
     if (!['Downloading shared pack…', 'Reading and verifying pack contents…'].includes(activity)) return;
     active.current?.abort(); active.current = null; setActivity(''); dismiss(); setNotice('Pack review stopped.');
   }
-  return { catalog, review, source, previews, busy: !!activity, activity, error, notice, inspect, fetchLink, install, download, dismiss, cancelRead,
+  return { catalog, review, source, previews, maintenance, partial, update, refreshReview, reviewMaintenance, remove, busy: !!activity, activity, error, notice, inspect, fetchLink, install, download, dismiss, cancelRead,
     canCancel: ['Downloading shared pack…', 'Reading and verifying pack contents…'].includes(activity) };
 }
 export type CreativePackLibrary = ReturnType<typeof useCreativePacks>;

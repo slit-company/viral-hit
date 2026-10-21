@@ -1,45 +1,23 @@
+import { inspectLoaded, characterCollision } from './inspection.server';
+import { updateCreativePack, removeCreativePack } from './lifecycle.server';
+import { reviewCreativeLifecycle } from './lifecycle-review.server';
+import { listCreativePackHistory } from './storage.server';
 import { canonicalJson } from '@/lib/canonical-json';
-import { inspectPack, installPack } from '@/core/harness/recipe-pack-library';
+import { installPack } from '@/core/harness/recipe-pack-library';
 import { loadRecipes } from '@/core/harness/recipe-registry';
 import { changeSkillLibrary, getSkillRegistry, inspectSkillFile, packageSkill, validateSkillFile } from '@/core/skills/library.server';
-import { readCharacter, readCharacters } from '@/core/characters/storage.server';
-import { createCharacter, pickProfile } from '@/core/characters/library.server';
-import type { CharacterFileManifest } from '@/core/characters/contract';
+import { readCharacters } from '@/core/characters/storage.server';
+import { createCharacter } from '@/core/characters/library.server';
 import type { z } from 'zod';
-import { creativePackRequest, type CreativePackCatalog, type CreativePackInspection, type CreativePackResult } from './contract';
-import { composeCreativePack, recipePart, summarizeCreativePack } from './manifest.server';
+import { creativePackRequest, type CreativePackCatalog, type CreativePackResult } from './contract';
+import { composeCreativePack, recipePart } from './manifest.server';
 import { withCreativePack, writeCreativePack, type LoadedCreativePack } from './file.server';
 import { listStoredCreativePacks, readStoredCreativePack, storeCreativePack } from './storage.server';
 import { fetchCreativePack } from './source.server';
 
-function characterCollision(manifest: CharacterFileManifest): 'none' | 'same' | 'different' {
-  const existing = readCharacter(manifest.id);
-  if (!existing) return 'none';
-  return existing.status === 'active' && canonicalJson({ profile: pickProfile(existing), references: existing.references }) === canonicalJson({ profile: manifest.profile, references: manifest.references }) ? 'same' : 'different';
-}
-async function inspectLoaded({ manifest, media }: LoadedCreativePack): Promise<CreativePackInspection> {
-  const pack = summarizeCreativePack(manifest), stored = await readStoredCreativePack(pack.id);
-  const recipes = manifest.recipes.length ? await inspectPack(recipePart(manifest)) : null;
-  const registry = await getSkillRegistry(), skills = [];
-  for (const file of manifest.skills) {
-    const inspection = await inspectSkillFile(file), existing = registry.get(file.manifest.id);
-    const reused = !!existing && canonicalJson(validateSkillFile(packageSkill(existing))) === canonicalJson(file);
-    // An identical bundled/operator skill already satisfies the pack; a different one still blocks it.
-    if (reused) { inspection.collision = 'same'; inspection.blocking = inspection.skill.incompatibilities; }
-    skills.push({ file, inspection, reused });
-  }
-  const characters = manifest.characters.map(character => ({ manifest: character, collision: characterCollision(character), previews: character.references.map(reference => {
-    const image = media.get(reference.sha256)!; return { sha256: reference.sha256, offset: image.offset, size: image.size };
-  }) }));
-  return { pack, recipes, skills, characters, blocking: [
-    ...(stored && summarizeCreativePack(stored).digest !== pack.digest ? ['A different creative pack has this ID. Use a new pack ID for another revision.'] : []),
-    ...(recipes?.blocking ?? []), ...skills.flatMap(skill => skill.inspection.blocking.map(message => skill.file.manifest.id + ': ' + message)),
-    ...characters.filter(character => character.collision === 'different').map(character => character.manifest.id + ': another character uses this ID. Rename the source character before sharing.'),
-  ] };
-}
 export async function listCreativePacks(): Promise<CreativePackCatalog> {
-  const [recipes, skills, installed] = await Promise.all([loadRecipes(), getSkillRegistry(), listStoredCreativePacks()]);
-  return { installed, recipes: recipes.map(({ id, title }) => ({ id, title })),
+  const [recipes, skills, installed, removed] = await Promise.all([loadRecipes(), getSkillRegistry(), listStoredCreativePacks(), listStoredCreativePacks(true)]);
+  return { installed, removed, recipes: recipes.map(({ id, title }) => ({ id, title })),
     skills: skills.list().map(({ manifest }) => ({ id: manifest.id, title: manifest.title, scope: manifest.scope })),
     characters: readCharacters().map(({ id, name, references }) => ({ id, name, referenceCount: references.length })) };
 }
@@ -86,10 +64,14 @@ export async function changeCreativePacks(raw: z.infer<typeof creativePackReques
   const request = creativePackRequest.parse(raw);
   switch (request.action) {
     case 'list': return listCreativePacks();
+    case 'history': return listCreativePackHistory(request.id);
+    case 'review-remove': return reviewCreativeLifecycle(request.id);
+    case 'remove': return removeCreativePack(request.id, request.expectedStateDigest);
+    case 'update': return withCreativePack(request.path, signal, loaded => updateCreativePack(loaded, request.expectedDigest, request.expectedStateDigest, request.replaceKeys, signal));
     case 'fetch': return fetchCreativePack(request.url, request.path, signal, undefined, request.expectedSha256);
     case 'build': return writeCreativePack(await composeCreativePack(request.pack), request.path, signal);
     case 'export': {
-      const manifest = await readStoredCreativePack(request.id);
+      const manifest = await readStoredCreativePack(request.id, request.digest);
       if (!manifest) throw new Error('Installed creative pack not found');
       return writeCreativePack(manifest, request.path, signal);
     }

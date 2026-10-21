@@ -192,3 +192,5 @@ Use either `url` or `receipt`, never both. The resolved receipt is an opaque job
 Use the built-in [`editor.sequence`](EDITABLE-SEQUENCES.md) step to prepare separate timeline clips from project assets or preceding materializers. It shares the normal worker and explicit revision-checked attachment, while keeping rendering and user acceptance separate. The portable sequence schema and two example recipes support general planners and specialized workflows.
 
 Installed recipe-only packs can publish same-ID releases through [reviewed pack lifecycle](PACK-LIFECYCLE.md). Updates add missing members, selectively replace chosen definitions and preserve dropped recipes; removal keeps recipes unless explicitly selected. This uses the shared library service across UI, MCP and CLI.
+
+[Creative packs](CREATIVE-PACKS.md#update-remove-and-recover-releases) maintain combined recipes, skills and characters through reviewed same-ID releases. Select replacements, preserve local edits, export retained releases by digest, and remove the bundle listing while keeping reusable contents. Executable runtime modules remain a separate explicit installation boundary.

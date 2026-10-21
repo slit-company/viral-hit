@@ -1,0 +1,103 @@
+import { test, expect, type APIRequestContext } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
+import { mkdir, open, readFile, writeFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { writeTar } from '../../src/core/projects/bundles/tar.server';
+
+const headers = { 'x-viral-hit-workspace-request': '1' };
+async function mcp(request: APIRequestContext, data: unknown) {
+  const response = await request.post('http://127.0.0.1:3043/mcp', { headers: { authorization: 'Bearer e2e-local-only', accept: 'application/json, text/event-stream' }, data: { jsonrpc: '2.0', id: 1, method: 'tools/call', params: { name: 'viral_hit_creative_pack', arguments: { request: data } } } });
+  const text = await response.text(), rpc = JSON.parse(text.startsWith('{') ? text : text.split('\n').find(line => line.startsWith('data: '))!.slice(6));
+  expect(rpc.result?.isError, JSON.stringify(rpc.result)).not.toBe(true); return rpc.result.structuredContent.result;
+}
+test('creative release maintenance reviews both definitions and images, preserves local entries and downloads old releases after removal', async ({ page, request }) => {
+  const evidence = '../../research/evidence/creative-lifecycle'; await mkdir(evidence, { recursive: true });
+  const folder = resolve('test-results/creative-lifecycle'); await mkdir(folder, { recursive: true });
+  const images = [];
+  for (const color of ['yellow', 'blue']) {
+    const bytes = execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v', 'error', '-f', 'lavfi', '-i', `color=c=${color}:s=160x160:d=1`, '-frames:v', '1', '-f', 'image2pipe', '-vcodec', 'png', '-']);
+    const path = resolve(folder, color + '.png'); await writeFile(path, bytes);
+    images.push({ hash: createHash('sha256').update(bytes).digest('hex'), path, size: bytes.length });
+  }
+  const recipe = { ...JSON.parse(await readFile('../../recipes/local-canvas.json', 'utf8')), id: 'composite-ui-kit-canvas', title: 'My local composition' };
+  const skill = { schemaVersion: 1, kind: 'viral-hit-skill', manifest: { ...JSON.parse(await readFile('skills/official/consistent-characters/skill.json', 'utf8')), id: 'composite-ui-guidance', title: 'Independent shot guidance', version: '1.0.0' }, instructions: 'Preserve the original layout and identity.' };
+  const character = { schemaVersion: 1, kind: 'viral-hit-character', id: 'composite-ui-host', profile: { name: 'Independent host', kind: 'mascot', description: 'A yellow reference square', invariants: ['Keep the square silhouette'], forbidden: [], providerIdentities: [] }, references: [{ sha256: images[0].hash, role: 'canonical', filename: 'yellow.png', mimeType: 'image/png', width: 160, height: 160 }] };
+  const first = { id: 'composite-ui-kit', version: '1.0.0', title: 'Independent composite kit', description: 'A general toolkit with a consistent host', author: 'Independent author', license: 'MIT', scope: 'general', useCases: ['editing'], schemaVersion: 1, kind: 'viral-hit-creative-pack', recipes: [recipe], skills: [skill], characters: [character] };
+  const next = structuredClone(first); next.version = '2.0.0'; next.scope = 'specialized'; next.useCases = ['products'];
+  next.recipes[0].version = '2.0.0'; next.recipes.push({ ...recipe, id: 'composite-ui-kit-added', title: 'New product composition' });
+  next.skills[0].manifest.version = '2.0.0'; next.skills[0].instructions = 'Plan three shots and preserve the reviewed identity.';
+  next.characters[0].profile.description = 'A blue reference square'; next.characters[0].references[0] = { ...character.references[0], sha256: images[1].hash, filename: 'blue.png' };
+  const files = [resolve(folder, 'first.tar'), resolve(folder, 'next.tar')];
+  for (const [index, manifest] of [first, next].entries()) {
+    const fd = await open(files[index], 'w'); try { await writeTar(fd, Buffer.from(JSON.stringify(manifest)), [images[index]], AbortSignal.timeout(10_000)); } finally { await fd.close(); }
+  }
+  const original = await mcp(request, { action: 'inspect', path: files[0] });
+  await mcp(request, { action: 'install', path: files[0], expectedDigest: original.pack.digest });
+  const baseline = resolve(folder, 'canonical-original.tar'); await mcp(request, { action: 'export', id: first.id, path: baseline });
+  await page.goto('/packs');
+  await expect(page.getByRole('button', { name: 'Import creative pack', exact: true })).toBeEnabled();
+  await page.getByLabel('Import creative pack file', { exact: true }).setInputFiles(files[1]);
+  await page.getByRole('button', { name: 'Review creative pack update', exact: true }).click();
+  const panel = page.getByRole('region', { name: 'Creative pack review' });
+  const choices = panel.getByRole('region', { name: 'Creative pack update choices' });
+  const confirm = panel.getByRole('checkbox', { name: 'I reviewed the current and incoming definitions for composite-ui-kit.' });
+  await expect(panel.getByRole('button', { name: 'Update creative pack', exact: true })).toBeDisabled();
+  await expect(choices.getByRole('checkbox', { name: 'Replace recipe:composite-ui-kit-canvas', exact: true })).not.toBeChecked();
+  await choices.getByText('Current definition · composite-ui-guidance', { exact: true }).click();
+  await choices.getByText('Incoming definition · composite-ui-guidance', { exact: true }).click();
+  await expect(choices.getByLabel('Current instructions composite-ui-guidance')).toHaveText(skill.instructions);
+  await expect(choices.getByLabel('Incoming instructions composite-ui-guidance')).toHaveText(next.skills[0].instructions);
+  await choices.getByText('Current definition · composite-ui-guidance', { exact: true }).click();
+  await choices.getByText('Incoming definition · composite-ui-guidance', { exact: true }).click();
+  for (const label of ['Current', 'Incoming']) await expect.poll(() => choices.getByRole('img', { name: `${label} composite-ui-host canonical`, exact: true }).evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(160);
+  await choices.getByRole('checkbox', { name: 'Replace character:composite-ui-host', exact: true }).check();
+  await choices.getByRole('checkbox', { name: 'Replace skill:composite-ui-guidance', exact: true }).check();
+  await choices.getByRole('img', { name: 'Current composite-ui-host canonical', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: evidence + '/references-desktop.png', animations: 'disabled' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await choices.getByRole('img', { name: 'Current composite-ui-host canonical', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: evidence + '/references-mobile.png', animations: 'disabled' });
+  await panel.getByRole('button', { name: 'Update creative pack', exact: true }).scrollIntoViewIfNeeded();
+  await expect(confirm).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  await page.screenshot({ path: evidence + '/actions-mobile.png', animations: 'disabled' });
+  await request.post('/api/app/characters', { headers, data: { action: 'update', id: character.id, expectedVersion: 1, profile: { description: 'A local edit after review' } } });
+  await confirm.check(); await panel.getByRole('button', { name: 'Update creative pack', exact: true }).click();
+  await expect(panel.getByRole('alert')).toContainText('changed after review');
+  await panel.getByRole('button', { name: 'Refresh creative pack review' }).click();
+  await panel.getByRole('button', { name: 'Review creative pack update', exact: true }).click();
+  await choices.getByRole('checkbox', { name: 'Replace character:composite-ui-host', exact: true }).check();
+  await choices.getByRole('checkbox', { name: 'Replace skill:composite-ui-guidance', exact: true }).check();
+  await confirm.check(); await panel.getByRole('button', { name: 'Update creative pack', exact: true }).click();
+  await expect(page.getByRole('status')).toContainText('Independent composite kit updated');
+  const recipes = await (await request.get('/api/app/recipes')).json();
+  expect(recipes.recipes.find((item: { id: string }) => item.id === recipe.id).version).toBe('1.0.0');
+  expect(recipes.installedIds).toContain('composite-ui-kit-added');
+  const current = await request.post('/api/app/characters', { headers, data: { action: 'get', id: character.id } });
+  expect((await current.json()).references[0].sha256).toBe(images[1].hash);
+  await page.getByRole('button', { name: 'Release history ' + first.id, exact: true }).click();
+  const maintenance = page.getByRole('region', { name: 'Creative pack maintenance' });
+  const oldButton = maintenance.getByRole('button', { name: 'Download release 1.0.0 ' + original.pack.digest, exact: true });
+  await expect(oldButton).toBeVisible();
+  const download = page.waitForEvent('download'); await oldButton.click();
+  expect(await readFile((await (await download).path())!)).toEqual(await readFile(baseline));
+  await maintenance.evaluate(element => element.scrollIntoView({ block: 'start' }));
+  expect((await maintenance.getByRole('heading').boundingBox())!.y).toBeGreaterThan(80);
+  await page.screenshot({ path: evidence + '/history-mobile.png', animations: 'disabled' });
+  await maintenance.getByRole('button', { name: 'Close pack maintenance' }).click();
+  await page.getByRole('button', { name: 'Review removal ' + first.id, exact: true }).click();
+  await expect(maintenance.getByRole('button', { name: 'Remove creative pack', exact: true })).toBeDisabled();
+  await maintenance.getByRole('button', { name: 'Remove creative pack', exact: true }).scrollIntoViewIfNeeded();
+  await page.screenshot({ path: evidence + '/remove-mobile.png', animations: 'disabled' });
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await maintenance.evaluate(element => element.scrollIntoView({ block: 'start' }));
+  expect((await maintenance.getByRole('heading').boundingBox())!.y).toBeGreaterThan(80);
+  await page.screenshot({ path: evidence + '/remove-desktop.png', animations: 'disabled' });
+  await maintenance.getByRole('checkbox').check(); await maintenance.getByRole('button', { name: 'Remove creative pack', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Removed creative packs' })).toContainText(first.id);
+  expect((await (await request.get('/api/app/recipes')).json()).installedIds).toContain(recipe.id);
+  await page.getByRole('button', { name: 'Release history ' + first.id, exact: true }).click();
+  await expect(oldButton).toBeVisible();
+  expect((await mcp(request, { action: 'history', id: first.id })).currentDigest).toBe(null);
+});

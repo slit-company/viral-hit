@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { CreativeLifecycleReview } from './lifecycle-contract';
 import { packManifestSchema } from '@/core/harness/recipe-packs';
 import { characterFileManifestSchema, characterId, type CharacterFileManifest } from '@/core/characters/contract';
 import { skillPackageSchema, type SkillPackage, type SkillInspection } from '@/core/skills/package';
@@ -24,19 +25,26 @@ export type CreativePackInspection = {
   skills: { file: SkillPackage; inspection: SkillInspection; reused: boolean }[];
   characters: { manifest: CharacterFileManifest; collision: 'none' | 'same' | 'different'; previews: { sha256: string; offset: number; size: number }[] }[];
   blocking: string[];
+  update?: CreativeLifecycleReview;
 };
-export type CreativePackResult = { complete: boolean; pack: CreativePackSummary; items: { kind: 'recipes' | 'skill' | 'character'; id: string; state: 'installed' | 'reused' }[]; error?: string };
+export type CreativePackResult = { complete: boolean; pack: CreativePackSummary; items: { kind: 'recipes' | 'recipe' | 'skill' | 'character'; id: string; state: 'installed' | 'reused' | 'updated' | 'kept' }[]; error?: string };
 export type CreativePackCatalog = {
   installed: CreativePackSummary[];
+  removed: CreativePackSummary[];
   recipes: { id: string; title: string }[];
   skills: { id: string; title: string; scope: 'general' | 'specialized' }[];
   characters: { id: string; name: string; referenceCount: number }[];
 };
+export const creativePackUpdateOptions = z.object({ expectedStateDigest: z.string().regex(/^[a-f0-9]{64}$/), replaceKeys: z.array(z.string().regex(/^(recipe|skill|character):[a-z][a-z0-9-]{0,79}$/)).max(48) }).strict();
 export const creativePackRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
+  z.object({ action: z.literal('history'), id: identity.shape.id }).strict(),
+  z.object({ action: z.literal('review-remove'), id: identity.shape.id }).strict(),
+  z.object({ action: z.literal('remove'), id: identity.shape.id, expectedStateDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+  z.object({ action: z.literal('update'), path: z.string().min(1).max(4096), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/), ...creativePackUpdateOptions.shape }).strict(),
   z.object({ action: z.literal('fetch'), expectedSha256: z.string().regex(/^[a-f0-9]{64}$/).optional(), url: z.string().url().max(2000), path: z.string().min(1).max(4096) }).strict(),
   z.object({ action: z.literal('build'), pack: creativePackBuildSchema, path: z.string().min(1).max(4096) }).strict(),
-  z.object({ action: z.literal('export'), id: identity.shape.id, path: z.string().min(1).max(4096) }).strict(),
+  z.object({ action: z.literal('export'), id: identity.shape.id, digest: z.string().regex(/^[a-f0-9]{64}$/).optional(), path: z.string().min(1).max(4096) }).strict(),
   z.object({ action: z.literal('inspect'), path: z.string().min(1).max(4096) }).strict(),
   z.object({ action: z.literal('install'), path: z.string().min(1).max(4096), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
 ]);

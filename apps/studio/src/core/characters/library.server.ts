@@ -81,6 +81,16 @@ export async function createCharacter(input: { id?: string; profile: CharacterPr
   return writeCharacter({ ...profile, id, version: 1, status: 'active', references, createdAt: stamp, updatedAt: stamp }, 0);
 }
 
+/** Replace a complete reviewed identity; content-addressed images are retained for older exports. */
+export async function replaceCharacterDefinition(input: { id: string; expectedVersion: number; profile: CharacterProfile }, sources: Source[]) {
+  const current = required(input.id), profile = characterProfileSchema.parse(input.profile);
+  if (current.version !== input.expectedVersion) throw new CharacterConflictError('Character changed after review.');
+  if (!sources.length) throw new Error('Add at least one reference image');
+  const references: CharacterReference[] = [];
+  for (const source of sources) references.push(await loadSource(source));
+  return writeCharacter({ ...profile, id: current.id, references, status: 'active', version: current.version + 1, createdAt: current.createdAt, updatedAt: now() }, input.expectedVersion);
+}
+
 /** Copies the references into a project as reference images, once per image, and returns the written brief. */
 export async function useCharacterInProject(id: string, projectId: string) {
   const character = required(id);
