@@ -14,9 +14,17 @@ Viral Hit lists three sources. **Official** skills ship in `apps/studio/skills/o
 
 Open **Skills** in the navigation. Import a `.viralhit-skill.json` file or paste its HTTPS link (GitHub file links work too). The review shows its scope, author, inputs, workflow stages, complete instructions, required tools and compatibility. **Install skill** adds it immediately to UI and connected agents, without restarting either process. Nothing runs on installation.
 
-General and specific-job filters apply equally to official, operator-folder and installed skills. An incompatible skill or an ID held by an official/operator skill cannot be installed. Reinstalling the identical file is a no-op; another revision must use another ID. Installation is atomic: an interrupted write cannot expose half a skill. Skills are instructions from their authors, not authorization to run jobs or override the user.
+General and specific-job filters apply equally to official, operator-folder and installed skills. An incompatible skill or an ID held by an official/operator skill cannot be installed. Reinstalling the identical file is a no-op. Importing a different revision with the same installed ID opens an update review. Installation and replacement are atomic: an interrupted write cannot expose half a skill. Skills are instructions from their authors, not authorization to run jobs or override the user.
 
 Use **Read skill → Download skill** to share any skill. The file contains its full manifest and instructions. It has no executable payload or account configuration. The editor schema is [skill-file.schema.json](schemas/skill-file.schema.json). Links use HTTPS, bounded downloads and public-network addresses with redirect checks.
+
+## Update or remove an installed skill
+
+Import a new file or link with the same ID. **Review update** shows the installed and incoming versions, both complete instruction texts and manifests, and compatibility problems. Download the installed version for a portable backup. Confirm the comparison, then choose **Update skill**. Changes to scope, workflow and instructions use the same path; version numbers are labels, so an explicitly reviewed same-version correction or rollback is allowed. A changed installed revision invalidates the review rather than overwriting another client's edit.
+
+Open an installed skill with **Read skill → Remove skill…**. Review its ID/version and instructions, optionally download that exact reviewed file, confirm removal and choose **Remove skill**. Official skills and the operator folder are managed at their source and cannot be changed here. Projects, generated assets, historical jobs and saved pack snapshots are preserved. Exported packs keep their original skill definitions; reimport can restore a removed skill, while a conflicting newer definition requires separate review.
+
+Changes appear on the next UI/MCP/CLI catalog or skill read. Removal cannot erase instructions an agent already has in its conversation. There is no automatic update polling, remote installation or background execution.
 
 ## Load skills from an operator folder
 
@@ -64,10 +72,15 @@ pnpm skill pack ../../examples/skills/product-ad-shots /tmp/product-ad-shots.vir
 # Inspect, then install the exact reviewed file using the returned digest.
 pnpm skill inspect /tmp/product-ad-shots.viralhit-skill.json
 pnpm skill install /tmp/product-ad-shots.viralhit-skill.json <digest>
+# Replace only the reviewed installed revision; inspect returns update.digest.
+pnpm skill update /tmp/product-ad-shots.viralhit-skill.json <incoming-digest> <installed-digest>
+# Review the exact installed revision before removal.
+pnpm skill review-remove product-ad-shots
+pnpm skill remove product-ad-shots <digest>
 # Export an existing skill without overwriting another file.
 pnpm skill export product-ad-shots /tmp/shared.viralhit-skill.json
 ```
 
-MCP `viral_hit_skill_library` has `inspect`, `fetch`, `install`, `export`, `list` and `get` actions. `inspect`/`fetch` return a digest; send it as `expectedDigest` with `install`. Existing `viral_hit_skill_list`, `viral_hit_skill_get` and skill resources see the same live catalog. HTTP `/api/app/skills` and CLI call that same application service. Installation neither queues generation nor changes projects.
+MCP `viral_hit_skill_library` has `inspect`, `fetch`, `install`, `update`, `review-remove`, `remove`, `export`, `list` and `get` actions. `inspect`/`fetch` return a digest; send it as `expectedDigest` with `install`. `update` requires incoming `expectedDigest` plus `expectedInstalledDigest` from `inspection.update.digest`. `review-remove` returns the file and digest; `remove` uses `skillId` and that `expectedDigest`. Retried replacement/removal converges without repeating a mutation. Existing `viral_hit_skill_list`, `viral_hit_skill_get` and skill resources see the same live catalog. HTTP `/api/app/skills` and CLI call that same application service. Installation neither queues generation nor changes projects.
 
-Installed files live in `<data root>/installed-skills/<id>/`. This is a local library, not a hosted marketplace or sandbox for executable plugins. Version replacement and uninstall controls are not yet included in the UI.
+Managed skill definitions live in `<data root>/skill-library.sqlite`, capped at 500 managed IDs and 32 MiB of active definition text. Removed IDs retain a small tombstone; no duplicate version archive is stored. Existing `<data root>/installed-skills/<id>/` folders remain readable and unchanged; the first lifecycle mutation creates a managed override. Back up the data root or export portable files. See [storage and recovery](architecture/SKILL-LIFECYCLE.md). Community discovery and managed executable-extension lifecycle remain separate work.

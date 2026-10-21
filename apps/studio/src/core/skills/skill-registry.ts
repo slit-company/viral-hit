@@ -151,7 +151,7 @@ export async function readViralHitSkillDirectory(skillDirectory: string, source:
   return { manifest, instructions, source };
 }
 
-async function readSkillRoot(directory: string, source: ViralHitSkillSource, problems: ViralHitSkillProblem[]) {
+async function readSkillRoot(directory: string, source: ViralHitSkillSource, problems: ViralHitSkillProblem[], excluded = new Set<string>()) {
   let entries;
   try {
     entries = await readdir(directory, { withFileTypes: true });
@@ -160,7 +160,7 @@ async function readSkillRoot(directory: string, source: ViralHitSkillSource, pro
     if (source === 'local') problems.push({ source, location: basename(directory), message: 'Skills folder not found.' });
     return [];
   }
-  const folders = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith('.')).sort((left, right) => left.name.localeCompare(right.name));
+  const folders = entries.filter((entry) => entry.isDirectory() && !entry.name.startsWith('.') && !excluded.has(entry.name)).sort((left, right) => left.name.localeCompare(right.name));
   const read = await Promise.all(folders.map(async (entry) => {
     try {
       return await readViralHitSkillDirectory(resolve(directory, entry.name), source);
@@ -181,18 +181,21 @@ export async function loadViralHitSkillRegistry({
   directory,
   localDirectory,
   installedDirectory,
+  installedOverrides = [],
   viralHitVersion,
   availableMcpTools,
 }: {
   directory: string;
   localDirectory?: string;
   installedDirectory?: string;
+  installedOverrides?: readonly { id: string; definition: ViralHitSkillDefinition | null }[];
   viralHitVersion: string;
   availableMcpTools: readonly string[];
 }) {
   const problems: ViralHitSkillProblem[] = [];
   const official = await readSkillRoot(directory, 'official', problems);
   const local = localDirectory ? await readSkillRoot(localDirectory, 'local', problems) : [];
-  const installed = installedDirectory ? await readSkillRoot(installedDirectory, 'installed', problems) : [];
+  const installed = installedDirectory ? await readSkillRoot(installedDirectory, 'installed', problems, new Set(installedOverrides.map(row => row.id))) : [];
+  for (const row of installedOverrides) if (row.definition) installed.push(row.definition);
   return createViralHitSkillRegistry({ definitions: [...official, ...local, ...installed], viralHitVersion, availableMcpTools, problems });
 }

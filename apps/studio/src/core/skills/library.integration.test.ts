@@ -30,10 +30,10 @@ test('reviewed skill files install atomically, are immediately discoverable, exp
     assert.equal((await inspectSkillFile(exported)).collision, 'same');
     assert.equal((await inspectSkillFile({ ...file, instructions: 'Changed' })).collision, 'different');
     await assert.rejects(changeSkillLibrary({ action: 'install', file: { ...file, instructions: 'Changed' }, expectedDigest: (await inspectSkillFile({ ...file, instructions: 'Changed' })).digest }), /new ID/);
-    assert.deepEqual(await readdir(join(root, 'installed-skills')), [file.manifest.id]);
+    assert.ok((await readdir(root)).includes('skill-library.sqlite'));
     const reserved = { ...file, manifest: { ...file.manifest, id: 'consistent-characters' } };
     assert.equal((await inspectSkillFile(reserved)).collision, 'reserved');
-    await mkdir(join(root, 'installed-skills', '.install-interrupted')); // Incomplete installs are invisible to readers.
+    await mkdir(join(root, 'installed-skills', '.install-interrupted'), { recursive: true }); // Incomplete installs are invisible to readers.
     assert.deepEqual((await getSkillRegistry()).catalog().problems, []);
     const incompatible = { ...file, manifest: { ...file.manifest, id: 'future-skill', compatibility: { minimumViralHitVersion: '99.0.0', requiredMcpTools: ['viral_hit_unknown'] } } };
     assert.equal((await inspectSkillFile(incompatible)).blocking.length, 2);

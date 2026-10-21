@@ -8,7 +8,7 @@ import { VIRAL_HIT_MCP_TOOL_NAMES } from '../src/mcp/tools';
 import { version } from '../package.json';
 
 // Folder validation, portable files and installation share the same application contract as UI/MCP.
-const [command, target, extra] = process.argv.slice(2);
+const [command, target, extra, installedDigest] = process.argv.slice(2);
 const options = { viralHitVersion: version, availableMcpTools: VIRAL_HIT_MCP_TOOL_NAMES };
 try {
   if (command === 'list') {
@@ -28,6 +28,12 @@ try {
   } else if (command === 'export' && target && extra) {
     const file = await changeSkillLibrary({ action: 'export', skillId: target });
     await writeFile(resolve(extra), JSON.stringify(file, null, 2) + '\n', { flag: 'wx' });
+  } else if ((command === 'review-remove' || command === 'remove') && target) {
+    if (command === 'remove' && !extra) throw new Error('Review removal first, then supply its digest.');
+    console.log(JSON.stringify(await changeSkillLibrary(command === 'review-remove' ? { action: command, skillId: target } : { action: command, skillId: target, expectedDigest: extra }), null, 2));
+  } else if (command === 'update' && target && extra && installedDigest) {
+    const file = JSON.parse(await readFile(resolve(target), 'utf8'));
+    console.log(JSON.stringify(await changeSkillLibrary({ action: 'update', file, expectedDigest: extra, expectedInstalledDigest: installedDigest }), null, 2));
   } else if ((command === 'inspect' || command === 'install') && target) {
     const file = JSON.parse(await readFile(resolve(target), 'utf8'));
     if (command === 'install' && !extra) throw new Error('Inspect the file first, then supply its digest: skill install <file> <digest>');
@@ -36,7 +42,7 @@ try {
     // Describes what authors write, so defaulted fields stay optional.
     await writeFile(resolve(target), JSON.stringify(z.toJSONSchema(command === 'schema' ? viralHitSkillManifestSchema : skillPackageSchema, { io: 'input' }), null, 2) + '\n', { flag: 'wx' });
   } else {
-    throw new Error('Usage: skill list | check <folder> | pack <folder> <out.json> | inspect <file> | install <file> <digest> | export <id> <out.json> | schema <out.json> | file-schema <out.json>');
+    throw new Error('Usage: skill list | check <folder> | pack <folder> <out.json> | inspect <file> | install <file> <digest> | update <file> <incoming-digest> <installed-digest> | review-remove <id> | remove <id> <digest> | export <id> <out.json> | schema <out.json> | file-schema <out.json>');
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : 'Skill command failed');

@@ -45,8 +45,8 @@ test('a shared skill is reviewed in the UI, appears in an already connected agen
   await page.screenshot({ animations: 'disabled', path: evidence + '/library-mobile.png' });
   await page.setViewportSize({ width: 1440, height: 960 });
   await page.screenshot({ animations: 'disabled', path: evidence + '/library-desktop.png' });
-  await page.getByRole('button', { name: 'Read ' + manifest.title, exact: true }).click();
-  await expect(dialog.locator('pre')).toHaveText(file.instructions.trim());
+  await page.getByRole('button', { name: 'Read ' + manifest.title + ' (' + manifest.id + ')', exact: true }).click();
+  await expect(dialog.getByText(file.instructions.trim(), { exact: true })).toHaveText(file.instructions.trim());
   const download = page.waitForEvent('download');
   await dialog.getByRole('button', { name: 'Download skill', exact: true }).click();
   const path = await (await download).path();

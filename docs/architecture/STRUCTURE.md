@@ -15,6 +15,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
 | `src/core/references/` | Explicit source acquisition, verified original and sampled-frame project assets | Inbox session management, sending messages, pretending previews are full media |
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, cross-library overwrite or silent runtime installation |
+| `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
 | `src/core/extensions/` | Read-only public diagnostic projections of installed extension catalogs, shared by UI/MCP/CLI | Runtime installation, module execution, provider probes, configuration values or independent registration state |
 | `src/core/publishing/` | Approved media/destination intents, leases, resumable transfer, remote receipts and reconciliation | Generation, shared UI, credentials in public views or remote calls inside transactions |
 | `src/core/db/`, `src/core/workspace-db/`, storage modules | Database/file persistence and transaction boundaries | UI or provider workflows |
@@ -65,3 +66,5 @@ Priority decomposition targets are the editor workspace, canvas shell/interactio
 Approval pins a fingerprint of connector manifest, source and declared environment values. The worker imports the captured source only for approved work, validates that fingerprint before every action, and delegates transfer/publish/reconcile to the existing lease/fence state machine. Configuration changes pause the original operation; unknown start/publish outcomes cannot trigger another write. Raw receipts and credentials stay server-side; only the explicit validated publicDelivery subobject can reach UI. Modules are trusted server code, not sandboxed plugins. Use separate optional runtimes for heavyweight dependencies.
 
 Creative packs follow [the composition decision](CREATIVE-PACKS.md): preflight all content, retain each library's atomic mutations, report partial completion and reuse exact items on retry. Their completion record is an immutable snapshot, not a mutable link to current character profiles.
+
+Managed skills follow [the lifecycle decision](SKILL-LIFECYCLE.md): whole-definition SQLite replacement, digest comparison under the write transaction, and managed overlays for unchanged legacy folders.

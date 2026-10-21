@@ -23,7 +23,7 @@ Refresh reads metadata; it never imports extension modules, probes accounts, gen
 
 Providers and adapters use process-lifetime definitions. Restart the app, MCP server and workers together after changing their files or environment. Refresh keeps the loaded executable snapshot. A new CLI process sees files as they exist at its startup. Adapter catalog validation remains atomic: one invalid manifest prevents that adapter catalog from loading; other extension groups still appear.
 
-Skills and publishing connector metadata are rediscovered on request. Server environment changes still require restarting the relevant process. Changed publishing configuration does not transfer old approval to a new operation: the existing pinned fingerprint and review rules remain in force.
+Skills and publishing connector metadata are rediscovered on request. Reviewed skill updates/removals in the Skills page appear in the next diagnostics read; executable extension lifecycle remains operator-managed. Server environment changes still require restarting the relevant process. Changed publishing configuration does not transfer old approval to a new operation: the existing pinned fingerprint and review rules remain in force.
 
 Model providers can declare required environment names in `provider.json`:
 

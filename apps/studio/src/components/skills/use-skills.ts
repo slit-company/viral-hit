@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { ViralHitSkill, ViralHitSkillCatalog } from '@/core/skills/contract';
-import { MAX_SKILL_FILE_BYTES, type SkillInspection, type SkillPackage, type SkillReview } from '@/core/skills/package';
+import { MAX_SKILL_FILE_BYTES, type SkillInspection, type SkillPackage, type SkillReview, type SkillRemovalReview } from '@/core/skills/package';
 
 export function useSkills() {
   const [catalog, setCatalog] = useState<ViralHitSkillCatalog>();
   const [review, setReview] = useState<SkillReview>();
+  const [removal, setRemoval] = useState<SkillRemovalReview>();
   const [detail, setDetail] = useState<ViralHitSkill>();
   const [busy, setBusy] = useState(false), [error, setError] = useState(''), [notice, setNotice] = useState('');
   const epoch = useRef(0);
@@ -20,7 +21,7 @@ export function useSkills() {
   }
   function importFile(file?: File) {
     if (!file) return;
-    setDetail(undefined); setReview(undefined);
+    setDetail(undefined); setReview(undefined); setRemoval(undefined);
     return work(async () => {
       if (file.size > MAX_SKILL_FILE_BYTES) throw new Error('Skill files must be 700 KB or smaller.');
       let parsed: SkillPackage;
@@ -30,28 +31,43 @@ export function useSkills() {
     }, setReview);
   }
   function fetchLink(url: string) {
-    setDetail(undefined); setReview(undefined);
+    setDetail(undefined); setReview(undefined); setRemoval(undefined);
     return work(() => apiJsonPost<SkillReview>('/api/app/skills', { action: 'fetch', url: url.trim() }), setReview);
   }
   function open(skillId: string) {
-    setReview(undefined); setDetail(undefined);
+    setReview(undefined); setDetail(undefined); setRemoval(undefined);
     return work(() => apiJsonPost<ViralHitSkill>('/api/app/skills', { action: 'get', skillId }), setDetail);
   }
   function install() {
     if (!review) return;
     return work(async () => {
-      await apiJsonPost('/api/app/skills', { action: 'install', file: review.file, expectedDigest: review.inspection.digest });
+      const update = review.inspection.update;
+      await apiJsonPost('/api/app/skills', { action: update ? 'update' : 'install', file: review.file, expectedDigest: review.inspection.digest,
+        ...(update ? { expectedInstalledDigest: update.digest } : {}) });
       await load();
       return review.inspection.skill.manifest.title;
-    }, title => { setReview(undefined); setNotice(title + ' is installed. Your agent can read it now.'); });
+    }, title => { setReview(undefined); setNotice(title + (review.inspection.update ? ' is updated. Future agent reads use this revision.' : ' is installed. Your agent can read it now.')); });
   }
-  function download(skillId: string) {
-    return work(() => apiJsonPost<SkillPackage>('/api/app/skills', { action: 'export', skillId }), file => {
+  function reviewRemoval(skillId: string) {
+    return work(() => apiJsonPost<SkillRemovalReview>('/api/app/skills', { action: 'review-remove', skillId }), result => {
+      setDetail(undefined); setReview(undefined); setRemoval(result);
+    });
+  }
+  function remove() {
+    if (!removal) return;
+    return work(async () => {
+      await apiJsonPost('/api/app/skills', { action: 'remove', skillId: removal.file.manifest.id, expectedDigest: removal.digest });
+      await load();
+      return removal.file.manifest.title;
+    }, title => { setRemoval(undefined); setNotice(title + ' was removed from your skill library.'); });
+  }
+  function download(skillId: string, retained?: SkillPackage) {
+    return work(() => retained ? Promise.resolve(retained) : apiJsonPost<SkillPackage>('/api/app/skills', { action: 'export', skillId }), file => {
       const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2) + '\n'], { type: 'application/json' }));
       const a = document.createElement('a'); a.href = url; a.download = file.manifest.id + '.viralhit-skill.json'; a.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     });
   }
-  return { catalog, review, detail, busy, error, notice, importFile, fetchLink, open, install, download,
-    close: () => { epoch.current++; setReview(undefined); setDetail(undefined); setError(''); setBusy(false); } };
+  return { catalog, review, detail, removal, busy, error, notice, importFile, fetchLink, open, install, download, reviewRemoval, remove,
+    close: () => { epoch.current++; setReview(undefined); setDetail(undefined); setRemoval(undefined); setError(''); setBusy(false); } };
 }

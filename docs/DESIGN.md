@@ -66,3 +66,5 @@ Overlay motion uses the shared SEED Action controls and existing native range/se
 
 
 Creative pack link import composes the existing SEED Action, SEED TextField and light product shell. The link form wraps into a full-width action on phones; review reuses the existing recipes/instructions/reference-image view and retains its explicit confirmation. Installed pack cards show stable IDs and name download actions by title plus ID, so multiple community packs remain distinguishable. This is shared primitive/token reuse.
+
+The Skills lifecycle views reuse SEED Action, the shared dialog and light surface tokens. Update review labels installed/incoming versions, exposes both complete definitions and retained-version download, and requires a comparison checkbox. Removal has a separate revision-specific review. Skill cards expose stable IDs in text and accessible Read names. Native confirmation checkboxes follow the existing pack review pattern.
