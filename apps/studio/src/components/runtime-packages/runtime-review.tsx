@@ -16,6 +16,12 @@ export function RuntimeReview({ library }: { library: ReturnType<typeof useRunti
     <DialogContent className="max-h-[calc(100dvh-32px)] overflow-y-auto sm:max-w-3xl">
       <DialogHeader className="pr-7"><DialogTitle>{title}</DialogTitle><DialogDescription>Review the exact version and source before changing this studio.</DialogDescription></DialogHeader>
       {inspection && <>
+        {inspection.download && <section aria-label="Downloaded source" className="space-y-2 rounded-xl bg-[var(--vh-control)] p-4 text-sm">
+          <h3 className="font-semibold">{inspection.download.catalogPinned ? 'Catalog file verified' : 'Downloaded file'}</h3>
+          <p className="break-all text-xs">{inspection.download.source}</p>
+          <p className="break-all font-mono text-xs">SHA-256: {inspection.download.sha256}</p>
+          <p className="text-xs leading-5 text-[var(--vh-text-2)]">This identifies the downloaded bytes. Review the source below before installing.</p>
+        </section>}
         <ul className="space-y-2 text-sm" aria-label="Runtime changes">{inspection.changes.map(change => <li key={change.key} className="break-words"><strong>{change.change}</strong> · {change.key}</li>)}</ul>
         {inspection.current && <RuntimeDefinition key={'current:' + inspection.stateDigest} pkg={inspection.current} label="Installed definition" />}
         <RuntimeDefinition key={'incoming:' + inspection.digest} pkg={inspection.package} label="Incoming definition" />

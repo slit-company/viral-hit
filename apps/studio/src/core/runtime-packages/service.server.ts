@@ -1,4 +1,4 @@
-import { runtimePackageRequest, type RuntimePackageRequest } from './contract';
+import { runtimePackageLocalRequest, type RuntimePackageLocalRequest } from './contract';
 import { validateRuntimePackage, operatorRuntimeEntries, runtimeConflicts } from './validation.server';
 import { commitRuntimePackage, readRuntimeCatalog, readRuntimeRelease, runtimeDigest, runtimeEntryId, runtimeHistory, runtimeSummary, RuntimePackageConflictError } from './storage.server';
 import { managedRuntimeSnapshot, runtimeRestartRequired } from './snapshot.server';
@@ -21,8 +21,8 @@ export function reviewRuntimeRemoval(id:string) {
   if (!current) throw new RuntimePackageConflictError('Runtime package is no longer active');
   return { current,catalogDigest:catalog.stateDigest,stateDigest:catalog.stateDigest,restart };
 }
-export function changeRuntimePackages(raw: RuntimePackageRequest) {
-  const request=runtimePackageRequest.parse(raw);
+export function changeRuntimePackages(raw: RuntimePackageLocalRequest) {
+  const request=runtimePackageLocalRequest.parse(raw);
   managedRuntimeSnapshot();
   if (request.action==='list') {
     const desired=readRuntimeCatalog(), loaded=managedRuntimeSnapshot();

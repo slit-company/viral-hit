@@ -137,3 +137,16 @@ const catalog = validateCatalog({
   ],
 });
 await writeFile(join(root, 'catalog.json'), JSON.stringify(catalog));
+
+// Independent executable catalog; source throws if discovery/review accidentally imports it.
+const runtimeSource = 'throw Error("CATALOG_MUST_NOT_EXECUTE");';
+const runtimeManifest = JSON.parse(await readFile('../../examples/adapters/tone/tone.json', 'utf8'));
+runtimeManifest.operation = 'ext.catalog-runtime-proof';
+runtimeManifest.sha256 = createHash('sha256').update(runtimeSource).digest('hex');
+const runtime = { schemaVersion: 1, kind: 'viral-hit-runtime-package', id: 'catalog-runtime-proof', version: '1.0.0', title: 'Independent sound engine', description: 'A portable engine for general projects or specialized workflows.', author: 'Independent author', license: 'MIT', scope: 'general', entries: [{ kind: 'adapter', manifest: runtimeManifest, source: runtimeSource }] };
+await writeFile(join(root, 'catalog-runtime.json'), JSON.stringify(runtime, null, 2));
+const runtimeCatalog = validateCatalog({ schemaVersion: 1, kind: 'viral-hit-catalog', id: 'runtime-discovery-proof', title: 'Independent engines', description: 'Runtime distribution fixture', author: 'Independent author', entries: [
+  { id: 'sound-engine', kind: 'runtime-package', title: runtime.title, summary: runtime.description, scope: 'general', version: '1.0.0', url: 'https://public-packs.viralhit.test/runtime.json', sha256: await sha('catalog-runtime.json') },
+  { id: 'changed-engine', kind: 'runtime-package', title: 'Changed engine file', summary: 'A specialized runtime with changed download bytes', scope: 'specialized', version: '1.0.0', url: 'https://public-packs.viralhit.test/runtime-mismatch.json', sha256: '0'.repeat(64) },
+] });
+await writeFile(join(root, 'runtime-catalog.json'), JSON.stringify(runtimeCatalog));

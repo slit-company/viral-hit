@@ -132,7 +132,7 @@ export function useCommunity() {
       () =>
         setNotice(
           item.catalog.title +
-            ' was removed from discovery. Installed skills and packs are kept.',
+            ' was removed from discovery. Installed contents are kept.',
         ),
       'Removing catalog…',
       false,

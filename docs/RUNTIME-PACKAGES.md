@@ -79,4 +79,22 @@ Workflow jobs retain existing adapter/configuration fingerprints. Approved publi
 
 ## Limits and transport
 
-Up to 16 entries/package, 12 MB compact serialized input, 8 MB source/package, 32 active entries and 8 MB source per kind across managed packages. Operator and managed entries share the existing loader caps. Manifests are at most 64 KB; adapter/connector modules at most 2 MB; provider modules at most 5 MiB. Storage retains at most 64 package identities and 128 MiB of release documents; historical purge is not implemented. Downloads use compact JSON so a package at the byte limit can be imported again. The CLI writes new files only. HTTP requires the workspace trust header, bounded JSON and rejects host paths; it does not accept an executable URL. No new runtime dependency or background poller is added.
+Up to 16 entries/package, 12 MB compact serialized input, 8 MB source/package, 32 active entries and 8 MB source per kind across managed packages. Operator and managed entries share the existing loader caps. Manifests are at most 64 KB; adapter/connector modules at most 2 MB; provider modules at most 5 MiB. Storage retains at most 64 package identities and 128 MiB of release documents; historical purge is not implemented. Downloads use compact JSON so a package at the byte limit can be imported again. The CLI writes new files only. HTTP requires the workspace trust header, bounded JSON and rejects host paths; public HTTPS/GitHub URLs are accepted only by the separate `fetch` action for inspection. No new runtime dependency or background poller is added.
+
+## Discover and review a shared engine
+
+An independent [community catalog](COMMUNITY.md) can list this JSON as `kind: "runtime-package"`, for either `general` or `specialized` scope. Hash the exact final file with `pnpm community hash /absolute/runtime.json` and publish that hash alongside its stable public HTTPS/GitHub URL. Catalog removal does not uninstall the runtime.
+
+In **Runtime packages → Add from a link**, paste a runtime JSON URL and choose **Review link**. A catalog entry prefills the URL and pins its SHA-256; opening the page alone downloads nothing. Changing the URL explicitly switches to a separate, unpinned download. A changed catalog file is rejected before JSON parsing. Canceling a download dismisses its result and leaves the library unchanged.
+
+The source review shows the normalized URL, raw-file hash, exact module source/manifests and existing conflicts. **Review again** rechecks the retained package against the current local state without fetching again. Installation uses the reviewed content digests and existing source-trust decision. This checksum verifies file identity, not authorship or code behavior.
+
+All transports share the same operation:
+
+```sh
+pnpm runtime-package fetch https://example.org/engine.json SHA256
+```
+
+HTTP `/api/app/runtime-packages` accepts `{ "action": "fetch", "url": "https://example.org/engine.json", "expectedSha256": "<64 lowercase hex characters>" }`; MCP `viral_hit_runtime_package` wraps that object in `request`. The hash is optional for a direct link. The result contains the usual inspection plus `download: { source, sha256, catalogPinned }`. The raw download hash differs from the canonical `digest` used by `apply`. CLI `change` also accepts this request on stdin. These are templates, not an assertion of a hosted release.
+
+Fetch is bounded to 12,000,000 bytes and 20 seconds, with streaming public DNS/socket pinning, redirect checks and cleanup of temporary files. URLs and redirects cannot contain credentials, query strings, fragments or custom ports; authenticated sources remain unsupported. Download/inspection never imports modules, installs dependencies, starts jobs or saves a release. No automatic update fetch or background scan was added.

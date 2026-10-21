@@ -3,10 +3,12 @@ import { FileUp, RefreshCw } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { ProductShell } from '@/components/marketing/product-shell';
 import { Link } from '@/core/i18n/navigation';
+import type { CatalogHandoff } from '@/core/community/contract';
+import { RuntimeLinkForm } from './runtime-link-form';
 import { RuntimeReview } from './runtime-review';
 import { useRuntimePackages } from './use-runtime-packages';
 
-export function RuntimePackagesPage({ locale }: { locale: string }) {
+export function RuntimePackagesPage({ locale, shared = {} }: { locale: string; shared?: CatalogHandoff }) {
   const library = useRuntimePackages(), input = useRef<HTMLInputElement>(null);
   const importButton = useRef<HTMLButtonElement>(null), returnTo = useRef<HTMLButtonElement | null>(null), wasOpen = useRef(false);
   useEffect(() => {
@@ -29,13 +31,14 @@ export function RuntimePackagesPage({ locale }: { locale: string }) {
       <input ref={input} hidden type="file" accept=".json,application/json" aria-label="Runtime package file" onChange={event => { void library.importFile(event.target.files?.[0]); event.target.value = ''; }} />
     </header>
     <p className="rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 text-sm leading-6 text-[var(--vh-text-2)]">Runtime files contain executable source. Importing opens a review; installation requires trusting that source. Packages do not install dependencies or start generation. Activate changes by restarting the studio, MCP and workers together.</p>
+    <RuntimeLinkForm library={library} shared={shared} />
     {library.notice && <p role="status" className="break-words rounded-xl bg-[var(--color-brand-lime-soft)] p-4 text-sm leading-6 text-[var(--color-lime-text)]">{library.notice}</p>}
     {library.error && !library.view && <p role="alert" className="whitespace-pre-wrap break-words rounded-xl bg-red-500/10 p-4 text-sm text-red-800">{library.error}</p>}
     {catalog?.restartRequired && <p role="status" className="rounded-xl bg-amber-100 p-4 text-sm leading-6 text-amber-950">Restart pending. The installed set differs from what this studio process loaded. Restart the studio, MCP and workers together. Refreshing this page does not activate code.</p>}
     <section aria-label="Runtime package library" className="space-y-5">
       <div role="group" aria-label="Filter runtime packages" className="flex flex-wrap gap-2">{(['all', 'general', 'specialized'] as const).map(value => <Action key={value} disabled={!catalog || library.busy} aria-pressed={scope === value} onClick={() => setScope(value)} className={'rounded-full border px-4 py-2 text-xs ' + (scope === value ? 'border-[var(--vh-text-1)] bg-[var(--vh-text-1)] text-[var(--vh-bg)]' : 'border-[var(--vh-border)]')}>{value === 'all' ? 'All packages' : value === 'general' ? 'General' : 'For a specific job'}</Action>)}</div>
       {!packages && <p role="status">Loading runtime packages…</p>}
-      {packages?.length === 0 && <p className="rounded-2xl border border-dashed border-[var(--vh-border)] p-8 text-sm leading-6 text-[var(--vh-text-2)]">No runtime packages in this group. Import a portable runtime JSON to review its complete source and setup requirements.</p>}
+      {packages?.length === 0 && <p className="rounded-2xl border border-dashed border-[var(--vh-border)] p-8 text-sm leading-6 text-[var(--vh-text-2)]">No runtime packages in this group. Add a link or import a runtime JSON file to review its complete source and setup requirements.</p>}
       <ul className="grid items-start gap-4 md:grid-cols-2">{packages?.map(pkg => {
         const installed = catalog!.installed.some(item => item.id === pkg.id), loaded = catalog!.loaded.find(item => item.id === pkg.id);
         return <li key={pkg.id} className="min-w-0 space-y-4 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5">

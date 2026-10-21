@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { catalogUrlSchema, catalogDigestSchema } from '../community/contract';
 
 export { MAX_RUNTIME_PACKAGE_BYTES } from './limits';
 export const runtimePackageId = z.string().regex(/^[a-z][a-z0-9-]{0,39}$/);
@@ -16,7 +17,7 @@ export const runtimePackageSchema = z.object({
 export type RuntimePackage = z.infer<typeof runtimePackageSchema>;
 export type RuntimeEntry = RuntimePackage['entries'][number];
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
-export const runtimePackageRequest = z.discriminatedUnion('action', [
+export const runtimePackageLocalRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('list') }).strict(),
   z.object({ action: z.literal('inspect'), package: runtimePackageSchema }).strict(),
   z.object({ action: z.literal('apply'), package: runtimePackageSchema, expectedDigest: digest, expectedStateDigest: digest, trustCode: z.literal(true) }).strict(),
@@ -25,6 +26,14 @@ export const runtimePackageRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('history'), id: runtimePackageId }).strict(),
   z.object({ action: z.literal('export'), id: runtimePackageId, digest: digest.optional() }).strict(),
 ]);
+export const runtimePackageFetchRequest = z.object({
+  action: z.literal('fetch'), url: catalogUrlSchema, expectedSha256: catalogDigestSchema.optional(),
+}).strict();
+export const runtimePackageRequest = z.discriminatedUnion('action', [
+  ...runtimePackageLocalRequest.options, runtimePackageFetchRequest,
+]);
+export type RuntimePackageDownload = { source: string; sha256: string; catalogPinned: boolean };
+export type RuntimePackageLocalRequest = z.infer<typeof runtimePackageLocalRequest>;
 export type RuntimePackageRequest = z.infer<typeof runtimePackageRequest>;
 export type RuntimePackageSummary = Pick<RuntimePackage, 'id' | 'version' | 'title' | 'description' | 'author' | 'license' | 'scope'> & { digest: string; entries: { kind: RuntimeEntry['kind']; id: string; label: string }[] };
 

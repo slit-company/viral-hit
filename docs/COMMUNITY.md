@@ -1,6 +1,6 @@
 # Independent community catalogs
 
-A creator or team can host a small JSON catalog in their own public repository or HTTPS site. It lists **general** tools and workflows for a **specific job** together, without a central registry or changes to Viral Hit. Supported entries are portable skill JSON, recipe-pack JSON and creative-pack tar files. Executable modules use the separate operator installation boundaries.
+A creator or team can host a small JSON catalog in their own public repository or HTTPS site. It lists **general** tools and workflows for a **specific job** together, without a central registry or changes to Viral Hit. Supported entries are portable skill JSON, recipe-pack JSON, creative-pack tar files and executable runtime-package JSON. Runtime entries hand off to the separate source review/install lifecycle.
 
 ## Browse and use
 
@@ -17,7 +17,7 @@ Start with [the empty author template](../examples/community/catalog.json) and [
 | Field | Meaning |
 |---|---|
 | `id` | Stable unique entry ID within this catalog |
-| `kind` | `skill`, `recipe-pack` or `creative-pack` |
+| `kind` | `skill`, `recipe-pack`, `creative-pack` or `runtime-package` |
 | `title`, `summary` | What the artifact actually does and needs |
 | `scope` | `general` or `specialized` |
 | `version` | Author's artifact version label |
@@ -49,15 +49,16 @@ The bundled `recipe-packs` skill describes discovery and installation. MCP **`vi
 
 CLI: `list`, `fetch <url>`, `inspect <file>`, `hash <file>`, `change <request.json>`, `export <id> <new-file>` and `schema <new-file>`. Export/schema never overwrite an existing file. CLI `change` takes the same request object as HTTP (MCP wraps it in `request`). Fetching or inspecting does not save.
 
-Pass an entry's `sha256` as `expectedSha256` to `viral_hit_skill_library`, `viral_hit_recipe_pack` or `viral_hit_creative_pack` **fetch**. CLI equivalents accept a final optional SHA-256 argument:
+Pass an entry's `sha256` as `expectedSha256` to `viral_hit_skill_library`, `viral_hit_recipe_pack` , `viral_hit_creative_pack` or `viral_hit_runtime_package` **fetch**. CLI equivalents accept a final optional SHA-256 argument:
 
 ```sh
 pnpm skill fetch https://example.org/skill.json /absolute/new-skill.json SHA256
 pnpm recipe fetch-pack https://example.org/recipes.json /absolute/new-recipes.json SHA256
 pnpm creative-pack fetch https://example.org/kit.tar /absolute/new-kit.tar SHA256
+pnpm runtime-package fetch https://example.org/engine.json SHA256
 ```
 
-These are command templates; substitute your real file URLs and 64-character hashes. A failed checksum removes temporary bytes and never publishes the destination file. Creative-pack fetch still reports `inspected: false`; inspect that retained file next. For skills and recipes, fetch returns the normal full inspection.
+These are command templates; substitute your real file URLs and 64-character hashes. A failed checksum removes temporary bytes and never publishes the destination file. Creative-pack fetch still reports `inspected: false`; inspect that retained file next. For skills, recipes and runtime packages, fetch returns the normal full inspection. Runtime fetch also returns the normalized source URL, raw-file SHA-256 and whether a catalog checksum was supplied. Installing uses the retained reviewed package, not another download; activation still requires coordinated restart.
 
 ## Resource and storage bounds
 

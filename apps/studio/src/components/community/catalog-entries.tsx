@@ -11,6 +11,7 @@ export const entryKindLabels = {
   skill: 'Skill',
   'recipe-pack': 'Recipe pack',
   'creative-pack': 'Creative pack',
+  'runtime-package': 'Runtime package',
 };
 
 export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
@@ -186,7 +187,7 @@ function EntryLink({
       }
       className="vh-secondary mt-auto inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-semibold"
     >
-      Open in {entry.kind === 'skill' ? 'Skills' : 'Packs'}
+      Open in {entry.kind === 'skill' ? 'Skills' : entry.kind === 'runtime-package' ? 'Runtime packages' : 'Packs'}
     </Link>
   );
 }

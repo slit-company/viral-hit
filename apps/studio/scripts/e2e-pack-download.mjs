@@ -20,7 +20,7 @@ https.request = (url, options, callback) => {
     if (url.pathname === '/private-redirect.tar') {
       response.statusCode = 302; response.headers = { location: 'https://127.0.0.1/private.tar' }; callback(response); response.end(); return;
     }
-    const files = { '/community.tar': 'shared-creative-pack.tar', '/catalog.json': 'catalog.json', '/skill.json': 'catalog-skill.json', '/recipes.json': 'catalog-recipes.json', '/creative.tar': 'catalog-creative.tar', '/mismatch.json': 'catalog-skill.json' };
+    const files = { '/runtime.json': 'catalog-runtime.json', '/runtime-mismatch.json': 'catalog-runtime.json', '/runtime-catalog.json': 'runtime-catalog.json', '/community.tar': 'shared-creative-pack.tar', '/catalog.json': 'catalog.json', '/skill.json': 'catalog-skill.json', '/recipes.json': 'catalog-recipes.json', '/creative.tar': 'catalog-creative.tar', '/mismatch.json': 'catalog-skill.json' };
     if (!files[url.pathname]) { response.statusCode = 404; response.headers = {}; callback(response); response.end(); return; }
     const file = join(process.env.VIRAL_HIT_DATA_DIR, files[url.pathname]);
     if (url.pathname === '/community.tar') appendFileSync(join(process.env.VIRAL_HIT_DATA_DIR, 'pack-fetches.txt'), 'fetch\n');

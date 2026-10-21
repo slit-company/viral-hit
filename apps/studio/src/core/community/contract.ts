@@ -21,7 +21,7 @@ export const catalogUrlSchema = z
 export const catalogEntrySchema = z
   .object({
     id,
-    kind: z.enum(['skill', 'recipe-pack', 'creative-pack']),
+    kind: z.enum(['skill', 'recipe-pack', 'creative-pack', 'runtime-package']),
     title: z.string().trim().min(1).max(120),
     summary: z.string().trim().min(1).max(500),
     scope: z.enum(['general', 'specialized']),
@@ -101,7 +101,9 @@ export function catalogEntryHref(entry: CatalogEntry) {
       ? '/skills'
       : entry.kind === 'creative-pack'
         ? '/packs'
-        : '/recipe-packs';
+        : entry.kind === 'runtime-package'
+          ? '/runtime-packages'
+          : '/recipe-packs';
   return (
     path +
     '?' +
