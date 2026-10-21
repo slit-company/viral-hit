@@ -148,3 +148,7 @@ Output storage caps each generated audio file at 64 MiB; the example caps durati
 Final build: **203 public files / 8,593,619 bytes**, **2,025,164 raw JavaScript bytes / 596,397 individually gzipped JavaScript bytes**. Increase over independent audio generation: **351 gzip bytes**. Both unchanged 10 MB/600 KB gates pass. Analysis/audio now reuse one source picker, upload/recovery hook and source identity helpers. No runtime dependency, model, migration, daemon or polling loop was added.
 
 The optional audio-conform provider uses separately installed FFmpeg/FFprobe with existing 64 MiB/file and 256 MiB total/cumulative-read limits. Its example-specific limits are 0.1–30 seconds output, 60 seconds overall, 15 seconds/probe and 30 seconds/conversion, with 1 MiB logs. These are bounded tasks, not whole-host memory limits. Short reference processing, native playback and browser export passed; long projects, simultaneous inference and competitor benchmarks remain unmeasured.
+
+## Generation receipt inspection — 2026-10-22
+
+Final public output is unchanged: **203 files / 8,593,619 bytes**, **2,025,164 raw JS / 596,397 summed gzip bytes**. Existing 10 MB/600 KB limits pass. Receipt binding and inspection use existing SQLite rows by project and primary-key identity; no new schema, default dependency, background service or poller is added. Inspection does not contact providers. This does not measure high-concurrency database throughput or external model costs.

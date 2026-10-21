@@ -14,6 +14,7 @@ import {
   issueGenerationUploadIntent,
   releaseGenerationUploadSlot,
   getGenerationUploadIntentEffectId,
+  getGenerationUploadIntentAdmissionState,
 } from '@/core/effects/generation-upload-intent';
 import { submitEffectGeneration } from '@/core/effects/submit-generation';
 import { resolveLocalProjectAssetPath } from '@/core/projects/local-project-assets';
@@ -233,10 +234,12 @@ export async function submitAssetFirstGeneration({
   generation: source,
   origin,
   generationIntentId,
+  refreshExpiredIntent = true,
 }: {
   generation: AssetFirstGenerationRequest | unknown;
   origin: 'ui' | 'mcp' | 'cli' | 'system';
   generationIntentId?: string;
+  refreshExpiredIntent?: boolean;
 }) {
   const { generation, binding, expectedUploadCount, preparedReferences } = await preflightAssetFirstGeneration(source);
   const intentId = generationIntentId || await issueGenerationUploadIntent({
@@ -247,6 +250,10 @@ export async function submitAssetFirstGeneration({
   if (await getGenerationUploadIntentEffectId({ intentId, projectId: generation.projectId }) !== binding.effectId) {
     throw new Error('Generation authorization does not match this project and model.');
   }
+  const admission = await getGenerationUploadIntentAdmissionState({ intentId, projectId: generation.projectId, effectId: binding.effectId });
+  if (admission.status === 'used') return { status: 409, body: {
+    code: 'GENERATION_ALREADY_SUBMITTED', error: 'This generation was already submitted. Inspect its original receipt before taking further action.',
+  } };
   try {
     const prepared = preparedReferences ?? await prepareGenerationReferences({
       generation,
@@ -263,6 +270,7 @@ export async function submitAssetFirstGeneration({
       input,
       projectId: generation.projectId,
       generationIntentId: intentId,
+      refreshExpiredIntent,
       authorizedReferenceUrls: prepared.authorizedDeliveryUrls,
       metadata: {
         origin,
@@ -285,7 +293,8 @@ export async function submitAssetFirstGeneration({
     }
     return result;
   } catch (error) {
-    await failGenerationUploadIntent({ intentId });
+    // A competing submit may own the claim; preparation failure cannot retire its in-flight intent.
+    await failGenerationUploadIntent({ intentId, pendingOnly: true });
     throw error;
   }
 }

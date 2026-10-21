@@ -93,3 +93,5 @@ Independent model options follow [the declared-control boundary](MODEL-OPTIONS.m
 
 
 Declared audio references reuse the common per-kind count contract, existing asset-first admission and local provider reader. `referenceInputs` is optional metadata; omission retains text-only audio and existing fingerprints. Studio analysis/audio share source selection, bounded library projection and fenced upload/history actions. Model changes retain sources and reject incompatible submissions; no second upload store or polling engine is introduced.
+
+Generation intent receipts belong to `core/effects`: bind the existing claimed intent to its project/model history before provider code runs, refuse reassignment, and preserve the link on failure. `core/generation-providers` projects read-only inspection to MCP/CLI through the existing public history view. Observation must not poll, refresh authorization or imply permission to repeat ambiguous work. See [recovery contract](../GENERATION-RECOVERY.md).

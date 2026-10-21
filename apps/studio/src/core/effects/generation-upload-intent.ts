@@ -487,41 +487,16 @@ export async function getCompletedIntentUploads({
     );
 }
 
-export async function completeGenerationUploadIntent({
-  intentId,
-  generationId,
-  now = new Date(),
-  dbClient,
-}: {
-  intentId: string;
-  generationId: string;
-  now?: Date;
-  dbClient?: DbClient;
-}) {
-  const db = await resolveDb(dbClient);
-  const result = await db
-    .update(generationUploadIntent)
-    .set({
-      status: 'consumed',
-      generationId,
-      consumedAt: now,
-      updatedAt: now,
-    })
-    .where(
-      and(
-        eq(generationUploadIntent.id, intentId),
-        eq(generationUploadIntent.status, 'submitting')
-      )
-    );
-  return getAffectedRows(result) === 1;
-}
+export { completeGenerationUploadIntent } from './generation-intent-receipt';
 
 export async function failGenerationUploadIntent({
   intentId,
+  pendingOnly = false,
   now = new Date(),
   dbClient,
 }: {
   intentId: string;
+  pendingOnly?: boolean;
   now?: Date;
   dbClient?: DbClient;
 }) {
@@ -532,7 +507,7 @@ export async function failGenerationUploadIntent({
     .where(
       and(
         eq(generationUploadIntent.id, intentId),
-        inArray(generationUploadIntent.status, ['pending', 'submitting'])
+        pendingOnly ? eq(generationUploadIntent.status, 'pending') : inArray(generationUploadIntent.status, ['pending', 'submitting'])
       )
     );
 }

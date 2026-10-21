@@ -61,7 +61,7 @@ Prepare this request with `viral_hit_asset_generation` under its `request` argum
 
 Preparation validates admission and issues a single-use intent without generation or uploads. Review the returned `generation`, `digest` and `generationIntentToken`. Within the user's authorized generation scope, submit `action: "submit"` with that exact `generation`, `generationIntentToken` and `expectedDigest` equal to `digest`. Submission may spend provider credits. The same service handles CLI and MCP; neither places timeline clips nor publishes.
 
-A consumed token cannot generate again. After an uncertain submission response, inspect generation history/status; do not automatically prepare a fresh token. The digest detects request changes against the reviewed value; it is not a provider-code signature or a guarantee that model defaults cannot change across a restart.
+A consumed token cannot generate again. After an uncertain submission response, use `action: "inspect"` with the original `projectId` and `generationIntentToken`; do not automatically prepare a fresh token. This read-only operation returns the linked history item without another provider call, including after restart. See [generation recovery](GENERATION-RECOVERY.md). The digest detects request changes against the reviewed value; it is not a provider-code signature or a guarantee that model defaults cannot change across a restart.
 
 ## Validation scope
 

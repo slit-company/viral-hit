@@ -117,6 +117,15 @@ test('MCP discovers audio and creates an asset from a reviewed single-use reques
   const submit = { action: 'submit', generation: review.generation, generationIntentToken: review.generationIntentToken, expectedDigest: review.digest };
   const result = await call('viral_hit_asset_generation', { request: submit });
   expect(result.isError).not.toBe(true); expect(result.structuredContent.result.status).toBe('succeeded');
+  const inspect = { action: 'inspect', projectId, generationIntentToken: review.generationIntentToken };
+  const receipt = await call('viral_hit_asset_generation', { request: inspect });
+  expect(receipt.isError).not.toBe(true);
+  expect(receipt.structuredContent.result.generation.id).toBe(result.structuredContent.result.wmTaskId);
+  expect(receipt.structuredContent.result.generation.status).toBe('succeeded');
+  expect(receipt.structuredContent.result.mayResubmit).toBe(false);
+  expect(receipt.structuredContent.result.observationOnly).toBe(true);
+  const foreignId = (await (await request.post('/api/app/projects', { headers, data: { name: 'Foreign receipt' } })).json()).id;
+  expect((await call('viral_hit_asset_generation', { request: { ...inspect, projectId: foreignId } })).isError).toBe(true);
   const repeated = await call('viral_hit_asset_generation', { request: submit });
   expect(repeated.isError).toBe(true); expect(JSON.stringify(repeated)).toContain('already submitted');
   const history = (await (await request.get(`/api/app/projects/${projectId}/generations`)).json()).items;

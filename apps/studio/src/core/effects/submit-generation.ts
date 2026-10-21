@@ -1,3 +1,4 @@
+import { bindGenerationIntentReceipt } from './generation-intent-receipt';
 import { createAdapter } from '@/core/adapters/adapter-factory';
 import { getGenerationProvider } from '@/core/generation-providers/registry';
 import { getEffectById } from '@/core/effects/effects';
@@ -51,6 +52,7 @@ export type SubmitEffectGenerationInput = {
   projectId?: string | null;
   generationIntentId?: string | null;
   requireProject?: boolean;
+  refreshExpiredIntent?: boolean;
   metadata?: Record<string, unknown>;
   authorizedReferenceUrls?: string[];
 };
@@ -108,7 +110,7 @@ async function finalizeIntentUploads({
       role: 'input',
     });
   }
-  await completeGenerationUploadIntent({ intentId, generationId });
+  if (!await completeGenerationUploadIntent({ intentId, generationId })) throw Error('Generation receipt could not be finalized; inspect its original intent before taking further action');
 }
 
 async function linkInputAssets(
@@ -131,6 +133,7 @@ export async function submitEffectGeneration({
   projectId,
   generationIntentId,
   requireProject = true,
+  refreshExpiredIntent = true,
   metadata,
   authorizedReferenceUrls = [],
 }: SubmitEffectGenerationInput): Promise<SubmitEffectGenerationResult> {
@@ -260,7 +263,7 @@ export async function submitEffectGeneration({
           effectId,
         });
     if (
-      !intent &&
+      !intent && refreshExpiredIntent &&
       intentState?.status === 'expired' &&
       intentState.refreshableWithoutUploads
     ) {
@@ -339,6 +342,8 @@ export async function submitEffectGeneration({
         } satisfies SubmitEffectGenerationResult,
       };
     }
+    // This durable identity must exist before any provider code or remote call runs.
+    await bindGenerationIntentReceipt({ intentId: admittedIntentId, projectId: normalizedProjectId, effectId, generationId });
     return { generationId, intentId: admittedIntentId };
   });
   if ('result' in admission) return admission.result;
