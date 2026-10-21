@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "media-batch-inspector",
+  "label": "Media batch inspection",
+  "description": "Local technical inventory of project images, videos and audio. No semantic or creative-quality analysis.",
+  "scope": "general",
+  "referenceDelivery": "project-media",
+  "license": "Apache-2.0",
+  "environment": ["VIRAL_HIT_FFPROBE"],
+  "models": [{
+    "id": "media-batch-review",
+    "name": "Media batch review",
+    "kind": "analysis",
+    "analysisInputs": {
+      "image": {"min": 0, "max": 8},
+      "video": {"min": 0, "max": 4},
+      "audio": {"min": 0, "max": 4}
+    }
+  }]
+}

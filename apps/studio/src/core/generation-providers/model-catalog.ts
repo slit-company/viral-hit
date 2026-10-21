@@ -1,4 +1,5 @@
 import { resolveModelOptions, type ModelControl } from './model-controls';
+import { resolveAnalysisInputs, type AnalysisInputs } from './analysis-inputs';
 import {
   getWorkspaceEffectRegistryEntry,
   type WorkspaceEffectRegistryEntry,
@@ -36,6 +37,7 @@ export type GenerationModelDescriptor = {
   kind: 'image' | 'video' | 'analysis';
   available: boolean;
   controls?: ModelControl[];
+  analysisInputs?: AnalysisInputs;
   parameterSchema: unknown;
   defaultParameters: Record<string, unknown>;
   referenceSchema: unknown;
@@ -53,19 +55,16 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
           providerId: provider.id,
           ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
           kind: 'analysis' as const,
+          ...(binding.analysisInputs ? { analysisInputs: binding.analysisInputs } : {}),
           available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
           ...(binding.controls ? { controls: binding.controls } : {}),
-        parameterSchema: effect.inputSchema,
+          parameterSchema: effect.inputSchema,
           defaultParameters: {
             analysis_depth: 'standard',
             max_output_tokens: 2048,
             ...(binding.controls ? { provider_options: resolveModelOptions(binding.controls, undefined) } : {}),
           },
-          referenceSchema: {
-            image: { min: 0, max: 0 },
-            video: { min: 1, max: 1 },
-            audio: { min: 0, max: 0 },
-          },
+          referenceSchema: resolveAnalysisInputs(binding.analysisInputs),
         },
       ];
     }

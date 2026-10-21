@@ -162,3 +162,34 @@ test('Canvas preserves an independently selected analysis model instead of silen
   assert.equal(built.modelId, 'independent-review'); assert.equal(built.model.id, 'independent-review');
   assert.equal(built.input.video_url, video.url);
 });
+
+test('Canvas retains declared mixed sources and rejects incompatible counts instead of dropping references', async () => {
+  const image = makeCard({ id: 'image', type: 'image', url: 'https://example.com/image.png' });
+  const audio = makeCard({ id: 'audio', type: 'audio', url: 'https://example.com/sound.wav' });
+  const video = makeCard({ id: 'video' });
+  const second = makeCard({ id: 'second', url: 'https://example.com/second.mp4' });
+  const model = { id: 'batch-model', name: 'Independent mixed reviewer', uploadPath: '', imageBucketName: '', analysisInputs: { image: { min: 1, max: 1 }, video: { min: 0, max: 2 }, audio: { min: 1, max: 1 } } };
+  const draft = makeCard({ kind: 'generation', generationMode: 'analysis', modelId: model.id, prompt: 'Compare selected media', referenceCardIds: ['second', 'image', 'audio', 'video'] }) as CanvasDraftCard;
+  const params = { draftCard: draft, canvasCards: { image, audio, video, second }, imageModels: [], videoModels: [], analysisModels: [model], metadataMap: {}, runtimeMessages: { missingVideoUrl: '', readVideoDurationFailed: '', videoMetadataLoadFailed: '' }, translate: (key: string) => key };
+  const built = await buildGenerationEffectInput(params);
+  assert.equal(built.model.name, model.name);
+  assert.deepEqual(built.input.image_urls, [image.url]);
+  assert.deepEqual(built.input.audio_urls, [audio.url]);
+  assert.deepEqual(built.input.video_urls, [second.url, video.url]);
+  assert.equal(built.input.video_url, undefined);
+  await assert.rejects(buildGenerationEffectInput({ ...params, draftCard: { ...draft, referenceCardIds: ['video'] } }), /image references/);
+  await assert.rejects(buildGenerationEffectInput({ ...params, analysisModels: [], draftCard: { ...draft, modelId: 'video-analysis' } }), /analysisVideoRequired/);
+});
+
+test('analysis source attachment respects kind limits and does not duplicate an existing asset through a second card', async () => {
+  const { canAttachAnalysisReference } = await import('./analysis-references');
+  const image = makeCard({ id: 'image', type: 'image', assetId: 'owned-image' });
+  const duplicate = makeCard({ ...image, id: 'image-copy' });
+  const audio = makeCard({ id: 'audio', type: 'audio' });
+  const draft = makeCard({ id: 'draft', kind: 'generation', generationMode: 'analysis', referenceCardIds: ['image'] }) as CanvasDraftCard;
+  const inputs = { image: { min: 0, max: 1 }, video: { min: 0, max: 0 }, audio: { min: 0, max: 1 } };
+  assert.equal(canAttachAnalysisReference(draft, audio, { image }, inputs), true);
+  assert.equal(canAttachAnalysisReference(draft, duplicate, { image }, inputs), false);
+  assert.equal(canAttachAnalysisReference(draft, makeCard({ id: 'video' }), { image }, inputs), false);
+  assert.equal(canAttachAnalysisReference(draft, audio, { image }), false);
+});

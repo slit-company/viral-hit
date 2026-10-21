@@ -1,4 +1,5 @@
 import { modelControlsSchema } from '../model-controls';
+import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
@@ -15,6 +16,7 @@ export const providerModelSchema = z.object({
   name: z.string().trim().min(1).max(80),
   kind: z.enum(['image', 'video', 'analysis']),
   controls: modelControlsSchema.optional(),
+  analysisInputs: analysisInputsSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
   aspectRatios: z.array(z.enum(PROVIDER_ASPECT_RATIOS)).max(PROVIDER_ASPECT_RATIOS.length).default([]),
   defaultAspectRatio: z.enum(PROVIDER_ASPECT_RATIOS).optional(),
@@ -24,7 +26,8 @@ export const providerModelSchema = z.object({
   requiresImageInput: z.boolean().default(false),
 }).strict().superRefine((model, ctx) => {
   if (model.kind !== 'analysis' && !model.aspectRatios.length) ctx.addIssue({ code: 'custom', message: 'Image/video models require aspectRatios' });
-  if (model.kind === 'analysis' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Analysis takes one video, with no image or output aspect-ratio settings' });
+  if (model.kind === 'analysis' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, with no image-generation or output aspect-ratio settings' });
+  if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });
   if (model.defaultAspectRatio && !model.aspectRatios.includes(model.defaultAspectRatio)) ctx.addIssue({ code: 'custom', message: 'defaultAspectRatio must be one of aspectRatios' });
   if (model.kind !== 'video' && model.durations) ctx.addIssue({ code: 'custom', message: 'Only video models have durations' });
   if (model.defaultDuration && !model.durations?.includes(model.defaultDuration)) ctx.addIssue({ code: 'custom', message: 'defaultDuration must be one of durations' });

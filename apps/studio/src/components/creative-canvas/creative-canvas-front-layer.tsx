@@ -1,3 +1,7 @@
+import { resolveAnalysisInputs } from '@/core/generation-providers/analysis-inputs';
+import { composerReferenceOptions } from './composer-reference-options';
+import { AnalysisSources } from './analysis-sources';
+import { useAvailableModels } from '@/core/workspace-hooks/use-available-models';
 import { ModelOptions } from '@/components/generation-providers/model-options';
 import { Action } from '@/components/base/action';
 import {
@@ -19,7 +23,6 @@ import {
   listCompatibleCanvasReferenceCards,
   resolveReferenceDrivenDraftAspectRatio,
 } from '@/core/creative-canvas/composer';
-import { buildCanvasReferenceMentions } from '@/core/creative-canvas/reference-mentions';
 
 import {
   listGenerationOutputsForDraft,
@@ -87,6 +90,7 @@ function areZoomStepsEqual(current: number[] | undefined, next: number[]) {
 
 export function CreativeCanvasFrontLayer() {
   const { editor } = useCanvasEngine();
+  const { analysisModels } = useAvailableModels();
   const {
     cards,
     composerPresentation,
@@ -395,13 +399,13 @@ export function CreativeCanvasFrontLayer() {
 
   const isAnalysisDraft = activeDraftCard?.generationMode === 'analysis';
   const modelOptions = isAnalysisDraft
-    ? []
+    ? analysisModels
     : activeDraftCard?.type === 'image'
       ? imageModels
       : videoModels;
   const selectedModel =
     findWorkspaceModelOption(modelOptions, activeDraftCard?.modelId) ??
-    modelOptions[0] ??
+    (isAnalysisDraft ? null : modelOptions[0]) ??
     null;
   const selectedModelLabel = selectedModel?.name ?? labels.modelLabel;
   const selectedModeOptions = selectedModel?.modeOptions ?? [];
@@ -477,7 +481,7 @@ export function CreativeCanvasFrontLayer() {
 
   const promptCharacterCount = countPromptCharacters(promptInputValue);
   const activePromptPlaceholder = isAnalysisDraft
-    ? labels.analysisPromptPlaceholder
+    ? selectedModel?.analysisInputs ? 'Describe what to review across the selected media.' : labels.analysisPromptPlaceholder
     : activeDraftCard?.type === 'video'
       ? labels.videoPromptPlaceholder
       : labels.imagePromptPlaceholder;
@@ -596,24 +600,10 @@ export function CreativeCanvasFrontLayer() {
     referencePickerOptions[0]?.intent ??
     (isAnalysisDraft ? 'video' : activeDraftCard?.type) ??
     'image';
-  const currentReferenceCards = useMemo(() => {
-    if (!activeDraftCard) {
-      return [];
-    }
-
-    const mentions = buildCanvasReferenceMentions({
-      referenceCardIds: activeDraftCard.referenceCardIds,
-      cards,
-    });
-
-    return mentions.map((mention) => ({
-      id: mention.cardId,
-      name: mention.name,
-      type: mention.type,
-      alias: mention.alias,
-      thumbnailUrl: cards[mention.cardId]?.url ?? null,
-    }));
-  }, [activeDraftCard, cards]);
+  const currentReferenceCards = useMemo(
+    () => composerReferenceOptions(activeDraftCard, cards),
+    [activeDraftCard, cards]
+  );
   const promptReferences = useMemo(
     () =>
       currentReferenceCards.map((card) => ({
@@ -886,7 +876,7 @@ export function CreativeCanvasFrontLayer() {
           promptAccessory={(insertReferenceMention) => (
             <>
               {onDraftModelOptionsChange && <ModelOptions modelId={activeDraftCard.modelId} value={activeDraftCard.modelOptions} disabled={isDraftBusy} onChange={value => onDraftModelOptionsChange(activeDraftCard.id, value)} />}
-              <CreativeCanvasComposerReferencePicker
+              {isAnalysisDraft && (selectedModel?.analysisInputs || activeDraftCard.referenceCardIds.length > 1 || activeDraftCard.referenceCardIds.some(id => cards[id]?.type !== 'video')) ? <AnalysisSources draft={activeDraftCard} cards={cards} inputs={resolveAnalysisInputs(selectedModel?.analysisInputs)} disabled={isDraftBusy} onAttach={onAttachCanvasReference} onDetach={onDetachCanvasReference} /> : <CreativeCanvasComposerReferencePicker
                 activeDraftId={activeDraftCard.id}
                 canvasReferenceCards={canvasReferenceCards}
                 containerRef={popovers.refs.reference}
@@ -903,7 +893,7 @@ export function CreativeCanvasFrontLayer() {
                 options={referencePickerOptions}
                 primaryIntent={primaryReferenceIntent}
                 variant="row"
-              />
+              />}
               {!isAnalysisDraft ? <CreativeCanvasComposerShotPicker containerRef={popovers.refs.shot} disabled={isDraftBusy} isOpen={popovers.open === 'shot'}
                 mediaType={activeDraftCard.type} onOpenChange={popovers.onOpenChange('shot')} onPromptChange={handlePromptValueChange} prompt={promptInputValue} /> : null}
               <CreativeCanvasComposerVersionPicker

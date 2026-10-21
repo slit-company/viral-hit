@@ -37,7 +37,12 @@ const buildVideoAnalysisEffect = (
     inputSchema: {
       ...(binding.controls ? { provider_options: { type: 'any', required: false } } : {}),
       prompt: { type: 'string', required: true },
-      video_url: { type: 'string', required: true },
+      video_url: { type: 'string', required: !binding.analysisInputs },
+      ...(binding.analysisInputs ? {
+        image_urls: { type: 'any', required: binding.analysisInputs.image.min > 0 },
+        video_urls: { type: 'any', required: binding.analysisInputs.video.min > 0 },
+        audio_urls: { type: 'any', required: binding.analysisInputs.audio.min > 0 },
+      } : {}),
       analysis_depth: {
         type: 'enum',
         required: false,

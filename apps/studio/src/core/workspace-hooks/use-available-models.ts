@@ -14,6 +14,6 @@ export function useAvailableModels() {
   const { data } = useWorkspaceModels();
   return useMemo(() => {
     const server = data?.models ?? [];
-    return { imageModels: pick(server, 'ai-image'), videoModels: pick(server, 'ai-video') };
+    return { imageModels: pick(server, 'ai-image'), videoModels: pick(server, 'ai-video'), analysisModels: server.filter(model => model.workspaceType === 'analysis' && model.available !== false) };
   }, [data]);
 }

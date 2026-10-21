@@ -185,6 +185,7 @@ type BuildGenerationEffectInputParams = {
   referenceUrlOverrides?: Record<string, string>;
   imageModels: WorkspaceModelOption[];
   videoModels: WorkspaceModelOption[];
+  analysisModels?: WorkspaceModelOption[];
   metadataMap: Record<string, EffectMetadata>;
   runtimeMessages: RuntimeMessages;
   translate: TranslateFn;
@@ -198,13 +199,14 @@ export const buildGenerationEffectInput = async ({
   referenceUrlOverrides = {},
   imageModels,
   videoModels,
+  analysisModels,
   metadataMap,
   runtimeMessages,
   translate,
   notify,
   loadVideoDurationSecondsImpl = loadVideoDurationSeconds,
 }: BuildGenerationEffectInputParams) => {
-  if (isCanvasAnalysisCard(draftCard)) return buildAnalysisGenerationInput({ draftCard, canvasCards, referenceUrlOverrides, translate });
+  if (isCanvasAnalysisCard(draftCard)) return buildAnalysisGenerationInput({ draftCard, canvasCards, referenceUrlOverrides, translate, model: analysisModels?.find(item => item.id === draftCard.modelId) });
 
   const models = draftCard.type === 'image' ? imageModels : videoModels;
   const model = getSelectableModel(models, draftCard.modelId);

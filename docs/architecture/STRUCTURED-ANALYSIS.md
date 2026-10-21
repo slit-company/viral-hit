@@ -9,3 +9,5 @@
 The transport exposes these operations through the existing storyboard service and schema. UI hooks own loading and unsaved draft state; the input component uses shared SEED fields. Portable plans retain report evidence as historical context, while only actual asset references are remapped. The full source report remains in its original generation database.
 
 Validation covers report bounds, schema drift, independent immediate/queued output, proposal order and editable fields, source ownership/integrity/status, selected range validity, explicit save and portable evidence. Creative interpretation and provider quality require separate real-model evidence.
+
+Analysis models may declare mixed-media input ranges. The timed report contract still identifies a single source timeline. `analysis-records.server.ts` admits only exactly one local video with no image/audio companions; arrays and the legacy singular alias must agree. Batch reports remain in generation history and cannot silently become first-video storyboard evidence.

@@ -5,13 +5,15 @@ import { getDb } from '../workspace-lib/db-adapter';
 import { getGenerationById } from '../effects/record-generation';
 import { analysisReport } from './analysis-report';
 import { parseLocalReference } from './local-reference';
+import { singleAnalysisVideo } from './analysis-inputs';
 
 const object = (value: unknown): Record<string, unknown> => value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {};
 type AnalysisGenerationRow = { id: string; projectId: string | null; status: string; input: unknown; output: unknown };
 function readRecord(record: AnalysisGenerationRow) {
   const input = object(record.input), provider = object(input._provider);
-  if (record.status !== 'succeeded' || provider.kind !== 'analysis' || typeof input.video_url !== 'string') return null;
-  const source = parseLocalReference(input.video_url);
+  const videoUrl = singleAnalysisVideo(input);
+  if (record.status !== 'succeeded' || provider.kind !== 'analysis' || !videoUrl) return null;
+  const source = parseLocalReference(videoUrl);
   const report = analysisReport.safeParse(object(record.output).analysis_report);
   if (!report.success || !source || source.kind !== 'video' || source.projectId !== record.projectId || typeof provider.id !== 'string' || typeof provider.modelId !== 'string') return null;
   const identity = { report: report.data, source, providerId: provider.id, modelId: provider.modelId };

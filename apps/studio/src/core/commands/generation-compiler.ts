@@ -70,7 +70,10 @@ export async function compileAssetFirstGenerationInput({
       );
     }
 
-    if (reference.role === 'audio_track' || asset.type === 'audio') {
+    if (reference.role === 'audio_track' && asset.type !== 'audio') {
+      throw new GenerationReferenceError(`Asset ${reference.assetId} is not an audio track.`);
+    }
+    if (asset.type === 'audio') {
       audioUrls.push(deliveryUrl);
       continue;
     }
@@ -97,7 +100,7 @@ export async function compileAssetFirstGenerationInput({
     ...(imageUrls.length > 0 ? { image_urls: [...new Set(imageUrls)] } : {}),
     ...(videoUrls.length > 0 ? { video_urls: [...new Set(videoUrls)] } : {}),
     ...(audioUrls.length > 0 ? { audio_urls: [...new Set(audioUrls)] } : {}),
-    ...(generation.mode === 'analysis' && videoUrls[0]
+    ...(generation.mode === 'analysis' && new Set(videoUrls).size === 1
       ? { video_url: videoUrls[0] }
       : {}),
   };

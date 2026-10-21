@@ -41,7 +41,8 @@ async function GET({ request }: { request: Request }) {
 
   const analysisModels = listGenerationModelDescriptors().filter(model => model.kind === 'analysis').map(model => ({
     id: model.id, name: model.name, available: model.available, workspaceType: 'analysis',
-    uploadPath: '', imageBucketName: '', supportsSourceVideo: true, maxSourceVideos: 1,
+    uploadPath: '', imageBucketName: '',
+    ...(model.analysisInputs ? { analysisInputs: model.analysisInputs, maxReferenceImages: model.analysisInputs.image.max, maxSourceVideos: model.analysisInputs.video.max, maxReferenceAudios: model.analysisInputs.audio.max, supportsSourceVideo: model.analysisInputs.video.max > 0 } : { supportsSourceVideo: true, maxSourceVideos: 1 }),
     ...(model.controls ? { controls: model.controls } : {}), inputSchema: model.parameterSchema, defaultProviderModelVariant: null,
   }));
   return Response.json({ models: requestedType === 'analysis' ? analysisModels : requestedType ? models : [...models, ...analysisModels] });

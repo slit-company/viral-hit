@@ -24,6 +24,7 @@ const item = (
   duration: null,
   referenceImages: ['https://media.cloud.test/ref.png'],
   referenceVideos: [],
+  referenceAudios: [],
   error: null,
   createdAt: new Date().toISOString(),
   ...overrides,

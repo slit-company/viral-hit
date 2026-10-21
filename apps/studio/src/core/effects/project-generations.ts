@@ -31,6 +31,7 @@ export type ProjectGenerationItem = {
   duration: string | null;
   referenceImages: string[];
   referenceVideos: string[];
+  referenceAudios: string[];
   error: string | null;
   createdAt: string;
 };
@@ -143,6 +144,7 @@ export const toProjectGenerationItem = (
       input?.last_frame
     ),
     referenceVideos: readUrlList(input?.video_urls, input?.video_url),
+    referenceAudios: readUrlList(input?.audio_urls, input?.audio_url),
     error: row.error,
     createdAt,
   };

@@ -1,3 +1,4 @@
+import { useAvailableModels } from '@/core/workspace-hooks/use-available-models';
 import { useEffectMetadata } from '@/core/workspace-hooks/use-workspace-metadata';
 import type { WorkspaceModelOption } from '@/core/effects/workspace-models';
 import type {
@@ -88,6 +89,7 @@ export function useCreativeCanvasGenerationRuntime({
   ) => void;
   onGenerationComplete?: () => void;
 }) {
+  const { analysisModels } = useAvailableModels();
   const statusLabels = useMemo(
     () => ({
       idle: studioT('status.labels.idle'),
@@ -132,6 +134,7 @@ export function useCreativeCanvasGenerationRuntime({
         referenceUrlOverrides,
         imageModels,
         videoModels,
+        analysisModels,
         metadataMap,
         runtimeMessages,
         translate: studioT,
@@ -142,6 +145,7 @@ export function useCreativeCanvasGenerationRuntime({
     [
       canvasCardsRef,
       imageModels,
+      analysisModels,
       metadataMap,
       runtimeMessages,
       studioT,

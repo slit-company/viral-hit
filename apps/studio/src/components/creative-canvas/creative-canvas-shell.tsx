@@ -1,3 +1,4 @@
+import { canAttachAnalysisReference } from '@/core/creative-canvas/analysis-references';
 
 import {
   invalidateWorkspaceAfterAssetMutation,
@@ -190,7 +191,7 @@ export function CreativeCanvasShell({
     [rawStudioT]
   );
 
-  const { imageModels, videoModels } = useAvailableModels();
+  const { imageModels, videoModels, analysisModels } = useAvailableModels();
   const canonicalInitialModelId = initialModelId
     ? getCanonicalWorkspaceModelId(initialModelId)
     : null;
@@ -442,19 +443,18 @@ export function CreativeCanvasShell({
     (draftId: string, sourceCardId: string) => {
       const sourceCard = canvasCardsRef.current[sourceCardId];
       const draftCard = canvasCardsRef.current[draftId];
-      if (!sourceCard || draftCard?.kind !== 'generation') {
+      if (!sourceCard || draftCard?.kind !== 'generation' || draftCard.status === 'pending' || draftCard.status === 'processing') {
         return;
       }
 
       if (
         draftCard.generationMode === 'analysis' &&
-        !draftCard.referenceCardIds?.includes(sourceCardId) &&
-        (draftCard.referenceCardIds?.length ?? 0) >= 1
+        !canAttachAnalysisReference(draftCard, sourceCard, canvasCardsRef.current, analysisModels.find(model => model.id === draftCard.modelId)?.analysisInputs)
       ) {
         return;
       }
 
-      const models = draftCard.type === 'image' ? imageModels : videoModels;
+      const models = draftCard.generationMode === 'analysis' ? analysisModels : draftCard.type === 'image' ? imageModels : videoModels;
       const targetModel = getSelectableModel(models, draftCard.modelId);
       if (
         !canUseCanvasCardAsGenerationReference({
@@ -481,6 +481,7 @@ export function CreativeCanvasShell({
       canvasCardsRef,
       createConnectorBetweenCards,
       imageModels,
+      analysisModels,
       updateDraftCard,
       videoModels,
     ]
@@ -1314,56 +1315,13 @@ export function CreativeCanvasShell({
     const handleConnect = (e: Event) => {
       const { sourceCardId, targetCardId } = (e as CustomEvent).detail;
       if (sourceCardId && targetCardId && sourceCardId !== targetCardId) {
-        const sourceCard = canvasCardsRef.current[sourceCardId];
-        const targetCard = canvasCardsRef.current[targetCardId];
-        if (!sourceCard || targetCard?.kind !== 'generation') {
-          return;
-        }
-
-        if (
-          targetCard.generationMode === 'analysis' &&
-          !targetCard.referenceCardIds?.includes(sourceCardId) &&
-          (targetCard.referenceCardIds?.length ?? 0) >= 1
-        ) {
-          return;
-        }
-
-        const models = targetCard.type === 'image' ? imageModels : videoModels;
-        const targetModel = getSelectableModel(models, targetCard.modelId);
-        if (
-          !canUseCanvasCardAsGenerationReference({
-          sourceCard,
-          targetType: targetCard.type,
-          targetModel,
-          targetGenerationMode: targetCard.generationMode,
-        })
-        ) {
-          return;
-        }
-
-        createConnectorBetweenCards(sourceCardId, targetCardId, {
-          recordHistory: true,
-        });
-        updateDraftCard(targetCardId, {
-          referenceCardIds: [
-            ...new Set([
-              ...(targetCard.referenceCardIds ?? []),
-              sourceCardId,
-            ]),
-          ],
-        });
+        handleAttachCanvasReference(targetCardId, sourceCardId);
       }
     };
     window.addEventListener('creative-canvas:connect-cards', handleConnect);
     return () =>
       window.removeEventListener('creative-canvas:connect-cards', handleConnect);
-  }, [
-    createConnectorBetweenCards,
-    canvasCardsRef,
-    imageModels,
-    updateDraftCard,
-    videoModels,
-  ]);
+  }, [handleAttachCanvasReference]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

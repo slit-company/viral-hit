@@ -209,3 +209,5 @@ Installed generation providers can opt into `referenceDelivery: "project-media"`
 [Structured analysis reports](STRUCTURED-ANALYSIS.md) let independent providers supply timed observations and optional editable shot proposals. General and specialized outputs use the same versioned schema and reviewed storyboard handoff, with original-source verification and retained generation fingerprints.
 
 Independent models can declare typed [model options](MODEL-OPTIONS.md), shared by metadata discovery, Canvas/Studio forms and server admission.
+
+Analysis providers can declare [image/video/audio input ranges](ANALYSIS-PROVIDERS.md#declare-accepted-media). Canvas source selection, MCP discovery and asset-first admission use those declarations; omitting them preserves the one-video contract. The optional [batch inspector](../examples/providers/media-batch-inspector/README.md) exercises real local mixed-media processing without a model download. Multi-source text reports do not yet carry source-specific timed storyboard observations.

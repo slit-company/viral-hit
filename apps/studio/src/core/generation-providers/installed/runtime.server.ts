@@ -141,8 +141,8 @@ export class InstalledProviderRuntime {
 export class InstalledProviderAdapter extends BaseAdapter {
   constructor(effect: EffectRecord, private readonly runtime: InstalledProviderRuntime) { super(effect); }
   createGeneration(input: unknown) {
-    if (this.effect.type === 3) validateInstalledAnalysisInput(input);
     const model = this.runtime.manifest.models.find(item => item.id === this.effect.linkName);
+    if (this.effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs);
     const options = resolveModelOptions(model?.controls, (input as Record<string, unknown> | null)?.provider_options);
     return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId);
   }

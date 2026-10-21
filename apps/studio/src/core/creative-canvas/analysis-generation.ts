@@ -1,3 +1,4 @@
+import { validateAnalysisReferenceCounts } from '@/core/generation-providers/analysis-inputs';
 import { draftModelOptions } from '@/core/generation-providers/model-controls';
 import { getGenerationPromptMaxChars, validateGenerationPrompt } from '@/core/effects/validation';
 import { VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS, VIDEO_ANALYSIS_MODEL_ID } from '@/core/effects/video-analysis';
@@ -20,7 +21,8 @@ const getVideoAnalysisModel = (
   maxSourceVideos: 1,
 });
 
-export function buildAnalysisGenerationInput({ draftCard, canvasCards, referenceUrlOverrides, translate }: {
+export function buildAnalysisGenerationInput({ draftCard, canvasCards, referenceUrlOverrides, translate, model }: {
+  model?: WorkspaceModelOption;
   draftCard: CanvasDraftCard; canvasCards: Record<string, CanvasCard>; referenceUrlOverrides: Record<string, string>;
   translate: (key: string, values?: Record<string, string | number>) => string;
 }) {
@@ -40,33 +42,27 @@ export function buildAnalysisGenerationInput({ draftCard, canvasCards, reference
     );
   }
 
-  const videoReferences = draftCard.referenceCardIds
-    .map((cardId) => canvasCards[cardId])
-    .filter(
-      (card): card is CanvasCard =>
-        Boolean(card?.url) && card.type === 'video'
-    );
-  if (videoReferences.length !== 1) {
-    throw new Error(translate('messages.analysisVideoRequired'));
-  }
-
-  const videoReference = videoReferences[0];
-  const videoUrl = videoReference
-    ? referenceUrlOverrides[videoReference.id] ?? videoReference.url
-    : null;
+  const references = [...new Set(draftCard.referenceCardIds)].map(id => canvasCards[id]);
+  if (references.some(card => !card?.url || !['image', 'video', 'audio'].includes(card.type))) throw Error('Analysis sources must be available project media');
+  const byKind = (kind: string) => references.filter(card => card.type === kind);
+  const counts = { image: byKind('image').length, video: byKind('video').length, audio: byKind('audio').length };
+  if (!model?.analysisInputs && (counts.video !== 1 || counts.image || counts.audio)) throw Error(translate('messages.analysisVideoRequired'));
+  validateAnalysisReferenceCounts(counts, model?.analysisInputs);
   const input: Record<string, unknown> = {
     ...draftModelOptions(draftCard),
     prompt: promptValidation.trimmedPrompt,
     analysis_depth: draftCard.analysisDepth ?? 'standard',
     max_output_tokens: VIDEO_ANALYSIS_DEFAULT_OUTPUT_TOKENS,
   };
-  if (videoUrl && !isLocalWorkspaceMediaUrl(videoUrl)) {
-    input.video_url = videoUrl;
+  for (const kind of ['image', 'video', 'audio'] as const) {
+    const urls = byKind(kind).map(card => referenceUrlOverrides[card.id] ?? card.url!).filter(url => !isLocalWorkspaceMediaUrl(url));
+    if (model?.analysisInputs && urls.length) input[`${kind}_urls`] = urls;
+    if (kind === 'video' && urls.length === 1 && counts.video === 1) input.video_url = urls[0];
   }
 
   return {
     modelId: draftCard.modelId || VIDEO_ANALYSIS_MODEL_ID,
     input,
-    model: getVideoAnalysisModel(draftCard.analysisDepth, draftCard.modelId || VIDEO_ANALYSIS_MODEL_ID),
+    model: model ?? getVideoAnalysisModel(draftCard.analysisDepth, draftCard.modelId || VIDEO_ANALYSIS_MODEL_ID),
   };
 }

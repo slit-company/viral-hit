@@ -289,7 +289,7 @@ export const canUseCanvasCardAsGenerationReference = ({
   targetGenerationMode?: CanvasGenerationMode;
 }) => {
   if (targetGenerationMode === 'analysis') {
-    return sourceCard.type === 'video';
+    return sourceCard.type !== 'timeline' && (targetModel?.analysisInputs ? targetModel.analysisInputs[sourceCard.type].max > 0 : sourceCard.type === 'video');
   }
 
   if (sourceCard.type === 'image') {

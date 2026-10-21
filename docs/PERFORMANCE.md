@@ -107,3 +107,9 @@ A report is bounded to 256 KB UTF-8 and 64 observations. Discovery examines at m
 Final public build: **203 files / 8,566,568 bytes**, **1,998,504 raw JavaScript bytes / 589,365 individually gzipped JavaScript bytes**. The gzip increase is **1,625 bytes** over structured analysis; unchanged 10 MB/600 KB gates pass. Chunk count reflects bundler grouping and is not an initial-transfer measurement.
 
 Controls reuse cached workspace metadata and existing generation/storage paths. No new dependency, inference runtime, worker or polling loop was added. Each model has at most 16 controls with primitive values, strings at most 4,000 characters and select lists at most 32 choices. Default/constraint validation is synchronous and bounded; this is not a full-host memory or latency benchmark.
+
+## Declared multimodal analysis — 2026-10-22
+
+Final public build: **203 files / 8,571,292 bytes**, **2,003,228 raw JavaScript bytes / 590,925 individually gzipped JavaScript bytes**. Increase: **1,560 gzip bytes** over model controls. Both unchanged budgets pass. Model discovery and the new Canvas picker share the cached workspace metadata query; submission and polling use the existing generation ledger. No default runtime dependency, model service or background loop was added.
+
+Declarations cap the sum of per-kind maxima at 20 and reject empty requests. Project-media delivery retains 64 MiB/file and 256 MiB total/cumulative-read bounds. The optional batch inspector reads/probes/deletes one temporary source at a time, with 1 MiB probe output, a twenty-second child timeout and a two-minute batch signal. Real small-file PNG/MP4/WAV processing and production restart passed; these are not whole-host memory, representative inference speed or competitor benchmarks.
