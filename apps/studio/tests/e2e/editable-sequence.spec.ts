@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
+import { seededProject } from './seeded-project';
 
 test('prepared sequence appends editable tracks and caption changes persist without flattening', async ({ page, request }) => {
-  const data = await (await request.get('/api/app/projects')).json();
-  const project = data.projects.find((p: { name: string }) => p.name === 'Editable sequence E2E fixture');
-  expect(project).toBeTruthy(); const id = project.id;
+  const id = await seededProject('Editable sequence E2E fixture');
   await page.goto(`/editor/${id}`);
   await page.getByRole('button', { name: 'Generation runs' }).click();
   await page.getByRole('combobox', { name: 'Creative recipe' }).selectOption('editable-image-story');

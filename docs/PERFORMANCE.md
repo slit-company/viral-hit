@@ -51,3 +51,10 @@ The account page adds no runtime package. The production public output contains 
 ## Editable image motion — 2026-10-20
 
 Production public assets: 180 files / 8,472,832 bytes; JavaScript 1,909,899 raw bytes / 559,829 summed gzip bytes, +3,237 gzip bytes over the preceding editable-sequence build. Existing 10 MB asset / 600 KB gzip-JS gates pass. No runtime package was added. The contract bounds each overlay to 32 keyframes and server rotation rejects working canvases above 64 megapixels. Constant opacity uses a static filter; varying opacity/fades use FFmpeg expressions. These bounds are not a measured host memory limit, timeline throughput result, or competitor performance comparison. Real browser/server export frames are covered in the [validation ledger](VALIDATION.md).
+
+
+## Browser storyboards and media ZIP downloads — 2026-10-21
+
+The production build contains **204 files / 8,538,279 public bytes**, with **1,971,150 raw JavaScript bytes / 582,295 summed gzip bytes**. This is 17,454 fewer gzip bytes than the preceding 599,749-byte build, including the new storyboard route. The unchanged 10 MB public-assets and 600 KB summed gzip-JS budgets pass. These totals cover every generated browser script, not a measurement of first-page transfer.
+
+Canvas bulk downloads now use a small ZIP32/STORE writer for already-compressed media. It computes CRCs through Blob streams, checks the complete archive layout before reading bytes, and rejects ZIP32 overflow. It does not add compression or support ZIP64. JSZip remains installed for server packaging and independent reader tests but is no longer imported by the Canvas download path. No default dependency changed. This is a verified bundle-size reduction and byte-integrity result, not a measured browser-memory improvement, large-project latency result or model/Higgsfield performance comparison.

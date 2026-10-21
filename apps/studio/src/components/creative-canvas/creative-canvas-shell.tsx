@@ -1095,19 +1095,17 @@ export function CreativeCanvasShell({
       }
 
       if (downloadableGroupCards.length > 0) {
-        const [{ default: JSZip }, files] = await Promise.all([
-          import('jszip'),
+        const [{ storedZip }, files] = await Promise.all([
+          import('@/lib/stored-zip'),
           Promise.all(
             downloadableGroupCards.map((card: CanvasCard) =>
               fetchDownloadBlob(card)
             )
           ),
         ]);
-        const zip = new JSZip();
-        files.forEach(({ blob, fileName }, index) => {
-          zip.file(`${String(index + 1).padStart(2, '0')}-${fileName}`, blob);
-        });
-        const zipBlob = await zip.generateAsync({ type: 'blob' });
+        const zipBlob = await storedZip(files.map(({ blob, fileName }, index) => ({
+          name: `${String(index + 1).padStart(2, '0')}-${fileName}`, blob,
+        })));
         triggerBrowserDownload(zipBlob, 'canvas-group-assets.zip');
         return;
       }

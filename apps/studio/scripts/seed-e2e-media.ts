@@ -118,3 +118,7 @@ try {
   for (let i = 0; i < 4; i++) await sequenceLedger.step(run, { 'asset.materialize': source, 'editor.sequence': createSequenceAdapter() });
   if (sequenceLedger.jobs(run).some(job => job.state !== 'succeeded')) throw Error('Editable sequence fixture did not prepare');
 } finally { sequenceLedger.close(); }
+
+// Test fixtures are not guaranteed to remain in the bounded recent-project listing.
+await mkdir('../../research/evidence/browser-fixtures', { recursive: true });
+await writeFile('../../research/evidence/browser-fixtures/projects.json', JSON.stringify(Object.fromEntries([project, mediaProject, takeProject, referenceProject, sequenceProject].map(item => [item.name, item.id]))));

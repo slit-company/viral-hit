@@ -65,3 +65,11 @@ export const storyboardRequest = z.discriminatedUnion('action', [
   }).strict(),
 ]);
 export type StoryboardRequest = z.infer<typeof storyboardRequest>;
+export type StoryboardSummary = { id: string; revision: number; title: string; scope: StoryboardPlan['scope']; shots: number; accepted: number };
+export type StoryboardActionView = {
+  projectId: string; boardId: string; requestId: string; kind: 'generate' | 'assemble'; revision: number;
+  shotId?: string; shotDigest?: string; outputNodeId: string; runId: string | null;
+  jobs: { id: string; nodeId: string; state: string; error: string | null }[];
+  output?: { assetId: string; sha256: string };
+};
+export type StoryboardView = StoryboardState & { actions: StoryboardActionView[] };

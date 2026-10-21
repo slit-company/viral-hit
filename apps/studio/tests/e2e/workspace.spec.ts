@@ -1,3 +1,4 @@
+import { seededProject } from './seeded-project';
 import { createServer } from 'node:http';
 import { test, expect, type APIRequestContext } from '@playwright/test';
 import { readFile, stat, writeFile } from 'node:fs/promises';
@@ -282,9 +283,7 @@ test('MCP renders edited video, captions and audio to a durable project asset', 
 test('a materialized run attaches to the real editor once and survives a reload', async ({ page, request }) => {
   const replacementWrites: string[] = [];
   page.on('request', req => { if (req.method() === 'POST' && req.url().endsWith('/commands') && req.postData()?.includes('editor.replace_document')) replacementWrites.push(req.postData()!); });
-  const projects = await (await request.get('/api/app/projects')).json();
-  const project = projects.projects.find((p: { name: string }) => p.name === 'Materialized media E2E fixture');
-  expect(project).toBeTruthy(); const id = project.id;
+  const id = await seededProject('Materialized media E2E fixture');
   await page.goto(`/editor/${id}`);
   await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
   await expect(page.getByText('Asset ready', { exact: true })).toBeVisible();
@@ -308,9 +307,7 @@ test('a materialized run attaches to the real editor once and survives a reload'
 });
 
 test('video and binary audio recipes attach through Runs and export a decoded movie together', async ({ page, request }) => {
-  const projects = await (await request.get('/api/app/projects')).json();
-  const project = projects.projects.find((p: { name: string }) => p.name === 'Multimodal E2E fixture');
-  expect(project).toBeTruthy(); const id = project.id;
+  const id = await seededProject('Multimodal E2E fixture');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`/editor/${id}`);
   await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
@@ -375,8 +372,7 @@ test('Light surfaces and SEED dialog keep keyboard focus on desktop and mobile',
 
 test('a harness result replaces only a selected scene, exports its real pixels, and restores the original', async ({ page, request }) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
-  const projects = await (await request.get('/api/app/projects')).json();
-  const id = projects.projects.find((p: { name: string }) => p.name === 'Take E2E fixture').id;
+  const id = await seededProject('Take E2E fixture');
   const readTimeline = async () => (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline;
   const before = await readTimeline();
   const neighbor = before.document.tracks.flatMap((t: { clips: any[] }) => t.clips).find((c: { id: string }) => c.id === 'take-neighbor');

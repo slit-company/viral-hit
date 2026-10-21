@@ -7,7 +7,7 @@ import type { Plan } from '../harness/durable';
 import { sequenceSchema, type EditableSequence } from '../editor/sequence';
 import { checkReferences, checkedMedia } from './media.server';
 import { recordRun, reserveAction, readAction, digest, shotDigest, StoryboardConflict, type StoryboardAction } from './storage.server';
-import type { StoryboardRequest, StoryboardState } from './contract';
+import type { StoryboardRequest, StoryboardState, StoryboardActionView } from './contract';
 
 export function resumeStoryboardAction(action: StoryboardAction) {
   const h = openHarness();
@@ -21,9 +21,15 @@ export function resumeStoryboardAction(action: StoryboardAction) {
     return actionSummary(saved, h.jobs(runId));
   } finally { h.close(); }
 }
-export function actionSummary(action: StoryboardAction, jobs: ReturnType<ReturnType<typeof openHarness>['jobs']> = []) {
+export function actionSummary(action: StoryboardAction, jobs: ReturnType<ReturnType<typeof openHarness>['jobs']> = []): StoryboardActionView {
   const { plan: _, requestDigest: __, ...summary } = action;
-  return { ...summary, jobs: jobs.map(job => ({ id: job.id, nodeId: job.node_id, state: job.state, error: job.error })) };
+  const job = jobs.find(item => item.node_id === action.outputNodeId && item.state === 'succeeded' && !item.cancel_requested && isAssetOperation(item.operation));
+  let output: StoryboardActionView['output'];
+  if (job?.output_json) {
+    const raw = JSON.parse(job.output_json);
+    if (typeof raw.assetId === 'string' && typeof raw.sha256 === 'string') output = { assetId: raw.assetId, sha256: raw.sha256 };
+  }
+  return { ...summary, ...(output ? { output } : {}), jobs: jobs.map(job => ({ id: job.id, nodeId: job.node_id, state: job.state, error: job.error })) };
 }
 export async function storyboardSequence(state: StoryboardState): Promise<EditableSequence> {
   const assets: EditableSequence['assets'] = {}, tracks: EditableSequence['tracks'] = [];

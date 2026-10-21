@@ -133,7 +133,7 @@ export function ProductPageShell({
             </div>
 
             <div className="ml-auto flex min-w-0 items-center justify-end gap-2">
-              {projectId && <HarnessDialog key={projectId} projectId={projectId} />}
+              {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs">Storyboards</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
               {projectId && (workspaceMode || publishing) ? (
                 <nav
                   className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1 max-sm:absolute max-sm:inset-x-4 max-sm:top-14"

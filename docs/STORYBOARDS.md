@@ -2,7 +2,19 @@
 
 Storyboards connect a creative plan to existing recipes, project assets, durable runs and the editor. Use the same structure for a general film, a character introduction, a product demonstration or another specialized job. There is no fixed narrator, channel, aspect ratio, brand, model or narrative formula.
 
-The current surface is the `viral_hit_storyboard` MCP tool, `pnpm storyboard <projectId> < request.json` from `apps/studio`, and trusted local POST `/api/app/projects/<projectId>/storyboards`. GET lists boards. Browser storyboard authoring is not yet implemented; assembled work appears in the existing Runs panel and editor. The bundled **Storyboard director** skill describes the whole workflow.
+The current surface is the `viral_hit_storyboard` MCP tool, `pnpm storyboard <projectId> < request.json` from `apps/studio`, and trusted local POST `/api/app/projects/<projectId>/storyboards`. GET lists boards. The project header opens the browser authoring workspace at `/storyboards/<projectId>`; assembled work appears in the existing Runs panel and editor. The bundled **Storyboard director** skill describes the whole workflow.
+
+## Browser workflow
+
+Open a project and choose **Storyboards**. Create a general or specialized board, write its intent, then use **Shots & results** to author direction, duration, captions and creative decisions. **Plan & references** holds observed/inferred/proposed source notes and optional soundtrack ranges. Import source media through the existing project editor or Assets page, then refresh here.
+
+Choose any installed recipe with an image/video materializing output. Its declared typed fields and project asset picker are reused; title and stable ID distinguish similarly named recipes. Selecting a recipe pins its catalog digest. Changed/missing recipes need a fresh selection and input review. Direction text is still review context: populate the actual recipe inputs explicitly. Save before generating or accepting media.
+
+Refresh status explicitly to read completed attempts; the storyboard workspace adds no poller. Select a generated attempt or owned media, inspect its preview and selected time range, write review notes, then accept. Video previews seek to the selected in point. **Prepare editable sequence** queues the existing sequence processor. Open **Generation runs**, wait for success, then choose **Add editable sequence** and return to the editor. It appends to the current timeline with the existing revision check.
+
+The current tab retains one project draft in session storage, including incomplete form text. Refreshing server state preserves unsaved work. A changed server revision shows the current plan for comparison; explicitly discard local changes or save your reviewed local plan over that revision. **Download draft** saves the local plan and base revision as JSON, without media. This is tab-local recovery, not cross-device synchronization or an automatic merge.
+
+Before execution the browser retains the exact request ID and revision. A lost response offers **Recover same request**, including after reload. This resubmits the original identity; it does not create a new attempt. A known rejection with no reserved action releases the form, while uncertain outcomes retain their pending request. Browser-storage failure prevents submission. Existing Runs handles cancellation and provider-specific recovery.
 
 ## Plan
 
@@ -53,4 +65,4 @@ Use the existing Runs → Add to timeline action or `viral_hit_runs_change` atta
 
 There are at most 16 shots, 32 reference observations, eight optional soundtrack entries, one hour of sequence duration and 16 distinct media assets per assembled sequence. Each stored document/action is bounded to 256 KB; each project retains up to 64 board identities, 512 revisions and 256 actions. References are local files up to 256 MiB each and 512 MiB total; existing recipe/sequence media limits may be stricter. No model download, extra daemon or background polling is introduced.
 
-Plans are project-local. Saving/exporting JSON does not transfer assets, boards are not yet included in project bundles, and retained history has no automatic purge. Automated visual/semantic analysis, model-quality comparisons, planning UI and full reference-remake fidelity remain separate work. The implementation draws on reference pipeline's separation of planning, attempts and review, and the installed reference-production skill's explicit observation and preserve/change decisions; no private operational data or brand-specific request schema was imported.
+Plans are project-local. Saving/exporting JSON does not transfer assets, boards are not yet included in project bundles, and retained history has no automatic purge. Automated visual/semantic analysis, model-quality comparisons and full reference-remake fidelity remain separate work. The implementation draws on reference pipeline's separation of planning, attempts and review, and the installed reference-production skill's explicit observation and preserve/change decisions; no private operational data or brand-specific request schema was imported.
