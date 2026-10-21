@@ -843,5 +843,6 @@
     "loading": "Loading"
   },
   "product.shell.skills": "Skills",
-  "product.shell.packs": "Packs"
+  "product.shell.packs": "Packs",
+  "product.shell.extensions": "Extensions"
 }

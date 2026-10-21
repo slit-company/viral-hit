@@ -18,7 +18,14 @@ await cp('../../examples/adapter-recipes/procedural-tone.json', join(recipes, 'p
 // Installed generation providers: the dependency-free example stands in for a model an operator adds.
 const providers = join(directory, 'providers');
 await cp('../../examples/providers', providers, { recursive: true });
+await cp('../../examples/providers/procedural-images', join(providers, 'protected-fixture'), { recursive: true });
+const protectedManifest = JSON.parse(await readFile(join(providers, 'protected-fixture', 'provider.json'), 'utf8'));
+Object.assign(protectedManifest, { id: 'protected-fixture', label: 'Studio image service', scope: 'specialized', environment: ['VIRAL_HIT_E2E_PROVIDER_KEY'], models: [{ ...protectedManifest.models[0], id: 'protected-fixture-image', name: 'Studio image model' }] });
+await writeFile(join(providers, 'protected-fixture', 'provider.json'), JSON.stringify(protectedManifest));
+// Discovery must never import the module, even when the status page is refreshed.
+await writeFile(join(providers, 'protected-fixture', 'provider.mjs'), 'throw new Error("DIAGNOSTICS_MUST_NOT_EXECUTE_MODULES");');
 const env = { ...process.env, VIRAL_HIT_FFMPEG: process.env.VIRAL_HIT_FFMPEG || execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim(), VIRAL_HIT_ADAPTERS_DIR: adapters, VIRAL_HIT_PROVIDERS_DIR: providers, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
+delete env.VIRAL_HIT_E2E_PROVIDER_KEY;
 const publishingConnectors = join(directory, 'publishing-connectors');
 await cp('../../examples/publishing-connectors', publishingConnectors, { recursive: true });
 env.VIRAL_HIT_PUBLISHING_CONNECTORS_DIR = publishingConnectors;

@@ -34,7 +34,7 @@ async function GET({ request }: { request: Request }) {
             variant: model.defaultVariant,
           })
         : null,
-      available: true,
+      available: descriptor?.available ?? true,
     };
   });
 

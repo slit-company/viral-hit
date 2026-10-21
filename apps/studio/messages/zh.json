@@ -843,5 +843,6 @@
     "loading": "加载中"
   },
   "product.shell.skills": "技能",
-  "product.shell.packs": "创作包"
+  "product.shell.packs": "创作包",
+  "product.shell.extensions": "扩展"
 }

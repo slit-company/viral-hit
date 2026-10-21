@@ -55,6 +55,15 @@
         "pattern": "^(?:[a-z0-9-]+\\.)*[a-z0-9-]+(?::\\d{1,5})?$"
       }
     },
+    "environment": {
+      "default": [],
+      "maxItems": 32,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]{0,100}$"
+      }
+    },
     "models": {
       "minItems": 1,
       "maxItems": 50,

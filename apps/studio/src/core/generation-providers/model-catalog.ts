@@ -52,7 +52,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
           name: 'Video Analysis',
           providerId: provider.id,
           kind: 'analysis' as const,
-          available: true,
+          available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
           parameterSchema: effect.inputSchema,
           defaultParameters: {
             analysis_depth: 'standard',
@@ -74,7 +74,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         name: entry.name,
         providerId: provider.id,
         kind: entry.workspaceType === 'ai-image' ? ('image' as const) : ('video' as const),
-        available: true,
+        available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
         parameterSchema: effect.inputSchema,
         defaultParameters: defaultsFromEntry(entry),
         referenceSchema: getWorkspaceMediaSchema(entry.id),

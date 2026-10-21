@@ -50,6 +50,8 @@ export class InstalledProviderRuntime {
     const { label } = this.manifest;
     const model = this.manifest.models.find(item => item.id === effect.linkName);
     if (!model) return { status: 'failed', error: label + ' does not offer ' + effect.linkName };
+    const missing = this.manifest.environment.filter(name => !process.env[name]?.trim());
+    if (missing.length) throw new Error('Provider configuration is missing: ' + missing.join(', '));
     let raw: unknown;
     try {
       const loaded = await this.load();

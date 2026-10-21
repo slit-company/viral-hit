@@ -15,6 +15,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
 | `src/core/references/` | Explicit source acquisition, verified original and sampled-frame project assets | Inbox session management, sending messages, pretending previews are full media |
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, cross-library overwrite or silent runtime installation |
+| `src/core/extensions/` | Read-only public diagnostic projections of installed extension catalogs, shared by UI/MCP/CLI | Runtime installation, module execution, provider probes, configuration values or independent registration state |
 | `src/core/publishing/` | Approved media/destination intents, leases, resumable transfer, remote receipts and reconciliation | Generation, shared UI, credentials in public views or remote calls inside transactions |
 | `src/core/db/`, `src/core/workspace-db/`, storage modules | Database/file persistence and transaction boundaries | UI or provider workflows |
 | `examples/adapters/`, `recipes/` | Independently replaceable processors and portable workflows | Imports from app internals, private account data or product-wide assumptions |

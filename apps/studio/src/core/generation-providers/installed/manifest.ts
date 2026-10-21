@@ -39,8 +39,11 @@ export const providerManifestSchema = z.object({
   entry: z.string().regex(/^[A-Za-z0-9_-]+\.m?js$/).default('provider.mjs'),
   /** Hosts allowed to serve result URLs; plain http is accepted only for localhost and 127.0.0.1. */
   mediaHosts: z.array(hostname).max(20).default([]),
+  /** Required server environment variable names; values are never public metadata. */
+  environment: z.array(z.string().regex(/^[A-Z][A-Z0-9_]{0,100}$/)).max(32).default([]),
   models: z.array(providerModelSchema).min(1).max(50),
 }).strict().superRefine((manifest, ctx) => {
+  if (new Set(manifest.environment).size !== manifest.environment.length) ctx.addIssue({ code: 'custom', message: 'Environment variable names must be unique' });
   if (new Set(manifest.models.map(model => model.id)).size !== manifest.models.length) ctx.addIssue({ code: 'custom', message: 'Model ids must be unique' });
 });
 export type ProviderManifest = z.infer<typeof providerManifestSchema>;

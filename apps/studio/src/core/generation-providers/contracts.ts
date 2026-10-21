@@ -21,6 +21,8 @@ export type GenerationProviderDefinition = {
   modelBindings: readonly GenerationProviderModelBinding[];
   createAdapter: (effect: EffectRecord) => BaseAdapter;
   assertConfigured?: () => Promise<void>;
+  /** Synchronous presence check for declared server settings; does not contact a provider. */
+  isConfigured?: () => boolean;
   validateInput?: (effect: EffectRecord, input: Record<string, unknown>) => void;
   /** Reads a result URL this provider returned; without it only approved Cloud API media is downloaded. */
   readOutputMedia?: (url: string, signal: AbortSignal) => Promise<Response>;

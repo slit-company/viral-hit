@@ -33,7 +33,7 @@ Video Analysis is exposed as a stable Cloud API workflow with Standard and Deep 
 
 ## Install a provider without changing the app
 
-Any service or local model with its own API can become a provider: a hosted API Viral Hit does not ship, a company's internal model server, a model on your own GPU, or a model tuned for one brand or format. Put each provider in its own folder inside one providers folder, set `VIRAL_HIT_PROVIDERS_DIR=/absolute/path/to/providers` and restart the studio and MCP server. Its models then appear in the Canvas and Studio model pickers and in `viral_hit_generation_models` next to the Cloud API models, and generation, status polling and saving results into project assets work the same way.
+Any service or local model with its own API can become a provider: a hosted API Viral Hit does not ship, a company's internal model server, a model on your own GPU, or a model tuned for one brand or format. Put each provider in its own folder inside one providers folder, set `VIRAL_HIT_PROVIDERS_DIR=/absolute/path/to/providers` and restart the studio, MCP server and workers. Its models then appear in the Canvas and Studio model pickers and in `viral_hit_generation_models` next to the Cloud API models, and generation, status polling and saving results into project assets work the same way.
 
 ```text
 providers/
@@ -42,7 +42,7 @@ providers/
     └── provider.mjs
 ```
 
-`provider.json` follows [provider.schema.json](../../../docs/schemas/provider.schema.json): `id` (equal to the folder name), `label`, `scope` (`general` for models that fit any project, `specialized` for one format, job, audience or brand), optional `author` and `license`, `entry` (the module file), `mediaHosts` and `models`. Each model declares its id, name, `image` or `video`, aspect ratios, video durations, how many reference images it accepts and whether one is required. Model ids must not reuse a built-in or another provider's id.
+`provider.json` follows [provider.schema.json](../../../docs/schemas/provider.schema.json): `id` (equal to the folder name), `label`, `scope` (`general` for models that fit any project, `specialized` for one format, job, audience or brand), optional `author` and `license`, `entry` (the module file), `mediaHosts`, optional `environment` and `models`. `environment` is an array of required server variable names; never put values in it. Missing or blank values disable these models in discovery and reject generation preflight before uploads or task creation. Each model declares its id, name, `image` or `video`, aspect ratios, video durations, how many reference images it accepts and whether one is required. Model ids must not reuse a built-in or another provider's id.
 
 The module exports `createGeneration` and, for APIs that queue work, `checkStatus`:
 
@@ -59,11 +59,12 @@ export async function checkStatus({ model, taskId, signal }) {
 
 Media comes back either as bytes (PNG, JPEG, WebP, MP4 or WebM) or as a URL on a host listed in `mediaHosts` (HTTPS, or HTTP for localhost). A URL on any other host fails the generation and is never downloaded. Unfinished work is checked by the same server poller as Cloud API tasks, and each task records its provider, so a restart or a later change of providers does not lose it.
 
-[examples/providers/procedural-images](../../../examples/providers/procedural-images) is a working provider without dependencies: it draws a gradient from the prompt, instantly or as a queued task. Check a folder with `pnpm provider check <folder>`, see what an installation loads with `pnpm provider list`, and find folders that failed to load (with the reason) in the same list.
+[examples/providers/procedural-images](../../../examples/providers/procedural-images) is a working provider without dependencies: it draws a gradient from the prompt, instantly or as a queued task. Check a folder with `pnpm provider check <folder>`, see what an installation loads with `pnpm provider list`, and find folders that failed to load (with the reason) in the same list. The [Extensions screen, MCP tool and CLI report](../../../docs/EXTENSION-STATUS.md) also show setup requirements and load failures without importing modules. `provider check` explicitly imports the selected module; it can execute top-level code.
 
 Rules and limits:
 
 - A provider module runs inside the server with its permissions, like an external adapter. Install only code you trust; keep its credentials in its own environment variables or files, never in `provider.json`.
+- Up to 32 provider folders, 64 KB per manifest, 5 MiB per module and 8 MB aggregate module source are accepted. Hidden staging folders are ignored.
 - The module must be one self-contained file: `node:` built-ins work, other dependencies must be bundled into it. It is read once at startup; restart after changing it.
 - Reference images reach the module as `imageUrls` prepared the same way as for Cloud API, so local images need the storage setting below (Cloud API files or your S3 bucket).
 - Viral Hit does not measure the quality of a provider's output.

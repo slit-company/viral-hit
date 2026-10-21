@@ -16,6 +16,8 @@ Viral Hit is a general creative workspace. Work that only makes sense for one fo
 
 A quick test: if your change names a brand, a platform's format, an audience or a campaign, it does not belong in the core. Core contracts (projects, assets, Canvas, timeline, runs) stay free of those fields; specialized parameters live in recipes, packs or optional metadata.
 
+After installing a contribution, inspect **Extensions** or call `viral_hit_extension_status` / `pnpm --dir apps/studio extensions` for declared configuration and load errors. [Diagnostics](docs/EXTENSION-STATUS.md) are read-only and do not prove execution or media quality; include a separate representative execution check with your contribution.
+
 ## Sharing a pack
 
 You don't need this repository's permission to share a pack. Build it in **Runs → Recipe library → Make a pack** or with `recipe build-pack`, put the JSON in any public repository, and share the GitHub file link; others install it with **Add from link**. Editors can check files against [pack.schema.json](docs/schemas/pack.schema.json).

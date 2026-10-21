@@ -843,5 +843,6 @@
     "loading": "読み込み中"
   },
   "product.shell.skills": "スキル",
-  "product.shell.packs": "パック"
+  "product.shell.packs": "パック",
+  "product.shell.extensions": "拡張機能"
 }
