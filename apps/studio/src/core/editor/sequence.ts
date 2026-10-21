@@ -17,10 +17,11 @@ const clip = z.discriminatedUnion('type', [
 export const sequenceSchema = z.object({
   schemaVersion: z.literal(1), title: z.string().trim().min(1).max(120),
   assets: z.record(id, z.object({ assetId: z.string().regex(/^[a-zA-Z0-9_-]{1,128}$/), kind: z.enum(['image', 'video', 'audio']) }).strict()).refine(value => Object.keys(value).length <= 16),
-  tracks: z.array(z.object({ id, kind: z.enum(['video', 'overlay', 'audio', 'caption']), name: z.string().trim().min(1).max(80), clips: z.array(clip).min(1).max(128) }).strict()).min(1).max(16),
+  tracks: z.array(z.object({ id, kind: z.enum(['video', 'overlay', 'audio', 'caption']), name: z.string().trim().min(1).max(80), clips: z.array(clip).max(128) }).strict()).min(1).max(16),
 }).strict().superRefine((sequence, ctx) => {
   const ids = new Set<string>(); let count = 0;
   for (const track of sequence.tracks) {
+    if (!track.clips.length && track.kind !== 'caption') ctx.addIssue({ code: 'custom', message: 'Only a caption track may be empty' });
     if (ids.has(`track:${track.id}`)) ctx.addIssue({ code: 'custom', message: 'Duplicate sequence track ID' });
     ids.add(`track:${track.id}`);
     for (const clip of track.clips) {

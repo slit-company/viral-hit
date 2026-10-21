@@ -71,3 +71,9 @@ Final public build: **204 files / 8,544,046 bytes**, **1,976,611 raw JavaScript 
 The worker copies at most 64 MiB, verifies hashes through the existing file path and scans at most ten minutes of video. FFmpeg uses one decoding thread, one filter thread, a 320×320 analysis frame bound and 8 fps sampling. Decoding still processes source frames; these controls do not eliminate source-resolution cost. The scan's combined captured diagnostics are capped at 1 MiB and its deadline is 180 seconds. Abort/timeout waits for process closure, with SIGKILL escalation after five seconds. Tool version probes have separate five-second/64 KiB bounds. The adapter keeps the existing four-minute execution/five-minute lease policy.
 
 These are explicit workload/output/deadline bounds, not a measured whole-process memory cap, p95 scan rate or competitor comparison. Real small-fixture scans and browser/server exports passed; representative high-resolution, long-video accuracy and performance measurements remain open.
+
+## Optional speech recognition — 2026-10-21
+
+The transcript UI adds no studio runtime package. The final production build contains 204 public files (8,549,271 bytes) and 584,986 bytes of individually gzipped JavaScript, within the existing 10 MB/600 KB limits. The optional whisper.cpp CLI/model are external; inspecting/discovering the extension starts no model service.
+
+The exercised multilingual tiny model is 77,691,713 bytes. A 3.876-second English source completed the production worker in 2,190 ms; an earlier direct run took 13,680 ms. A separate 4.953-second Korean audio invocation took 1,198 ms. These single observations are not labeled cold/warm samples or a model-quality/performance comparison. CPU threads are bounded to 1–4 (default 2), GPU is disabled, and decoded PCM is capped at 4 MiB/120 seconds. Larger optional model files can still require considerable RAM; no process RSS cap or complete host-footprint benchmark is claimed.

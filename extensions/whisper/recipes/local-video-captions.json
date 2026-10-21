@@ -1,0 +1,178 @@
+{
+  "schemaVersion": 1,
+  "id": "local-transcription-video-captions",
+  "version": "1.0.0",
+  "title": "Caption a video",
+  "description": "Transcribe a selected range with your optional local Whisper engine, review machine-estimated text/timing and append an editable source with separate captions. An empty recognition result leaves the caption track empty. Model accuracy depends on language and recording; review before use. Up to 64 MiB and 120 seconds per run.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "audio",
+  "tags": [
+    "speech",
+    "captions",
+    "local",
+    "editing"
+  ],
+  "parameters": [
+    {
+      "id": "source",
+      "label": "Source video",
+      "type": "asset",
+      "kind": "video"
+    },
+    {
+      "id": "language",
+      "label": "Spoken language code",
+      "type": "string",
+      "multiline": false,
+      "default": "auto",
+      "minLength": 2,
+      "maxLength": 4,
+      "description": "auto, en, ko, ja, and other codes supported by your selected model. English-only models require en."
+    },
+    {
+      "id": "start",
+      "label": "Start time (seconds)",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3600
+    },
+    {
+      "id": "duration",
+      "label": "Maximum audio seconds",
+      "type": "number",
+      "default": 30,
+      "min": 1,
+      "max": 120
+    },
+    {
+      "id": "length",
+      "label": "Target caption length",
+      "type": "number",
+      "default": 72,
+      "min": 16,
+      "max": 160,
+      "integer": true
+    },
+    {
+      "id": "threads",
+      "label": "CPU threads",
+      "type": "number",
+      "default": 2,
+      "min": 1,
+      "max": 4,
+      "integer": true
+    }
+  ],
+  "nodes": [
+    {
+      "id": "transcribe",
+      "operation": "ext.whisper-transcribe",
+      "version": "1",
+      "cache": false,
+      "input": {
+        "videoAssetId": "",
+        "audioAssetId": null,
+        "language": "auto",
+        "start": 0,
+        "duration": 30,
+        "maxChars": 72,
+        "threads": 2
+      },
+      "parameters": [
+        {
+          "parameter": "source",
+          "target": "/videoAssetId"
+        },
+        {
+          "parameter": "language",
+          "target": "/language"
+        },
+        {
+          "parameter": "start",
+          "target": "/start"
+        },
+        {
+          "parameter": "duration",
+          "target": "/duration"
+        },
+        {
+          "parameter": "length",
+          "target": "/maxChars"
+        },
+        {
+          "parameter": "threads",
+          "target": "/threads"
+        }
+      ]
+    },
+    {
+      "id": "sequence",
+      "operation": "editor.sequence",
+      "version": "1",
+      "cache": false,
+      "dependsOn": [
+        "transcribe"
+      ],
+      "input": {
+        "schemaVersion": 1,
+        "title": "Speech captions",
+        "assets": {
+          "source": {
+            "assetId": "pending",
+            "kind": "video"
+          }
+        },
+        "tracks": [
+          {
+            "id": "source-track",
+            "kind": "video",
+            "name": "Original video",
+            "clips": [
+              {
+                "id": "source-clip",
+                "type": "media",
+                "source": "source",
+                "startTime": 0,
+                "duration": 1
+              }
+            ]
+          },
+          {
+            "id": "spoken-captions",
+            "kind": "caption",
+            "name": "Editable speech captions",
+            "clips": [
+              {
+                "id": "placeholder",
+                "type": "caption",
+                "text": "Pending recognition",
+                "startTime": 0,
+                "duration": 1
+              }
+            ]
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "parameter": "source",
+          "target": "/assets/source/assetId"
+        }
+      ],
+      "bindings": [
+        {
+          "target": "/tracks/0/clips",
+          "node": "transcribe",
+          "pointer": "/mediaClips"
+        },
+        {
+          "target": "/tracks/1/clips",
+          "node": "transcribe",
+          "pointer": "/captionClips"
+        }
+      ]
+    }
+  ]
+}

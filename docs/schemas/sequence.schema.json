@@ -66,7 +66,6 @@
             "maxLength": 80
           },
           "clips": {
-            "minItems": 1,
             "maxItems": 128,
             "type": "array",
             "items": {

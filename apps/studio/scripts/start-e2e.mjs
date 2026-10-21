@@ -2,6 +2,7 @@ import { mkdtemp, rm, cp, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
+import { prepareWhisperFixture } from './e2e-whisper-fixture.mjs';
 
 const directory = await mkdtemp(join(tmpdir(), 'viral-hit-e2e-'));
 const recipes = join(directory, 'recipes');
@@ -25,6 +26,8 @@ await writeFile(join(providers, 'protected-fixture', 'provider.json'), JSON.stri
 // Discovery must never import the module, even when the status page is refreshed.
 await writeFile(join(providers, 'protected-fixture', 'provider.mjs'), 'throw new Error("DIAGNOSTICS_MUST_NOT_EXECUTE_MODULES");');
 const env = { ...process.env, VIRAL_HIT_FFMPEG: process.env.VIRAL_HIT_FFMPEG || execFileSync('which', ['ffmpeg'], { encoding: 'utf8' }).trim(), VIRAL_HIT_ADAPTERS_DIR: adapters, VIRAL_HIT_PROVIDERS_DIR: providers, VIRAL_HIT_RECIPES_DIR: recipes, VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_MCP_HTTP_PORT: '3043', VIRAL_HIT_MCP_TOKEN: 'e2e-local-only' };
+Object.assign(env, await prepareWhisperFixture(directory, adapters, recipes));
+env.VIRAL_HIT_FFPROBE = process.env.VIRAL_HIT_FFPROBE || execFileSync('which', ['ffprobe'], { encoding: 'utf8' }).trim();
 delete env.VIRAL_HIT_E2E_PROVIDER_KEY;
 const publishingConnectors = join(directory, 'publishing-connectors');
 await cp('../../examples/publishing-connectors', publishingConnectors, { recursive: true });

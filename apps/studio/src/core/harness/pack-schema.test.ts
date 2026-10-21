@@ -41,7 +41,7 @@ test('every bundled and extension pack validates against the published schema', 
 
 test('every recipe file shipped in the repository validates against the published recipe schema', async () => {
   const validate = new Ajv2020({ strict: false, allErrors: true }).compile(JSON.parse(await readFile('../../docs/schemas/recipe.schema.json', 'utf8')));
-  const directories = ['../../recipes', '../../examples/adapter-recipes', '../../extensions/ima2/recipes', '../../extensions/local-media/recipes'];
+  const directories = ['../../recipes', '../../examples/adapter-recipes', '../../extensions/ima2/recipes', '../../extensions/local-media/recipes', '../../extensions/whisper/recipes'];
   let checked = 0;
   for (const directory of directories) for (const name of (await readdir(directory)).filter(file => file.endsWith('.json'))) {
     const recipe = JSON.parse(await readFile(join(directory, name), 'utf8'));

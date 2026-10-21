@@ -1,4 +1,5 @@
 import { SceneResult } from './scene-result';
+import { TranscriptResult } from './transcript-result';
 import type { RecipeCatalog } from '@/core/harness/recipe-library-contract';
 import { isAssetOperation } from '@/core/harness/asset-operations';
 import { ReferenceResult } from './reference-result';
@@ -196,7 +197,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
               <div className="flex items-center justify-between gap-2"><span className="truncate">{job.node_id}</span><span className={job.state === 'succeeded' ? 'text-[var(--color-lime-text)]' : 'text-[var(--vh-text-2)]'}>{job.state === 'succeeded' ? job.operation === 'reference.scenes' ? 'Scenes ready' : isAssetOperation(job.operation) ? 'Asset ready' : job.operation === 'editor.sequence' ? 'Edit ready' : job.operation === 'comfy.upload' ? 'Input ready' : 'Receipt ready' : job.state}</span></div>
               {job.cancel_requested === 1 && <p className="mt-1 text-amber-800">Cancellation requested{job.state === 'succeeded' ? '; result arrived before cancellation completed' : ''}</p>}
               {job.error && <p className="mt-2 break-words text-amber-800">{job.error}</p>}
-              {job.state === 'succeeded' && <><ReferenceResult projectId={projectId} output={job.output_json} /><SceneResult projectId={projectId} output={job.output_json} /></>}
+              {job.state === 'succeeded' && <><ReferenceResult projectId={projectId} output={job.output_json} /><SceneResult projectId={projectId} output={job.output_json} /><TranscriptResult projectId={projectId} output={job.output_json} /></>}
               {isAssetOperation(job.operation) && job.operation !== 'reference.scenes' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2"><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add to timeline'}</Action><Action disabled={busy} onClick={() => void chooseTake(job)} className="text-[var(--color-lime-text)]">Use as take</Action><a href={`/assets/${projectId}`} className="text-[var(--vh-text-2)] underline">View assets</a></div>}
               {job.operation === 'editor.sequence' && job.state === 'succeeded' && !job.cancel_requested && <div className="mt-3 space-y-2"><p>Separate tracks for editing. Appends after your current timeline.</p><Action disabled={busy || attached.includes(job.id)} onClick={() => void attach(run.id, job.id)} className="text-[var(--color-lime-text)]">{attached.includes(job.id) ? 'Added to timeline' : 'Add editable sequence'}</Action></div>}
               {takeTarget?.jobId === job.id && <div className="mt-3 space-y-2 border-t border-[var(--vh-border)] pt-3">

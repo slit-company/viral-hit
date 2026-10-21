@@ -55,3 +55,14 @@ test('empty visible tracks are reused without reactivating hidden or locked trac
   assert.equal(next.tracks.at(-1)!.hidden, false);
   assert.equal(next.tracks.at(-1)!.clips[0].id, 'visible-shot');
 });
+
+test('no-speech results may leave a caption track empty without manufacturing text or relaxing visual requirements', () => {
+  const value = raw(); value.tracks[1].clips = [];
+  const sequence = sequenceSchema.parse(value);
+  assert.equal(inspectSequence(sequence, media, 'project').clipCount, 1);
+  const document = appendSequence(createTimelineDocument({ projectId: 'project', name: 'No speech' }), sequence, media, 'silent');
+  assert.equal(document.tracks.flatMap(track => track.clips).filter(clip => clip.sourceType === 'caption').length, 0);
+  value.tracks[0].clips = []; assert.equal(sequenceSchema.safeParse(value).success, false);
+  const captionOnly = sequenceSchema.parse({ ...value, tracks: [value.tracks[1]] });
+  assert.throws(() => inspectSequence(captionOnly, media, 'project'));
+});

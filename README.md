@@ -79,6 +79,8 @@ Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE
 
 [Split a video at visual cuts](docs/SCENE-DETECTION.md) scans an owned source locally, previews detected ranges and prepares separately editable clips with original audio. Its portable recipe exposes sensitivity, minimum spacing and scene count for different use cases. Visual change detection does not provide semantic video analysis.
 
+[Optional local speech recognition](extensions/whisper/README.md) connects an operator-installed Whisper engine to source playback, SRT download and editable caption sequences. Video and audio-with-cover recipes can be forked for general or specialized work. Independent engines can emit the same [transcript contract](docs/TRANSCRIPTS.md); the default studio installs no speech model.
+
 Use [storyboards](docs/STORYBOARDS.md) to keep a general or specialized shot plan, reference observations and accepted results together. The browser workspace and MCP/CLI/API can generate selected shots through independently authored recipes, resume pinned attempts, and assemble accepted media into an editable sequence. The bundled Storyboard director skill guides the workflow; automatic visual analysis and model-quality evaluation remain pending.
 
 
