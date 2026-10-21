@@ -11,14 +11,17 @@ export async function publicationPreview(projectId: string, publicationId: strin
   try {
     const digest = new URL(request.url).searchParams.get('digest') ?? '';
     if (!/^[a-f0-9]{64}$/.test(digest)) return new Response(null, { status: 400, headers });
-    const spec = await publicationForPreview(projectId, publicationId, digest, signal), asset = spec.assets[0];
+    const index = Number(new URL(request.url).searchParams.get('asset') ?? 0);
+    const spec = await publicationForPreview(projectId, publicationId, digest, signal);
+    if (!Number.isSafeInteger(index) || index < 0 || index >= spec.assets.length) return new Response(null, { status: 400, headers });
+    const asset = spec.assets[index];
     const rangeHeader = request.headers.get('range'), range = parseByteRange(rangeHeader, asset.sizeBytes);
     headers.set('Accept-Ranges', 'bytes'); headers.set('Content-Type', asset.contentType);
     if (rangeHeader && !range) { headers.set('Content-Range', `bytes */${asset.sizeBytes}`); return new Response(null, { status: 416, headers }); }
     let offset = range?.start ?? 0; const end = range?.end ?? asset.sizeBytes - 1;
     const read = async () => {
       const media = openProjectPublicationMedia();
-      try { return await media.read(spec, 0, offset, Math.min(8 * 1024 * 1024, end - offset + 1), AbortSignal.any([signal, AbortSignal.timeout(30000)])); }
+      try { return await media.read(spec, index, offset, Math.min(8 * 1024 * 1024, end - offset + 1), AbortSignal.any([signal, AbortSignal.timeout(30000)])); }
       finally { media.close(); }
     };
     const first = await read();
@@ -28,7 +31,7 @@ export async function publicationPreview(projectId: string, publicationId: strin
       start(output) { output.enqueue(first); offset += first.length; if (offset > end) output.close(); },
       async pull(output) {
         try { const bytes = await read(); signal.throwIfAborted(); output.enqueue(bytes); offset += bytes.length; if (offset > end) output.close(); }
-        catch { output.error(new Error('Retained video unavailable')); }
+        catch { output.error(new Error('Retained media unavailable')); }
       },
       cancel() { controller.abort(); },
     });

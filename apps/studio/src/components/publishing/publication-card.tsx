@@ -1,3 +1,4 @@
+import { InstalledPublicationCard } from './installed-publication-card';
 import { useRef, useState } from 'react';
 import { ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ const issues: Record<NonNullable<PublicationView['issue']>, string> = {
   'upload-incomplete': 'The original upload is incomplete. Review this video to continue the same session.',
   stopped: 'Local delivery stopped. A request already sent may still finish at the destination. Check the original upload to reconcile its status.',
 };
-export function PublicationCard({ item, channelTitle, canApprove, pending, change, edit }: {
+function BuiltInPublicationCard({ item, channelTitle, canApprove, pending, change, edit }: {
   item: PublicationView; channelTitle?: string; canApprove: boolean; pending: boolean;
   change: (request: PublicationRequest) => Promise<boolean>; edit: () => void;
 }) {
@@ -69,4 +70,8 @@ export function PublicationCard({ item, channelTitle, canApprove, pending, chang
       <p className="text-xs text-[var(--vh-text-2)]">Last recorded: {new Date(item.updatedAt).toLocaleString()}. Stopping does not delete remote posts or cancel remote schedules.</p>
     </div>
   </article>;
+}
+
+export function PublicationCard(props: Parameters<typeof BuiltInPublicationCard>[0]) {
+  return props.item.external ? <InstalledPublicationCard {...props} /> : <BuiltInPublicationCard {...props} />;
 }

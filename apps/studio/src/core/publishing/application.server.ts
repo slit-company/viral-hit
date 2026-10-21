@@ -1,3 +1,5 @@
+import { installedConnectorId } from './installed/contract';
+import { readInstalledConnectors, installedPublicationReview, requireInstalledConnector, type InstalledConnector } from './installed/catalog.server';
 import { createHash } from 'node:crypto';
 import { canonicalJson } from '../../lib/canonical-json';
 import { getActiveProject } from '../projects/projects';
@@ -8,10 +10,12 @@ import { validateInstagramSchedule } from './instagram-schedule';
 import { youtubeResource } from './youtube-contract';
 import { publicationView } from './public-view';
 import { publicationProjectId, publicationRequest, PublicationRequestError, type PublicationDraftRequest } from './requests';
-import type { PublicationSpec } from './contracts';
+import type { PublicationSpec, PublicationRecord } from './contracts';
 import { publicationDestination, publishingConfigured, validateSupportedPublication } from './publication-destination.server';
 import { InstagramVideoError, validateInstagramVideo } from './instagram-video.server';
 export { publishingConfigured } from './publication-destination.server';
+
+const view = (record: PublicationRecord, entries?: InstalledConnector[]) => publicationView(record, installedPublicationReview(record.spec, entries, record.receipt));
 
 async function requireProject(projectId: string, signal: AbortSignal) {
   publicationProjectId.parse(projectId); signal.throwIfAborted();
@@ -23,29 +27,36 @@ async function prepare(projectId: string, input: PublicationDraftRequest, signal
   validateSchedule(input.metadata, input.connector);
   const destination = publicationDestination(input.connector, input.accountId), media = openProjectPublicationMedia();
   try {
-    const asset = await media.pin(projectId, input.assetId, signal);
-    const spec: PublicationSpec = { schemaVersion: 1, projectId, connector: input.connector, connectorVersion: '1',
-      accountId: destination.id, destinationId: destination.destinationId, assets: [asset], metadata: input.metadata };
+    const assets = [];
+    for (const id of 'assetIds' in input ? input.assetIds : [input.assetId]) assets.push(await media.pin(projectId, id, signal));
+    const asset = assets[0];
+    const spec: PublicationSpec = { schemaVersion: 1, projectId, connector: input.connector, connectorVersion: destination.connectorVersion,
+      accountId: destination.id, destinationId: destination.destinationId, assets, metadata: input.metadata };
     validateSupportedPublication(spec);
-    if (input.connector === 'instagram') validateInstagramVideo(await media.inspectVideo(spec, signal), asset.sizeBytes, input.metadata);
+    if (input.connector === 'instagram') validateInstagramVideo(await media.inspectVideo(spec, signal), asset.sizeBytes, instagramMetadataSchema.parse(input.metadata));
     const current = publicationDestination(input.connector, destination.id);
-    if (current.destinationId !== destination.destinationId || current.pageId !== destination.pageId) throw new PublicationRequestError('account-unavailable', 'The destination changed while preparing this publication');
+    if (current.destinationId !== destination.destinationId || current.pageId !== destination.pageId || current.connectorVersion !== destination.connectorVersion) throw new PublicationRequestError('account-unavailable', 'The destination changed while preparing this publication');
     await requireProject(projectId, signal); validateSchedule(input.metadata, input.connector);
     return spec;
   } catch (error) {
     if (error instanceof PublicationRequestError) throw error;
     if (error instanceof InstagramVideoError) throw new PublicationRequestError('media-unavailable', error.message);
-    throw new PublicationRequestError('media-unavailable', 'Select an unchanged local MP4 or WebM video in this project');
+    throw new PublicationRequestError('media-unavailable', 'Select unchanged local media in this project');
   } finally { media.close(); }
 }
 function validateSchedule(metadata: unknown, connector: string) {
+  if (installedConnectorId.safeParse(connector).success) {
+    const entry = requireInstalledConnector(connector);
+    if (!entry.validate(metadata)) throw new PublicationRequestError('invalid-input', 'Review the metadata required by this connector: ' + (entry.validate.errors?.[0]?.instancePath ?? '') + ' ' + (entry.validate.errors?.[0]?.message ?? 'invalid'));
+    return;
+  }
   try { if (connector === 'instagram') validateInstagramSchedule(instagramMetadataSchema.parse(metadata)); else youtubeResource(metadata); }
   catch { throw new PublicationRequestError('invalid-input', 'Review the video metadata and choose a future publication time'); }
 }
 export async function listPublications(projectId: string, signal = AbortSignal.timeout(30000)) {
   const project = await requireProject(projectId, signal);
-  const store = openPublications();
-  try { return { project: { id: project.id, name: project.name }, configured: publishingConfigured(), connectors: { youtube: publishingConfigured(), instagram: publishingConfigured('instagram') }, publications: store.list(projectId).map(publicationView) }; }
+  const store = openPublications(), installed = readInstalledConnectors();
+  try { return { project: { id: project.id, name: project.name }, configured: publishingConfigured(), connectors: { youtube: publishingConfigured(), instagram: publishingConfigured('instagram') }, installedConnectors: { connectors: installed.entries.map(entry => entry.descriptor), problems: installed.problems }, publications: store.list(projectId).map(record => view(record, installed.entries)) }; }
   finally { store.close(); }
 }
 /** All transports share project/media/account admission and revision-bound approval. No provider POST occurs here. */
@@ -61,15 +72,15 @@ export async function changePublication(projectId: string, raw: unknown, actor: 
       const prior = store.findRequest(projectId, input.requestKey);
       if (prior) {
         if (prior.admissionDigest !== admissionDigest) throw new PublicationRequestError('conflict', 'Publication request key is bound to different content');
-        return publicationView(prior.record);
+        return view(prior.record);
       }
       const spec = await prepare(projectId, input, signal);
-      return publicationView(store.create(spec, input.requestKey, admissionDigest));
+      return view(store.create(spec, input.requestKey, admissionDigest));
     }
     const prior = store.get(projectId, input.publicationId);
     if (!prior) throw new PublicationRequestError('not-found', 'Publication not found in this project');
     if (prior.revision !== input.expectedRevision) throw new PublicationRequestError('conflict', 'Publication changed; refresh before continuing');
-    if (input.action === 'revise') return publicationView(store.revise(projectId, prior.id, input.expectedRevision, await prepare(projectId, input, signal)));
+    if (input.action === 'revise') return view(store.revise(projectId, prior.id, input.expectedRevision, await prepare(projectId, input, signal)));
     if (input.action === 'approve' || input.action === 'resume') {
       if (!publishingConfigured(prior.spec.connector)) throw new PublicationRequestError('runtime-unavailable', 'Configure the selected publishing connector before approving delivery');
       validateSupportedPublication(prior.spec);
@@ -77,14 +88,14 @@ export async function changePublication(projectId: string, raw: unknown, actor: 
       if (target.destinationId !== prior.spec.destinationId) throw new PublicationRequestError('account-unavailable', 'The original channel no longer matches this publication');
       const media = openProjectPublicationMedia();
       try { await media.validateAssets(prior.spec, signal); }
-      catch { throw new PublicationRequestError('media-unavailable', 'The retained approved video is unavailable'); }
+      catch { throw new PublicationRequestError('media-unavailable', 'The retained approved media is unavailable'); }
       finally { media.close(); }
       signal.throwIfAborted();
       // Resuming transfers bytes to the original session; its metadata is already remote.
       if (input.action === 'approve') validateSchedule(prior.spec.metadata, prior.spec.connector);
-      return publicationView(input.action === 'approve' ? store.approve(projectId, prior.id, input.expectedRevision, input.expectedDigest, actor) : store.resume(projectId, prior.id, input.expectedRevision));
+      return view(input.action === 'approve' ? store.approve(projectId, prior.id, input.expectedRevision, input.expectedDigest, actor) : store.resume(projectId, prior.id, input.expectedRevision));
     }
-    return publicationView(input.action === 'stop' ? store.stop(projectId, prior.id, input.expectedRevision) : store.reconcile(projectId, prior.id, input.expectedRevision));
+    return view(input.action === 'stop' ? store.stop(projectId, prior.id, input.expectedRevision) : store.reconcile(projectId, prior.id, input.expectedRevision));
   } catch (error) {
     if (error instanceof PublicationRequestError) throw error;
     throw new PublicationRequestError('conflict', 'Publication could not be changed; refresh and review its current state');
@@ -98,7 +109,7 @@ export async function publicationForPreview(projectId: string, publicationId: st
   try {
     const record = store.get(projectId, publicationId);
     if (!record || record.digest !== digest) throw new PublicationRequestError('not-found', 'Reviewed publication not found');
-    validateSupportedPublication(record.spec);
+    if (!installedPublicationReview(record.spec)) validateSupportedPublication(record.spec);
     return record.spec;
   } finally { store.close(); }
 }

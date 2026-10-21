@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-publishing-connector",
+  "id": "ext.local-archive",
+  "version": "1.0.0",
+  "label": "Local release archive",
+  "description": "Deliver an ordered set of images, video and audio into a local release folder after review and approval.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "entry": "connector.mjs",
+  "environment": ["VIRAL_HIT_ARCHIVE_DIR"],
+  "mediaTypes": ["image/png", "image/jpeg", "image/webp", "video/mp4", "video/webm", "audio/wav", "audio/mpeg", "audio/mp4", "audio/ogg"],
+  "maxAssets": 20,
+  "destinations": [{ "id": "archive", "destinationId": "local-releases", "label": "Local releases", "configuration": {} }],
+  "metadataSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["title", "collection"],
+    "properties": {
+      "title": { "type": "string", "title": "Release title", "minLength": 1, "maxLength": 120 },
+      "collection": { "type": "string", "title": "Collection", "enum": ["portfolio", "campaign", "tutorial"], "default": "portfolio" },
+      "notes": { "type": "string", "title": "Release notes", "maxLength": 2000 }
+    }
+  }
+}

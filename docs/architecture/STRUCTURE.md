@@ -55,3 +55,9 @@ Run `pnpm architecture:check` before the normal typecheck, source tests, i18n an
 `architecture-baseline.json` records exact existing oversized modules and cycles. Never increase an allowance just to pass. Reductions are allowed after verification; a new exception requires a named architectural decision and review. The baseline does not mean that existing large modules are good structure.
 
 Priority decomposition targets are the editor workspace, canvas shell/interaction adapter and MCP registration. Preserve behavior with meaningful tests while extracting cohesive responsibilities. New publishing/analytics work starts in its own domain instead of extending those large files.
+
+## Installed publication connectors
+
+`core/publishing/installed/` owns operator manifests, public discovery, metadata validation and the trusted module boundary. Browser code imports only pure contracts. Discovery reads bounded files and compiles a synchronous JSON Schema; it never imports executable modules. HTTP/MCP/CLI still call the existing publication application service. Installed destinations add ordered image/video/audio inputs; pinned media uses the existing integrity-checked streaming store.
+
+Approval pins a fingerprint of connector manifest, source and declared environment values. The worker imports the captured source only for approved work, validates that fingerprint before every action, and delegates transfer/publish/reconcile to the existing lease/fence state machine. Configuration changes pause the original operation; unknown start/publish outcomes cannot trigger another write. Raw receipts and credentials stay server-side; only the explicit validated publicDelivery subobject can reach UI. Modules are trusted server code, not sandboxed plugins. Use separate optional runtimes for heavyweight dependencies.

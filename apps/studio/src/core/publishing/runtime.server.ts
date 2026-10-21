@@ -1,3 +1,5 @@
+import { installedConnectorId } from './installed/contract';
+import { openInstalledPublicationConnector } from './installed/runtime.server';
 import { getActiveProject } from '../projects/projects';
 import { openYouTubeAccounts } from './youtube-accounts.server';
 import { openProjectPublicationMedia } from './project-media.server';
@@ -14,6 +16,7 @@ export function openPublicationRuntime(options: { fetch?: typeof fetch } = {}) {
     async connector(spec, signal) {
       signal.throwIfAborted(); validateSupportedPublication(spec);
       if (!await getActiveProject({ projectId: spec.projectId })) throw new Error('Project unavailable');
+      if (installedConnectorId.safeParse(spec.connector).success) return openInstalledPublicationConnector(spec);
       if (spec.connector === 'instagram') {
         instagram ??= openInstagramAccounts({ fetch: options.fetch });
         const account = instagram.get(spec.accountId);

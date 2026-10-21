@@ -85,3 +85,43 @@ The safe view distinguishes YouTube delivery from Instagram container status. A 
 Set **Scheduled publication** in the Instagram form, review the displayed time and local timezone, then choose **Approve schedule**. The same optional `metadata.publishAt` accepts an ISO timestamp with an explicit offset through HTTP, MCP and CLI. Changing time creates a new revision and requires new approval. An elapsed draft cannot be newly approved. Leave the field empty for delivery after approval/processing.
 
 This is a local studio schedule. The worker waits until ten minutes before the target to create/upload a container, then waits until the approved time to send final publication. Meta containers expire after 24 hours, so days-away reservations stay local. Keep the studio running with an accurate clock. The earliest publication time is enforced; processing, connectivity or downtime can delay delivery, and an already-approved reservation resumes when the studio returns. No exact-time SLA is implied. Use **Edit draft** before uploading begins to reschedule, or **Cancel delivery** to cancel a still-local reservation. Started/ambiguous operations retain their original identities and never silently create another post. See [phase timing](architecture/011-publication-phase-timing.md).
+
+## Install a publishing connector
+
+You can add a general destination (archive, portfolio, internal review service) or one for a particular brand/platform without changing the studio. Copy an independently authored folder into `VIRAL_HIT_PUBLISHING_CONNECTORS_DIR`. Each folder contains `connector.json` and one self-contained `.mjs` file. The folder name matches the connector ID after `ext.`. Set the directory for both the studio/MCP host and publication worker; when changing those environment settings, restart the affected processes once. Files and configured destinations are discovered on the next request.
+
+The example in [examples/publishing-connectors/local-archive](../examples/publishing-connectors/local-archive/) delivers an ordered set of images, audio and video into a local release directory. Set `VIRAL_HIT_ARCHIVE_DIR` to an absolute directory. This example makes no network calls; it demonstrates actual byte transfer, resumable progress, a separate final publication marker and read-only recovery. It is not a social-network connector.
+
+```sh
+pnpm --dir apps/studio publication connectors
+pnpm --dir apps/studio publication check-connector /absolute/path/to/connectors/local-archive
+```
+
+`connector.json` has schema version 1, kind `viral-hit-publishing-connector`, an `ext.*` id, version, label, description, author, license and `scope: general|specialized`. Define supported MIME `mediaTypes`, `maxAssets` (1–20), required environment variable **names**, configured `destinations` and an object `metadataSchema` (strict synchronous JSON Schema supported by Ajv; no remote references or executable validators). Each destination has a local `id`, a remote `destinationId`, a label and server-only `configuration`. Credentials belong in environment variables, never in metadata/schema/defaults. Validate files with [publishing-connector.schema.json](schemas/publishing-connector.schema.json).
+
+The project Publishing page offers installed destinations alongside YouTube and Instagram. Primitive schema properties become labeled controls; complex schemas can use the JSON editor. Select media in delivery order, save a draft, review the exact retained files and metadata, then approve its revision. HTTP/MCP/CLI share this same admission and approval boundary. A missing or changed connector keeps the old review readable but blocks delivery. Problems loading installed folders appear on the page and in discovery.
+
+MCP `viral_hit_publication_list` returns `installedConnectors` with schemas, supported media, configuration status and public destination identities. For `viral_hit_publication_change` create/revise requests use `connector: "ext.<id>"`, the configured destination's local `id` as `accountId`, ordered `assetIds` and a metadata object. YouTube/Instagram requests keep their existing `assetId` contract. Saving a draft never starts delivery. A confirmed approval uses the returned revision and digest; the existing publication worker executes it.
+
+### Module API
+
+A connector exports async `start`, `transfer`, `reconcile` and `inspect`. It may also export `publish` for a separate final write and synchronous `notBefore` for scheduling. Every function receives one object with `spec`, `destination` (including its configuration), declared `environment` values and an `AbortSignal` (except the pure scheduling function). All media stays behind the scoped `read` callback; the app does not pass arbitrary host paths.
+
+| Function | Additional input | Result |
+|---|---|---|
+| `start` | — | `{checkpoint}` or `{notStarted: {outcome: "rejected"|"unavailable", retryAfterMs?}}` |
+| `transfer` | `checkpoint`, `read(assetIndex, offset, length)` | `{kind: "progress", checkpoint, retryAfterMs?}`, `{kind: "accepted", receipt}`, or `{kind: "uncertain", issue: "session-expired"|"upload-unknown"}` |
+| `reconcile` | `checkpoint` | Same observations as transfer, **read-only** |
+| `inspect` | `receipt` | `{state, receipt, retryAfterMs?}`; **read-only** |
+| `publish` | `receipt` | Same observation as inspect, or `{notPublished: {outcome: "rejected"|"unavailable", retryAfterMs?}}` |
+| `notBefore` | `phase: "start"|"publish"` | UTC epoch milliseconds or `null`; pure, no I/O |
+
+Remote states are `processing`, `staged`, `ready`, `scheduled`, `published` or `failed`. Checkpoints/receipts must be non-null JSON up to 64 KB. `read` returns exact retained media, with an 8 MiB maximum request. Transfer implementations must inspect/resume their original session before sending more bytes after an uncertain response. Declare notStarted/notPublished **only when no write could have happened**; otherwise throw. The worker keeps unknown start/publish outcomes uncertain and never retries those writes implicitly. The same session is reconciled after a stop or lost response.
+
+Raw receipts remain private. A receipt may intentionally include `publicDelivery: {id, label?, url?}` for a non-secret post ID and HTTPS link; only those validated fields are exposed. Never put tokens, upload session URLs or private query parameters there.
+
+### Identity and resource limits
+
+Manifests, module source and declared environment values determine the pinned runtime version. A changed file, destination or credential cannot silently resume an old approved job; restore its original configuration or prepare a new reviewed draft. Discovery omits all configuration/environment values. Imported code is trusted server code with the process's permissions; this boundary is not a sandbox and cannot prevent a malicious connector from violating its read-only contract.
+
+At most 32 folders, 64 KB per manifest, 2 MB per module and 8 MB of modules per catalog. File signatures cache parsing/compilation; code/config hashes are reused. No module is imported for listing or preparing a draft. Optional SDKs must be bundled into the connector module or run as a separate service, so the studio's default dependencies stay unchanged. Installed connectors have no built-in OAuth UI; operators configure their own account/destination credentials on the server.

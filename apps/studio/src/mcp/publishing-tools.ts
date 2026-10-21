@@ -11,12 +11,12 @@ async function safe<T>(operation: () => Promise<T>) {
 
 export function registerPublishingTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   server.registerTool('viral_hit_publication_list', {
-    description: 'List reviewed publication drafts and observed delivery status in a project. Does not contact a provider or expose upload sessions.',
+    description: 'List reviewed publication drafts, installed connector metadata schemas/destinations, load problems and observed delivery status in a project. Does not contact a provider or expose upload sessions.',
     inputSchema: z.object({ projectId: publicationProjectId.optional() }).strict(),
     annotations: { readOnlyHint: true, idempotentHint: true },
   }, withToolErrors(async ({ projectId }) => safe(async () => listPublications((await project(projectId)).id))));
   server.registerTool('viral_hit_publication_change', {
-    description: 'Prepare or revise a publication from a local project video and connected account. Approve/resume can start a real remote upload: require explicit human authorization of the displayed destination, video, metadata and visibility; pass confirmed=true only after that authorization. Approval binds the returned revision and digest. Stop cannot undo remote delivery. Reconcile only inspects the original upload; it does not resend bytes.',
+    description: 'Prepare or revise a publication from local project media and a connected account or installed destination. For ext.* connectors use assetIds (ordered) and the advertised metadataSchema; supported media types and maxAssets come from publication_list. Approve/resume can start a real remote upload: require explicit human authorization of the displayed destination, video, metadata and visibility; pass confirmed=true only after that authorization. Approval binds the returned revision and digest. Stop cannot undo remote delivery. Reconcile only inspects the original upload; it does not resend bytes.',
     inputSchema: z.object({ projectId: publicationProjectId.optional(), request: publicationRequest }).strict(),
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: true },
   }, withToolErrors(async ({ projectId, request }) => safe(async () => changePublication((await project(projectId)).id, request, 'mcp'))));
