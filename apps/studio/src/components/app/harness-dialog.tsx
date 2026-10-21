@@ -1,3 +1,4 @@
+import type { RecipeCatalog } from '@/core/harness/recipe-library-contract';
 import { isAssetOperation } from '@/core/harness/asset-operations';
 import { ReferenceResult } from './reference-result';
 import { eligibleRecipeAssets, type RecipeInputAsset, type AssetCapability } from '@/core/harness/recipe-assets';
@@ -37,7 +38,8 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [takeTarget, setTakeTarget] = useState<{ jobId: string; timeline: TimelineDocument; version: number; clipId: string }>();
   const [takeNotice, setTakeNotice] = useState('');
   const [attached, setAttached] = useState<string[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [catalog, setCatalog] = useState<RecipeCatalog>({ recipes: [], installedIds: [], recipeDigests: {} });
+  const { recipes, installedIds, recipeDigests } = catalog;
   const [packs, setPacks] = useState<InstalledPack[]>([]);
   const packed = new Set(packs.flatMap(pack => pack.recipeIds));
   const [inputAssets, setInputAssets] = useState<InputAsset[]>([]);
@@ -62,7 +64,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     if (!selected) return;
     const epoch = ++checkEpoch.current; setChecking(true); setCheck(undefined); setError('');
     try {
-      const result = await apiJsonPost<ComfyPreflight>(`/api/app/projects/${projectId}/preflight`, { recipeId: selected.id, values });
+      const result = await apiJsonPost<ComfyPreflight>(`/api/app/projects/${projectId}/preflight`, { recipeId: selected.id, values, expectedRecipeDigest: recipeDigests[selected.id] });
       if (epoch === checkEpoch.current) { setCheck(result); requestAnimationFrame(() => { if (epoch === checkEpoch.current) dialogBody.current?.scrollTo({ top: 0 }); }); }
     } catch (e) { if (epoch === checkEpoch.current) setError(e instanceof Error ? e.message : 'Server check failed'); }
     finally { if (epoch === checkEpoch.current) setChecking(false); }
@@ -81,7 +83,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   useEffect(() => {
     if (!open) return;
     let active = true;
-    void apiJsonGet<{ recipes: Recipe[]; packs?: InstalledPack[] }>('/api/app/recipes').then(result => { if (active) { setRecipes(result.recipes); setPacks(result.packs ?? []); } }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
+    void apiJsonGet<RecipeCatalog & { packs?: InstalledPack[] }>('/api/app/recipes').then(result => { if (active) { setCatalog(result); setPacks(result.packs ?? []); } }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
     return () => { active = false; };
   }, [open]);
   useEffect(() => {
@@ -100,7 +102,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   async function generate() {
     if (!selected) return;
     requestKey.current ||= crypto.randomUUID();
-    if (await act({ action: 'recipe', recipeId: selected.id, values, requestKey: requestKey.current })) { setValues({}); requestKey.current = ''; invalidateCheck(); }
+    if (await act({ action: 'recipe', recipeId: selected.id, expectedRecipeDigest: recipeDigests[selected.id], values, requestKey: requestKey.current })) { setValues({}); requestKey.current = ''; invalidateCheck(); }
   }
   async function attach(runId: string, jobId: string) {
     try {
@@ -127,8 +129,8 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     }
   }
   async function recipeInstalled(recipe: Pick<Recipe, 'id' | 'title'>, notice = `${recipe.title} is ready in this local library. No jobs started.`) {
-    const result = await apiJsonGet<{ recipes: Recipe[]; packs?: InstalledPack[] }>('/api/app/recipes');
-    setRecipes(result.recipes); setPacks(result.packs ?? []); setRecipeId(recipe.id); setValues({}); requestKey.current = ''; invalidateCheck();
+    const result = await apiJsonGet<RecipeCatalog & { packs?: InstalledPack[] }>('/api/app/recipes');
+    setCatalog(result); setPacks(result.packs ?? []); setRecipeId(recipe.id); setValues({}); requestKey.current = ''; invalidateCheck();
     setLibraryOpen(false); setLibraryNotice(notice);
     dialogBody.current?.scrollTo({ top: 0 });
   }
@@ -146,7 +148,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
         <DialogDescription className="mt-2 text-sm text-[var(--vh-text-2)]">{connectionsOpen ? 'Choose where your native workflows run.' : libraryOpen ? 'Add a ready-made pack, bring your own workflow, or share a copy. Installing never runs anything.' : 'Your project’s workflows and source imports. Closing this window keeps queued work in the local worker.'}</DialogDescription>
       </div>
       <div ref={dialogBody} className="min-h-0 overflow-y-auto" data-testid="runs-body">
-      {connectionsOpen ? <ComfyConnectionSettings onBack={() => { setConnectionsOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} onChanged={async () => { invalidateCheck(); setChecking(false); requestKey.current = ''; await refresh(); }} /> : libraryOpen ? <RecipeLibrary selected={selected} onInstalled={recipe => recipeInstalled(recipe)} onPackInstalled={packInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
+      {connectionsOpen ? <ComfyConnectionSettings onBack={() => { setConnectionsOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} onChanged={async () => { invalidateCheck(); setChecking(false); requestKey.current = ''; await refresh(); }} /> : libraryOpen ? <RecipeLibrary selected={selected} installed={installedIds.includes(selected?.id ?? '')} onRemoved={recipe => recipeInstalled({ id: '', title: recipe.title }, `${recipe.title} was removed from the library. Saved runs and project edits are kept.`)} onInstalled={recipe => recipeInstalled(recipe)} onPackInstalled={packInstalled} onBack={() => { setLibraryOpen(false); dialogBody.current?.scrollTo({ top: 0 }); }} /> : <>
       {libraryNotice && <p role="status" className="mb-3 rounded-lg bg-[var(--vh-control)] p-3 text-xs">{libraryNotice}</p>}
       <div className="grid gap-5 sm:grid-cols-[1fr_1.15fr]">
         <section className="space-y-3 rounded-xl border border-[var(--vh-border)] p-4">

@@ -74,3 +74,7 @@ Keep private rules, account details and brand assets out of shared packs. A pack
 ## Independent discovery
 
 [Community catalogs](COMMUNITY.md) list recipe packs alongside skills and combined packs. `/recipe-packs` also opens the shared recipe-pack library and builder without a project. Catalog handoffs retain `expectedSha256` in fetch; CLI: `pnpm recipe fetch-pack <url> <new-file.json> [sha256]`. The normal manifest review and digest-pinned installation follow.
+
+## Maintain installed members
+
+Recipes inside a pack support [reviewed updates and removal](RECIPE-LIFECYCLE.md). The pack catalog then reports modified or missing contents. Reimporting the original pack can restore missing recipes after review; any existing changed member blocks restoration instead of being overwritten. Pack-wide updates/removal remain separate operations.

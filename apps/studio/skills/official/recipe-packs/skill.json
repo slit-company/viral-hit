@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "recipe-packs",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "title": "Recipe packs",
   "summary": "Discover independent catalogs and share general or job-specific recipes, skills and character setups with reviewed installation.",
   "scope": "general",
@@ -15,7 +15,8 @@
       "viral_hit_recipes_list",
       "viral_hit_creative_pack",
       "viral_hit_community",
-      "viral_hit_skill_library"
+      "viral_hit_skill_library",
+      "viral_hit_recipe_library"
     ]
   },
   "requiredCapabilities": [],

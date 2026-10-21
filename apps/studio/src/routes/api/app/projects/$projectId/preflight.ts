@@ -11,7 +11,7 @@ async function POST({ request, params }: { request: Request; params: { projectId
   if (!await getActiveProject({ projectId: params.projectId })) return Response.json({ error: 'Project not found' }, { status: 404 });
   try {
     const input = recipeCheckRequest.parse(await readRequestJsonWithLimit(request, 128_000));
-    const { plan, deferredInputs } = await prepareRecipeCheck(input.recipeId, input.values, params.projectId);
+    const { plan, deferredInputs } = await prepareRecipeCheck(input.recipeId, input.values, params.projectId, input.expectedRecipeDigest);
     return Response.json(await preflightComfyPlan(plan, { signal: request.signal, deferredInputs }), { headers: { 'Cache-Control': 'no-store' } });
   } catch { return Response.json({ error: 'Could not check this recipe. Verify its required values and installed manifest.' }, { status: 400 }); }
 }

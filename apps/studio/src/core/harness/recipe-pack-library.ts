@@ -120,7 +120,7 @@ export async function listRecipePacks() {
   const installed = readInstalledPacks();
   const available = (await loadBundledPacks()).map(item => {
     const current = installed.find(pack => pack.id === item.summary.id);
-    return { ...item, state: !current ? 'available' as const : current.digest === item.summary.digest ? 'installed' as const : 'other-version' as const };
+    return { ...item, state: !current ? 'available' as const : current.digest !== item.summary.digest ? 'other-version' as const : current.content.state === 'missing' ? 'incomplete' as const : current.content.state === 'modified' ? 'modified' as const : 'installed' as const };
   });
   return { installed, available };
 }

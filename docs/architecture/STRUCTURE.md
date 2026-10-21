@@ -71,3 +71,5 @@ Creative packs follow [the composition decision](CREATIVE-PACKS.md): preflight a
 Managed skills follow [the lifecycle decision](SKILL-LIFECYCLE.md): whole-definition SQLite replacement, digest comparison under the write transaction, and managed overlays for unchanged legacy folders.
 
 Community discovery follows [the catalog boundary](COMMUNITY-CATALOGS.md): metadata snapshots hand off checksum-pinned files to existing reviewed library operations.
+
+Recipe lifecycle follows [the storage/execution decision](RECIPE-LIFECYCLE.md): compare definitions in one SQLite transaction, project pack completeness from current members, and pin the loaded recipe digest before new UI runs. Saved execution plans remain independent.

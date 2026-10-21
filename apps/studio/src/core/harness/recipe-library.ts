@@ -1,7 +1,9 @@
+import { changeInstalledRecipe } from './recipe-lifecycle-storage.server';
+import type { RecipeInspection, RecipeRemovalReview } from './recipe-library-contract';
 import { z } from 'zod';
 import { compileRecipeForCheck, recipeSchema } from './recipes';
 import { loadRecipeDirectory, loadRecipes } from './recipe-registry';
-import { recipeDigest, storeInstalledRecipe, RecipeConflictError } from './recipe-storage';
+import { recipeDigest, storeInstalledRecipe, readInstalledPacks, readInstalledRecipes, RecipeConflictError } from './recipe-storage';
 import { fingerprint, type Json } from './durable';
 import { inspectComfyGraph, importComfyRecipe, comfyRecipeDefinitionSchema } from './import-comfy-recipe';
 import { supportedOperations } from './capabilities';
@@ -10,6 +12,10 @@ export const recipeLibraryRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('inspect_graph'), graph: z.unknown() }).strict(),
   z.object({ action: z.literal('convert_graph'), graph: z.unknown(), definition: comfyRecipeDefinitionSchema, expectedGraphDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('inspect'), manifest: z.unknown() }).strict(),
+  z.object({ action: z.literal('get'), recipeId: recipeSchema.shape.id }).strict(),
+  z.object({ action: z.literal('review-remove'), recipeId: recipeSchema.shape.id }).strict(),
+  z.object({ action: z.literal('remove'), recipeId: recipeSchema.shape.id, expectedDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+  z.object({ action: z.literal('update'), manifest: z.unknown(), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/), expectedInstalledDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
   z.object({ action: z.literal('install'), manifest: z.unknown(), expectedDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
 ]);
 
@@ -23,7 +29,7 @@ export function validateRecipeManifest(raw: unknown) {
   return recipe;
 }
 
-export async function inspectRecipe(raw: unknown) {
+export async function inspectRecipe(raw: unknown): Promise<RecipeInspection> {
   const recipe = validateRecipeManifest(raw);
   const digest = recipeDigest(recipe);
   const base = await loadRecipeDirectory();
@@ -32,7 +38,8 @@ export async function inspectRecipe(raw: unknown) {
     : existing ? recipeDigest(existing) === digest ? 'same' : 'different' : 'none';
   const operations = [...new Set(recipe.nodes.map(node => node.operation))];
   return { recipe, digest, collision, operations, unavailableOperations: operations.filter(operation => !supportedOperations().has(operation)),
-    parameterCount: recipe.parameters.length, nodeCount: recipe.nodes.length };
+    parameterCount: recipe.parameters.length, nodeCount: recipe.nodes.length,
+    ...(collision === 'different' && existing ? { update: { current: existing, digest: recipeDigest(existing), packs: readInstalledPacks().filter(pack => pack.recipeIds.includes(recipe.id)) } } : {}) };
 }
 
 export async function installRecipe(raw: unknown, expectedDigest: string) {
@@ -50,9 +57,22 @@ export function inspectRecipeGraph(graph: unknown) {
 }
 
 /** Shared offline authoring boundary for HTTP and MCP; conversion never installs or executes. */
-export async function changeRecipeLibrary(request: z.infer<typeof recipeLibraryRequest>) {
+export async function changeRecipeLibrary(raw: z.infer<typeof recipeLibraryRequest>) {
+  const request = recipeLibraryRequest.parse(raw);
   switch (request.action) {
     case 'inspect': return inspectRecipe(request.manifest);
+    case 'get': { const recipe = (await loadRecipes()).find(recipe => recipe.id === request.recipeId); if (!recipe) throw new Error('Recipe not found'); return { recipe, digest: recipeDigest(recipe) }; }
+    case 'review-remove': return reviewRecipeRemoval(request.recipeId);
+    case 'remove': {
+      await assertInstalledId(request.recipeId);
+      return { removed: changeInstalledRecipe(request.recipeId, request.expectedDigest, null).changed, recipeId: request.recipeId };
+    }
+    case 'update': {
+      const recipe = validateRecipeManifest(request.manifest);
+      if (recipeDigest(recipe) !== request.expectedDigest) throw new RecipeConflictError('Recipe changed after inspection. Inspect the current JSON again.');
+      await assertInstalledId(recipe.id);
+      return { updated: changeInstalledRecipe(recipe.id, request.expectedInstalledDigest, recipe).changed, recipe, digest: request.expectedDigest };
+    }
     case 'install': return installRecipe(request.manifest, request.expectedDigest);
     case 'inspect_graph': return inspectRecipeGraph(request.graph);
     case 'convert_graph': {
@@ -61,4 +81,14 @@ export async function changeRecipeLibrary(request: z.infer<typeof recipeLibraryR
       return inspectRecipe(importComfyRecipe(request.graph, request.definition));
     }
   }
+}
+
+async function assertInstalledId(id: string) {
+  if ((await loadRecipeDirectory()).some(recipe => recipe.id === id)) throw new RecipeConflictError('This ID belongs to the file catalog. Use a new ID to preserve the original.');
+}
+async function reviewRecipeRemoval(id: string): Promise<RecipeRemovalReview> {
+  await assertInstalledId(id);
+  const recipe = readInstalledRecipes().find(recipe => recipe.id === id);
+  if (!recipe) throw new RecipeConflictError('Installed recipe not found');
+  return { recipe, digest: recipeDigest(recipe), packs: readInstalledPacks().filter(pack => pack.recipeIds.includes(id)) };
 }

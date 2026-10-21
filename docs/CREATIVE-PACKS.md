@@ -73,3 +73,5 @@ Every definition, reference hash and image's actual type/dimensions is verified 
 Creative packs transfer through files or public HTTPS/GitHub links. Authenticated downloads, managed version updates/uninstall and a hosted community catalog are not implemented. Publish the built tar as a downloadable asset in your own repository or hosting; ordinary HTML repository pages without a downloadable file and Git LFS pointer files are not pack archives. Packs do not bundle a project timeline; use an editable project file for that. Recipe-only JSON packs and their existing HTTPS/GitHub link flow remain available.
 
 [Community catalogs](COMMUNITY.md) discover creative packs from independent sources. Catalog entry hashes are checked against the raw downloaded archive before it reaches review. CLI `fetch` accepts the hash as its final optional argument. Inspection and installation then use the retained archive and its reviewed content digest.
+
+Installed recipes can also be [updated or removed individually](RECIPE-LIFECYCLE.md). The creative-pack export retains its original recipe definitions; reinstallation must still satisfy the recipe library’s current conflicts.

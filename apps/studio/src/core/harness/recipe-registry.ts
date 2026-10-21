@@ -1,6 +1,6 @@
 import { lstat, readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { readInstalledRecipes } from './recipe-storage';
+import { readInstalledRecipes, recipeDigest } from './recipe-storage';
 import { recipeSchema, type Recipe } from './recipes';
 
 export async function loadRecipeDirectory(directory = process.env.VIRAL_HIT_RECIPES_DIR || resolve(process.cwd(), '../../recipes')): Promise<Recipe[]> {
@@ -23,13 +23,18 @@ export async function loadRecipeDirectory(directory = process.env.VIRAL_HIT_RECI
 
 /** Explicit directories retain the offline/file-only contract used by CLI tooling. */
 export async function loadRecipes(directory?: string): Promise<Recipe[]> {
-  const base = await loadRecipeDirectory(directory);
-  if (directory !== undefined) return base;
+  if (directory !== undefined) return loadRecipeDirectory(directory);
+  return (await loadRecipeCatalog()).recipes;
+}
+
+export async function loadRecipeCatalog() {
+  const base = await loadRecipeDirectory();
   const installed = readInstalledRecipes();
   const ids = new Set(base.map(recipe => recipe.id));
   for (const recipe of installed) {
     if (ids.has(recipe.id)) throw new Error(`Duplicate recipe id: ${recipe.id}`);
     ids.add(recipe.id);
   }
-  return [...base, ...installed];
+  const recipes = [...base, ...installed];
+  return { recipes, installedIds: installed.map(recipe => recipe.id), recipeDigests: Object.fromEntries(recipes.map(recipe => [recipe.id, recipeDigest(recipe)])) };
 }

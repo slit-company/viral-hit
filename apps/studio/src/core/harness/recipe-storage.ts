@@ -1,25 +1,11 @@
-import { DatabaseSync } from 'node:sqlite';
-import { existsSync, lstatSync, mkdirSync } from 'node:fs';
-import { join, dirname } from 'node:path';
-import { getViralHitDataRoot } from '../../config/data-root';
+import { openRecipeLibrary, recipeDigest, RecipeConflictError } from './recipe-database.server';
+export { recipeDigest, RecipeConflictError } from './recipe-database.server';
 import { fingerprint, type Json } from './durable';
 import { recipeSchema, type Recipe } from './recipes';
 import { packSummarySchema, type InstalledPack, type PackSummary } from './recipe-packs';
 
-const file = () => join(getViralHitDataRoot(), 'recipe-library.sqlite');
-function assertFile(path: string) {
-  const metadata = lstatSync(path, { throwIfNoEntry: false });
-  if (!metadata) return;
-  if (!metadata.isFile() || metadata.isSymbolicLink()) throw new Error('Recipe library is not a regular database file');
-}
-export const recipeDigest = (recipe: Recipe) => fingerprint(recipe as unknown as Json);
-export class RecipeConflictError extends Error {}
-const SCHEMA = 'CREATE TABLE IF NOT EXISTS recipes (id TEXT PRIMARY KEY, manifest TEXT NOT NULL, digest TEXT NOT NULL, installed_at INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS packs (id TEXT PRIMARY KEY, summary TEXT NOT NULL, digest TEXT NOT NULL, installed_at INTEGER NOT NULL)';
-
 export function readInstalledRecipes(): Recipe[] {
-  const path = file(); assertFile(path);
-  if (!existsSync(path)) return [];
-  const db = new DatabaseSync(path, { readOnly: true });
+  const db = openRecipeLibrary(true); if (!db) return [];
   try {
     db.exec('PRAGMA busy_timeout=5000');
     const rows = db.prepare('SELECT id, manifest FROM recipes ORDER BY id LIMIT 201').all() as { id: string; manifest: string }[];
@@ -34,17 +20,21 @@ export function readInstalledRecipes(): Recipe[] {
 }
 
 export function readInstalledPacks(): InstalledPack[] {
-  const path = file(); assertFile(path);
-  if (!existsSync(path)) return [];
-  const db = new DatabaseSync(path, { readOnly: true });
+  const db = openRecipeLibrary(true); if (!db) return [];
   try {
     db.exec('PRAGMA busy_timeout=5000');
     if (!db.prepare("SELECT 1 FROM sqlite_master WHERE type='table' AND name='packs'").get()) return [];
+    db.exec('BEGIN');
+    const recipeRows = db.prepare('SELECT id, manifest FROM recipes').all() as { id: string; manifest: string }[];
+    const recipes = new Map(recipeRows.map(row => [row.id, recipeSchema.parse(JSON.parse(row.manifest))]));
     const rows = db.prepare('SELECT id, summary, digest, installed_at FROM packs ORDER BY id LIMIT 201').all() as { id: string; summary: string; digest: string; installed_at: number }[];
     return rows.map(row => {
       const summary = packSummarySchema.parse(JSON.parse(row.summary));
       if (summary.id !== row.id || summary.digest !== row.digest) throw new Error('Recipe pack identity mismatch');
-      return { ...summary, installedAt: row.installed_at };
+      const missingRecipeIds = summary.recipeIds.filter(id => !recipes.has(id));
+      const { recipeIds, digest, ...meta } = summary;
+      const unchanged = !missingRecipeIds.length && fingerprint({ ...meta, recipes: recipeIds.map(id => recipes.get(id)!) } as unknown as Json) === digest;
+      return { ...summary, installedAt: row.installed_at, content: { state: missingRecipeIds.length ? 'missing' as const : unchanged ? 'complete' as const : 'modified' as const, missingRecipeIds } };
     });
   } finally { db.close(); }
 }
@@ -54,14 +44,12 @@ export function readInstalledPacks(): InstalledPack[] {
  * present are kept; any different recipe or pack contents reject the whole pack.
  */
 export function storeInstalledPack(summary: PackSummary, recipes: Recipe[]) {
-  const path = file(); assertFile(path); mkdirSync(dirname(path), { recursive: true });
-  const db = new DatabaseSync(path);
+  const db = openRecipeLibrary()!;
   try {
-    db.exec(`PRAGMA busy_timeout=5000; ${SCHEMA}; BEGIN IMMEDIATE`);
+    db.exec('BEGIN IMMEDIATE');
     const current = db.prepare('SELECT digest FROM packs WHERE id=?').get(summary.id) as { digest: string } | undefined;
     if (current) {
       if (current.digest !== summary.digest) throw new RecipeConflictError('This pack ID is already installed with different contents. Publish an update under a new pack ID.');
-      db.exec('COMMIT'); return { pack: summary, installed: false, added: [] as string[] };
     }
     const added: Recipe[] = [];
     for (const recipe of recipes) {
@@ -73,8 +61,8 @@ export function storeInstalledPack(summary: PackSummary, recipes: Recipe[]) {
     if (count.n + added.length > 200) throw new RecipeConflictError('The local library cannot hold this pack (200 recipes).');
     const now = Date.now(), insert = db.prepare('INSERT INTO recipes (id,manifest,digest,installed_at) VALUES (?,?,?,?)');
     for (const recipe of added) insert.run(recipe.id, JSON.stringify(recipe), recipeDigest(recipe), now);
-    db.prepare('INSERT INTO packs (id,summary,digest,installed_at) VALUES (?,?,?,?)').run(summary.id, JSON.stringify(summary), summary.digest, now);
-    db.exec('COMMIT'); return { pack: summary, installed: true, added: added.map(recipe => recipe.id) };
+    if (!current) db.prepare('INSERT INTO packs (id,summary,digest,installed_at) VALUES (?,?,?,?)').run(summary.id, JSON.stringify(summary), summary.digest, now);
+    db.exec('COMMIT'); return { pack: summary, installed: !current, added: added.map(recipe => recipe.id) };
   } catch (error) {
     if (db.isTransaction) db.exec('ROLLBACK');
     throw error;
@@ -82,12 +70,11 @@ export function storeInstalledPack(summary: PackSummary, recipes: Recipe[]) {
 }
 
 
-/** Immutable installation: SQLite serializes limits/collisions across app and MCP processes. */
+/** New installation never overwrites existing contents: SQLite serializes limits/collisions across app and MCP processes. */
 export function storeInstalledRecipe(recipe: Recipe) {
-  const path = file(); assertFile(path); mkdirSync(dirname(path), { recursive: true });
-  const db = new DatabaseSync(path);
+  const db = openRecipeLibrary()!;
   try {
-    db.exec(`PRAGMA busy_timeout=5000; ${SCHEMA}; BEGIN IMMEDIATE`);
+    db.exec('BEGIN IMMEDIATE');
     const digest = recipeDigest(recipe);
     const current = db.prepare('SELECT manifest FROM recipes WHERE id=?').get(recipe.id) as { manifest: string } | undefined;
     if (current) {

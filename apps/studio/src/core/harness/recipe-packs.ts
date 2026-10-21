@@ -3,7 +3,7 @@ import { z } from 'zod';
 /**
  * A pack groups recipes for one way of working. "general" packs serve any
  * project; "specialized" packs encode a particular format, job or audience.
- * Both install through the same reviewed, immutable recipe library.
+ * Both install through the same reviewed recipe library.
  */
 export const MAX_PACK_BYTES = 1_000_000;
 export const MAX_PACK_RECIPES = 24;
@@ -31,10 +31,10 @@ export const packSummarySchema = packManifestSchema.omit({ recipes: true }).exte
   recipeIds: z.array(identifier).min(1).max(MAX_PACK_RECIPES), digest: z.string().regex(/^[a-f0-9]{64}$/),
 }).strict();
 export type PackSummary = z.infer<typeof packSummarySchema>;
-export type InstalledPack = PackSummary & { installedAt: number };
+export type InstalledPack = PackSummary & { installedAt: number; content: { state: 'complete' | 'modified' | 'missing'; missingRecipeIds: string[] } };
 export type PackCatalog = {
   installed: InstalledPack[];
-  available: { manifest: unknown; summary: PackSummary; state: 'available' | 'installed' | 'other-version' }[];
+  available: { manifest: unknown; summary: PackSummary; state: 'available' | 'installed' | 'other-version' | 'modified' | 'incomplete' }[];
 };
 
 /** Author-supplied pack identity; recipes are chosen from the local library. */

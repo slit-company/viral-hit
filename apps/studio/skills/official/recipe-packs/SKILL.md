@@ -46,6 +46,14 @@ Use this path when a pack needs skills or characters as well as recipes, or when
 5. Call `list` to verify the installed pack and every selected library entry. An installed pack exports its original snapshot with `{ "request": { "action": "export", "id": "<pack-id>", "path": "/absolute/new-copy.viralhit-pack.tar" } }`, even if a local character has been edited since installation. Return the actual file path and say whether it was merely built or actually installed.
 6. No skills execute, jobs queue, models generate or posts publish during these steps. Creative pack `fetch` downloads a tar file to a new path; recipe-only `fetch` reads a JSON recipe pack. Choose the tool by the shared format, not by whether its contents are general or specialized.
 
+## Maintain an installed recipe
+
+When asked to revise an installed recipe, use `viral_hit_recipe_library` with `inspect` and the incoming `manifest`. If it returns `update`, show both full definitions, their versions and affected packs; offer the retained current JSON as a backup. For authorized replacement call `update` with that same manifest, incoming `expectedDigest` and `expectedInstalledDigest: inspection.update.digest`. File-catalog definitions remain protected; use a new ID for a fork. Read `get` afterward to verify the current version and digest.
+
+For removal call `review-remove` with `recipeId`, explain that saved runs/project edits remain and affected packs can become incomplete, then use `remove` with the reviewed digest when removal is authorized. A stale review needs another read. Recipe-pack `list` exposes each installed pack's `content` state; reimporting the original pack restores missing recipes only after review and refuses any changed member. Creative-pack exports retain their original snapshots. Do not describe a missing or modified pack as fully installed.
+
+For a later run, read `viral_hit_recipes_list` and pass `recipeDigests[recipeId]` as `expectedRecipeDigest` in the check/run request when using that reviewed definition. A changed recipe requires reloading and reviewing inputs. Deleting a recipe does not cancel already queued work.
+
 ## Boundaries
 
 - Recipe packs change the recipe library; creative packs can also add skills and characters. Running a recipe is a separate request; queueing, paid generation and publishing need their own authorization.

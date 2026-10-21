@@ -29,7 +29,7 @@ async function POST({ params, request }: Context) {
   const h = openHarness();
   try {
     if (body.action === 'enqueue' || body.action === 'recipe') {
-      const plan = body.action === 'recipe' ? await prepareRecipePlan(body.recipeId, body.values, params.projectId) : { projectId: params.projectId, nodes: body.nodes };
+      const plan = body.action === 'recipe' ? await prepareRecipePlan(body.recipeId, body.values, params.projectId, body.expectedRecipeDigest) : { projectId: params.projectId, nodes: body.nodes };
       try { assertRuntimeConfigured(plan.nodes); } catch (error) { return Response.json({ error: error instanceof Error ? error.message : 'Runtime unavailable' }, { status: 503 }); }
       const runId = h.enqueue(await pinRuntimePlan(plan), body.requestKey);
       return Response.json({ runId }, { status: 202 });

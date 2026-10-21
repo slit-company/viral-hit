@@ -131,7 +131,7 @@ test('HTTP/MCP authoring conversion preserves attribution and image graph links 
   if (!('graphDigest' in inspected)) throw new Error('Wrong inspection result');
   const request = recipeLibraryRequest.parse({ action: 'convert_graph', graph, definition, expectedGraphDigest: inspected.graphDigest });
   const converted = await changeRecipeLibrary(request);
-  if (!('recipe' in converted)) throw new Error('Wrong conversion result');
+  if (!('recipe' in converted) || !converted.recipe || !('digest' in converted) || !converted.digest) throw new Error('Wrong conversion result');
   assert.deepEqual(graph, original);
   assert.equal(converted.recipe.author, definition.author); assert.equal(converted.recipe.license, definition.license);
   assert.deepEqual((converted.recipe.nodes.find(n => n.operation === 'comfy.workflow')!.input as any).workflow, original);
