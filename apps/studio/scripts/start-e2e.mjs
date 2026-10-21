@@ -44,9 +44,10 @@ env.VIRAL_HIT_META_LOGIN_CONFIG_ID = '456';
 env.VIRAL_HIT_META_REDIRECT_URI = 'http://127.0.0.1:3042/api/app/publishing/instagram/callback';
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });
 execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-media.ts'], { env, stdio: 'inherit' });
+execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-packs.ts'], { env, stdio: 'inherit' });
 const children = [
-  spawn(process.execPath, ['--import', './scripts/e2e-meta-fetch.mjs', 'node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '3042', '--strictPort'], { env, stdio: 'inherit' }),
-  spawn(process.execPath, ['--import', 'tsx', 'scripts/mcp-server.ts', '--http'], { env, stdio: 'inherit' }),
+  spawn(process.execPath, ['--import', './scripts/e2e-pack-download.mjs', '--import', './scripts/e2e-meta-fetch.mjs', 'node_modules/vite/bin/vite.js', '--host', '127.0.0.1', '--port', '3042', '--strictPort'], { env, stdio: 'inherit' }),
+  spawn(process.execPath, ['--import', './scripts/e2e-pack-download.mjs', '--import', 'tsx', 'scripts/mcp-server.ts', '--http'], { env, stdio: 'inherit' }),
 ];
 let stopping = false;
 const stop = () => {

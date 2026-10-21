@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, writeFile, rm, open } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, writeFile, rm, open, copyFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { after, test } from 'node:test';
@@ -29,6 +29,20 @@ after(async () => { await rm(root, { recursive: true, force: true }); });
 function target(name: string) { process.env.VIRAL_HIT_DATA_DIR = join(root, name); delete process.env.VIRAL_HIT_SKILLS_DIR; }
 const inspect = () => changeCreativePacks({ action: 'inspect', path }) as Promise<CreativePackInspection>;
 const install = () => changeCreativePacks({ action: 'install', path, expectedDigest: built.pack.digest }) as Promise<CreativePackResult>;
+
+test('a downloaded specialized pack stays byte-identical through review and installation without refetching its source', async () => {
+  target('linked');
+  const { fetchCreativePack } = await import('./source.server');
+  const retained = join(root, 'retained.tar'); let downloads = 0;
+  await fetchCreativePack('https://community.example.org/story.tar', retained, AbortSignal.timeout(30_000), async (_url, destination) => { downloads++; await copyFile(path, destination); });
+  assert.deepEqual(await readFile(retained), await readFile(path));
+  assert.equal(readCharacters().length, 0); assert.equal(readInstalledRecipes().length, 0);
+  const review = await changeCreativePacks({ action: 'inspect', path: retained }) as CreativePackInspection;
+  assert.equal(review.pack.scope, 'specialized'); assert.equal(review.characters[0].manifest.references[0].sha256, character.references[0].sha256);
+  const result = await changeCreativePacks({ action: 'install', path: retained, expectedDigest: review.pack.digest }) as CreativePackResult;
+  assert.equal(result.complete, true); assert.equal(downloads, 1);
+  assert.deepEqual(await readFile(referencePath(character.references[0].sha256)), await readFile(image));
+});
 
 test('a mixed specialized pack moves exact images, instructions and recipes between installations and reuses identical contents', async () => {
   target('destination');

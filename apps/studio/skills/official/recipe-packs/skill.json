@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "recipe-packs",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "title": "Recipe packs",
   "summary": "Find and share general or job-specific recipe packs, or move recipes, skills and characters together in a reviewed creative pack.",
   "scope": "general",

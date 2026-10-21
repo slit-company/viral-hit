@@ -59,7 +59,7 @@ test('a creative pack carries recipes, full skills and character images through 
   const catalog = await mcp(request, { action: 'list' });
   expect(catalog.installed.find((pack: { id: string }) => pack.id === 'sunny-kit').digest).toBe(inspected.pack.digest);
   expect(catalog.recipes.some((recipe: { id: string }) => recipe.id === 'sunny-kit-open-frame')).toBe(true);
-  const [exported] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download pack', exact: true }).click()]);
+  const [exported] = await Promise.all([page.waitForEvent('download'), page.getByRole('button', { name: 'Download Sunny explainer kit (sunny-kit)', exact: true }).click()]);
   const exportPath = resolve('test-results/sunny-kit-roundtrip.tar'); await exported.saveAs(exportPath);
   expect(await readFile(exportPath)).toEqual(await readFile(path));
   await page.getByLabel('Import creative pack file', { exact: true }).setInputFiles(path);

@@ -10,6 +10,7 @@ import { creativePackRequest, type CreativePackCatalog, type CreativePackInspect
 import { composeCreativePack, recipePart, summarizeCreativePack } from './manifest.server';
 import { withCreativePack, writeCreativePack, type LoadedCreativePack } from './file.server';
 import { listStoredCreativePacks, readStoredCreativePack, storeCreativePack } from './storage.server';
+import { fetchCreativePack } from './source.server';
 
 function characterCollision(manifest: CharacterFileManifest): 'none' | 'same' | 'different' {
   const existing = readCharacter(manifest.id);
@@ -85,6 +86,7 @@ export async function changeCreativePacks(raw: z.infer<typeof creativePackReques
   const request = creativePackRequest.parse(raw);
   switch (request.action) {
     case 'list': return listCreativePacks();
+    case 'fetch': return fetchCreativePack(request.url, request.path, signal);
     case 'build': return writeCreativePack(await composeCreativePack(request.pack), request.path, signal);
     case 'export': {
       const manifest = await readStoredCreativePack(request.id);

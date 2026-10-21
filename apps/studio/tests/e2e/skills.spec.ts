@@ -14,7 +14,8 @@ async function mcp(request: APIRequestContext, name: string, args: Record<string
 
 test('a shared skill is reviewed in the UI, appears in an already connected agent, and round-trips as a portable file', async ({ page, request }) => {
   const before = await mcp(request, 'viral_hit_skill_list', {});
-  expect(before.skills.every((skill: { source: string }) => skill.source === 'official')).toBe(true);
+  expect(before.skills.some((skill: { source: string }) => skill.source === 'official')).toBe(true);
+  expect(before.skills.some((skill: { manifest: { id: string } }) => skill.manifest.id === 'product-shots-e2e')).toBe(false);
   const manifest = { ...JSON.parse(await readFile('../../examples/skills/product-ad-shots/skill.json', 'utf8')), id: 'product-shots-e2e', title: 'Product shots for our shop' };
   const file = { schemaVersion: 1, kind: 'viral-hit-skill', manifest, instructions: await readFile('../../examples/skills/product-ad-shots/SKILL.md', 'utf8') };
   const upload = { name: 'product-shots.viralhit-skill.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(file)) };

@@ -13,6 +13,7 @@ import { readRequestJsonWithLimit } from '@/lib/request-body-limit';
 const downloadRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('build'), pack: creativePackBuildSchema }).strict(),
   z.object({ action: z.literal('export'), id: z.string().regex(/^[a-z][a-z0-9-]{0,39}$/) }).strict(),
+  z.object({ action: z.literal('fetch'), url: z.string().url().max(2000) }).strict(),
 ]);
 const failure = (error: unknown) => Response.json({ error: (error instanceof Error ? error.message : 'Could not read creative pack').slice(0, 1000) }, { status: 400 });
 export async function downloadPack(request: Request) {
@@ -21,9 +22,10 @@ export async function downloadPack(request: Request) {
   const directory = await mkdtemp(join(tmpdir(), 'vh-pack-download-'));
   try {
     const input = downloadRequest.parse(await readRequestJsonWithLimit(request, 32_000));
-    const id = input.action === 'build' ? input.pack.id : input.id, path = join(directory, id + '.tar');
-    const written = await changeCreativePacks({ ...input, path }, request.signal) as { sizeBytes: number };
-    const stream = createReadStream(path);
+    const id = input.action === 'build' ? input.pack.id : input.action === 'export' ? input.id : 'shared-pack', path = join(directory, id + '.tar');
+    const signal = AbortSignal.any([request.signal, AbortSignal.timeout(5 * 60_000)]);
+    const written = await changeCreativePacks({ ...input, path }, signal) as { sizeBytes: number };
+    const stream = createReadStream(path, { signal });
     stream.once('close', () => { void rm(directory, { recursive: true, force: true }); });
     return new Response(Readable.toWeb(stream) as ReadableStream, { headers: { 'Content-Type': 'application/x-tar', 'Content-Length': String(written.sizeBytes),
       'Content-Disposition': 'attachment; filename="' + id + '.viralhit-pack.tar"', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' } });
