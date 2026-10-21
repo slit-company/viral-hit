@@ -34,6 +34,8 @@ export type GenerationProviderDefinition = {
   assertConfigured?: () => Promise<void>;
   /** Synchronous presence check for declared server settings; does not contact a provider. */
   isConfigured?: () => boolean;
+  /** Server-only code/manifest/configuration identity for durable generation plans. */
+  executionIdentity?: () => string;
   validateInput?: (effect: EffectRecord, input: Record<string, unknown>) => void;
   /** Reads a result URL this provider returned; without it only approved Cloud API media is downloaded. */
   readOutputMedia?: (url: string, signal: AbortSignal) => Promise<Response>;

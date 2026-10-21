@@ -1,3 +1,4 @@
+import { providerRuntimeDigest } from './task-pin.server';
 import { validateInstalledAudioInput } from './audio-input';
 import { resolveModelOptions } from '../model-controls';
 import { managedRuntimeEntries } from '@/core/runtime-packages/snapshot.server';
@@ -68,7 +69,7 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
     registerInstalledWorkspaceMediaSchema(model.id, { image: { max: slots.length, slots }, video: { max: 0, slots: [] }, audio: { max: 0, slots: [] } });
   }
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
-  registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); resolveModelOptions(model?.controls, input.provider_options); } });
+  registerGenerationProvider({ ...metadata, executionIdentity: () => providerRuntimeDigest(manifest, source), assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); resolveModelOptions(model?.controls, input.provider_options); } });
   const { id, label, scope, author, license, description, environment, referenceDelivery } = manifest;
   return { id, label, scope, author, license, description, environment, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }

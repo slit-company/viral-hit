@@ -1,3 +1,4 @@
+import { finalizeIntentUploads, linkInputAssets } from './generation-input-assets';
 import { bindGenerationIntentReceipt } from './generation-intent-receipt';
 import { createAdapter } from '@/core/adapters/adapter-factory';
 import { getGenerationProvider } from '@/core/generation-providers/registry';
@@ -26,19 +27,13 @@ import {
   loadProjectWithLatestSnapshot,
 } from '@/core/projects/projects';
 import {
-  completeGenerationUploadIntent,
   consumeGenerationUploadIntent,
   failGenerationUploadIntent,
-  getCompletedIntentUploads,
   getGenerationUploadIntentAdmissionState,
   issueGenerationUploadIntent,
 } from '@/core/effects/generation-upload-intent';
 import {
-  linkGenerationAsset,
-  linkGenerationInputAssetsByUrls,
   getProjectAssetUrls,
-  recordUserAsset,
-  type AssetType,
 } from '@/core/workspace-lib/assets/user-assets';
 
 export type SubmitEffectGenerationResult = {
@@ -53,6 +48,9 @@ export type SubmitEffectGenerationInput = {
   generationIntentId?: string | null;
   requireProject?: boolean;
   refreshExpiredIntent?: boolean;
+  backgroundPolling?: boolean;
+  expectedRuntimeIdentity?: string;
+  executionSignal?: AbortSignal;
   metadata?: Record<string, unknown>;
   authorizedReferenceUrls?: string[];
 };
@@ -75,58 +73,6 @@ const getReferencedUrls = (input: Record<string, unknown>) => {
   return [...new Set(urls.map((url) => url.trim()).filter(Boolean))];
 };
 
-const assetTypeFromMime = (mimeType: string | null): AssetType => {
-  if (mimeType?.startsWith('video/')) return 'video';
-  if (mimeType?.startsWith('audio/')) return 'audio';
-  return 'image';
-};
-
-async function finalizeIntentUploads({
-  intentId,
-  generationId,
-}: {
-  intentId: string;
-  generationId: string;
-}) {
-  const uploads = await getCompletedIntentUploads({ intentId });
-  for (const upload of uploads) {
-    if (!upload.publicUrl || !upload.objectKey) continue;
-    const assetId = await recordUserAsset({
-      type: assetTypeFromMime(upload.mimeType),
-      source: 'upload',
-      assetClass: 'original',
-      storageProvider: upload.storageProvider ?? 'cloud-api',
-      bucket: upload.bucket ?? upload.storageProvider ?? 'cloud-api',
-      objectKey: upload.objectKey,
-      publicUrl: upload.publicUrl,
-      filename: upload.filename ?? undefined,
-      mimeType: upload.mimeType ?? undefined,
-      sizeBytes: upload.sizeBytes ?? undefined,
-      metadata: { generationIntentId: intentId },
-    });
-    await linkGenerationAsset({
-      generationId,
-      assetId,
-      role: 'input',
-    });
-  }
-  if (!await completeGenerationUploadIntent({ intentId, generationId })) throw Error('Generation receipt could not be finalized; inspect its original intent before taking further action');
-}
-
-async function linkInputAssets(
-  generationId: string,
-  input: Record<string, unknown>
-) {
-  for (const key of ['image_urls', 'video_urls', 'audio_urls'] as const) {
-    const urls = Array.isArray(input[key])
-      ? input[key].filter((item): item is string => typeof item === 'string')
-      : [];
-    if (urls.length) {
-      await linkGenerationInputAssetsByUrls({ generationId, urls });
-    }
-  }
-}
-
 export async function submitEffectGeneration({
   effectId,
   input,
@@ -134,6 +80,9 @@ export async function submitEffectGeneration({
   generationIntentId,
   requireProject = true,
   refreshExpiredIntent = true,
+  backgroundPolling = true,
+  expectedRuntimeIdentity,
+  executionSignal,
   metadata,
   authorizedReferenceUrls = [],
 }: SubmitEffectGenerationInput): Promise<SubmitEffectGenerationResult> {
@@ -189,7 +138,8 @@ export async function submitEffectGeneration({
     };
   }
 
-  const adapterInput = { ...safeInput, prompt: prompt.trimmedPrompt,
+  if (expectedRuntimeIdentity && getGenerationProvider(effect.provider)?.executionIdentity?.() !== expectedRuntimeIdentity) throw Error('Provider runtime changed after queueing');
+  const adapterInput = { ...safeInput, _runtimeIdentity: expectedRuntimeIdentity, prompt: prompt.trimmedPrompt,
     // Authority comes from the admitted project, never caller parameters.
     _referenceProjectId: getGenerationProvider(effect.provider)?.referenceDelivery === 'project-media' ? normalizedProjectId : undefined,
   };
@@ -351,7 +301,8 @@ export async function submitEffectGeneration({
 
   try {
     await linkInputAssets(generationId, adapterInput);
-    const result = await createAdapter(effect).createGeneration(adapterInput);
+    executionSignal?.throwIfAborted();
+    const result = await createAdapter(effect).createGeneration({ ...adapterInput, ...(executionSignal ? { _executionSignal: executionSignal } : {}) });
     const providerError = 'error' in result ? result.error ?? null : null;
     const transition = resolveGenerationSubmitTransition({
       generationId,
@@ -384,7 +335,7 @@ export async function submitEffectGeneration({
       output,
       error: transition.error,
     });
-    if (transition.publicStatus === 'pending' || transition.publicStatus === 'processing') {
+    if (backgroundPolling && (transition.publicStatus === 'pending' || transition.publicStatus === 'processing')) {
       startBackendPollingForGeneration({ wmTaskId: generationId, effectId });
     }
     return {

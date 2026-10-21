@@ -1,0 +1,163 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "creation",
+  "tags": [
+    "specialized",
+    "installed-models",
+    "calibration"
+  ],
+  "id": "installed-model-calibration-card",
+  "title": "Calibration card with fitted audio",
+  "description": "A specialized local calibration workflow: independent image and audio models, referenced audio gain processing, then separately editable image/audio tracks. Install procedural-images, procedural-audio and audio-conform. No semantic AI quality is claimed.",
+  "parameters": [
+    {
+      "id": "direction",
+      "label": "Card direction",
+      "type": "string",
+      "default": "Warm calibration card"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "image",
+      "operation": "generation.model",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "mode": "image",
+        "modelId": "procedural-gradient",
+        "prompt": "Calibration title card",
+        "parameters": {
+          "aspect_ratio": "9:16"
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "direction",
+          "target": "/prompt"
+        }
+      ]
+    },
+    {
+      "id": "sound",
+      "operation": "generation.model",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "mode": "audio",
+        "modelId": "procedural-sound",
+        "prompt": "Calibration tone",
+        "parameters": {
+          "provider_options": {
+            "seconds": 1,
+            "frequency": 440,
+            "wave": "sine"
+          }
+        }
+      }
+    },
+    {
+      "id": "conform",
+      "operation": "generation.model",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "mode": "audio",
+        "modelId": "audio-conform",
+        "prompt": "Reduce gain for the calibration card",
+        "parameters": {
+          "provider_options": {
+            "gain": 0.5,
+            "start": 0,
+            "seconds": 1
+          }
+        },
+        "references": [
+          {
+            "assetId": "upstream",
+            "kind": "audio",
+            "role": "audio_track"
+          }
+        ]
+      },
+      "dependsOn": [
+        "sound"
+      ],
+      "bindings": [
+        {
+          "target": "/references/0/assetId",
+          "node": "sound",
+          "pointer": "/assetId"
+        }
+      ]
+    },
+    {
+      "id": "edit",
+      "operation": "editor.sequence",
+      "version": "1",
+      "dependsOn": [
+        "image",
+        "conform"
+      ],
+      "input": {
+        "schemaVersion": 1,
+        "title": "Calibration card",
+        "assets": {
+          "visual": {
+            "assetId": "upstream",
+            "kind": "image"
+          },
+          "sound": {
+            "assetId": "upstream",
+            "kind": "audio"
+          }
+        },
+        "tracks": [
+          {
+            "id": "visual",
+            "name": "Visual",
+            "kind": "video",
+            "clips": [
+              {
+                "id": "frame",
+                "type": "media",
+                "source": "visual",
+                "startTime": 0,
+                "duration": 1
+              }
+            ]
+          },
+          {
+            "id": "sound",
+            "name": "Calibration sound",
+            "kind": "audio",
+            "clips": [
+              {
+                "id": "tone",
+                "type": "media",
+                "source": "sound",
+                "startTime": 0,
+                "duration": 1
+              }
+            ]
+          }
+        ]
+      },
+      "bindings": [
+        {
+          "target": "/assets/visual/assetId",
+          "node": "image",
+          "pointer": "/assetId"
+        },
+        {
+          "target": "/assets/sound/assetId",
+          "node": "conform",
+          "pointer": "/assetId"
+        }
+      ]
+    }
+  ]
+}

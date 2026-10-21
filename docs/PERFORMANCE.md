@@ -152,3 +152,10 @@ The optional audio-conform provider uses separately installed FFmpeg/FFprobe wit
 ## Generation receipt inspection — 2026-10-22
 
 Final public output is unchanged: **203 files / 8,593,619 bytes**, **2,025,164 raw JS / 596,397 summed gzip bytes**. Existing 10 MB/600 KB limits pass. Receipt binding and inspection use existing SQLite rows by project and primary-key identity; no new schema, default dependency, background service or poller is added. Inspection does not contact providers. This does not measure high-concurrency database throughput or external model costs.
+
+
+## Installed-model recipes — 2026-10-22
+
+Final build: **203 public files / 8,594,026 bytes**, **2,025,571 raw JavaScript bytes / 596,488 individually gzipped JavaScript bytes**. Increase over generation receipt inspection: **91 gzip bytes**. Existing 10 MB/600 KB limits pass. There is no new dependency, migration, queue or daemon. The existing sequential worker uses the existing intent/history stores and disables submission's extra background polling timer for its own generations.
+
+Inputs stream through existing 64 KiB hash buffers with 64 MiB per reference and 256 MiB total limits. Completed generation assets are verified/probed and reused directly, without a second materializer copy. The four-step local proof retained three unique media assets and exported a one-second image/audio timeline. This does not measure whole-host RSS, large model inference, long-project latency, concurrency throughput or competitor performance. Installed code is trusted and cooperative deadlines cannot forcibly stop a module that ignores its signal.

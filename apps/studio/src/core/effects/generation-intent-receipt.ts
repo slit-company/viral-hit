@@ -35,7 +35,7 @@ export async function bindGenerationIntentReceipt({ intentId, projectId, effectI
 }
 
 /** Pure observation: no expiry mutation, provider polling, module import or authorization renewal. */
-export async function readGenerationIntentReceipt({ intentId, projectId, dbClient }: {
+export async function findGenerationIntentReceipt({ intentId, projectId, dbClient }: {
   intentId: string; projectId: string; dbClient?: DbClient;
 }) {
   const db = dbClient ?? await getDb();
@@ -45,7 +45,13 @@ export async function readGenerationIntentReceipt({ intentId, projectId, dbClien
       eq(generationHistory.projectId, generationUploadIntent.projectId),
       eq(generationHistory.effectId, generationUploadIntent.effectId),
     )).where(and(eq(generationUploadIntent.id, intentId), eq(generationUploadIntent.projectId, projectId))).limit(1);
-  if (!row) throw Error('Generation intent not found in this project');
+  if (!row) return null;
   if (row.intent.generationId && !row.generation) throw Error('Generation receipt is unavailable; do not resubmit this request');
+  return row;
+}
+
+export async function readGenerationIntentReceipt(input: Parameters<typeof findGenerationIntentReceipt>[0]) {
+  const row = await findGenerationIntentReceipt(input);
+  if (!row) throw Error('Generation intent not found in this project');
   return row;
 }

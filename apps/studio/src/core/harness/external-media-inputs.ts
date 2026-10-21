@@ -22,7 +22,7 @@ export async function pinExternalMediaInputs(plan: Plan, entries: ExternalEntry[
       const bindings = (node.bindings ?? []).filter(binding => overlaps(binding.target, target));
       if (bindings.length) {
         const binding = bindings[0], source = result.nodes.find(source => source.id === binding.node);
-        if (bindings.length !== 1 || binding.target !== target || binding.pointer !== '/assetId' || !source || !isAssetOperation(source.operation) || !node.dependsOn?.includes(source.id)) throw new Error('Asset inputs may bind only to an explicit materializer dependency’s /assetId');
+        if (bindings.length !== 1 || binding.target !== target || binding.pointer !== '/assetId' || !source || !isAssetOperation(source.operation, source.input) || !node.dependsOn?.includes(source.id)) throw new Error('Asset inputs may bind only to an explicit materializer dependency’s /assetId');
         if (assetOperationKind(source.operation, source.input) !== input.kind) throw new Error('Materializer output kind does not match the adapter asset input');
         envelope.assetPins[input.id] = { projectId: null, assetId: null, kind: null, sha256: null, sizeBytes: null };
         for (const field of ['projectId', 'assetId', 'kind', 'sha256', 'sizeBytes']) {

@@ -2,7 +2,7 @@ import { listAnalysisSources, prepareAnalysisPlan } from './analysis.server';
 import { listReferenceSources, prepareReferencePlan } from './reference.server';
 import { getActiveProject } from '../projects/projects';
 import { openHarness } from '../harness/store';
-import { isAssetOperation } from '../harness/asset-operations';
+import { isAssetJob } from '../harness/asset-operations';
 import { storyboardRequest, MAX_STORYBOARD_BYTES, type StoryboardState, type StoryboardRequest, type AcceptedShot } from './contract';
 import { changeStoryboard, listStoryboards, readStoryboard, readAction, listActions, shotDigest, StoryboardConflict } from './storage.server';
 import { checkReferences, checkedMedia } from './media.server';
@@ -32,7 +32,7 @@ async function acceptShot(state: StoryboardState, request: Extract<StoryboardReq
     try {
       if (!h.runs(state.projectId).some(run => run.id === action.runId)) throw Error('Generation project mismatch');
       const job = h.jobs(action.runId).find(job => job.node_id === action.outputNodeId);
-      if (!job || !isAssetOperation(job.operation) || job.state !== 'succeeded' || job.cancel_requested || !job.output_json) throw Error('Shot result is not successfully materialized');
+      if (!job || !isAssetJob(job) || job.state !== 'succeeded' || job.cancel_requested || !job.output_json) throw Error('Shot result is not successfully materialized');
       const output = JSON.parse(job.output_json);
       if (typeof output.assetId !== 'string' || typeof output.sha256 !== 'string') throw Error('Generation receipt lacks media identity');
       assetId = output.assetId; sha256 = output.sha256; sourceActionId = action.requestId;

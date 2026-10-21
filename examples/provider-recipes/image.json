@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "creation",
+  "tags": [
+    "general",
+    "installed-models"
+  ],
+  "id": "installed-model-image",
+  "title": "Image from an installed model",
+  "description": "Choose any installed image model and make a reusable project image. The default procedural gradient is a real local PNG processor, not an AI quality example.",
+  "parameters": [
+    {
+      "id": "model",
+      "label": "Installed image model ID",
+      "type": "string",
+      "default": "procedural-gradient"
+    },
+    {
+      "id": "prompt",
+      "label": "Image direction",
+      "type": "string",
+      "multiline": true,
+      "default": "Warm coral and deep blue gradient"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "image",
+      "operation": "generation.model",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "mode": "image",
+        "modelId": "procedural-gradient",
+        "prompt": "Warm coral gradient",
+        "parameters": {
+          "aspect_ratio": "1:1"
+        }
+      },
+      "parameters": [
+        {
+          "parameter": "model",
+          "target": "/modelId"
+        },
+        {
+          "parameter": "prompt",
+          "target": "/prompt"
+        }
+      ]
+    }
+  ]
+}

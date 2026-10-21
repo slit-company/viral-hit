@@ -1,4 +1,4 @@
-import { isAssetOperation } from './asset-operations';
+import { isAssetJob } from './asset-operations';
 import { createHash } from 'node:crypto';
 import { loadProjectTimeline } from '../editor/timeline-state';
 import { findTimelineClip } from '../editor/timeline-document';
@@ -11,7 +11,7 @@ import { fileHash } from './materialize';
 export async function attachMaterializedJob(h: DurableHarness, projectId: string, runId: string, jobId: string, expectedRevision: number, clipId?: string) {
   if (!h.runs(projectId).some(run => run.id === runId)) throw new Error('Run not found in this project');
   const job = h.jobs(runId).find(job => job.id === jobId);
-  if (!job || !isAssetOperation(job.operation) || job.state !== 'succeeded' || job.cancel_requested || !job.output_json) throw new Error('Select a successfully imported media job');
+  if (!job || !isAssetJob(job) || job.state !== 'succeeded' || job.cancel_requested || !job.output_json) throw new Error('Select a successfully imported media job');
   const output = JSON.parse(job.output_json);
   const asset = await getProjectAssetById({ projectId, assetId: output.assetId });
   if (!asset || !asset.sha256 || asset.sha256 !== output.sha256 || await fileHash(resolveLocalProjectAssetPath({ objectKey: asset.objectKey })) !== asset.sha256) throw new Error('Local media is unavailable or its content hash changed');

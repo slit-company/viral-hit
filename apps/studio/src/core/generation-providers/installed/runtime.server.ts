@@ -56,26 +56,30 @@ export class InstalledProviderRuntime {
   }
 
   /** createGeneration problems fail the generation; checkStatus errors are thrown so polling retries them. */
-  async call(method: 'createGeneration' | 'checkStatus', effect: EffectRecord, request: Record<string, unknown>, projectId?: unknown): Promise<GenerationResult> {
+  async call(method: 'createGeneration' | 'checkStatus', effect: EffectRecord, request: Record<string, unknown>, projectId?: unknown, expectedRuntime?: string, executionSignal?: AbortSignal): Promise<GenerationResult> {
     const { label } = this.manifest;
     const model = this.manifest.models.find(item => item.id === effect.linkName);
     if (!model) {
       if(method==='checkStatus') throw Error(label+' no longer offers this task model. Restore its original runtime.');
       return { status:'failed',error:label+' does not offer '+effect.linkName };
     }
-    const runtime = this.managed ? providerRuntimeDigest(this.manifest,this.source) : undefined;
+    const runtime = this.managed || expectedRuntime || (typeof request.taskId === 'string' && request.taskId.startsWith('vh-runtime-v1:')) ? providerRuntimeDigest(this.manifest,this.source) : undefined;
+    if (expectedRuntime && runtime !== expectedRuntime) throw Error('Provider runtime changed after queueing; restore the original release and configuration');
     if(runtime && method==='checkStatus') request={...request,taskId:unpinProviderTask(request.taskId,runtime,model.id)};
     const missing = this.manifest.environment.filter(name => !process.env[name]?.trim());
     if (missing.length) throw new Error('Provider configuration is missing: ' + missing.join(', '));
     let raw: unknown;
     let mediaContext: Awaited<ReturnType<typeof createProviderMediaContext>> | undefined;
     try {
-      const signal = AbortSignal.timeout(method === 'createGeneration' ? 10 * 60_000 : 60_000);
+      const deadline = AbortSignal.timeout(method === 'createGeneration' ? 10 * 60_000 : 60_000);
+      const signal = executionSignal ? AbortSignal.any([deadline, executionSignal]) : deadline;
       if (method === 'createGeneration' && this.manifest.referenceDelivery === 'project-media') {
         mediaContext = await createProviderMediaContext(projectId, request.input as Record<string, unknown>, signal);
       }
       const loaded = await this.load();
       if (method === 'checkStatus' && !loaded.checkStatus) return { status: 'failed', error: label + ' cannot report progress for unfinished work' };
+      if (runtime && providerRuntimeDigest(this.manifest, this.source) !== runtime) throw Error('Provider configuration changed before execution');
+      signal.throwIfAborted();
       raw = await loaded[method]!({ model: { id: model.id, upstreamModelId: model.upstreamModelId ?? model.id, kind: model.kind }, ...request, signal, ...(mediaContext ? { media: mediaContext.media, readMedia: mediaContext.readMedia } : {}) });
     } catch (error) {
       if (method === 'checkStatus') throw error;
@@ -146,7 +150,7 @@ export class InstalledProviderAdapter extends BaseAdapter {
     if (this.effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs);
     if (this.effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs);
     const options = resolveModelOptions(model?.controls, (input as Record<string, unknown> | null)?.provider_options);
-    return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId);
+    return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId, typeof (input as Record<string, unknown> | null)?._runtimeIdentity === 'string' ? String((input as Record<string, unknown>)._runtimeIdentity) : undefined, (input as Record<string, unknown> | null)?._executionSignal instanceof AbortSignal ? (input as Record<string, unknown>)._executionSignal as AbortSignal : undefined);
   }
   checkStatus(taskId: string) { return this.runtime.call('checkStatus', this.effect, { taskId }); }
 }

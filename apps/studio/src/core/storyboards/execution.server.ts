@@ -1,7 +1,7 @@
 import { prepareRecipePlan } from '../harness/recipe-plan';
 import { pinRuntimePlan } from '../harness/runtime-plan';
 import { assertRuntimeConfigured } from '../harness/capabilities';
-import { isAssetOperation, assetOperationKind } from '../harness/asset-operations';
+import { isAssetJob, isAssetOperation, assetOperationKind } from '../harness/asset-operations';
 import { openHarness } from '../harness/store';
 import type { Plan } from '../harness/durable';
 import { sequenceSchema, type EditableSequence } from '../editor/sequence';
@@ -23,7 +23,7 @@ export function resumeStoryboardAction(action: StoryboardAction) {
 }
 export function actionSummary(action: StoryboardAction, jobs: ReturnType<ReturnType<typeof openHarness>['jobs']> = []): StoryboardActionView {
   const { plan: _, requestDigest: __, ...summary } = action;
-  const job = jobs.find(item => item.node_id === action.outputNodeId && item.state === 'succeeded' && !item.cancel_requested && isAssetOperation(item.operation));
+  const job = jobs.find(item => item.node_id === action.outputNodeId && item.state === 'succeeded' && !item.cancel_requested && isAssetJob(item));
   let output: StoryboardActionView['output'];
   if (job?.output_json) {
     const raw = JSON.parse(job.output_json);
@@ -75,7 +75,7 @@ export async function enqueueStoryboard(state: StoryboardState, request: Extract
     if (!shot?.recipe) throw Error('Choose a current shot with an explicit recipe and input values');
     plan = await prepareRecipePlan(shot.recipe.id, shot.recipe.values, state.projectId, shot.recipe.digest);
     const output = plan.nodes.find(node => node.id === shot.recipe!.outputNodeId);
-    if (!output || !isAssetOperation(output.operation) || !['image', 'video'].includes(String(assetOperationKind(output.operation, output.input)))) throw Error('The shot output node must materialize an image or video');
+    if (!output || !isAssetOperation(output.operation, output.input) || !['image', 'video'].includes(String(assetOperationKind(output.operation, output.input)))) throw Error('The shot output node must materialize an image or video');
     outputNodeId = output.id; shotId = shot.id; shotHash = shotDigest(state.plan, shot);
   } else {
     outputNodeId = 'sequence';

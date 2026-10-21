@@ -235,11 +235,17 @@ export async function submitAssetFirstGeneration({
   origin,
   generationIntentId,
   refreshExpiredIntent = true,
+  backgroundPolling = true,
+  expectedRuntimeIdentity,
+  executionSignal,
 }: {
   generation: AssetFirstGenerationRequest | unknown;
   origin: 'ui' | 'mcp' | 'cli' | 'system';
   generationIntentId?: string;
   refreshExpiredIntent?: boolean;
+  backgroundPolling?: boolean;
+  expectedRuntimeIdentity?: string;
+  executionSignal?: AbortSignal;
 }) {
   const { generation, binding, expectedUploadCount, preparedReferences } = await preflightAssetFirstGeneration(source);
   const intentId = generationIntentId || await issueGenerationUploadIntent({
@@ -271,6 +277,9 @@ export async function submitAssetFirstGeneration({
       projectId: generation.projectId,
       generationIntentId: intentId,
       refreshExpiredIntent,
+      backgroundPolling,
+      expectedRuntimeIdentity,
+      executionSignal,
       authorizedReferenceUrls: prepared.authorizedDeliveryUrls,
       metadata: {
         origin,

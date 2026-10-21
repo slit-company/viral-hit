@@ -33,7 +33,7 @@ export async function pinSequenceInputs(plan: Plan, signal = AbortSignal.timeout
       const bindings = (node.bindings ?? []).filter(binding => binding.target === `/assets/${name}/assetId`);
       if (bindings.length) {
         const binding = bindings[0], parent = result.nodes.find(candidate => candidate.id === binding.node);
-        if (bindings.length !== 1 || binding.pointer !== '/assetId' || !parent || !node.dependsOn?.includes(parent.id) || !isAssetOperation(parent.operation) || assetOperationKind(parent.operation, parent.input) !== source.kind) throw Error('Sequence asset bindings require a same-kind materializer dependency');
+        if (bindings.length !== 1 || binding.pointer !== '/assetId' || !parent || !node.dependsOn?.includes(parent.id) || !isAssetOperation(parent.operation, parent.input) || assetOperationKind(parent.operation, parent.input) !== source.kind) throw Error('Sequence asset bindings require a same-kind materializer dependency');
         input.pins[name] = { projectId: null, assetId: null, kind: null, sha256: null, sizeBytes: null };
         for (const field of fields) (node.bindings ??= []).push({ target: `/pins/${name}/${field}`, node: parent.id, pointer: `/${field}` });
       } else {

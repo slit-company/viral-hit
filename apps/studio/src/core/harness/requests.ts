@@ -1,3 +1,4 @@
+import { generationModelInput } from './generation-contract';
 import { sceneInput } from '../references/scene-contract';
 import { sequenceInput } from './sequence-adapter';
 import { sampleReferenceInput, youtubeReferenceInput } from '../references/recipe-contract';
@@ -16,6 +17,7 @@ const nodeBase = {
   cache: z.literal(false).optional(),
 };
 const builtinNodeSchema = z.discriminatedUnion('operation', [
+  z.object({ ...nodeBase, operation: z.literal('generation.model'), input: generationModelInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('editor.sequence'), input: sequenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('reference.youtube'), input: youtubeReferenceInput }).strict(),
   z.object({ ...nodeBase, operation: z.literal('reference.scenes'), input: sceneInput }).strict(),

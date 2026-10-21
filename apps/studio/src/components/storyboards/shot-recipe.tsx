@@ -8,7 +8,7 @@ import type { BoardAsset } from './use-storyboards';
 import { SelectField } from './fields';
 
 export function shotOutputs(recipe: Recipe) {
-  return recipe.nodes.filter(node => isAssetOperation(node.operation) && ['image', 'video'].includes(String(assetOperationKind(node.operation, node.input))));
+  return recipe.nodes.filter(node => isAssetOperation(node.operation, node.input) && ['image', 'video'].includes(String(assetOperationKind(node.operation, node.input))));
 }
 export function ShotRecipe({ projectId, shot, catalog, assets, capabilities, change }: {
   projectId: string; shot: StoryboardShot; catalog: RecipeCatalog; assets: BoardAsset[]; capabilities: AssetCapability[]; change: (shot: StoryboardShot) => void;

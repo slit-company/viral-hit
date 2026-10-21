@@ -116,12 +116,14 @@ export async function getGenerationUploadIntentAdmissionState({
 }
 
 export async function issueGenerationUploadIntent({
+  intentId,
   projectId,
   effectId,
   expectedUploadCount,
   now = new Date(),
   dbClient,
 }: {
+  intentId?: string;
   projectId: string;
   effectId: number;
   expectedUploadCount: number;
@@ -161,7 +163,8 @@ export async function issueGenerationUploadIntent({
       'Too many pending upload authorizations for this project. Finish one or wait for it to expire.'
     );
   }
-  const id = randomUUID();
+  const id = intentId ?? randomUUID();
+  if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(id)) throw Error('Invalid generation intent identity');
   await db.insert(generationUploadIntent).values({
     id,
     projectId,
