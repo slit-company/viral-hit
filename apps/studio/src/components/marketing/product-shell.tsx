@@ -11,7 +11,7 @@ import { Link } from '@/core/i18n/navigation';
 import { appConfig } from '@/config';
 import { m } from '@/paraglide/messages.js';
 
-type ProductSurface = 'home' | 'projects' | 'characters' | 'skills';
+type ProductSurface = 'home' | 'projects' | 'characters' | 'skills' | 'packs';
 
 function getShellCopy(locale: string) {
   const messageLocale = normalizeLocale(locale);
@@ -20,6 +20,7 @@ function getShellCopy(locale: string) {
     create: m['product.shell.create']({}, { locale: messageLocale }),
     projects: m['product.shell.projects']({}, { locale: messageLocale }),
     characters: m['product.shell.characters']({}, { locale: messageLocale }),
+    packs: m['product.shell.packs']({}, { locale: messageLocale }),
     skills: m['product.shell.skills']({}, { locale: messageLocale }),
     openNavigation: m['product.shell.openNavigation'](
       {},
@@ -47,6 +48,7 @@ function getNavItems(copy: ShellCopy) {
     { label: copy.projects, href: '/projects' },
     { label: copy.characters, href: '/characters' },
     { label: copy.skills, href: '/skills' },
+    { label: copy.packs, href: '/packs' },
   ] as const;
 }
 
@@ -55,6 +57,7 @@ const activeNavHref: Record<ProductSurface, string> = {
   projects: '/projects',
   characters: '/characters',
   skills: '/skills',
+  packs: '/packs',
 };
 
 export function Brand({ href = '/' }: { href?: string }) {
@@ -82,7 +85,7 @@ function CapsuleNav({
 }) {
   const activeHref = activeNavHref[active];
   return (
-    <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 text-sm font-medium md:flex lg:gap-8">
+    <nav className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-5 text-sm font-medium lg:flex lg:gap-6">
       {items.map((item) => {
         const isActive = item.href === activeHref;
         return (
@@ -129,7 +132,7 @@ export function ProductShell({
           <CapsuleNav active={active} items={navItems} />
 
           <div className="ml-auto flex items-center gap-2">
-            <div className="hidden md:block">
+            <div className="hidden lg:block">
               <LanguageSwitcher />
             </div>
 
@@ -140,7 +143,7 @@ export function ProductShell({
               }
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((open) => !open)}
-              className="grid size-10 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-1)] transition hover:border-[var(--vh-border)] md:hidden"
+              className="grid size-10 place-items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-1)] transition hover:border-[var(--vh-border)] lg:hidden"
             >
               {menuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
             </Action>
@@ -148,7 +151,7 @@ export function ProductShell({
         </div>
 
         {menuOpen ? (
-          <div className="absolute inset-x-4 top-[calc(100%+8px)] rounded-[18px] border border-[var(--vh-border)] bg-[var(--vh-surface)]/95 p-2 shadow-lg backdrop-blur-xl md:hidden">
+          <div className="absolute inset-x-4 top-[calc(100%+8px)] rounded-[18px] border border-[var(--vh-border)] bg-[var(--vh-surface)]/95 p-2 shadow-lg backdrop-blur-xl lg:hidden">
             {navItems.map((item) => (
               <Link
                 key={item.href}

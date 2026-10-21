@@ -28,6 +28,8 @@ To propose a pack for `packs/` so every installation offers it, open a **Share a
 - Run on this installation: either every recipe executes with real media in a test, or the pack says what is missing in `requirements`.
 - Pass `pnpm --dir apps/studio recipe inspect-pack <file>` with no blocking items.
 
+For a reusable setup that combines recipes, skills and character images, build a [creative pack](docs/CREATIVE-PACKS.md). Keep general building blocks reusable and put format, brand or audience choices in a specialized pack. Contributor additions use the same manifest and shared application services as shipped content.
+
 ## Checks
 
 Run these from the repository root before opening a pull request:
@@ -53,4 +55,3 @@ Reuse public code only under a compatible license, keep its notices, and add it 
 Use the issue forms. For bugs, include the steps, what you expected, what happened, and your OS, Node and FFmpeg versions. Don't paste API keys, tokens or private media.
 
 By contributing, you agree that your contribution is licensed under the [Apache License 2.0](LICENSE).
-

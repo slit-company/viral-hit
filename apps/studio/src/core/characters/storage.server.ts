@@ -1,7 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { existsSync, lstatSync, mkdirSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
-import { rename, rm, stat, writeFile } from 'node:fs/promises';
+import { createHash, randomUUID } from 'node:crypto';
+import { readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { getViralHitDataRoot } from '@/config/data-root';
 import { characterSchema, type Character } from './contract';
@@ -35,7 +35,7 @@ export function referencePath(sha256: string) {
 /** Content-addressed and shared by every character; an existing file with the same hash is reused. */
 export async function storeReferenceBytes(sha256: string, bytes: Uint8Array) {
   const path = referencePath(sha256);
-  if ((await stat(path).catch(() => null))?.size === bytes.byteLength) return path;
+  if ((await stat(path).catch(() => null))?.size === bytes.byteLength && createHash('sha256').update(await readFile(path)).digest('hex') === sha256) return path;
   mkdirSync(root(), { recursive: true, mode: 0o700 });
   const temporary = join(root(), '.' + randomUUID() + '.tmp');
   try { await writeFile(temporary, bytes, { flag: 'wx', mode: 0o600 }); await rename(temporary, path); }

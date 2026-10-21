@@ -12,7 +12,7 @@ import { CharacterConflictError, readCharacter, readCharacters, referencePath, s
 
 /** Bytes received over HTTP; MCP and CLI use ReferenceSource paths or project assets instead. */
 export type UploadedReference = { bytes: Uint8Array; filename: string; role: CharacterReference['role']; note?: string };
-type Source = ReferenceSource | UploadedReference;
+type Source = ReferenceSource | UploadedReference | { path: string; filename: string; role: CharacterReference['role']; note?: string };
 const now = () => new Date().toISOString();
 
 async function readBounded(path: string) {
@@ -29,7 +29,7 @@ async function loadSource(source: Source) {
   if ('bytes' in source) { bytes = source.bytes; filename = source.filename; }
   else if ('path' in source) {
     if (!isAbsolute(source.path)) throw new Error('Use an absolute file path for local reference images');
-    bytes = await readBounded(source.path); filename = basename(source.path);
+    bytes = await readBounded(source.path); filename = 'filename' in source ? source.filename : basename(source.path);
   } else {
     const asset = await getProjectAssetById({ projectId: source.projectId, assetId: source.assetId });
     if (!asset || asset.type !== 'image' || asset.bucket !== LOCAL_PROJECT_ASSET_BUCKET) throw new Error('Choose a local image from this project');
@@ -72,7 +72,9 @@ export async function createCharacter(input: { id?: string; profile: CharacterPr
   const profile = characterProfileSchema.parse(input.profile);
   if (!sources.length) throw new Error('Add at least one reference image');
   if (sources.filter(source => source.role === 'canonical').length > 1) throw new Error('Choose one canonical reference');
-  const references = mergeReferences([], await Promise.all(sources.map(loadSource)));
+  const incoming: CharacterReference[] = [];
+  for (const source of sources) incoming.push(await loadSource(source));
+  const references = mergeReferences([], incoming);
   let id = input.id ?? slugCharacterId(profile.name);
   if (!input.id) for (let n = 2; readCharacter(id); n++) id = slugCharacterId(profile.name).slice(0, 56) + '-' + n;
   const stamp = now();
@@ -126,7 +128,8 @@ export async function changeCharacterLibrary(request: LibraryRequest, uploads: U
       const character = required(request.id);
       const sources = [...request.references, ...uploads];
       if (!sources.length) throw new Error('Add at least one reference image');
-      const incoming = await Promise.all(sources.map(loadSource));
+      const incoming: CharacterReference[] = [];
+      for (const source of sources) incoming.push(await loadSource(source));
       if (incoming.some(item => item.role === 'canonical')) throw new Error('Use set_canonical to change the canonical image');
       return writeCharacter(next(character, { references: mergeReferences(character.references, incoming) }), request.expectedVersion);
     }

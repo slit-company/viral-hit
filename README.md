@@ -39,7 +39,7 @@ Viral Hit is a general creative workspace with room for very specific workflows.
 | Layer | What it is | General examples | Situation-specific examples | Add your own |
 |---|---|---|---|---|
 | Core | Projects, assets, Canvas, timeline, durable harness, publishing, project files | Editing, export, MCP/CLI control | — | Pull request |
-| Packs | Groups of recipes, labeled general or for a specific job, installed together | Editing basics | Short-form reel kit, Slide story kit | **Make a pack**, a file, or a GitHub link ([guide](docs/PACKS.md)) |
+| Packs | General or specialized setups: recipe-only JSON or recipes + skills + character images together | Editing basics, general creative toolkit | A brand host with its shot-planning skill and editing recipes | **Packs** for combined files ([guide](docs/CREATIVE-PACKS.md)); recipe-only files/links in Runs ([guide](docs/PACKS.md)) |
 | Recipes | Versioned JSON workflows with typed forms, shared by UI and MCP | Open frame, Spoken line, Local diffusion on your ComfyUI | YouTube reference, Editable scene, Animated image story | Recipe library, `recipe import-comfy`, or a JSON file |
 | Adapters | Independently installed execution engines | Audio gain, procedural tone | Your own model server or render farm | `VIRAL_HIT_ADAPTERS_DIR` ([guide](docs/EXTERNAL-ADAPTERS.md)) |
 | Extensions | Optional runtimes with their own dependencies | Local media composition | ima2 images, YouTube intake | `extensions/<name>/` |
@@ -74,3 +74,5 @@ Built-in [editable sequences](docs/EDITABLE-SEQUENCES.md) let any workflow prepa
 Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE.md). Runs includes portable YouTube collection and project-video sampling recipes, with five frame previews and timeline attachment. CLI also accepts explicit Instagram direct-video items. Independent adapters can consume the resulting project video; automatic Instagram inbox collection remains pending.
 
 Manage optional YouTube and Instagram connections from the workspace header or `/connections`. Operator-configured Google and Meta login keep credentials encrypted on the server; Instagram requires an explicit Page-linked account selection. Connecting does not publish. Each project now has a Publish screen for retained-video review, explicit revision-bound approval and delivery status, backed by a separate resumable upload worker. YouTube and Instagram Reels/video Stories share this flow. Instagram supports local scheduling; images/carousels and live-provider verification remain pending. See [publishing setup and status](docs/PUBLISHING.md).
+
+Share recipes, skills and character reference images together through **Packs**. [Creative packs](docs/CREATIVE-PACKS.md) support both general toolkits and specialized setups, with reviewed installation and portable files.

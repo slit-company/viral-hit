@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
   "id": "recipe-packs",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Recipe packs",
-  "summary": "Find, build and share packs of recipes, either general or for a specific job, and install a pack only after the user has seen its review.",
+  "summary": "Find and share general or job-specific recipe packs, or move recipes, skills and characters together in a reviewed creative pack.",
   "scope": "general",
   "author": "Viral Hit contributors",
   "license": "Apache-2.0",
@@ -12,7 +12,8 @@
     "minimumViralHitVersion": "0.2.4",
     "requiredMcpTools": [
       "viral_hit_recipe_pack",
-      "viral_hit_recipes_list"
+      "viral_hit_recipes_list",
+      "viral_hit_creative_pack"
     ]
   },
   "requiredCapabilities": [],

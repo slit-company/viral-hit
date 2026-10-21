@@ -83,8 +83,8 @@ test('a pack made from local recipes downloads, imports, reviews and installs as
   await form.getByLabel('Description', { exact: true }).fill('Starting points we give every new editor.');
   await form.getByLabel('Author', { exact: true }).fill('Studio team');
   await expect(form.getByRole('button', { name: 'Build pack file', exact: true })).toBeDisabled();
-  await form.getByRole('checkbox', { name: /^Open frame/ }).check();
-  await form.getByRole('checkbox', { name: /^Build an editable scene/ }).check();
+  await form.getByRole('checkbox', { name: 'Open frame (open-frame)', exact: true }).check();
+  await form.getByRole('checkbox', { name: 'Build an editable scene (editable-scene)', exact: true }).check();
   await form.getByRole('button', { name: 'Build pack file', exact: true }).click();
   const built = form.getByRole('region', { name: 'Built pack' });
   await expect(built).toContainText('2 recipes, renamed under studio-onboarding-kit');

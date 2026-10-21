@@ -44,8 +44,8 @@ export function PackBuilder({ onBack }: { onBack: () => void }) {
       <legend className="text-xs text-[var(--vh-text-2)]">Recipes · {b.chosen.length} of up to {MAX_CHOSEN}</legend>
       <ul className="max-h-64 space-y-1 overflow-y-auto rounded-xl border border-[var(--vh-border)] p-2">{b.recipes.map(recipe => <li key={recipe.id}>
         <label className="flex cursor-pointer items-start gap-2 rounded-lg p-2 text-sm hover:bg-[var(--vh-control)]">
-          <input type="checkbox" className="mt-1" checked={b.chosen.includes(recipe.id)} disabled={!b.chosen.includes(recipe.id) && b.chosen.length >= MAX_CHOSEN} onChange={() => b.toggle(recipe.id)} />
-          <span className="min-w-0"><span className="block break-words">{recipe.title}</span><span className="block break-words text-[11px] text-[var(--vh-text-2)]">{recipe.author} · {recipe.license}</span></span>
+          <input type="checkbox" aria-label={recipe.title + ' (' + recipe.id + ')'} className="mt-1" checked={b.chosen.includes(recipe.id)} disabled={!b.chosen.includes(recipe.id) && b.chosen.length >= MAX_CHOSEN} onChange={() => b.toggle(recipe.id)} />
+          <span className="min-w-0"><span className="block break-words">{recipe.title}</span><span className="block break-words text-[11px] text-[var(--vh-text-2)]">{recipe.id} · {recipe.author} · {recipe.license}</span></span>
         </label>
       </li>)}</ul>
     </fieldset>

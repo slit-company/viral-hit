@@ -842,5 +842,6 @@
   "Common": {
     "loading": "Loading"
   },
-  "product.shell.skills": "Skills"
+  "product.shell.skills": "Skills",
+  "product.shell.packs": "Packs"
 }

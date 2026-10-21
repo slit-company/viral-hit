@@ -75,3 +75,5 @@ Viral Hit MCP 是结构化控制层，浏览器中的 Viral Hit 是用户审核�
 当用户需要现成的工作流、希望为特定任务（例如竖屏产品广告或图文卡片视频）配置 Viral Hit，或想分享自己做的配方时，先用 `viral_hit_skill_get` 读取内置的 `recipe-packs` 技能（资源 `viral-hit://skills/recipe-packs`）并按其步骤执行。配方包分为通用和特定任务两类，只有在用户看过审核结果后才安装，且安装不会启动任何运行任务。
 
 当用户希望同一个人物、吉祥物或产品在各个镜头中保持一致，或点名要使用某个角色时，先用 `viral_hit_skill_get` 读取内置的 `consistent-characters` 技能（资源 `viral-hit://skills/consistent-characters`）并按其步骤执行。角色包含参考图和“保持/禁止”规则，加入项目时只复制一次，且不会自动开始生成。
+
+当用户分享包含技能、角色参考图和配方的完整创作配置时，使用 `recipe-packs` 技能的 **Share a complete creative setup** 流程。`viral_hit_creative_pack` 创建并审核 `.viralhit-pack.tar` 文件；安装可能部分完成，必须检查返回的 `complete` 后才能报告完成。
