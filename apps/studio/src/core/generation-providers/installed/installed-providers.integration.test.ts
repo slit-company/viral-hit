@@ -87,3 +87,11 @@ test('a result URL outside the provider media hosts fails the generation without
   assert.match(String(result.body.error), /not listed in mediaHosts/);
   assert.deepEqual(await listProjectAssets({ projectId: project.id }), []);
 });
+
+
+test('simultaneous generations returning identical bytes each retain their project asset', async () => {
+  const projects = await Promise.all(Array.from({ length: 4 }, (_, index) => createProject({ name: 'Same media ' + index })));
+  const results = await Promise.all(projects.map(project => submitAssetFirstGeneration({ generation: request(project.id, 'procedural-gradient', 'An identical concurrent sunset'), origin: 'mcp' })));
+  for (const result of results) assert.equal(result.body.status, 'succeeded', JSON.stringify(result.body));
+  for (const project of projects) assert.equal(await pngSize(project.id), 'png,640,360');
+});

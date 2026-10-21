@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BaseAdapter, type EffectRecord, type GenerationResult } from '@/core/adapters/base-adapter';
@@ -88,7 +88,7 @@ export class InstalledProviderRuntime {
     const path = join(directory, name);
     if (!(await stat(path).catch(() => null))?.isFile()) {
       await mkdir(directory, { recursive: true, mode: 0o700 });
-      const temporary = path + '.' + process.pid + '.tmp';
+      const temporary = path + '.' + randomUUID() + '.tmp';
       try { await writeFile(temporary, data, { flag: 'wx', mode: 0o600 }); await rename(temporary, path); }
       catch (error) { await rm(temporary, { force: true }); throw error; }
     }
