@@ -34,7 +34,7 @@ export const sequenceSchema = z.object({
         continue;
       }
       const source = sequence.assets[clip.source];
-      if (!source || (track.kind === 'audio' ? source.kind !== 'audio' : track.kind === 'overlay' ? source.kind !== 'image' : track.kind === 'video' ? source.kind === 'audio' : true)) ctx.addIssue({ code: 'custom', message: 'Media kind does not match the sequence track' });
+      if (!source || (track.kind === 'audio' ? source.kind !== 'audio' : track.kind === 'overlay' ? source.kind === 'audio' : track.kind === 'video' ? source.kind === 'audio' : true)) ctx.addIssue({ code: 'custom', message: 'Media kind does not match the sequence track' });
       if ((clip.overlay || clip.motion) && track.kind !== 'overlay') ctx.addIssue({ code: 'custom', message: 'Overlay transform needs an overlay track' });
       if (source?.kind === 'image' && clip.inPoint !== 0) ctx.addIssue({ code: 'custom', message: 'Images have no source in-point' });
       if (clip.fadeIn > clip.duration || clip.fadeOut > clip.duration) ctx.addIssue({ code: 'custom', message: 'Fade exceeds clip duration' });

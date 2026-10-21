@@ -1,6 +1,6 @@
 # Editable overlay motion
 
-Image overlays support position (`x`, `y`), output-relative width, opacity and rotation keyframes. This is a generic editor capability: the inspector, HTTP editor commands, MCP `viral_hit_editor_edit`, and portable `editor.sequence` recipes share one validated contract. The optional `animated-image-story` recipe demonstrates it without requiring model credentials or a specialized advertising workflow.
+Image and video overlays support position (`x`, `y`), output-relative width, opacity and rotation keyframes. This is a generic editor capability: the inspector, HTTP editor commands, MCP `viral_hit_editor_edit`, and portable `editor.sequence` recipes share one validated contract. The optional `animated-image-story` recipe demonstrates it without requiring model credentials or a specialized advertising workflow.
 
 ## Contract
 
@@ -32,8 +32,10 @@ Motion uses the existing revision-checked commands and undo/draft recovery. Pose
 
 The browser preview and Canvas exporter evaluate the same pure interpolation. Preview and both exporters share the current output-frame policy: the first visible, unmuted visual determines 1920×1080 or 1080×1920. Other source ratios are contained in that frame; selecting a later portrait clip does not change a landscape project’s output. The preview fits both available width and height without distorting the frame. The server compiles only validated numerical values into FFmpeg expressions. Opacity/rotation run at fixed input dimensions, followed by dynamic scaling; rotation paints a transparent background every frame to avoid retained-buffer trails. Rotation working canvases over 64 megapixels fail with an actionable error. No dependency, remote call or model runtime is added to the default studio.
 
-This contract does not provide arbitrary Bezier curves, masks, perspective, video-overlay animation, transition graphs, or import of foreign native keyframe formats. Those need explicit adapters with semantic validation.
+This contract does not provide arbitrary Bezier curves, masks, perspective, transition graphs, or import of foreign native keyframe formats. Those need explicit adapters with semantic validation.
 
 ## Verification
 
 `overlay-motion.test.ts` covers interpolation, source-time edits, migration, strict inputs, sequence transport, invalidated exports, incremental commands and concurrent inserts. `overlay-render.test.ts` compares real FFmpeg pixels with expected poses, including delayed start and half-open visibility. `tests/e2e/overlay-motion.spec.ts` edits and reloads keyframes through the UI, applies the same contract through MCP, and checks actual browser/server MP4 frames. Fixtures establish editing/rendering behavior, not provider generation quality or competitor parity.
+
+[Video layers](VIDEO-OVERLAYS.md) reuse these same transforms with decoded source frames, source-range trimming and audio. The image-overlay examples below remain historical image-only verification; video-specific evidence is recorded separately.

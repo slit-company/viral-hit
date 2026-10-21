@@ -46,3 +46,16 @@ test('delayed overlays use local fade clocks and minimum envelope when fades ove
     assert.ok(Math.abs(center - overlayOpacityAt(clip, time) * 255) < 5, `fade at ${time}`);
   }
 });
+
+test('video overlay trims its source before compositing and take selection may supply another source in-point',()=>{
+ const document=addOverlayClip(createTimelineDocument({projectId:'video',name:'Video layer'}),{clipId:'v',assetId:'v',sourceUrl:'/v.mp4',name:'Video',sourceType:'video',sourceDuration:3,inPoint:1,startTime:1,duration:2,x:.5,y:.5,width:.5});
+ const clip=document.tracks.flatMap(t=>t.clips)[0];
+ for(const sourceInPoint of [1,0]){
+  const built=buildOverlayFilters({clip,sourceInPoint,inputIndex:1,inputWidth:80,inputHeight:40,width:160,height:90,visualLabel:'0:v',index:1});
+  const raw=execFileSync(ffmpeg,['-v','error','-f','lavfi','-i','color=black:s=160x90:r=10:d=4','-f','lavfi','-i','color=red:s=80x40:r=10:d=1[a];color=blue:s=80x40:r=10:d=1[b];color=lime:s=80x40:r=10:d=1[c];[a][b][c]concat=n=3:v=1:a=0', '-filter_complex',built.filters.join(';'),'-map',`[${built.output}]`,'-frames:v','40','-pix_fmt','rgb24','-f','rawvideo','-'],{maxBuffer:4*1024*1024});
+  const pixel=(time:number)=>[...raw.subarray((time*10*160*90+45*160+80)*3,(time*10*160*90+45*160+80)*3+3)];
+  assert.ok(pixel(.5).every(v=>v<5));assert.ok(pixel(3.5).every(v=>v<5));
+  const channel=sourceInPoint===1?2:0;assert.ok(pixel(1.5)[channel]>220,JSON.stringify(pixel(1.5)));
+  assert.ok(pixel(2.5)[sourceInPoint===1?1:2]>220,JSON.stringify(pixel(2.5)));
+ }
+});

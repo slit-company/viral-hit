@@ -1,3 +1,4 @@
+import type { OverlaySource } from './overlay-schema';
 import type { OverlayMotion } from '@/core/editor/overlay-motion';
 import {
   applySrtToTimeline,
@@ -42,22 +43,7 @@ export type EditorOperation =
       audioRole?: TimelineAudioRole;
       clipId?: string;
     }
-  | {
-      type: 'add_overlay';
-      clipId?: string;
-      assetId: string;
-      sourceUrl: string;
-      name: string;
-      startTime: number;
-      duration: number;
-      x?: number;
-      y?: number;
-      width?: number;
-      opacity?: number;
-      rotation?: number;
-      fadeIn?: number;
-      fadeOut?: number;
-    }
+  | ({ type: 'add_overlay'; sourceUrl: string } & OverlaySource)
   | { type: 'trim_clip'; clipId: string; inPoint: number; outPoint: number }
   | {
       type: 'split_clip';
@@ -237,7 +223,7 @@ export function applyEditorOperations(
         : removeTimelineClip(document, operation.clipId);
     } else if (operation.type === 'update_audio') {
       const clip = findTimelineClip(document, operation.clipId);
-      if (!clip || clip.sourceType !== 'audio') {
+      if (!clip || !['audio', 'video'].includes(clip.sourceType)) {
         throw new ViralHitCommandError('NOT_FOUND', `Audio clip ${operation.clipId} was not found.`);
       }
       next = updateTimelineAudioClip(document, operation.clipId, operation.patch);

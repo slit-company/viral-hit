@@ -1,3 +1,4 @@
+import type { OverlaySource } from '../commands/overlay-schema';
 /**
  * ViralHit's compact timeline contract is derived from OpenReel's MIT-licensed
  * Timeline / Track / Clip model. It deliberately keeps only the fields needed by
@@ -354,21 +355,7 @@ export function addSourceClip(
 
 export function addOverlayClip(
   document: TimelineDocument,
-  source: {
-    assetId: string;
-    sourceUrl?: string;
-    name: string;
-    startTime: number;
-    duration: number;
-    clipId?: string;
-    x?: number;
-    y?: number;
-    width?: number;
-    opacity?: number;
-    rotation?: number;
-    fadeIn?: number;
-    fadeOut?: number;
-  }
+  source: OverlaySource
 ) {
   const track = document.tracks.find((candidate) => candidate.kind === 'overlay');
   if (!track || !source.assetId || !source.sourceUrl) return document;
@@ -376,6 +363,8 @@ export function addOverlayClip(
   const duration = roundTime(finiteNonNegative(source.duration));
   if (duration < 0.04) return document;
   const startTime = roundTime(finiteNonNegative(source.startTime));
+  const inPoint = source.sourceType === 'video' ? source.inPoint ?? 0 : 0;
+  if (source.sourceType === 'video' && (!source.sourceDuration || inPoint < 0 || inPoint + duration > source.sourceDuration)) return document;
   const clamp = (value: number, min: number, max: number) =>
     Math.max(min, Math.min(max, value));
   const overlay: TimelineOverlayTransform = {
@@ -395,12 +384,12 @@ export function addOverlayClip(
     sourceUrl: source.sourceUrl,
     trackId: track.id,
     name: source.name,
-    sourceType: 'image',
+    sourceType: source.sourceType ?? 'image',
     startTime,
     duration,
-    inPoint: 0,
-    outPoint: duration,
-    sourceDuration: duration,
+    inPoint,
+    outPoint: inPoint + duration,
+    sourceDuration: source.sourceType === 'video' ? source.sourceDuration! : duration,
     volume: 1,
     muted: false,
     fadeIn: clamp(source.fadeIn ?? 0, 0, duration),
@@ -494,7 +483,7 @@ export function normalizeTimelineDocument(
   }
   for (const track of parsed.tracks) {
     for (const clip of track.clips) {
-      if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || clip.sourceType !== 'image')) throw new TimelineDocumentValidationError('Motion needs an image overlay.');
+      if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Motion needs a visual overlay.');
       if (clip.trackId !== track.id) {
         throw new TimelineDocumentValidationError(
           'Timeline clip points to a different track.'
@@ -531,7 +520,7 @@ export function normalizeTimelineDocument(
       }
       if (
         (track.kind === 'overlay' &&
-          (clip.sourceType !== 'image' || !clip.overlay)) ||
+          (!['image', 'video'].includes(clip.sourceType) || !clip.overlay)) ||
         (track.kind !== 'overlay' && clip.overlay)
       ) {
         throw new TimelineDocumentValidationError(
@@ -652,7 +641,7 @@ export function replaceTimelineOverlayAsset(
 ) {
   const clip = findTimelineClip(document, clipId);
   if (
-    !clip?.overlay ||
+    !clip?.overlay || clip.sourceType !== 'image' ||
     !isOverlayClip(document, clipId) ||
     !source.assetId ||
     !source.sourceUrl ||
@@ -987,7 +976,7 @@ export function updateTimelineAudioClip(
   patch: Partial<Pick<TimelineClip, 'volume' | 'muted' | 'fadeIn' | 'fadeOut'>>
 ) {
   const clip = findTimelineClip(document, clipId);
-  if (!clip || clip.sourceType !== 'audio') return document;
+  if (!clip || !['audio', 'video'].includes(clip.sourceType)) return document;
   return withUpdatedTracks(
     document,
     document.tracks.map((track) => ({

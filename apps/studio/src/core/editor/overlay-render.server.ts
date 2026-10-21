@@ -26,8 +26,8 @@ export function overlayExpression(clip: TimelineClip, field: keyof TimelineOverl
   return `(${terms.join('+')})`;
 }
 
-export function buildOverlayFilters({ clip, inputIndex, inputWidth, inputHeight, width, height, visualLabel, index }: {
-  clip: TimelineClip; inputIndex: number; inputWidth: number; inputHeight: number;
+export function buildOverlayFilters({ clip, inputIndex, inputWidth, inputHeight, width, height, visualLabel, index, sourceInPoint = clip.inPoint }: {
+  clip: TimelineClip; sourceInPoint?: number; inputIndex: number; inputWidth: number; inputHeight: number;
   width: number; height: number; visualLabel: string; index: number;
 }) {
   if (!clip.overlay || inputWidth <= 0 || inputHeight <= 0) throw Error('Invalid overlay dimensions.');
@@ -41,7 +41,7 @@ export function buildOverlayFilters({ clip, inputIndex, inputWidth, inputHeight,
   const diagonal = Math.ceil(Math.hypot(maxWidth, maxWidth * inputHeight / inputWidth)) + 4;
   if (rotated && diagonal * diagonal > 64 * 1024 * 1024) throw Error('Overlay rotation exceeds the 64-megapixel working canvas. Reduce width or crop the source.');
   const steps = [
-    `trim=duration=${number(clip.duration)}`, 'setpts=PTS-STARTPTS',
+    `trim=start=${number(clip.sourceType === 'video' ? sourceInPoint : 0)}:duration=${number(clip.duration)}`, 'setpts=PTS-STARTPTS',
     `scale=${Math.max(1, Math.round(maxWidth))}:-1`,
     'format=rgba',
   ];

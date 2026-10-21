@@ -1,9 +1,9 @@
 import { timelineOutputFrame } from './output-frame';
-import { overlayTransformAt } from './overlay-motion';
+import { drawImageOverlay } from './overlay-export';
+export { drawImageOverlay } from './overlay-export';
 import { findCaptionAtTime, getResolvedCaptionStyle } from './captions';
 import {
   getTimelineClipSource,
-  overlayOpacityAt,
   type TimelineClip,
   type TimelineDocument,
   type TimelineTrackKind,
@@ -134,7 +134,7 @@ async function loadTimelineMedia(
       if (track.hidden || track.muted) continue;
       for (const clip of track.clips) {
         throwIfAborted(signal);
-        if (clip.sourceType === 'caption') continue;
+        if (clip.sourceType === 'caption' || (track.kind === 'overlay' && clip.muted)) continue;
         const source = getTimelineClipSource(clip);
         const response = await fetch(source.sourceUrl, { signal });
         if (!response.ok) {
@@ -212,30 +212,6 @@ function drawImageWithContain(
     drawWidth,
     drawHeight
   );
-}
-
-export function drawImageOverlay(
-  context: CanvasRenderingContext2D,
-  image: CanvasImageSource,
-  imageWidth: number,
-  imageHeight: number,
-  clip: TimelineClip,
-  timelineTime: number,
-  width: number,
-  height: number
-) {
-  const pose = overlayTransformAt(clip, timelineTime);
-  if (!pose) return;
-  const opacity = overlayOpacityAt(clip, timelineTime);
-  if (opacity <= 0) return;
-  const drawWidth = width * pose.width;
-  const drawHeight = drawWidth * (imageHeight / imageWidth);
-  context.save();
-  context.globalAlpha = opacity;
-  context.translate(width * pose.x, height * pose.y);
-  context.rotate((pose.rotation * Math.PI) / 180);
-  context.drawImage(image, -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
-  context.restore();
 }
 
 export function wrapCaptionText(
@@ -473,11 +449,11 @@ export async function exportTimelineMp4({
       .sort((left, right) => left.clip.startTime - right.clip.startTime);
     const overlayRecords = records
       .filter(
-        (record) => record.trackKind === 'overlay' && record.imageBitmap
+        (record) => record.trackKind === 'overlay' && (record.imageBitmap || record.videoTrack)
       )
       .sort((left, right) => left.trackIndex - right.trackIndex);
     const sinks = new Map(
-      baseVisualRecords
+      [...baseVisualRecords, ...overlayRecords]
         .filter((record) => record.videoTrack)
         .map((record) => [
         record.clip.id,
@@ -521,22 +497,18 @@ export async function exportTimelineMp4({
       }
       for (const overlay of overlayRecords) {
         if (
-          !overlay.imageBitmap ||
           timelineTime < overlay.clip.startTime ||
           timelineTime >= overlay.clip.startTime + overlay.clip.duration
         ) {
           continue;
         }
-        drawImageOverlay(
-          context,
-          overlay.imageBitmap,
-          overlay.imageBitmap.width,
-          overlay.imageBitmap.height,
-          overlay.clip,
-          timelineTime,
-          width,
-          height
-        );
+        const sample = overlay.videoTrack ? await sinks.get(overlay.clip.id)!.getSample(
+          Math.min(overlay.source.outPoint - 0.000001, overlay.source.inPoint + timelineTime - overlay.clip.startTime)) : null;
+        try {
+          const image = overlay.imageBitmap ?? sample?.toCanvasImageSource();
+          if (image) drawImageOverlay(context, image, overlay.imageBitmap?.width ?? overlay.videoTrack!.displayWidth,
+            overlay.imageBitmap?.height ?? overlay.videoTrack!.displayHeight, overlay.clip, timelineTime, width, height);
+        } finally { sample?.close(); }
       }
       const caption = findCaptionAtTime(document, timelineTime);
       if (caption?.text) {

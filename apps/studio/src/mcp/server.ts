@@ -1062,7 +1062,7 @@ export function createViralHitMcpServer() {
   server.registerTool(
     'viral_hit_editor_edit',
     {
-      description: 'Apply incremental timeline operations such as media and image-overlay add/update, trim, split, move, remove, audio updates, Takes, captions, per-caption layout, caption styles, and SRT import.',
+      description: 'Apply incremental timeline operations such as media and image/video-overlay add/update, trim, split, move, remove, audio updates, Takes, captions, per-caption layout, caption styles, and SRT import.',
       inputSchema: commandMetadataSchema.extend({
         projectId: idSchema.optional(),
         operations: z.array(editorOperationSchema).min(1).max(500),

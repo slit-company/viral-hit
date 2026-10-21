@@ -592,7 +592,7 @@
           "video": "動画Clip",
           "audio": "音声Clip",
           "caption": "字幕",
-          "overlay": "画像オーバーレイ"
+          "overlay": "ビジュアルオーバーレイ"
         }
       },
       "captions": {
@@ -643,7 +643,9 @@
         "ease-in-out": "イーズインアウト",
         "cursor": "クリップ時間",
         "animatedHint": "再生位置で変形を調整します。トリミングしても元の動きを維持します。",
-        "staticHint": "キーフレームで位置・サイズ・回転・不透明度を動かします。"
+        "staticHint": "キーフレームで位置・サイズ・回転・不透明度を動かします。",
+        "videoDragLabel": "動画オーバーレイを移動",
+        "audioVolume": "音量"
       },
       "panel": {
         "title": "インスペクター",
@@ -689,7 +691,7 @@
         "videoOnly": "動画ファイルを選択してください。",
         "visualOnly": "画像または動画ファイルを選択してください。",
         "audioOnly": "MP3、WAV、M4A、AAC、またはOGG音声ファイルを選択してください。",
-        "overlayImageOnly": "オーバーレイ用の画像を選択してください。",
+        "overlayImageOnly": "オーバーレイ用の画像または動画を選択してください。",
         "overlayNeedsVisual": "先にベース画像または動画を追加してください。",
         "noVideoTrack": "このファイルには読み取り可能な動画トラックがありません。",
         "noAudioTrack": "このファイルには読み取り可能な音声トラックがありません。",

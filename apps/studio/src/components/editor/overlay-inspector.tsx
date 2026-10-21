@@ -50,6 +50,11 @@ export function OverlayInspector({ clip, time, onEdit, onSeek, locked }: {
         <p className="text-[11px] tabular-nums text-[var(--vh-text-2)]">{t('cursor')} {(cursor - clip.startTime).toFixed(2)}s · {frames.length}/32</p>
       </> : null}
     </div>
+    {clip.sourceType === 'video' && <label className="block text-[11px] text-[var(--vh-text-2)]">
+      {t('audioVolume')} · {Math.round(clip.volume * 100)}%
+      <input type="range" min={0} max={1} step={.01} value={Math.min(1, clip.volume)} className="mt-2 w-full accent-[var(--vh-graph)]"
+        onChange={event => onEdit({ type: 'update_audio', clipId: clip.id, patch: { volume: Number(event.target.value) } })} />
+    </label>}
     {([
       ['x', 0, 1, 0.01, pose.x], ['y', 0, 1, 0.01, pose.y],
       ['width', 0.05, 2, 0.01, pose.width], ['opacity', 0, 1, 0.01, pose.opacity],

@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "id": "picture-in-picture",
+  "version": "1.0.0",
+  "title": "Editable picture in picture",
+  "description": "Layer one project video over another with editable position, size, timing and audio. Useful for tutorials, commentary, presentations or your own fork. Both original videos stay in the project.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "editing",
+  "tags": [
+    "general",
+    "editable",
+    "local"
+  ],
+  "parameters": [
+    {
+      "id": "background",
+      "label": "Background video",
+      "type": "asset",
+      "kind": "video"
+    },
+    {
+      "id": "inset",
+      "label": "Inset video",
+      "type": "asset",
+      "kind": "video"
+    },
+    {
+      "id": "duration",
+      "label": "Duration (seconds)",
+      "type": "number",
+      "default": 3,
+      "min": 0.1,
+      "max": 60
+    },
+    {
+      "id": "inset-start",
+      "label": "Inset source start (seconds)",
+      "type": "number",
+      "default": 0,
+      "min": 0,
+      "max": 3600
+    },
+    {
+      "id": "width",
+      "label": "Inset width",
+      "type": "number",
+      "default": 0.35,
+      "min": 0.05,
+      "max": 1
+    },
+    {
+      "id": "volume",
+      "label": "Inset audio volume",
+      "type": "number",
+      "default": 1,
+      "min": 0,
+      "max": 1
+    }
+  ],
+  "nodes": [
+    {
+      "id": "edit",
+      "operation": "editor.sequence",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "title": "Picture in picture",
+        "assets": {
+          "background": {
+            "assetId": "choose-background",
+            "kind": "video"
+          },
+          "inset": {
+            "assetId": "choose-inset",
+            "kind": "video"
+          }
+        },
+        "tracks": [
+          {
+            "id": "background",
+            "name": "Background",
+            "kind": "video",
+            "clips": [
+              {
+                "id": "background",
+                "type": "media",
+                "source": "background",
+                "startTime": 0,
+                "duration": 3
+              }
+            ]
+          },
+          {
+            "id": "inset",
+            "name": "Inset",
+            "kind": "overlay",
+            "clips": [
+              {
+                "id": "inset",
+                "type": "media",
+                "source": "inset",
+                "startTime": 0,
+                "duration": 3,
+                "inPoint": 0,
+                "volume": 1,
+                "overlay": {
+                  "x": 0.75,
+                  "y": 0.7,
+                  "width": 0.35,
+                  "opacity": 1,
+                  "rotation": 0
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "parameters": [
+        {
+          "parameter": "background",
+          "target": "/assets/background/assetId"
+        },
+        {
+          "parameter": "inset",
+          "target": "/assets/inset/assetId"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/0/clips/0/duration"
+        },
+        {
+          "parameter": "duration",
+          "target": "/tracks/1/clips/0/duration"
+        },
+        {
+          "parameter": "inset-start",
+          "target": "/tracks/1/clips/0/inPoint"
+        },
+        {
+          "parameter": "width",
+          "target": "/tracks/1/clips/0/overlay/width"
+        },
+        {
+          "parameter": "volume",
+          "target": "/tracks/1/clips/0/volume"
+        }
+      ]
+    }
+  ]
+}

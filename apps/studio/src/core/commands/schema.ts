@@ -1,5 +1,5 @@
 import { modelOptionsDraftSchema } from '@/core/generation-providers/model-controls';
-import { setOverlayMotionSchema, updateOverlaySchema } from './overlay-schema';
+import { addOverlaySchema, setOverlayMotionSchema, updateOverlaySchema } from './overlay-schema';
 import { z } from 'zod';
 
 import type { CanvasCard } from '@/core/creative-canvas/canvas-types';
@@ -272,24 +272,7 @@ export const editorOperationSchema = z.discriminatedUnion('type', [
       audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(),
     })
     .strict(),
-  z
-    .object({
-      type: z.literal('add_overlay'),
-      clipId: commandIdSchema,
-      assetId: commandIdSchema,
-      sourceUrl: z.string().trim().max(4096).optional().default(''),
-      name: z.string().trim().min(1).max(240),
-      startTime: finiteTimeSchema,
-      duration: positiveDurationSchema,
-      x: z.number().finite().min(0).max(1).optional(),
-      y: z.number().finite().min(0).max(1).optional(),
-      width: z.number().finite().min(0.05).max(2).optional(),
-      opacity: z.number().finite().min(0).max(1).optional(),
-      rotation: z.number().finite().min(-180).max(180).optional(),
-      fadeIn: finiteTimeSchema.optional(),
-      fadeOut: finiteTimeSchema.optional(),
-    })
-    .strict(),
+  addOverlaySchema,
   z
     .object({
       type: z.literal('trim_clip'),

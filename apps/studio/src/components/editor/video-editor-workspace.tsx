@@ -1,3 +1,5 @@
+import { OverlayMedia } from './overlay-media';
+import { importOverlay } from './import-overlay';
 import { useTimelineFrame } from './use-timeline-frame';
 import { EditorInspectorPanel, useInspectorPanel } from './editor-inspector-panel';
 import { OverlayInspector } from './overlay-inspector';
@@ -850,7 +852,7 @@ export function VideoEditorWorkspace({
   };
 
   const loadOverlayFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
       setError(t('errors.overlayImageOnly'));
       return;
     }
@@ -864,37 +866,14 @@ export function VideoEditorWorkspace({
     setError(null);
     setIsInspecting(true);
     try {
-      const imageBitmap = await createImageBitmap(file);
-      const persistedAsset = await uploadLocalProjectAsset({
-        projectId,
-        file,
-        width: imageBitmap.width,
-        height: imageBitmap.height,
-      });
-      imageBitmap.close();
-      const duration = Math.min(3, document.duration);
-      const startTime = Math.max(0, document.duration - duration);
-      const nextDocument = applyEditorOperations(document, [
-        {
-          type: 'add_overlay',
-          assetId: persistedAsset.id,
-          sourceUrl: persistedAsset.publicUrl,
-          name: file.name,
-          startTime,
-          duration,
-          x: 0.5,
-          y: 0.25,
-          width: 0.7,
-          opacity: 1,
-          fadeIn: Math.min(0.6, duration),
-        },
-      ]).document;
+      const operation = await importOverlay(projectId, file, document.duration);
+      const nextDocument = applyEditorOperations(document, [operation]).document;
       const nextClip = nextDocument.tracks
         .find((track) => track.kind === 'overlay')
-        ?.clips.find((clip) => clip.assetId === persistedAsset.id);
+        ?.clips.find((clip) => clip.assetId === operation.assetId);
       commitDocument(nextDocument);
       setSelectedClipId(nextClip?.id ?? null);
-      setTimelineCursorTime(startTime);
+      setTimelineCursorTime(operation.startTime);
       setIsPlaying(false);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : t('errors.inspectFailed'));
@@ -1547,7 +1526,7 @@ export function VideoEditorWorkspace({
       <input
         ref={overlayInputRef}
         type="file"
-        accept="image/png,image/jpeg,image/webp,image/avif,image/*"
+        accept="image/*,video/*"
         className="hidden"
         onChange={handleOverlayInput}
       />
@@ -1927,7 +1906,7 @@ export function VideoEditorWorkspace({
                     key={overlay.id}
                     disabled={document.tracks.some(track => track.id === overlay.trackId && track.locked)}
                     type="button"
-                    aria-label={`${t('overlay.dragLabel')}: ${overlay.name}`}
+                    aria-label={`${t(overlay.sourceType === 'video' ? 'overlay.videoDragLabel' : 'overlay.dragLabel')}: ${overlay.name}`}
                     title={t('overlay.dragHint')}
                     onPointerDown={(event) => startOverlayDrag(event, overlay)}
                     onPointerMove={moveOverlayDrag}
@@ -1947,12 +1926,7 @@ export function VideoEditorWorkspace({
                       transform: `translate(-50%, -50%) rotate(${pose.rotation}deg)`,
                     }}
                   >
-                    <img
-                      src={getTimelineClipSource(overlay).sourceUrl}
-                      alt=""
-                      draggable={false}
-                      className="block h-auto w-full select-none"
-                    />
+                    <OverlayMedia clip={overlay} time={timelineCurrentTime} playing={isPlaying} />
                     {selected ? (
                       <span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border border-[var(--vh-border)] bg-[var(--vh-surface)]/92 px-2 py-1 text-[9px] font-[560] text-[var(--vh-text-2)] shadow-lg backdrop-blur-md">
                         {t('overlay.dragHint')}

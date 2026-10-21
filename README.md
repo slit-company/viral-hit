@@ -89,3 +89,5 @@ Manage optional YouTube and Instagram connections from the workspace header or `
 Share recipes, skills and character reference images together through **Packs**. [Creative packs](docs/CREATIVE-PACKS.md) support both general toolkits and specialized setups, with reviewed installation and portable files.
 
 Discover independently authored skills and packs through [Community catalogs](docs/COMMUNITY.md). General and specialized entries use the same reviewed, checksum-pinned handoff; creators host their own JSON lists.
+
+[Video overlays](docs/VIDEO-OVERLAYS.md) add moving, editable layers with source-range trimming, keyframes and audio volume. Import an image or video through Overlay, or fork the general `picture-in-picture` recipe for tutorials, commentary and other compositions. Browser and server exports use the same timeline contract.

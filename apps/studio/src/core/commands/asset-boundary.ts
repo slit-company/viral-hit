@@ -139,7 +139,7 @@ export async function normalizeCommandAssetReferences({
           const asset = await loadCommandAsset({
             projectId,
             assetId: operation.assetId,
-            expectedType: 'image',
+            expectedType: operation.sourceType ?? 'image',
           });
           return { ...operation, sourceUrl: asset.publicUrl };
         }

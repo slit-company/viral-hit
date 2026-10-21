@@ -71,3 +71,5 @@ The Skills lifecycle views reuse SEED Action, the shared dialog and light surfac
 
 
 The storyboard workspace reuses SEED Action, SEED TextField, the shared NativeSelect and ProductShell, plus the existing recipe parameter/asset form and Runs dialog. Feature-local components own plan, shot and review layout. This is SEED-based adaptation and shared token/control reuse, not a claim that the entire page was copied from SEED. Desktop (1440×960) and mobile (390×844) review captures include actual selected video ranges, long titles and saved/draft state.
+
+Video layers reuse the existing Overlay import action, shared inspector and native range controls. The inspector identifies the clip as a visual overlay and exposes audio volume only for video. Native video preview lives inside the existing selectable/draggable layer control; no alternate button, dialog or theme is introduced. Mobile uses the same SEED inspector dialog and scrollable controls.

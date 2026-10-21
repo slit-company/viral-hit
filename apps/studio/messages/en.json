@@ -592,7 +592,7 @@
           "video": "Video clip",
           "audio": "Audio clip",
           "caption": "Caption",
-          "overlay": "Image overlay"
+          "overlay": "Visual overlay"
         }
       },
       "captions": {
@@ -643,7 +643,9 @@
         "ease-in-out": "Ease in and out",
         "cursor": "Clip time",
         "animatedHint": "Adjust a pose at the playhead. Trimming keeps the original motion.",
-        "staticHint": "Add keyframes to animate position, size, rotation and opacity."
+        "staticHint": "Add keyframes to animate position, size, rotation and opacity.",
+        "videoDragLabel": "Move video overlay",
+        "audioVolume": "Audio volume"
       },
       "panel": {
         "title": "Inspector",
@@ -689,7 +691,7 @@
         "videoOnly": "Choose a video file.",
         "visualOnly": "Choose an image or video file.",
         "audioOnly": "Choose an MP3, WAV, M4A, AAC, or OGG audio file.",
-        "overlayImageOnly": "Choose an image for the overlay.",
+        "overlayImageOnly": "Choose an image or video for the overlay.",
         "overlayNeedsVisual": "Add a base image or video before adding an overlay.",
         "noVideoTrack": "This file does not contain a readable video track.",
         "noAudioTrack": "This file does not contain a readable audio track.",

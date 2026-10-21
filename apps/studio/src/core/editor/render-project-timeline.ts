@@ -257,7 +257,7 @@ async function buildFfmpegArgs({
     overlayIndex += 1;
     const overlay = buildOverlayFilters({ clip: input.clip, inputIndex: input.inputIndex,
       inputWidth: input.probe.width ?? 1, inputHeight: input.probe.height ?? 1,
-      width, height, visualLabel, index: overlayIndex });
+      width, height, visualLabel, index: overlayIndex, sourceInPoint: input.source.inPoint });
     filters.push(...overlay.filters);
     visualLabel = overlay.output;
   }

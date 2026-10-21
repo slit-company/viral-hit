@@ -82,7 +82,7 @@ test('version 5 migration preserves overlays and captions without inventing anim
   assert.equal(findTimelineClip(migrated, 'overlay')!.motion, undefined);
 });
 
-test('portable sequences carry animation only on image overlay tracks', () => {
+test('portable sequences carry image animation on overlay tracks', () => {
   const { motion } = fixture();
   const raw = { schemaVersion: 1, title: 'Animated mark', assets: { image: { assetId: 'image', kind: 'image' } }, tracks: [{ id: 'overlay', kind: 'overlay', name: 'Mark', clips: [{ id: 'mark', type: 'media', source: 'image', startTime: 0, duration: 4, motion }] }] };
   const sequence = sequenceSchema.parse(raw);
