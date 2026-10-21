@@ -174,3 +174,8 @@ The final production build has **203 public files / 8,604,730 bytes** and **2,03
 ## Installed-model requirements — 2026-10-22
 
 The final production build contains **203 public files / 8,605,280 bytes** and **2,037,049 raw JavaScript / 599,183 summed gzip bytes**: **265 gzip bytes** above model recipe authoring. The unchanged 10 MB/600 KB budgets pass. Model metadata is indexed once per inspection; the report does not load project media or import executable provider modules. Shared result rendering replaces the prior inline native-only report. No dependency, database schema, worker or polling loop was added. These are bundle and implementation-boundary observations, not a latency/whole-host resource benchmark or a live model comparison.
+
+
+## Typed upstream model controls — 2026-10-22
+
+Production output remains **203 public files / 8,605,280 bytes**, **2,037,049 raw JavaScript / 599,183 summed gzip bytes**: no browser bundle increase. The unchanged 10 MB/600 KB gates pass. Placeholder preparation is bounded by existing recipe/model metadata limits and runs in the server admission/inspection path. No dependency, migration, execution queue, background service or inference model was added. The optional measured-calibration recipe reuses FFprobe and the existing short procedural tone provider. Actual two-second production media/export and restart passed; this is not a whole-host memory, concurrency, long-project or competitor benchmark.

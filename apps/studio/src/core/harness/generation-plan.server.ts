@@ -2,7 +2,8 @@ import { installGenerationProviders } from '../generation-providers/installed/in
 import { findGenerationModelBinding } from '../generation-providers/catalog';
 import { getGenerationProvider } from '../generation-providers/registry';
 import { getGenerationModelDescriptor } from '../generation-providers/model-catalog';
-import { resolveModelOptions } from '../generation-providers/model-controls';
+import { prepareBoundModelOptions } from './bound-model-options';
+import { inspectModelRequirements } from './model-requirements.server';
 import { preflightAssetFirstGeneration } from '../generation-providers/submit';
 import { MAX_PROVIDER_MEDIA_BYTES, MAX_PROVIDER_TOTAL_MEDIA_BYTES } from '../generation-providers/local-reference';
 import { generationModelInput, generationRequest, type GenerationModelInput } from './generation-contract';
@@ -37,15 +38,20 @@ export async function pinGenerationModels(plan: Plan, signal = AbortSignal.timeo
     if (input.runtime || input.pins) throw Error('Generation runtime was already pinned');
     const current = generationModelRuntime(input.modelId);
     if (current.descriptor.kind !== input.mode) throw Error('Generation model kind does not match the recipe');
-    input.runtime = { projectId: plan.projectId, providerId: current.found.providerId, effectId: current.found.binding.effectId, digest: current.digest };
-    if (current.found.binding.controls || input.parameters.provider_options !== undefined)
-      input.parameters.provider_options = resolveModelOptions(current.found.binding.controls, input.parameters.provider_options);
-    input.pins = [];
     for (const binding of node.bindings ?? []) {
       const parts = pointerParts(binding.target);
       if (binding.target === '/prompt' || (parts[0] === 'parameters' && parts.length > 1)) continue;
       if (parts.length !== 3 || parts[0] !== 'references' || parts[2] !== 'assetId' || !/^(0|[1-9]\d*)$/.test(parts[1]) || !input.references[Number(parts[1])]) throw Error('Generation bindings may change prompt, option values or an explicit reference assetId only');
     }
+    if (current.found.binding.controls || input.parameters.provider_options !== undefined)
+      input.parameters.provider_options = prepareBoundModelOptions(current.found.binding.controls, input.parameters.provider_options, node.bindings ?? []);
+    if (node.bindings?.length) {
+      const requirements = inspectModelRequirements({ projectId: plan.projectId, nodes: [{ ...node, input: input as Json }] });
+      const issue = requirements.issues.find(issue => issue.severity === 'issue');
+      if (issue) throw Error(`Invalid generation step ${node.id}: ${issue.message}`);
+    }
+    input.runtime = { projectId: plan.projectId, providerId: current.found.providerId, effectId: current.found.binding.effectId, digest: current.digest };
+    input.pins = [];
     for (const [index, reference] of input.references.entries()) {
       const bindings = (node.bindings ?? []).filter(binding => binding.target === `/references/${index}/assetId`);
       if (bindings.length) {

@@ -59,3 +59,30 @@ test('a specialized multi-model recipe keeps source bindings and rejects forged 
   expect((await (await request.get(`/api/app/projects/${projectId}/runs`)).json()).runs).toHaveLength(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
+
+
+test('independent upstream model controls pass review and queue while fixed invalid controls are rejected',async({page,request})=>{
+  const recipe=JSON.parse(await readFile('../../examples/provider-recipes/calibration-card.json','utf8'));
+  recipe.id='bound-options-'+Date.now();recipe.title='Independently bound model controls';recipe.nodes=recipe.nodes.slice(0,2);
+  const sound=recipe.nodes[1];sound.dependsOn=['image'];sound.input.parameters.provider_options.frequency=0;
+  sound.bindings=[{node:'image',pointer:'/width',target:'/parameters/provider_options/frequency'}];
+  const inspected=await(await request.post('/api/app/recipes',{headers,data:{action:'inspect',manifest:recipe}})).json();
+  expect(inspected.modelRequirements.status).toBe('checked');
+  expect((await request.post('/api/app/recipes',{headers,data:{action:'install',manifest:recipe,expectedDigest:inspected.digest}})).ok()).toBe(true);
+  const projectId=(await(await request.post('/api/app/projects',{headers,data:{name:'Typed upstream controls'}})).json()).id;
+  await page.goto('/studio/'+projectId);await page.getByRole('button',{name:'Generation runs'}).click();await page.getByLabel('Creative recipe',{exact:true}).selectOption(recipe.id);
+  await page.getByRole('button',{name:'Check requirements',exact:true}).click();
+  await expect(page.getByRole('status',{name:'Server check result'}).getByText('Server check: no reported issues',{exact:true})).toBeVisible();
+  const pending=page.waitForResponse(r=>r.url().endsWith(`/projects/${projectId}/runs`)&&r.request().method()==='POST');
+  await page.getByRole('button',{name:'Queue generation',exact:true}).click();const response=await pending;expect(response.status()).toBe(202);
+  const admitted=response.request().postDataJSON(),{runId}=await response.json();
+  const replay=await mcp(request,projectId,admitted);expect(replay.isError).not.toBe(true);expect(replay.structuredContent.result.runId).toBe(runId);
+  const state=await(await request.get(`/api/app/projects/${projectId}/runs`)).json(),job=state.runs[0].jobs.find((j:{node_id:string})=>j.node_id==='sound');
+  expect(JSON.parse(job.input_json).parameters.provider_options.frequency).toBe(330);
+  expect(JSON.parse(job.bindings_json)).toContainEqual(sound.bindings[0]);
+  const bad=structuredClone(recipe.nodes);bad[1].input.parameters.provider_options.seconds=0;
+  const rejected=await request.post(`/api/app/projects/${projectId}/runs`,{headers,data:{action:'enqueue',requestKey:'bad-fixed-options',nodes:bad.map(({parameters,...node}:{parameters:unknown})=>node)}});
+  expect(rejected.status()).toBe(409);expect((await rejected.json()).error).toMatch(/Length|option/);
+  expect((await(await request.get(`/api/app/projects/${projectId}/runs`)).json()).runs).toHaveLength(1);
+  expect((await(await request.get(`/api/app/projects/${projectId}/generations`)).json()).items).toHaveLength(0);
+});

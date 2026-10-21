@@ -33,6 +33,34 @@ To condition a second model on the first model's output, declare the second node
 
 Bindings may change `/prompt`, individual paths under `/parameters`, and declared reference asset IDs. They cannot change model identity, mode, output selection, reference roles/kinds or runtime pins. Input counts and resolved values are validated again before submission. Dynamic values that cannot be validated before their dependencies finish are not evidence that the whole recipe is valid at queue time.
 
+### Pass typed analysis or adapter outputs into model controls
+
+A binding can target a declared control such as `/parameters/provider_options/seconds`, or replace the entire `/parameters/provider_options` object. Keep an explicit placeholder at that target and name the producer in `dependsOn`. For example:
+
+```json
+{
+  "dependsOn": ["measure"],
+  "input": {
+    "schemaVersion": 1,
+    "mode": "audio",
+    "modelId": "procedural-sound",
+    "prompt": "Calibration tone",
+    "parameters": { "provider_options": { "seconds": 0, "frequency": 440 } }
+  },
+  "bindings": [{
+    "node": "measure",
+    "pointer": "/report/observations/0/end",
+    "target": "/parameters/provider_options/seconds"
+  }]
+}
+```
+
+Only explicitly bound control values are deferred. Admission records their declared defaults as inert placeholders, while still checking fixed values such as `frequency`, model aspects and source counts. A whole-map binding can use `null` as its placeholder. Unknown individual control names, nested control members, missing slots and overlapping targets are rejected; bindings cannot add undeclared model controls. Inspection and admission share this rule.
+
+The worker resolves typed JSON without string/number coercion, persists the resolved input and validates it before allocating the downstream generation intent. An invalid upstream value fails that step without calling its model; completed upstream results remain available. Reopening/replaying the same admitted run retains its original result rather than creating another generation. A separately authored adapter can supply the whole option map; it still must fit the receiving model's installed contract.
+
+[Measured calibration](../examples/provider-recipes/measured-calibration.json) is a portable example: video analysis supplies a numeric duration to a tone model and to separately editable video/audio clips. Install the optional `media-inspector` and `procedural-audio` providers and FFmpeg/FFprobe. This example accepts 0.1–10-second source videos because the tone model declares that duration range. It measures media and synthesizes a calibration tone; it does not generate semantic music. Authors can substitute compatible models, report pointers and recipes without application changes.
+
 Successful media steps return `generationId`, `assetId`, `projectId`, `kind`, SHA-256, byte size, public URL and measured media dimensions/duration. `outputIndex` selects one of the ordered retained output assets, excluding thumbnails. The worker verifies bytes and probes the real format before marking the job successful; it updates derived measurements without replacing the original asset. The result feeds `editor.sequence`, an installed adapter's declared media input, storyboard result acceptance, or an explicit timeline attachment/take. Those actions retain existing revision checks.
 
 Analysis steps return `generationId`, `kind: "analysis"`, `text` and an optional validated structured `report`. Bind `/text` into a downstream prompt or a compatible adapter input. Reports do not expose media attachment/take actions and cannot masquerade as materialized assets. Analysis has one report output (`outputIndex: 0`). Normal generation history still retains the report and original references for storyboard preparation.

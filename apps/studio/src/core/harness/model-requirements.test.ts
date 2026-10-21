@@ -94,3 +94,19 @@ test('CLI preflight returns actionable issues with exit code 2 and never allocat
   assert.equal(cli.status,2,cli.stderr);const result=JSON.parse(cli.stdout);assert.equal(result.models[0].modelId,'external-model');assert.equal(result.models[0].status,'missing');
   assert.equal(existsSync(process.env.VIRAL_HIT_DATA_DIR!),false);
 });
+
+
+test('option binding inspection agrees on declared slots and preserves fixed controls', () => {
+  for (const [options,target,expected] of [
+    [{seconds:0,frequency:440},'/parameters/provider_options/seconds','checked'],
+    [null,'/parameters/provider_options','checked'],
+    [{seconds:0,frequency:20},'/parameters/provider_options/seconds','issues'],
+    [{missing:0},'/parameters/provider_options/missing','issues'],
+    [{seconds:{value:0}},'/parameters/provider_options/seconds/value','issues'],
+    [{},'/parameters/provider_options/seconds','issues'],
+  ] as [Json,string,string][]) {
+    const dynamic=plan('procedural-sound',{mode:'audio',parameters:{provider_options:options}});
+    dynamic.nodes[0].bindings=[{node:'source',pointer:'/value',target}];
+    assert.equal(inspectModelRequirements(dynamic).status,expected,JSON.stringify(dynamic));
+  }
+});

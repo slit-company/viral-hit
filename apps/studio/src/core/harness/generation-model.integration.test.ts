@@ -228,3 +228,77 @@ test('an independently authored model recipe installs, compiles and executes thr
   assert.equal((await loadProjectTimeline(project.id))!.document.tracks[0].clips[0].assetId,output.assetId);
  } finally {h.close();}
 });
+
+test('analysis measurements drive a model option after restart without validating or executing its placeholder', async () => {
+ const project=await createProject({name:'Measured audio length'}),asset=await importLocalProjectAsset({projectId:project.id,filePath:video});
+ const recipe=JSON.parse(await readFile('../../examples/provider-recipes/measured-calibration.json','utf8'));
+ const {inspectRecipe,installRecipe}=await import('./recipe-library');
+ const review=await inspectRecipe(recipe);assert.equal(review.modelRequirements?.status,'checked');
+ await installRecipe(recipe,review.digest);
+ const raw=compileRecipe(recipe,{source:asset.id,frequency:440},project.id);
+ const original=JSON.stringify(raw),pinned=await pinRuntimePlan(raw),file=join(directory,project.id+'.sqlite');
+ assert.equal(JSON.stringify(raw),original);let h=new DurableHarness(file,()=>now);
+ try{
+  const run=h.enqueue(pinned,'measured-options');
+  for(let i=0;i<8 && h.jobs(run)[0].state!=='succeeded';i++){now+=25000;await h.step(run,adapters);}
+  assert.equal(h.jobs(run)[0].state,'succeeded');assert.equal((await listProjectGenerations(project.id)).length,1);
+  h.close();h=new DurableHarness(file,()=>now);await finish(h,run);
+  const sound=h.jobs(run).find(job=>job.node_id==='sound')!;assert.equal(sound.state,'succeeded');assert.equal(sound.attempts,1);
+  const input=JSON.parse(sound.execution_input_json!);assert.equal(input.parameters.provider_options.seconds,.5);assert.equal(input.parameters.provider_options.frequency,440);
+  assert.equal(JSON.parse(sound.output_json!).durationMs,500);assert.equal((await listProjectGenerations(project.id)).length,2);
+  const edit=h.jobs(run).find(job=>job.node_id==='edit')!;assert.equal(edit.state,'succeeded');
+  assert.equal((await attachRunResult(h,project.id,run,edit.id,0)).ok,true);
+  const timeline=await loadProjectTimeline(project.id);assert.ok(timeline);
+  assert.deepEqual(timeline.document.tracks.flatMap(track=>track.clips).map(clip=>[clip.sourceType,clip.duration]),[['video',.5],['audio',.5]]);
+  h.close();h=new DurableHarness(file,()=>now);
+  assert.equal(h.enqueue(await pinRuntimePlan(raw),'measured-options'),run);await finish(h,run);assert.equal((await listProjectGenerations(project.id)).length,2);
+  assert.deepEqual(await loadProjectTimeline(project.id),timeline);assert.equal(h.jobs(run).every(job=>job.attempts===1),true);
+ }finally{h.close();}
+});
+
+test('an invalid resolved option fails before reserving an intent or calling the downstream model',async()=>{
+ const project=await createProject({name:'Invalid measured option'}),asset=await importLocalProjectAsset({projectId:project.id,filePath:video});
+ const raw: Plan={projectId:project.id,nodes:[
+  {id:'measure',operation:'generation.model',version:'1',input:{schemaVersion:1,mode:'analysis',modelId:'technical-video-review',prompt:'Measure',references:[{assetId:asset.id,kind:'video'}],parameters:{}}},
+  {id:'sound',operation:'generation.model',version:'1',dependsOn:['measure'],input:{schemaVersion:1,mode:'audio',modelId:'procedural-sound',prompt:'Reject string length',parameters:{provider_options:{seconds:0}}},bindings:[{node:'measure',pointer:'/text',target:'/parameters/provider_options/seconds'}]},
+ ]};
+ const h=new DurableHarness(join(directory,project.id+'.sqlite'),()=>now);
+ try{
+  const run=h.enqueue(await pinRuntimePlan(raw),'invalid-options');await finish(h,run);
+  const sound=h.jobs(run).find(job=>job.node_id==='sound')!;assert.equal(sound.state,'failed');assert.match(sound.error!,/Length|option/);
+  assert.equal((await listProjectGenerations(project.id)).length,1);
+  assert.equal(await findGenerationIntentReceipt({projectId:project.id,intentId:modelGenerationIntentId(project.id,sound.idempotency_key)}),null);
+ }finally{h.close();}
+});
+
+test('an unrelated upstream binding cannot defer fixed invalid model settings or reference counts',async()=>{
+ const project=await createProject({name:'Fixed settings before enqueue'});
+ const make=(parameters:Json,mode='image',modelId='procedural-gradient'):Plan=>({projectId:project.id,nodes:[{...node('upstream','procedural-gradient'),id:'prior'},{id:'next',operation:'generation.model',version:'1',dependsOn:['prior'],input:{schemaVersion:1,mode,modelId,prompt:'',parameters},bindings:[{node:'prior',pointer:'/text',target:'/prompt'}]}]});
+ await assert.rejects(pinRuntimePlan(make({aspect_ratio:'2:3'})),/aspect_ratio|aspect ratio/);
+ await assert.rejects(pinRuntimePlan(make({},'analysis','technical-video-review')),/references|source/);
+ assert.equal((await listProjectGenerations(project.id)).length,0);
+});
+
+
+test('a whole option object is bound without coercion and checked before downstream intent allocation',async()=>{
+ const cases:Record<string,Json>[]=[{seconds:.25,frequency:660},{seconds:'0.25',frequency:660},{seconds:.25,unknown:true}];
+ for(const options of cases){
+  const project=await createProject({name:'Independent configuration object'});
+  const raw:Plan={projectId:project.id,nodes:[
+   {id:'config',operation:'test.options',version:'1',input:{}},
+   {id:'sound',operation:'generation.model',version:'1',dependsOn:['config'],input:{schemaVersion:1,mode:'audio',modelId:'procedural-sound',prompt:'Configured tone',parameters:{provider_options:null}},bindings:[{node:'config',pointer:'/options',target:'/parameters/provider_options'}]},
+  ]};
+  // An isolated upstream adapter supplies typed data; the downstream audio provider is real.
+  const config:Adapter={recovery:'replay',async submit(){return{id:'config'};},async poll(){return{state:'succeeded',output:{options}};}};
+  const h=new DurableHarness(join(directory,project.id+'.sqlite'),()=>now);
+  try{
+   const run=h.enqueue(await pinRuntimePlan(raw),'whole-map');await finish(h,run,{...adapters,'test.options':config});
+   const job=h.jobs(run).find(job=>job.node_id==='sound')!;
+   assert.deepEqual(JSON.parse(job.execution_input_json!).parameters.provider_options,options);
+   const valid=typeof options.seconds==='number'&&!('unknown' in options);
+   assert.equal(job.state,valid?'succeeded':'failed');assert.equal((await listProjectGenerations(project.id)).length,valid?1:0);
+   if(valid)assert.equal(JSON.parse(job.output_json!).durationMs,250);
+   else assert.equal(await findGenerationIntentReceipt({projectId:project.id,intentId:modelGenerationIntentId(project.id,job.idempotency_key)}),null);
+  }finally{h.close();}
+ }
+});

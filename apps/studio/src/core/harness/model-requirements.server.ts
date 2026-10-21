@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { listModelRecipeModels } from './model-recipe.server';
 import { listGenerationModelDescriptors } from '../generation-providers/model-catalog';
-import { resolveModelOptions } from '../generation-providers/model-controls';
+import { prepareBoundModelOptions } from './bound-model-options';
 import { validateReferenceCounts } from '../generation-providers/reference-inputs';
 import { getWorkspaceEffectRegistryEntry } from '../effects/effect-registry';
 import { getGenerationPromptMaxChars } from '../effects/validation';
@@ -65,14 +65,10 @@ export function inspectModelRequirements(plan: Plan, deferredInputs: Record<stri
     if (input.references.length) add('deferred', 'Project source ownership, distinct files, size and content integrity are verified at admission/execution.', '/references');
     const descriptor = descriptors.get(model.id)!;
     const options = input.parameters.provider_options;
-    const optionsDeferred = [...missing, ...upstream].some(parts => overlaps(parts, ['parameters', 'provider_options']) && parts.length <= 2);
-    if (optionsDeferred) add('deferred', 'Model options will be checked when they resolve.', '/parameters/provider_options');
-    else if (options !== undefined && (!options || typeof options !== 'object' || Array.isArray(options))) add('issue', 'Model options must be an object.', '/parameters/provider_options');
-    else {
-      const fixed = { ...(options as Record<string, unknown> | undefined) };
-      for (const key of Object.keys(fixed)) if (deferred('/parameters/provider_options/' + key)) { const control = descriptor.controls?.find(control => control.key === key); if (control) fixed[key] = control.default; add('deferred', 'Model option will be checked when its value resolves.', '/parameters/provider_options/' + key); }
-      try { resolveModelOptions(descriptor.controls, fixed); } catch (error) { add('issue', error instanceof z.ZodError ? 'Model options do not match the declared types.' : (error as Error).message, '/parameters/provider_options'); }
-    }
+    const optionTargets = [...missing, ...upstream].filter(parts => parts[0] === 'parameters' && parts[1] === 'provider_options');
+    for (const parts of optionTargets) add('deferred', 'Model option will be checked when its value resolves.', '/' + parts.join('/'));
+    try { prepareBoundModelOptions(descriptor.controls, options, optionTargets.map(parts => ({ target: '/' + parts.join('/'), node: step.id, pointer: '' }))); }
+    catch (error) { add('issue', error instanceof z.ZodError ? 'Model options do not match the declared types.' : (error as Error).message, '/parameters/provider_options'); }
     const entry = getWorkspaceEffectRegistryEntry(model.id);
     for (const [key, choices] of [['aspect_ratio', entry?.supportedAspectRatios], ['wmDuration', entry?.supportedDurations]] as const) attempt('/parameters/' + key, () => {
       const value = input.parameters[key];

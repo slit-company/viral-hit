@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "version": "1.0.0",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "category": "creation",
+  "tags": [
+    "specialized",
+    "installed-models",
+    "calibration"
+  ],
+  "id": "measured-calibration-track",
+  "title": "Match a calibration tone to a video",
+  "description": "Measure a project video, generate a matching calibration tone, then prepare separately editable video/audio tracks. Requires media-inspector, procedural-audio and FFmpeg/FFprobe. Sources must be 0.1\u201310 seconds. This is technical processing, not AI music composition.",
+  "parameters": [
+    {
+      "id": "source",
+      "label": "Source video",
+      "type": "asset",
+      "kind": "video"
+    },
+    {
+      "id": "frequency",
+      "label": "Tone frequency",
+      "type": "number",
+      "min": 80,
+      "max": 2000,
+      "default": 440
+    }
+  ],
+  "nodes": [
+    {
+      "id": "measure",
+      "operation": "generation.model",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "mode": "analysis",
+        "modelId": "technical-video-review",
+        "prompt": "Measure source duration",
+        "references": [
+          {
+            "assetId": "source",
+            "kind": "video",
+            "role": "source"
+          }
+        ],
+        "parameters": {}
+      },
+      "parameters": [
+        {
+          "parameter": "source",
+          "target": "/references/0/assetId"
+        }
+      ]
+    },
+    {
+      "id": "sound",
+      "operation": "generation.model",
+      "version": "1",
+      "input": {
+        "schemaVersion": 1,
+        "mode": "audio",
+        "modelId": "procedural-sound",
+        "prompt": "Calibration tone",
+        "parameters": {
+          "provider_options": {
+            "seconds": 0,
+            "frequency": 440,
+            "wave": "sine"
+          }
+        }
+      },
+      "dependsOn": [
+        "measure"
+      ],
+      "parameters": [
+        {
+          "parameter": "frequency",
+          "target": "/parameters/provider_options/frequency"
+        }
+      ],
+      "bindings": [
+        {
+          "node": "measure",
+          "pointer": "/report/observations/0/end",
+          "target": "/parameters/provider_options/seconds"
+        }
+      ]
+    },
+    {
+      "id": "edit",
+      "operation": "editor.sequence",
+      "version": "1",
+      "dependsOn": [
+        "measure",
+        "sound"
+      ],
+      "input": {
+        "schemaVersion": 1,
+        "title": "Measured calibration track",
+        "assets": {
+          "visual": {
+            "assetId": "source",
+            "kind": "video"
+          },
+          "sound": {
+            "assetId": "upstream",
+            "kind": "audio"
+          }
+        },
+        "tracks": [
+          {
+            "id": "visual",
+            "name": "Visual",
+            "kind": "video",
+            "clips": [
+              {
+                "id": "frame",
+                "type": "media",
+                "source": "visual",
+                "startTime": 0,
+                "duration": 1
+              }
+            ]
+          },
+          {
+            "id": "sound",
+            "name": "Calibration sound",
+            "kind": "audio",
+            "clips": [
+              {
+                "id": "tone",
+                "type": "media",
+                "source": "sound",
+                "startTime": 0,
+                "duration": 1
+              }
+            ]
+          }
+        ]
+      },
+      "bindings": [
+        {
+          "node": "sound",
+          "pointer": "/assetId",
+          "target": "/assets/sound/assetId"
+        },
+        {
+          "node": "measure",
+          "pointer": "/report/observations/0/end",
+          "target": "/tracks/0/clips/0/duration"
+        },
+        {
+          "node": "measure",
+          "pointer": "/report/observations/0/end",
+          "target": "/tracks/1/clips/0/duration"
+        }
+      ],
+      "parameters": [
+        {
+          "parameter": "source",
+          "target": "/assets/visual/assetId"
+        }
+      ]
+    }
+  ]
+}
