@@ -1,3 +1,5 @@
+import { modelOptionValuesSchema, type ModelOptionsDraft } from '../generation-providers/model-controls';
+import type { VideoAnalysisDepth } from './video-analysis';
 import { localReferencePlaybackUrl } from '../generation-providers/local-reference';
 import { desc, eq } from 'drizzle-orm';
 
@@ -32,6 +34,8 @@ export type ProjectGenerationItem = {
   referenceImages: string[];
   referenceVideos: string[];
   referenceAudios: string[];
+  analysisDepth?: VideoAnalysisDepth;
+  modelOptions?: ModelOptionsDraft;
   error: string | null;
   createdAt: string;
 };
@@ -116,7 +120,10 @@ export const toProjectGenerationItem = (
       ? row.createdAt.toISOString()
       : new Date(row.createdAt).toISOString();
 
+  const options = modelOptionValuesSchema.safeParse(input?.provider_options);
   return {
+    ...(recordedModelId && options.success ? { modelOptions: { modelId: recordedModelId, values: options.data } } : {}),
+    ...(isAnalysis && (input?.analysis_depth === 'standard' || input?.analysis_depth === 'deep') ? { analysisDepth: input.analysis_depth } : {}),
     id: row.id,
     status: row.status as GenerationStatus,
     prompt: row.submittedPrompt,

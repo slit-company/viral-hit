@@ -71,12 +71,8 @@ export function applyStudioHistoryItem({
   if (item.mediaType === 'analysis') {
     return {
       media: 'analysis',
-      draft: createStudioDraftCard({
-        type: 'image',
-        model: imageModels[0] ?? null,
-        prompt: item.prompt ?? '',
-      }),
-      referenceUrls: item.referenceVideos,
+      draft: { ...createStudioDraftCard({ type: 'video', model: null, prompt: item.prompt ?? '' }), generationMode: 'analysis', modelId: item.modelId ?? 'video-analysis', analysisDepth: item.analysisDepth, modelOptions: item.modelOptions },
+      referenceUrls: [...item.referenceImages, ...item.referenceVideos, ...(item.referenceAudios ?? [])],
     };
   }
 
@@ -110,7 +106,7 @@ export function applyStudioHistoryItem({
 
   return {
     media,
-    draft: nextDraft,
+    draft: { ...nextDraft, ...(item.modelOptions ? { modelOptions: item.modelOptions } : {}) },
     referenceUrls: item.referenceImages,
   };
 }

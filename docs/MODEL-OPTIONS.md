@@ -45,7 +45,7 @@ The optional [technical inspector](../examples/providers/media-inspector/README.
 
 ## Browser authoring and persistence
 
-Canvas offers **Model options** for installed image, video and analysis models that declare controls. Studio offers the same form for image/video models; independent analysis selection in Studio remains a separate gap (use Canvas for those models). The form edits a local copy: **Apply options** changes the draft, Escape discards unapplied edits, and **Reset defaults** fills the form without starting generation. Values are associated with the selected model ID, so changing models cannot send another model's settings.
+Canvas offers **Model options** for installed image, video and analysis models that declare controls. Studio offers the same form for image, video and independent analysis models. Analysis history reuse restores the recorded model-scoped options and depth along with its media sources. The form edits a local copy: **Apply options** changes the draft, Escape discards unapplied edits, and **Reset defaults** fills the form without starting generation. Values are associated with the selected model ID, so changing models cannot send another model's settings.
 
 Canvas project snapshots and generation snapshots retain the bounded option values. The generation history's stored input retains server-resolved defaults. Provider package changes still require restart. Existing pending managed tasks retain the original runtime fingerprint and cannot silently migrate to a changed manifest. Existing manifests without `controls` retain their normalized structure.
 

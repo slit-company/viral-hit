@@ -9,7 +9,6 @@ import {
   Loader2,
   ScanSearch,
   Sparkles,
-  Video,
 } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -34,7 +33,6 @@ import {
 } from '@/core/effects/workspace-models';
 import { getModelIconPathByModelId } from '@/core/workspace-lib/model-icons';
 import type { StudioMedia } from '@/core/studio/studio-runtime';
-import type { VideoAnalysisDepth } from '@/core/effects/video-analysis';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import { cn } from '@/lib/utils';
 
@@ -46,46 +44,34 @@ export function StudioComposer({
   isBusy,
   promptCharacterLimit,
   takeCount: _takeCount = 0,
-  analysisDepth,
-  analysisFileName,
   onDraftChange,
   onMediaChange,
-  onAnalysisDepthChange,
-  onAnalysisFileSelect,
-  onClearAnalysisFile,
   onGenerate,
   referenceUrls = [],
   onRemoveReference,
 }: {
   draft: CanvasGenerationCard;
-  media: StudioMedia;
+  media: 'image' | 'video';
   imageModels: WorkspaceModelOption[];
   videoModels: WorkspaceModelOption[];
   isBusy: boolean;
   promptCharacterLimit: number;
   takeCount?: number;
-  analysisDepth: VideoAnalysisDepth;
-  analysisFileName: string | null;
   onDraftChange: (next: CanvasGenerationCard) => void;
   onMediaChange: (next: StudioMedia) => void;
-  onAnalysisDepthChange: (next: VideoAnalysisDepth) => void;
-  onAnalysisFileSelect: (file: File) => void;
-  onClearAnalysisFile: () => void;
   onGenerate: () => void;
   referenceUrls?: string[];
   onRemoveReference?: (url: string) => void;
 }) {
   const labels = useCanvasComposerLabels();
   const t = useTranslations('AppShell.studio.analysis');
-  const analysisFileInputRef = useRef<HTMLInputElement | null>(null);
   const parameterPickerRef = useRef<HTMLDivElement | null>(null);
   const [isParameterOpen, setIsParameterOpen] = useState(false);
-  const isAnalysis = media === 'analysis';
   const models = media === 'video' ? videoModels : imageModels;
   const selectedModel =
     findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
   const promptRequired = getGenerationPromptConstraints({
-    modelId: isAnalysis ? 'video-analysis' : selectedModel?.id,
+    modelId: selectedModel?.id,
   }).required;
   const selectedModeOptions = selectedModel?.modeOptions ?? [];
   const selectedVariantOptions = selectedModel?.variantOptions ?? [];
@@ -125,41 +111,10 @@ export function StudioComposer({
       : []),
   ];
   const promptCharacterCount = countPromptCharacters(draft.prompt);
-  const primaryButtonLabel = isBusy
-    ? isAnalysis
-      ? t('analyzing')
-      : labels.generatingLabel
-    : isAnalysis
-      ? t('analyze')
-      : labels.generateLabel;
-  const analysisModelOptions = [
-    {
-      value: 'standard',
-      label: t('standardModel'),
-      modelId: 'video-analysis-standard',
-    },
-    {
-      value: 'deep',
-      label: t('proModel'),
-      modelId: 'video-analysis-pro',
-    },
-  ].map((option) => ({
-    value: option.value,
-    label: option.label,
-    leading: (
-      <span className="grid size-4 shrink-0 place-items-center rounded-[4px] bg-[var(--vh-control)] ring-1 ring-black/10">
-        <img
-          src={getModelIconPathByModelId(option.modelId) || '/logo.png'}
-          alt=""
-          className="size-3 rounded-[2px]"
-        />
-      </span>
-    ),
-  }));
+  const primaryButtonLabel = isBusy ? labels.generatingLabel : labels.generateLabel;
 
   useEffect(() => {
     if (
-      isAnalysis ||
       selectedAspectRatioOptions.length === 0 ||
       selectedAspectRatioOptions.includes(draft.aspectRatio)
     ) {
@@ -172,7 +127,6 @@ export function StudioComposer({
     });
   }, [
     draft,
-    isAnalysis,
     onDraftChange,
     selectedAspectRatioOptions,
     selectedModel?.defaultAspectRatio,
@@ -191,30 +145,12 @@ export function StudioComposer({
         <div className="relative">
           <Action
             type="button"
-            aria-label={isAnalysis ? t('uploadVideo') : labels.uploadImageLabel}
-            title={isAnalysis ? t('uploadVideo') : t('referenceUploadSoon')}
-            onClick={() => {
-              if (isAnalysis) analysisFileInputRef.current?.click();
-            }}
+            aria-label={labels.uploadImageLabel}
+            title={t('referenceUploadSoon')}
             className="absolute left-0 top-0 z-10 flex size-9 rotate-[-5deg] items-center justify-center rounded-[10px] border border-dashed border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] shadow-none transition hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]"
           >
-            {isAnalysis ? (
-              <Video className="size-3.5" />
-            ) : (
-              <ImagePlus className="size-3.5" />
-            )}
+            <ImagePlus className="size-3.5" />
           </Action>
-          <input
-            ref={analysisFileInputRef}
-            type="file"
-            accept=".mp4,.mov,video/mp4,video/quicktime"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) onAnalysisFileSelect(file);
-              event.currentTarget.value = '';
-            }}
-          />
           <textarea
             value={draft.prompt}
             onChange={(event) =>
@@ -227,9 +163,7 @@ export function StudioComposer({
               })
             }
             placeholder={
-              isAnalysis
-                ? t('promptPlaceholder')
-                : media === 'video'
+              media === 'video'
                 ? labels.videoPromptPlaceholder
                 : labels.imagePromptPlaceholder
             }
@@ -240,7 +174,7 @@ export function StudioComposer({
 
         <div className="mt-1.5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-            {!isAnalysis && <ModelOptions modelId={draft.modelId} value={draft.modelOptions} disabled={isBusy} onChange={modelOptions => onDraftChange({ ...draft, modelOptions })} />}
+            {<ModelOptions modelId={draft.modelId} value={draft.modelOptions} disabled={isBusy} onChange={modelOptions => onDraftChange({ ...draft, modelOptions })} />}
             <WorkspaceSelect
               ariaLabel="Media type"
               triggerClassName="min-w-[96px]"
@@ -275,29 +209,6 @@ export function StudioComposer({
               }
             />
 
-            {isAnalysis ? (
-              <>
-                <WorkspaceSelect
-                  ariaLabel={t('modelLabel')}
-                  triggerClassName="w-fit max-w-full"
-                  value={analysisDepth}
-                  options={analysisModelOptions}
-                  onChange={(value) =>
-                    onAnalysisDepthChange(value === 'deep' ? 'deep' : 'standard')
-                  }
-                />
-                {analysisFileName ? (
-                  <Action
-                    type="button"
-                    onClick={onClearAnalysisFile}
-                    className="max-w-[220px] truncate rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] px-2.5 py-1 text-[11px] text-[var(--vh-text-2)]"
-                    title={t('removeVideo')}
-                  >
-                    {analysisFileName}
-                  </Action>
-                ) : null}
-              </>
-            ) : (
             <WorkspaceSelect
               ariaLabel="Model"
               triggerClassName="w-fit max-w-full"
@@ -320,9 +231,8 @@ export function StudioComposer({
                 <Sparkles className="size-3.5 shrink-0 text-[var(--vh-text-2)]" />
               }
             />
-            )}
 
-            {!isAnalysis && visibleParameterSummaryTokens.length > 0 ? (
+            {visibleParameterSummaryTokens.length > 0 ? (
               <CreativeCanvasComposerParameterPicker
                 activeDraftCard={draft}
                 containerRef={parameterPickerRef}
@@ -395,7 +305,7 @@ export function StudioComposer({
                 isBusy ||
                 (promptRequired && !draft.prompt.trim()) ||
                 (selectedModel?.requiresImageInput && referenceUrls.length === 0) ||
-                (isAnalysis ? !analysisFileName : !selectedModel)
+                !selectedModel
               }
               className={cn(
                 composerGenerateButtonClassName,

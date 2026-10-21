@@ -113,3 +113,10 @@ Controls reuse cached workspace metadata and existing generation/storage paths. 
 Final public build: **203 files / 8,571,292 bytes**, **2,003,228 raw JavaScript bytes / 590,925 individually gzipped JavaScript bytes**. Increase: **1,560 gzip bytes** over model controls. Both unchanged budgets pass. Model discovery and the new Canvas picker share the cached workspace metadata query; submission and polling use the existing generation ledger. No default runtime dependency, model service or background loop was added.
 
 Declarations cap the sum of per-kind maxima at 20 and reject empty requests. Project-media delivery retains 64 MiB/file and 256 MiB total/cumulative-read bounds. The optional batch inspector reads/probes/deletes one temporary source at a time, with 1 MiB probe output, a twenty-second child timeout and a two-minute batch signal. Real small-file PNG/MP4/WAV processing and production restart passed; these are not whole-host memory, representative inference speed or competitor benchmarks.
+
+
+## Studio independent analysis — 2026-10-22
+
+Final public build: **203 files / 8,581,258 bytes**, **2,012,881 raw JavaScript bytes / 593,725 individually gzipped JavaScript bytes**. The gzip increase is **2,800 bytes** over declared multimodal analysis. Both unchanged budgets pass. No new default dependency, runtime, worker or background polling loop was added.
+
+Studio reuses cached model metadata and queries the bounded project library only while the picker is open. It deduplicates up to 500 membership entries and displays at most 50 search matches, with at most 20 selected sources. Uploads run sequentially, validate the entire selection before writing and preserve successfully stored originals on a later failure. Source/history reuse sends existing asset IDs rather than repeating uploads. Browser scratch drafts validate a 128,000-character storage bound before parsing. These bounds and small real-file production runs do not establish whole-host RAM usage, large-library latency, semantic accuracy or competitor performance.

@@ -19,7 +19,7 @@ const startHereSource = readFileSync(
   'utf8'
 );
 
-test('studio uses the shared black creative surface without a persistent media sidebar', () => {
+test('studio uses the shared creative surface without a persistent media sidebar', () => {
   assert.match(studioSource, /--vh-bg/);
   assert.doesNotMatch(studioSource, /Powered by Cloud API/);
   assert.doesNotMatch(studioSource, /w-14 shrink-0 flex-col/);
@@ -44,11 +44,7 @@ test('studio keeps the original wide composer and a project generation feed', ()
   assert.match(studioSource, /justify-end/);
   assert.match(startHereSource, /Create Here/);
   assert.match(studioSource, /fetchProjectGenerations/);
-  assert.match(studioSource, /VIDEO_ANALYSIS_MODEL_ID/);
   assert.match(composerSource, /value: 'analysis'/);
-  assert.match(composerSource, /accept="\.mp4,\.mov,video\/mp4,video\/quicktime"/);
-  assert.match(composerSource, /standardModel/);
-  assert.match(composerSource, /proModel/);
   assert.doesNotMatch(composerSource, /workflowLabel/);
   assert.doesNotMatch(composerSource, /tokenBudget/);
   assert.doesNotMatch(composerSource, /fileRequired/);

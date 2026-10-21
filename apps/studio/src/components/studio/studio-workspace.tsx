@@ -1,3 +1,5 @@
+import { StudioAnalysisComposer } from './studio-analysis-composer';
+import { useStudioAnalysis } from './use-studio-analysis';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -13,8 +15,6 @@ import {
 } from '@/core/effects/validation';
 import {
   resolveVideoAnalysisText,
-  VIDEO_ANALYSIS_MODEL_ID,
-  type VideoAnalysisDepth,
 } from '@/core/effects/video-analysis';
 import {
   findWorkspaceModelOption,
@@ -29,7 +29,6 @@ import type { StudioMedia } from '@/core/studio/studio-runtime';
 import {
   fetchProjectGenerations,
 } from '@/core/workspace-lib/app/workspace-client-api';
-import { uploadLocalProjectAsset } from '@/core/workspace-lib/app/local-project-asset-client';
 import { parseLocalProjectAssetUrl } from '@/core/projects/local-project-asset-url';
 import { GENERATION_REQUEST_VERSION } from '@/core/commands/generation-contract';
 import { precheckEffect, generateEffect } from '@/core/effects/client-api';
@@ -111,11 +110,9 @@ export function StudioWorkspace({
     });
   });
   const [media, setMedia] = useState<StudioMedia>(initialMedia);
-  const [analysisDepth, setAnalysisDepth] =
-    useState<VideoAnalysisDepth>('standard');
-  const [analysisFile, setAnalysisFile] = useState<File | null>(null);
   const [referenceUrls, setReferenceUrls] = useState<string[]>([]);
   const [error, setError] = useState('');
+  const analysis = useStudioAnalysis({ projectId, initialModelId: initialMedia === 'analysis' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
   const models = draft.type === 'video' ? videoModels : imageModels;
   const selectedModel =
     findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
@@ -147,50 +144,25 @@ export function StudioWorkspace({
       if (!isAnalysis && !selectedModel) {
         throw new Error('No model is available for this media type.');
       }
-      const promptConstraints = getGenerationPromptConstraints({
-        modelId: isAnalysis ? VIDEO_ANALYSIS_MODEL_ID : selectedModel?.id,
-      });
-      if (promptConstraints.required && !draft.prompt.trim()) {
-        throw new Error('Describe what you want to create first.');
+      let request;
+      if (isAnalysis) request = analysis.request();
+      else {
+        const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id });
+        if (promptConstraints.required && !draft.prompt.trim()) throw new Error('Describe what you want to create first.');
+        if (selectedModel?.requiresImageInput && referenceUrls.length === 0) throw new Error(`${selectedModel.name} requires at least one image.`);
+        const initialInput = buildDraftModelParameters(draft, (await getEffectsMetadata([selectedModel!.id])).data.effects?.[selectedModel!.id]?.inputSchema);
+        const assets = referenceUrls.length ? await fetchRecentAssets(projectId) : null;
+        const references = referenceUrls.map((url) => {
+          const local = parseLocalProjectAssetUrl(url);
+          const asset = [...(assets?.images ?? []), ...(assets?.videos ?? []), ...(assets?.audios ?? [])]
+            .find((item) => item.publicUrl === url ||
+              (item.metadata as { providerUrl?: string } | null)?.providerUrl === url);
+          const assetId = local?.assetId ?? asset?.id;
+          if (!assetId) throw new Error('Reference media must belong to this project. Import it again.');
+          return { assetId, role: 'reference' as const };
+        });
+        request = { version: GENERATION_REQUEST_VERSION, projectId, mode: draft.type, modelId: selectedModel!.id, prompt: draft.prompt, references, parameters: initialInput };
       }
-      if (selectedModel?.requiresImageInput && referenceUrls.length === 0) {
-        throw new Error(`${selectedModel.name} requires at least one image.`);
-      }
-      if (isAnalysis && !analysisFile) {
-        throw new Error('Add an MP4 or MOV video to analyze.');
-      }
-      const initialInput = isAnalysis
-        ? {
-            prompt: draft.prompt.trim(),
-            analysis_depth: analysisDepth,
-          }
-        : {
-            prompt: draft.prompt.trim(),
-            ...buildDraftModelParameters(draft, (await getEffectsMetadata([selectedModel!.id])).data.effects?.[selectedModel!.id]?.inputSchema),
-          };
-      const assets = referenceUrls.length ? await fetchRecentAssets(projectId) : null;
-      const references = referenceUrls.map((url) => {
-        const local = parseLocalProjectAssetUrl(url);
-        const asset = [...(assets?.images ?? []), ...(assets?.videos ?? []), ...(assets?.audios ?? [])]
-          .find((item) => item.publicUrl === url ||
-            (item.metadata as { providerUrl?: string } | null)?.providerUrl === url);
-        const assetId = local?.assetId ?? asset?.id;
-        if (!assetId) throw new Error('Reference media must belong to this project. Import it again.');
-        return { assetId, role: 'reference' as const };
-      });
-      if (isAnalysis) {
-        const asset = await uploadLocalProjectAsset({ projectId, file: analysisFile! });
-        references.push({ assetId: asset.id, role: 'reference' });
-      }
-      const request = {
-        version: GENERATION_REQUEST_VERSION,
-        projectId,
-        mode: isAnalysis ? 'analysis' : draft.type,
-        modelId: isAnalysis ? VIDEO_ANALYSIS_MODEL_ID : selectedModel!.id,
-        prompt: draft.prompt,
-        references,
-        parameters: initialInput,
-      };
       const precheck = await precheckEffect({ generation: request });
       if (!precheck.ok) throw new Error(precheck.data.error || 'Generation validation failed.');
       const response = await generateEffect({
@@ -227,6 +199,24 @@ export function StudioWorkspace({
     },
   });
 
+  function changeMedia(nextMedia: StudioMedia) {
+    if (generation.isPending || analysis.busy) return;
+    setMedia(nextMedia);
+    setReferenceUrls([]);
+    if (nextMedia === 'analysis') return;
+    const nextType = nextMedia === 'video' ? 'video' : 'image';
+    const nextModels = nextType === 'video' ? videoModels : imageModels;
+    const nextModel = nextModels[0] ?? null;
+    if (nextModel) {
+      setDraft((current) =>
+        applyStudioDraftModel({
+          draft: { ...current, type: nextType },
+          model: nextModel,
+        })
+      );
+    }
+  }
+
   return (
     <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
       <div className="pointer-events-none absolute inset-0 bg-[var(--vh-surface)]" />
@@ -238,6 +228,8 @@ export function StudioWorkspace({
             <StudioGenerationFeed
               items={feedItems}
               onReuse={(item) => {
+                if (generation.isPending || analysis.busy) return;
+                if (item.mediaType === 'analysis') { setMedia('analysis'); void analysis.reuse(item); return; }
                 const next = applyStudioHistoryItem({
                   item,
                   imageModels,
@@ -256,20 +248,16 @@ export function StudioWorkspace({
         )}
       </div>
 
-      <StudioComposer
+      {media === 'analysis' ? <StudioAnalysisComposer projectId={projectId} analysis={analysis} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : <StudioComposer
         draft={draft}
         media={media}
         imageModels={imageModels}
         videoModels={videoModels}
         isBusy={generation.isPending}
         promptCharacterLimit={
-          media === 'analysis'
-            ? getGenerationPromptMaxChars({ modelId: VIDEO_ANALYSIS_MODEL_ID })
-            : getGenerationPromptMaxChars({ modelId: selectedModel?.id })
+          getGenerationPromptMaxChars({ modelId: selectedModel?.id })
         }
         takeCount={feedItems.length}
-        analysisDepth={analysisDepth}
-        analysisFileName={analysisFile?.name ?? null}
         onDraftChange={(next) => {
           if (next.type !== draft.type || next.modelId !== draft.modelId) {
             const nextModels =
@@ -290,36 +278,7 @@ export function StudioWorkspace({
           }
           setDraft(next);
         }}
-        onMediaChange={(nextMedia) => {
-          setMedia(nextMedia);
-          setReferenceUrls([]);
-          if (nextMedia === 'analysis') return;
-          const nextType = nextMedia === 'video' ? 'video' : 'image';
-          const nextModels = nextType === 'video' ? videoModels : imageModels;
-          const nextModel = nextModels[0] ?? null;
-          if (nextModel) {
-            setDraft((current) =>
-              applyStudioDraftModel({
-                draft: { ...current, type: nextType },
-                model: nextModel,
-              })
-            );
-          }
-        }}
-        onAnalysisDepthChange={setAnalysisDepth}
-        onAnalysisFileSelect={(file) => {
-          const supported =
-            file.type === 'video/mp4' ||
-            file.type === 'video/quicktime' ||
-            /\.(mp4|mov)$/i.test(file.name);
-          if (!supported) {
-            setError('Video analysis supports MP4 and MOV files only.');
-            return;
-          }
-          setError('');
-          setAnalysisFile(file);
-        }}
-        onClearAnalysisFile={() => setAnalysisFile(null)}
+        onMediaChange={changeMedia}
         referenceUrls={referenceUrls}
         onRemoveReference={(url) =>
           setReferenceUrls((current) =>
@@ -330,10 +289,10 @@ export function StudioWorkspace({
           setError('');
           generation.mutate();
         }}
-      />
+      />}
 
       {error ? (
-        <p className="pointer-events-none absolute inset-x-0 bottom-[88px] z-30 px-6 text-center text-sm text-[var(--creative-canvas-error)]">
+        <p role="alert" className="absolute inset-x-3 top-3 z-30 rounded-xl border border-red-200 bg-white p-3 text-sm text-red-800">
           {error}
         </p>
       ) : null}
