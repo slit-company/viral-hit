@@ -170,3 +170,7 @@ New declarations allow at most 20 references in total and retain existing local 
 ## Installed-model recipe authoring — 2026-10-22
 
 The final production build has **203 public files / 8,604,730 bytes** and **2,036,324 raw JavaScript / 598,918 summed gzip bytes**, an increase of **1,871 gzip bytes** over mixed visual reference support. The unchanged 10 MB/600 KB gates pass. UI browser imports are type-only at the server contract boundary. No default dependency, database, queue or background loop was added; discovery reads the existing bounded installed metadata snapshot, and builds are limited to 20 source slots and 128 KB recipe JSON. Real execution uses the existing source/worker bounds. This is a bundle result and local frame-processing proof, not a whole-host memory, large-project latency or AI-model comparison.
+
+## Installed-model requirements — 2026-10-22
+
+The final production build contains **203 public files / 8,605,280 bytes** and **2,037,049 raw JavaScript / 599,183 summed gzip bytes**: **265 gzip bytes** above model recipe authoring. The unchanged 10 MB/600 KB budgets pass. Model metadata is indexed once per inspection; the report does not load project media or import executable provider modules. Shared result rendering replaces the prior inline native-only report. No dependency, database schema, worker or polling loop was added. These are bundle and implementation-boundary observations, not a latency/whole-host resource benchmark or a live model comparison.

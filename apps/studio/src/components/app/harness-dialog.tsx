@@ -1,3 +1,4 @@
+import { RecipeRequirementsReport } from './recipe-requirements-report';
 import { SceneResult } from './scene-result';
 import { TranscriptResult } from './transcript-result';
 import type { RecipeCatalog } from '@/core/harness/recipe-library-contract';
@@ -17,7 +18,7 @@ import type { Recipe } from '@/core/harness/recipes';
 import type { InstalledPack, PackSummary } from '@/core/harness/recipe-packs';
 import { packScopeLabel } from './pack-labels';
 import type { TimelineDocument } from '@/core/editor/timeline-document';
-import type { ComfyPreflight } from '@/core/harness/comfy-preflight';
+import type { RecipePreflight } from '@/core/harness/recipe-preflight.server';
 
 type Run = { id: string; created_at: number; jobs: Job[]; events: { sequence: number; event: string; at: number }[] };
 type Capability = AssetCapability & { operation: string; configured: boolean; label: string; configuration: string | null; generation: boolean; reconciliation: boolean; external?: boolean; version?: string; author?: string; license?: string };
@@ -32,7 +33,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [checking, setChecking] = useState(false);
-  const [check, setCheck] = useState<ComfyPreflight>();
+  const [check, setCheck] = useState<RecipePreflight>();
   const checkEpoch = useRef(0);
   const dialogContent = useRef<HTMLDivElement>(null);
   const dialogBody = useRef<HTMLDivElement>(null);
@@ -67,7 +68,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
     if (!selected) return;
     const epoch = ++checkEpoch.current; setChecking(true); setCheck(undefined); setError('');
     try {
-      const result = await apiJsonPost<ComfyPreflight>(`/api/app/projects/${projectId}/preflight`, { recipeId: selected.id, values, expectedRecipeDigest: recipeDigests[selected.id] });
+      const result = await apiJsonPost<RecipePreflight>(`/api/app/projects/${projectId}/preflight`, { recipeId: selected.id, values, expectedRecipeDigest: recipeDigests[selected.id] });
       if (epoch === checkEpoch.current) { setCheck(result); requestAnimationFrame(() => { if (epoch === checkEpoch.current) dialogBody.current?.scrollTo({ top: 0 }); }); }
     } catch (e) { if (epoch === checkEpoch.current) setError(e instanceof Error ? e.message : 'Server check failed'); }
     finally { if (epoch === checkEpoch.current) setChecking(false); }
@@ -175,16 +176,10 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
             />
           </>}
           <p className="text-xs leading-relaxed text-[var(--vh-text-2)]">{!remoteOperations.length ? 'This recipe runs local processing without a generation request.' : !data ? 'Checking runtime configuration…' : missingCapabilities.length ? missingCapabilities.every(operation => operation === 'comfy.workflow' || operation === 'comfy.upload') ? 'Choose your ComfyUI server in Connections to run this recipe.' : `Configure ${configurationMessage} in the server environment, then restart the studio.` : externalCapabilities.length ? `Uses installed adapters: ${externalCapabilities.map(capability => `${capability.label} v${capability.version}`).join(', ')}. Compute and provider charges depend on these adapters.` : !needsGeneration ? hasScenes ? 'Analyzes visual changes in the selected video locally and prepares editable ranges.' : hasReferences ? 'Collects source media and reference frames locally. No generation or publishing is started.' : 'Transfers selected images to your ComfyUI server without running a workflow.' : generationOperations.includes('generation.model') ? 'Uses the installed models selected in this recipe. Compute and provider charges depend on those models.' : generationOperations.includes('comfy.workflow') ? 'Uses your ComfyUI server and its installed nodes. Compute and any provider charges depend on the workflow.' : 'Uses your Comfy credits. Final usage appears on the provider receipt.'}</p>
-          {check && <div role="status" aria-label="Server check result" className="max-h-28 sm:max-h-44 space-y-2 overflow-y-auto rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 text-xs">
-            <p className="font-semibold">{check.status === 'issues' ? 'Server check: needs attention' : check.status === 'unavailable' ? 'Server check: unavailable' : check.status === 'not-applicable' ? 'No native workflow to check' : 'Server check: no reported issues'}</p>
-            <p className="text-[var(--vh-text-2)]">{check.classes.filter(item => item.status === 'available').length} node types available · {check.issues.filter(item => item.severity === 'deferred').length} checks deferred</p>
-            {check.issues.slice(0, 12).map((issue, index) => <div key={index} className="break-words"><p className="font-medium">{[issue.classType, issue.node && `#${issue.node}`, issue.input].filter(Boolean).join(' · ')}</p><p>{issue.message}</p>{issue.choices?.length ? <p className="mt-1 text-[var(--vh-text-2)]">Available: {issue.choices.slice(0, 5).join(', ')}{(issue.choiceCount ?? 0) > 5 ? ' …' : ''}</p> : null}</div>)}
-            {check.issues.length > 12 && <p>{check.issues.length - 12} more checks in the CLI/MCP report.</p>}
-            <p className="text-[var(--vh-text-2)]">No jobs or uploads started. This check does not guarantee successful execution.</p>
-          </div>}
-          <div className="sticky bottom-0 z-10 flex gap-2 bg-[var(--vh-surface)] py-3 sm:static sm:py-0">
-          {generationOperations.includes('comfy.workflow') && <Action disabled={busy || checking} onClick={() => void checkServer()} className="h-11 min-w-0 flex-1 rounded-lg border border-[var(--vh-border)] px-3 text-xs">{checking ? 'Checking server…' : 'Check server'}</Action>}
-          <Action disabled={missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length || hasReferences || hasSequence ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
+          {check && <RecipeRequirementsReport report={check} />}
+          <div className="sticky bottom-0 z-10 flex gap-2 bg-[var(--vh-surface)] py-3">
+          {(generationOperations.includes('comfy.workflow') || generationOperations.includes('generation.model')) && <Action disabled={busy || checking} onClick={() => void checkServer()} className="h-11 min-w-0 flex-1 rounded-lg border border-[var(--vh-border)] px-3 text-xs">{checking ? 'Checking server…' : generationOperations.includes('generation.model') ? 'Check requirements' : 'Check server'}</Action>}
+          <Action disabled={Boolean(check?.models?.length && check.status === 'issues') || missingCapabilities.length > 0 || !ready || busy || checking} onClick={() => void generate()} className="vh-primary min-w-0 flex-1 text-xs">{needsGeneration ? 'Queue generation' : externalCapabilities.length || hasReferences || hasSequence ? 'Queue workflow' : 'Queue import'} {!generationOperations.includes('comfy.workflow') && <ArrowUpRight size={15} />}</Action>
           </div>
           <p className="text-[11px] leading-relaxed text-[var(--vh-text-2)]">Media import steps save verified files in Assets. Add each completed asset to your timeline when it is ready.</p>
         </section>

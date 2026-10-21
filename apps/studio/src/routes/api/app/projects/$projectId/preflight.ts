@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { getActiveProject } from '@/core/projects/projects';
 import { prepareRecipeCheck, recipeCheckRequest } from '@/core/harness/recipe-plan';
-import { preflightComfyPlan } from '@/core/harness/comfy-preflight';
+import { preflightRecipePlan } from '@/core/harness/recipe-preflight.server';
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit } from '@/lib/request-body-limit';
 
@@ -12,7 +12,7 @@ async function POST({ request, params }: { request: Request; params: { projectId
   try {
     const input = recipeCheckRequest.parse(await readRequestJsonWithLimit(request, 128_000));
     const { plan, deferredInputs } = await prepareRecipeCheck(input.recipeId, input.values, params.projectId, input.expectedRecipeDigest);
-    return Response.json(await preflightComfyPlan(plan, { signal: request.signal, deferredInputs }), { headers: { 'Cache-Control': 'no-store' } });
+    return Response.json(await preflightRecipePlan(plan, { signal: request.signal, deferredInputs }), { headers: { 'Cache-Control': 'no-store' } });
   } catch { return Response.json({ error: 'Could not check this recipe. Verify its required values and installed manifest.' }, { status: 400 }); }
 }
 export const Route = createFileRoute('/api/app/projects/$projectId/preflight')({ server: { handlers: { POST } } });

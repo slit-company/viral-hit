@@ -4,7 +4,7 @@ import { closeSync, fstatSync, openSync, readFileSync, writeFileSync } from 'nod
 import { z } from 'zod';
 import { compileRecipe, compileRecipeForCheck, recipeSchema } from '../src/core/harness/recipes';
 import { comfyRecipeDefinitionSchema, importComfyRecipe, inspectComfyGraph } from '../src/core/harness/import-comfy-recipe';
-import { preflightComfyPlan } from '../src/core/harness/comfy-preflight';
+import { preflightRecipePlan } from '../src/core/harness/recipe-preflight.server';
 import { changeRecipePacks } from '../src/core/harness/recipe-pack-library';
 import { MAX_PACK_BYTES, MAX_PACK_RECIPES, packManifestSchema } from '../src/core/harness/recipe-packs';
 const [command, file, values, projectId] = process.argv.slice(2);
@@ -66,7 +66,7 @@ try {
     const supplied = JSON.parse(readFileSync(values, 'utf8'));
     if (command === 'preflight') {
       const { plan, deferredInputs } = compileRecipeForCheck(raw, supplied, projectId);
-      const report = await preflightComfyPlan(plan, { deferredInputs }); console.log(JSON.stringify(report, null, 2));
+      const report = await preflightRecipePlan(plan, { deferredInputs }); console.log(JSON.stringify(report, null, 2));
       process.exitCode = report.status === 'issues' ? 2 : report.status === 'unavailable' ? 3 : 0;
     } else console.log(JSON.stringify(compileRecipe(raw, supplied, projectId), null, 2));
   } else throw new Error('Usage: recipe model-catalog | build-model <definition.json> <model-digest> <new-file.json> | inspect <file> | install <file> <digest> | update <file> <incoming-digest> <installed-digest> | review-remove <id> | remove <id> <digest> | export <id> <new-file> | schema|pack-schema|sequence-schema|comfy-schema <output.json> | packs | fetch-pack <url> <new-file> [sha256] | build-pack <definition.json> <new-pack.json> | pack-request <request.json> | review-update-pack <pack.json> | review-remove-pack <id> | inspect-pack <pack.json> | install-pack <pack.json> <digest> | inspect-comfy <api-graph.json> | import-comfy <api-graph.json> <definition.json> <new-recipe.json> | compile|preflight <recipe.json> <values.json> <project-id>');

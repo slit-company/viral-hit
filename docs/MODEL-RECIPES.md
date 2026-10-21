@@ -99,3 +99,13 @@ pnpm recipe install new-recipe.json <inspection-digest>
 ```
 
 `build-model` refuses an existing output file. Exported JSON retains the same inspection digest; required sources are chosen from the receiving project's library at run time. Source files are limited to 64 MiB each by generation admission and the recipe picker. This does not install a model, include its runtime, or allocate paid work.
+
+## Check a shared recipe in another installation
+
+Recipe inspection now includes `modelRequirements` for `generation.model` steps. It reports the exact model and step IDs, missing providers, missing declared configuration, output-kind mismatches, source counts and incompatible fixed settings. You can save a recipe with unmet requirements, then install/configure the corresponding provider using the normal runtime lifecycle. Inspection does not silently install code or replace the recipe's model.
+
+In Runs, **Check requirements** evaluates the selected recipe and current form values. HTTP project preflight, MCP `viral_hit_recipe_check` and CLI `pnpm recipe preflight recipe.json values.json project-id` use the same operation. Native ComfyUI checks remain available, including in mixed workflows. CLI exits with 2 for reported issues and 3 for unavailable native checks. Recipes without either model or native steps report that no applicable check exists.
+
+Missing required inputs and upstream values are deferred. Declared source kinds/counts can be checked before selecting actual files; ownership, file identity, size and bytes are verified later by admission/execution. Configuration presence is not credential validity or a live provider probe. Model results, output count, semantic quality and arbitrary installed adapter behavior are not established by this report. Changing inputs clears the prior report; late responses cannot overwrite newer inputs. Known model-recipe issues disable the queue action until the inputs change or a new check clears them. Queue admission and the worker still enforce their own checks if no advisory report was requested.
+
+Requirements are a projection of the current loaded model catalog, not part of the portable recipe's digest. Sharing/exporting/reviewing a recipe keeps its identity stable across installations. Managed provider updates use their normal coordinated restart; checking does not hot-reload code. Reports expose public IDs and configuration presence, never environment values or credential fingerprints, and do not read project media or allocate generation intents.

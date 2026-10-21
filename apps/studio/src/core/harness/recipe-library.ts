@@ -1,3 +1,4 @@
+import { inspectModelRequirements } from './model-requirements.server';
 import { modelRecipeDefinition } from './model-recipe-contract';
 import { listModelRecipeModels, buildModelRecipe } from './model-recipe.server';
 import { changeInstalledRecipe } from './recipe-lifecycle-storage.server';
@@ -40,8 +41,10 @@ export async function inspectRecipe(raw: unknown): Promise<RecipeInspection> {
   const existing = (await loadRecipes()).find(item => item.id === recipe.id);
   const collision = base.some(item => item.id === recipe.id) ? 'reserved'
     : existing ? recipeDigest(existing) === digest ? 'same' : 'different' : 'none';
+  const prepared = compileRecipeForCheck(recipe, {}, 'recipe-requirements-only');
+  const modelRequirements = inspectModelRequirements(prepared.plan, prepared.deferredInputs);
   const operations = [...new Set(recipe.nodes.map(node => node.operation))];
-  return { recipe, digest, collision, operations, unavailableOperations: operations.filter(operation => !supportedOperations().has(operation)),
+  return { recipe, digest, collision, operations, ...(modelRequirements.models.length ? { modelRequirements } : {}), unavailableOperations: operations.filter(operation => !supportedOperations().has(operation)),
     parameterCount: recipe.parameters.length, nodeCount: recipe.nodes.length,
     ...(collision === 'different' && existing ? { update: { current: existing, digest: recipeDigest(existing), packs: readInstalledPacks().filter(pack => pack.recipeIds.includes(recipe.id)) } } : {}) };
 }

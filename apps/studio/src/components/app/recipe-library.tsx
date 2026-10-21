@@ -1,3 +1,4 @@
+import { RecipeRequirementsReport } from './recipe-requirements-report';
 import { ModelRecipeBuilder } from './model-recipe-builder';
 import { ComfyRecipeBuilder } from './comfy-recipe-builder';
 import { useEffect, useRef, useState } from 'react';
@@ -55,8 +56,9 @@ export function RecipeLibrary({ selected, installed = false, onInstalled, onRemo
       <p className="break-words">{inspection.recipe.author} · {inspection.recipe.license}</p>
       <p>{inspection.nodeCount} steps · {inspection.parameterCount} inputs</p>
       <p className="break-words">Operations: {inspection.operations.join(', ')}</p>
+      {inspection.modelRequirements && <RecipeRequirementsReport report={inspection.modelRequirements} />}
       {inspection.unavailableOperations.length > 0 && <p className="text-amber-800">Missing runtime adapters: {inspection.unavailableOperations.join(', ')}. You can keep this recipe, but this runtime cannot execute it yet.</p>}
-      {inspection.update ? <RecipeUpdateReview library={library} /> : inspection.collision === 'reserved' || inspection.collision === 'different' ? <p className="text-amber-800">This ID already exists. Change its ID to save a separate copy.</p> : inspection.collision === 'same' ? <p>Identical recipe already installed.</p> : <p className="text-[var(--color-lime-text)]">Ready to install as a new local recipe.</p>}
+      {inspection.update ? <RecipeUpdateReview library={library} /> : inspection.collision === 'reserved' || inspection.collision === 'different' ? <p className="text-amber-800">This ID already exists. Change its ID to save a separate copy.</p> : inspection.collision === 'same' ? <p>Identical recipe already installed.</p> : <p className="text-[var(--color-lime-text)]">{inspection.modelRequirements?.status === 'issues' ? 'Can be saved locally; resolve model requirements before running.' : 'Ready to install as a new local recipe.'}</p>}
       <p className="text-[var(--vh-text-2)]">Structure and bindings checked. Models, installed nodes and output quality still need runtime checks. No jobs started.</p>
       <Action onClick={() => download(inspection.recipe)} className="inline-flex items-center gap-1.5 underline"><Download size={14} />Download reviewed JSON</Action>
     </section>}
