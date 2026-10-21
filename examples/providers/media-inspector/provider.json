@@ -5,6 +5,7 @@
   "label": "Technical video inspection",
   "description": "Optional FFprobe-based file inspection and vertical-delivery review. Reads media metadata; does not interpret visuals, dialogue or user instructions.",
   "scope": "specialized",
+  "referenceDelivery": "project-media",
   "author": "Viral Hit contributors",
   "license": "Apache-2.0",
   "environment": ["VIRAL_HIT_FFPROBE"],

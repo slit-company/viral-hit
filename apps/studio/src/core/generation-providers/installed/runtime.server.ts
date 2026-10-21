@@ -1,3 +1,4 @@
+import { createProviderMediaContext } from '../local-media.server';
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { pinProviderTask, providerRuntimeDigest, unpinProviderTask } from './task-pin.server';
 import { createHash, randomUUID } from 'node:crypto';
@@ -28,6 +29,8 @@ export function providerInput(input: unknown) {
     ...(typeof value.wmDuration === 'string' ? { duration: value.wmDuration } : {}),
     ...(typeof value.seed === 'number' ? { seed: value.seed } : {}),
     imageUrls: images,
+    ...(Array.isArray(value.video_urls) ? { videoUrls: value.video_urls.filter(url => typeof url === 'string') } : {}),
+    ...(Array.isArray(value.audio_urls) ? { audioUrls: value.audio_urls.filter(url => typeof url === 'string') } : {}),
     ...(typeof value.video_url === 'string' ? { videoUrl: value.video_url } : {}),
     ...(typeof value.analysis_depth === 'string' ? { analysisDepth: value.analysis_depth } : {}),
     ...(typeof value.max_output_tokens === 'number' ? { maxOutputTokens: value.max_output_tokens } : {}),
@@ -51,7 +54,7 @@ export class InstalledProviderRuntime {
   }
 
   /** createGeneration problems fail the generation; checkStatus errors are thrown so polling retries them. */
-  async call(method: 'createGeneration' | 'checkStatus', effect: EffectRecord, request: Record<string, unknown>): Promise<GenerationResult> {
+  async call(method: 'createGeneration' | 'checkStatus', effect: EffectRecord, request: Record<string, unknown>, projectId?: unknown): Promise<GenerationResult> {
     const { label } = this.manifest;
     const model = this.manifest.models.find(item => item.id === effect.linkName);
     if (!model) {
@@ -63,15 +66,19 @@ export class InstalledProviderRuntime {
     const missing = this.manifest.environment.filter(name => !process.env[name]?.trim());
     if (missing.length) throw new Error('Provider configuration is missing: ' + missing.join(', '));
     let raw: unknown;
+    let mediaContext: Awaited<ReturnType<typeof createProviderMediaContext>> | undefined;
     try {
+      const signal = AbortSignal.timeout(method === 'createGeneration' ? 10 * 60_000 : 60_000);
+      if (method === 'createGeneration' && this.manifest.referenceDelivery === 'project-media') {
+        mediaContext = await createProviderMediaContext(projectId, request.input as Record<string, unknown>, signal);
+      }
       const loaded = await this.load();
       if (method === 'checkStatus' && !loaded.checkStatus) return { status: 'failed', error: label + ' cannot report progress for unfinished work' };
-      const signal = AbortSignal.timeout(method === 'createGeneration' ? 10 * 60_000 : 60_000);
-      raw = await loaded[method]!({ model: { id: model.id, upstreamModelId: model.upstreamModelId ?? model.id, kind: model.kind }, ...request, signal });
+      raw = await loaded[method]!({ model: { id: model.id, upstreamModelId: model.upstreamModelId ?? model.id, kind: model.kind }, ...request, signal, ...(mediaContext ? { media: mediaContext.media, readMedia: mediaContext.readMedia } : {}) });
     } catch (error) {
       if (method === 'checkStatus') throw error;
       return { status: 'failed', error: label + ': ' + message(error) };
-    }
+    } finally { await mediaContext?.dispose(); }
     try { return await this.toResult(raw, model, runtime); }
     catch (error) { return { status: 'failed', error: label + ' returned an unusable result: ' + message(error) }; }
   }
@@ -134,7 +141,7 @@ export class InstalledProviderAdapter extends BaseAdapter {
   constructor(effect: EffectRecord, private readonly runtime: InstalledProviderRuntime) { super(effect); }
   createGeneration(input: unknown) {
     if (this.effect.type === 3) validateInstalledAnalysisInput(input);
-    return this.runtime.call('createGeneration', this.effect, { input: providerInput(input) });
+    return this.runtime.call('createGeneration', this.effect, { input: providerInput(input) }, (input as Record<string, unknown> | null)?._referenceProjectId);
   }
   checkStatus(taskId: string) { return this.runtime.call('checkStatus', this.effect, { taskId }); }
 }

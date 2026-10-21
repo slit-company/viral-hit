@@ -14,7 +14,7 @@ import { installedEffectId, providerManifestSchema, type ProviderManifest } from
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { InstalledProviderAdapter, InstalledProviderRuntime } from './runtime.server';
 
-export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'analysis' }[] };
+export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'analysis' }[] };
 export type InstalledProviderProblem = { location: string; message: string };
 
 class ProviderLoadError extends Error {}
@@ -52,7 +52,7 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
     if (binding.modelId === VIDEO_ANALYSIS_MODEL_ID || getWorkspaceEffectRegistryEntry(binding.modelId) || findGenerationModelBinding({ modelId: binding.modelId })) throw new ProviderLoadError('Model id ' + binding.modelId + ' is already used');
     if (findGenerationModelBinding({ effectId: binding.effectId })) throw new ProviderLoadError('Model ' + binding.modelId + ' collides with another installed model; rename it');
   }
-  const metadata: GenerationProviderMetadata = { id: manifest.id, label: manifest.label, supports: [...new Set(manifest.models.map(model => model.kind))], modelBindings };
+  const metadata: GenerationProviderMetadata = { id: manifest.id, label: manifest.label, ...(manifest.referenceDelivery ? { referenceDelivery: manifest.referenceDelivery } : {}), supports: [...new Set(manifest.models.map(model => model.kind))], modelBindings };
   registerInstalledGenerationProviderMetadata(metadata);
   for (const model of manifest.models) {
     if (model.kind === 'analysis') continue;
@@ -67,8 +67,8 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
   }
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
   registerGenerationProvider({ ...metadata, assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { if (effect.type === 3) validateInstalledAnalysisInput(input); } });
-  const { id, label, scope, author, license, description, environment } = manifest;
-  return { id, label, scope, author, license, description, environment, models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
+  const { id, label, scope, author, license, description, environment, referenceDelivery } = manifest;
+  return { id, label, scope, author, license, description, environment, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }
 
 let loadedDirectory: string | undefined, sourceStamp = '';

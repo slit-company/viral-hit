@@ -38,6 +38,7 @@ export const providerManifestSchema = z.object({
   scope: z.enum(['general', 'specialized']).default('general'),
   author: z.string().trim().min(1).max(120).optional(),
   license: z.string().trim().min(1).max(80).optional(),
+  referenceDelivery: z.literal('project-media').optional(),
   entry: z.string().regex(/^[A-Za-z0-9_-]+\.m?js$/).default('provider.mjs'),
   /** Hosts allowed to serve result URLs; plain http is accepted only for localhost and 127.0.0.1. */
   mediaHosts: z.array(hostname).max(20).default([]),

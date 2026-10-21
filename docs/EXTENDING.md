@@ -200,3 +200,8 @@ Installed recipe-only packs can publish same-ID releases through [reviewed pack 
 ## Add an analysis model
 
 [Independent analysis providers](ANALYSIS-PROVIDERS.md) use the existing provider module/manifest boundary for general review or specialized one-video text reports. They share Canvas selection, HTTP/MCP descriptors, generation records and polling. The optional [technical inspector](../examples/providers/media-inspector/README.md) runs FFprobe without a model service; semantic analysis requires a suitable independently implemented engine.
+
+
+## Local model inputs
+
+Installed generation providers can opt into `referenceDelivery: "project-media"` to consume verified project files through `readMedia`, without a cloud upload dependency. Use the same contract for general models and specialized processors. See [local provider media](architecture/LOCAL-PROVIDER-MEDIA.md) for limits, reader lifetime, queued-job behavior and the trust boundary. The optional [technical inspector](../examples/providers/media-inspector/README.md) is a standalone implementation using this interface.

@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
-import { mkdtemp, open, rm } from 'node:fs/promises';
+import { mkdtemp, open, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
@@ -33,15 +33,21 @@ async function download(url, destination, signal) {
 }
 
 /** Real technical inspection, not an AI/semantic analysis example. No model or daemon is installed. */
-export async function createGeneration({ model, input, signal }) {
+export async function createGeneration({ model, input, signal, readMedia }) {
   if (!['technical-video-review', 'vertical-delivery-review'].includes(model.id)) throw Error('Unsupported inspection profile');
   const bounded = AbortSignal.any([signal, AbortSignal.timeout(120_000)]);
   const directory = await mkdtemp(join(tmpdir(), 'viral-hit-inspect-'));
   try {
     const path = join(directory, 'source');
-    const source = await download(input.videoUrl, path, bounded);
+    let source;
+    if (readMedia) {
+      const media = await readMedia(input.videoUrl);
+      bounded.throwIfAborted();
+      await writeFile(path, media.bytes, { flag: 'wx', mode: 0o600 });
+      source = { bytes: media.sizeBytes, sha256: media.sha256 };
+    } else source = await download(input.videoUrl, path, bounded);
     const { stdout } = await execute(process.env.VIRAL_HIT_FFPROBE, [
-      '-v', 'error', '-show_entries', 'format=duration,format_name:stream=codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels', '-of', 'json', path,
+      '-v', 'error', '-protocol_whitelist', 'file,pipe', '-format_whitelist', 'mov,matroska,webm', '-show_entries', 'format=duration,format_name:stream=codec_type,codec_name,width,height,r_frame_rate,sample_rate,channels', '-of', 'json', path,
     ], { signal: bounded, timeout: 20_000, killSignal: 'SIGKILL', maxBuffer: 1024 * 1024, encoding: 'utf8' });
     const report = JSON.parse(stdout);
     const video = report.streams?.find(stream => stream.codec_type === 'video');

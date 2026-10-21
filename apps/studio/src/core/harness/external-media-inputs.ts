@@ -1,7 +1,7 @@
 import { isAssetOperation, assetOperationKind } from './asset-operations';
 import { externalCatalog, externalEnvelope, type ExternalEntry } from './external-catalog';
 import { pointerParts, readPointer } from './bindings';
-import { readProjectMediaInput } from './project-media-input';
+import { verifyProjectMediaInput } from './project-media-input';
 import type { Plan, Json } from './durable';
 
 const overlaps = (left: string, right: string) => {
@@ -32,7 +32,7 @@ export async function pinExternalMediaInputs(plan: Plan, entries: ExternalEntry[
         const id = readPointer(envelope.payload, input.pointer);
         if (input.optional && id === null) { envelope.assetPins[input.id] = null; continue; }
         if (typeof id !== 'string') throw new Error('Select a project asset for the declared adapter input');
-        const { bytes: _, mimeType: __, filename: ___, ...pin } = await readProjectMediaInput({ projectId: plan.projectId, assetId: id, kind: input.kind, maxBytes: input.maxBytes, signal });
+        const { mimeType: _, filename: __, ...pin } = await verifyProjectMediaInput({ projectId: plan.projectId, assetId: id, kind: input.kind, maxBytes: input.maxBytes, signal });
         envelope.assetPins[input.id] = pin;
       }
     }

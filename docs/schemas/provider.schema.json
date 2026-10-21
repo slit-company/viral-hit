@@ -41,6 +41,10 @@
       "minLength": 1,
       "maxLength": 80
     },
+    "referenceDelivery": {
+      "type": "string",
+      "const": "project-media"
+    },
     "entry": {
       "default": "provider.mjs",
       "type": "string",

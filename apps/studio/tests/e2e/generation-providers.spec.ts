@@ -107,3 +107,43 @@ test('an independent analysis model is selectable, runs through Canvas and retai
   await expect(page).toHaveURL('/studio/' + projectId); await back.click();
   await expect(page).toHaveURL('/');
 });
+
+
+test('a local video goes through the installed inspector in Canvas without a cloud upload', async ({ page, request }) => {
+  const projectId = (await (await request.post('/api/app/projects', { headers, data: { name: 'Actual local video inspection' } })).json()).id;
+  const source = resolve('test-results/local-analysis-source.mp4');
+  execFileSync(process.env.VIRAL_HIT_FFMPEG || 'ffmpeg', ['-v','error','-y','-f','lavfi','-i','color=c=orange:s=180x320:r=12:d=1','-c:v','libx264','-pix_fmt','yuv420p',source]);
+  const uploaded = await request.post(`/api/app/projects/${projectId}/assets`, { headers, multipart: { file: { name: 'source.mp4', mimeType: 'video/mp4', buffer: readFileSync(source) } } });
+  expect(uploaded.ok()).toBe(true);
+  const asset = (await uploaded.json()).asset;
+  await mcp(request, 'viral_hit_canvas_apply', { projectId, operations: [
+    { type: 'upsert_card', card: { id: 'local-source', kind: 'asset', type: 'video', name: 'Local original', url: asset.publicUrl, assetId: asset.id } },
+    { type: 'place_card', cardId: 'local-source' },
+    { type: 'upsert_card', card: { id: 'local-review', kind: 'generation', type: 'video', generationMode: 'analysis', modelId: 'vertical-delivery-review', name: 'Inspect file', prompt: 'Check dimensions and audio', referenceCardIds: ['local-source'] } },
+    { type: 'place_card', cardId: 'local-review' },
+  ] });
+  const uploads: string[] = [];
+  page.on('request', req => { if(req.url().includes('/api/storage/upload')) uploads.push(req.url()); });
+  await page.goto('/canvas/' + projectId);
+  const draft = page.locator('.react-flow__node[data-id="local-review"]');
+  await expect(draft).toBeVisible();
+  await expect(async () => {
+    if (!(await page.locator('textarea').first().isVisible())) await draft.dblclick();
+    await expect(page.locator('textarea').first()).toHaveValue('Check dimensions and audio', {timeout:1000});
+  }).toPass({timeout:10000});
+  await expect(page.getByRole('button', {name:'Analysis model',exact:true})).toContainText('Vertical delivery review');
+  await page.getByRole('button', {name:'Analyze',exact:true}).click();
+  await expect(page.getByText('Technical inspection — measured file metadata', {exact:false}).first()).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('180 × 320', {exact:false}).first()).toBeVisible();
+  await page.getByRole('link',{name:'Studio',exact:true}).click();
+  await expect(page).toHaveURL('/studio/' + projectId);
+  await expect(page.getByText('Framing: approximately 9:16.', {exact:false}).first()).toBeVisible();
+  expect(uploads).toEqual([]);
+  const history = (await (await request.get(`/api/app/projects/${projectId}/generations`)).json()).items;
+  expect(history[0].referenceVideos).toEqual([asset.publicUrl]);
+  const original = await request.get(history[0].referenceVideos[0]);
+  expect(original.ok()).toBe(true); expect(await original.body()).toEqual(readFileSync(source));
+  await page.screenshot({animations:'disabled',path:'test-results/local-analysis-report.png'});
+  expect((await request.delete('/api/app/projects', { headers, data: { projectIds: [projectId] } })).ok()).toBe(true);
+});

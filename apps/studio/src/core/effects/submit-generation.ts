@@ -186,7 +186,10 @@ export async function submitEffectGeneration({
     };
   }
 
-  const adapterInput = { ...safeInput, prompt: prompt.trimmedPrompt };
+  const adapterInput = { ...safeInput, prompt: prompt.trimmedPrompt,
+    // Authority comes from the admitted project, never caller parameters.
+    _referenceProjectId: getGenerationProvider(effect.provider)?.referenceDelivery === 'project-media' ? normalizedProjectId : undefined,
+  };
   const normalizedIntentId = generationIntentId?.trim() || '';
   if (!normalizedProjectId || !normalizedIntentId) {
     return {

@@ -21,6 +21,8 @@ export type GenerationProviderDefinition = {
   id: string;
   label: string;
   supports: readonly GenerationMediaCapability[];
+  /** Opt-in pinned local inputs; omitted providers retain URL delivery. */
+  referenceDelivery?: 'project-media';
   modelBindings: readonly GenerationProviderModelBinding[];
   createAdapter: (effect: EffectRecord) => BaseAdapter;
   assertConfigured?: () => Promise<void>;
@@ -36,4 +38,4 @@ export type GenerationProviderRegistrar = (
 ) => void;
 
 /** Browser-safe capabilities. Executable adapters and credential checks are server-only. */
-export type GenerationProviderMetadata = Pick<GenerationProviderDefinition, 'id' | 'label' | 'supports' | 'modelBindings'>;
+export type GenerationProviderMetadata = Pick<GenerationProviderDefinition, 'id' | 'label' | 'supports' | 'modelBindings' | 'referenceDelivery'>;

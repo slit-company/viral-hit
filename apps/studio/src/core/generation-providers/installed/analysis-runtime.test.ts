@@ -17,7 +17,7 @@ test('analysis results are bounded text and cannot masquerade as generated media
 });
 test('analysis forwards the reviewed video, depth and token budget; rejects mixed references', () => {
   const input = {prompt:'Review',video_url:'https://example.com/x.mp4',video_urls:['https://example.com/x.mp4'],analysis_depth:'deep',max_output_tokens:4096};
-  assert.deepEqual(providerInput(validateInstalledAnalysisInput(input)), {prompt:'Review',imageUrls:[],videoUrl:input.video_url,analysisDepth:'deep',maxOutputTokens:4096});
+  assert.deepEqual(providerInput(validateInstalledAnalysisInput(input)), {prompt:'Review',imageUrls:[],videoUrl:input.video_url,videoUrls:input.video_urls,analysisDepth:'deep',maxOutputTokens:4096});
   assert.throws(() => validateInstalledAnalysisInput({...input, video_urls:['https://example.com/other.mp4']}));
   assert.throws(() => validateInstalledAnalysisInput({...input, image_urls:['https://example.com/x.png']}));
   assert.throws(() => providerManifestSchema.parse({...manifest,models:[{...manifest.models[0],durations:['5s']}]}));

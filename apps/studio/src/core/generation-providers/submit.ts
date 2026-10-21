@@ -1,3 +1,4 @@
+import { prepareLocalGenerationReferences } from './local-media.server';
 import { readFile, stat } from 'node:fs/promises';
 
 import {
@@ -166,6 +167,13 @@ export async function preflightAssetFirstGeneration(source: unknown) {
   }
   const prompt = validateGenerationPrompt(generation.prompt, getGenerationPromptConstraints({ modelId: descriptor.kind === 'analysis' ? 'video-analysis' : generation.modelId }));
   if (!prompt.ok) throw new Error(prompt.code === 'PROMPT_TOO_LONG' ? `Prompt must be ${prompt.maxChars} characters or fewer.` : 'Prompt is required.');
+  if (provider.referenceDelivery === 'project-media') {
+    const preparedReferences = await prepareLocalGenerationReferences(generation);
+    const input = await compileAssetFirstGenerationInput({ ...preparedReferences, generationIntentId: '' });
+    validateGenerationModelInput({ modelId: generation.modelId, input });
+    await provider.assertConfigured?.();
+    return { generation, binding, expectedUploadCount: 0, preparedReferences };
+  }
   const uniqueAssets = new Map<
     string,
     Awaited<ReturnType<typeof getProjectAssetById>>
@@ -207,7 +215,7 @@ export async function preflightAssetFirstGeneration(source: unknown) {
   const input = await compileAssetFirstGenerationInput({ generation: validationRequest, generationIntentId: '', authorizedDeliveryUrls: validationUrls });
   validateGenerationModelInput({ modelId: generation.modelId, input });
   await provider.assertConfigured?.();
-  return { generation, binding, expectedUploadCount };
+  return { generation, binding, expectedUploadCount, preparedReferences: undefined };
 }
 
 export async function createAssetFirstGenerationIntent(source: unknown) {
@@ -228,7 +236,7 @@ export async function submitAssetFirstGeneration({
   origin: 'ui' | 'mcp' | 'cli' | 'system';
   generationIntentId?: string;
 }) {
-  const { generation, binding, expectedUploadCount } = await preflightAssetFirstGeneration(source);
+  const { generation, binding, expectedUploadCount, preparedReferences } = await preflightAssetFirstGeneration(source);
   const intentId = generationIntentId || await issueGenerationUploadIntent({
     projectId: generation.projectId,
     effectId: binding.effectId,
@@ -238,7 +246,7 @@ export async function submitAssetFirstGeneration({
     throw new Error('Generation authorization does not match this project and model.');
   }
   try {
-    const prepared = await prepareGenerationReferences({
+    const prepared = preparedReferences ?? await prepareGenerationReferences({
       generation,
       intentId,
     });

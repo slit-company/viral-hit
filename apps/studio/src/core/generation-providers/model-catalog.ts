@@ -31,6 +31,7 @@ export type GenerationModelDescriptor = {
   id: string;
   name: string;
   providerId: string;
+  referenceDelivery?: 'project-media';
   kind: 'image' | 'video' | 'analysis';
   available: boolean;
   parameterSchema: unknown;
@@ -48,6 +49,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
           id: binding.modelId,
           name: effect.name,
           providerId: provider.id,
+        ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
           kind: 'analysis' as const,
           available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
           parameterSchema: effect.inputSchema,
@@ -70,6 +72,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         id: entry.id,
         name: entry.name,
         providerId: provider.id,
+        ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
         kind: entry.workspaceType === 'ai-image' ? ('image' as const) : ('video' as const),
         available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,
         parameterSchema: effect.inputSchema,

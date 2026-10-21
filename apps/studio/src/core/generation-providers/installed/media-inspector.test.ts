@@ -28,6 +28,8 @@ test('the independent inspector measures real encoded media and bounds downloads
     const address = server.address(); assert.ok(address && typeof address !== 'string');
     const url = `http://127.0.0.1:${address.port}`;
     const manifest = providerManifestSchema.parse(JSON.parse(await readFile('../../examples/providers/media-inspector/provider.json', 'utf8')));
+    // Exercise the optional URL fallback separately from installed project-media delivery.
+    delete manifest.referenceDelivery;
     const runtime = new InstalledProviderRuntime(manifest, await readFile('../../examples/providers/media-inspector/provider.mjs', 'utf8'));
     const effect = { linkName: 'vertical-delivery-review', type: 3 } as EffectRecord;
     const result = await runtime.call('createGeneration', effect, {input:{videoUrl:url+'/source', prompt:'Check delivery'}});

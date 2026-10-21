@@ -1,3 +1,4 @@
+import { localReferencePlaybackUrl } from '../generation-providers/local-reference';
 import { desc, eq } from 'drizzle-orm';
 
 import { generationHistory } from '@/config/db/schema';
@@ -55,7 +56,7 @@ const readUrlList = (...values: unknown[]) => {
       );
     }
   }
-  return [...new Set(urls)];
+  return [...new Set(urls.map(localReferencePlaybackUrl))];
 };
 
 const formatParamsLabel = (input: Record<string, unknown> | null) => {

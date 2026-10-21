@@ -33,7 +33,7 @@ function addProvider(provider: GenerationProviderDefinition) {
     effectIds.add(binding.effectId);
   }
   const metadata = getGenerationProviderMetadata(id);
-  if (!metadata || JSON.stringify([metadata.label, metadata.supports, metadata.modelBindings]) !== JSON.stringify([provider.label, provider.supports, provider.modelBindings])) {
+  if (!metadata || JSON.stringify([metadata.label, metadata.supports, metadata.modelBindings, metadata.referenceDelivery]) !== JSON.stringify([provider.label, provider.supports, provider.modelBindings, provider.referenceDelivery])) {
     throw new Error(`Provider ${id} must have matching public metadata in src/config/generation-catalog.ts.`);
   }
   providers.set(id, { ...provider, id });
