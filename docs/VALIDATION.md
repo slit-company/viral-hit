@@ -987,3 +987,10 @@ Installed image/video models can declare `maskInput`; a `mask` reference role re
 - **913 source tests** pass with the full FFmpeg build after regenerating the published provider schema. Architecture, typecheck and i18n pass.
 
 This proves the contract and a real local processor. It does not evaluate generative inpainting quality, video masks in the Studio painter, or relighting/decomposition/layered export.
+
+## Home as Explore — 2026-10-23
+
+- **Browser (production build, 2 tests):** the gallery shows 9 of the live catalog's recipes and "Show all" reveals every one; the Audio chip leaves only Audio cards; "Use template: Open frame" leads to the Studio start, and after it the new project opens Runs with `open-frame` selected and no `recipe` left in the address; a reload does not reopen Runs. A link to an uninstalled recipe opens Runs with an explanation. Choosing Video and Create sends `target=video` with the prompt. No page errors; no horizontal overflow at 390px.
+- The first run caught a real bug: clicking a media chip before hydration was ignored. The chips are now native radios inside the form.
+- **Visual review** at 1440×960 and 390×844: a duplicated General chip, identical neighbouring template covers and a stray projects link were fixed.
+- **913 source tests** pass after pointing the existing home test at the moved projects link; architecture, typecheck and i18n pass.

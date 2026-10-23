@@ -8,6 +8,7 @@ import { eligibleRecipeAssets, type RecipeInputAsset, type AssetCapability } fro
 import { ComfyConnectionSettings } from './comfy-connection-settings';
 import { RecipeLibrary } from './recipe-library';
 import { RecipeParameterForm } from './recipe-parameter-form';
+import { useRecipeLink } from './use-recipe-link';
 import { Action } from '@/components/base/action';
 import { useEffect, useRef, useState } from 'react';
 import { Activity, ArrowUpRight, RefreshCw } from 'lucide-react';
@@ -47,6 +48,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   const packed = new Set(packs.flatMap(pack => pack.recipeIds));
   const [inputAssets, setInputAssets] = useState<InputAsset[]>([]);
   const [recipeId, setRecipeId] = useState('open-frame');
+  const linkedRecipe = useRecipeLink(id => { setRecipeId(id); setOpen(true); });
   const [values, setValues] = useState<Record<string, string | number | boolean>>({});
   const selected = recipes.find(recipe => recipe.id === recipeId) ?? recipes[0];
   const remoteOperations = [...new Set(selected?.nodes.filter(node => !['asset.materialize', 'editor.sequence'].includes(node.operation)).map(node => node.operation) ?? [])];
@@ -87,7 +89,7 @@ export function HarnessDialog({ projectId }: { projectId: string }) {
   useEffect(() => {
     if (!open) return;
     let active = true;
-    void apiJsonGet<RecipeCatalog & { packs?: InstalledPack[] }>('/api/app/recipes').then(result => { if (active) { setCatalog(result); setPacks(result.packs ?? []); } }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
+    void apiJsonGet<RecipeCatalog & { packs?: InstalledPack[] }>('/api/app/recipes').then(result => { if (active) { setCatalog(result); setPacks(result.packs ?? []); if (linkedRecipe && !result.recipes.some(recipe => recipe.id === linkedRecipe)) setError('Recipe ' + linkedRecipe + ' is not installed in this workspace. Choose another recipe or install it from Packs.'); } }).catch(e => { if (active) setError(e instanceof Error ? e.message : 'Recipes unavailable'); });
     return () => { active = false; };
   }, [open]);
   useEffect(() => {

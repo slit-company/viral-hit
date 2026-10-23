@@ -1,17 +1,12 @@
 import { Action } from '@/components/base/action';
-import {
-  ArrowRight,
-  ArrowUp,
-  FolderClock,
-  PanelsTopLeft,
-  Workflow,
-} from 'lucide-react';
+import { ArrowUp, AudioLines, Film, ImageIcon } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 
-import { Link } from '@/core/i18n/navigation';
 import { normalizeLocale } from '@/config/locale';
 import { m } from '@/paraglide/messages.js';
 import { ProductShell } from './product-shell';
+import { HomeTools } from './home-tools';
+import { HomeTemplates } from './home-templates';
 
 function getCopy(locale: string) {
   const messageLocale = normalizeLocale(locale);
@@ -20,80 +15,31 @@ function getCopy(locale: string) {
     titleLine1: m['product.home.titleLine1']({}, { locale: messageLocale }),
     titleLine2: m['product.home.titleLine2']({}, { locale: messageLocale }),
     prompt: m['product.home.prompt']({}, { locale: messageLocale }),
-    sectionTitle: m['product.home.sectionTitle']({}, { locale: messageLocale }),
     projects: m['product.home.viewProjects']({}, { locale: messageLocale }),
-    studioDescription: m['product.home.studioDescription'](
-      {},
-      { locale: messageLocale }
-    ),
-    canvasDescription: m['product.home.canvasDescription'](
-      {},
-      { locale: messageLocale }
-    ),
-    projectsTitle: m['product.home.projectsTitle'](
-      {},
-      { locale: messageLocale }
-    ),
-    projectsDescription: m['product.home.projectsDescription'](
-      {},
-      { locale: messageLocale }
-    ),
-    open: m['product.home.openWorkspace']({}, { locale: messageLocale }),
     create: m['product.shell.create']({}, { locale: messageLocale }),
+    mediaImage: m['product.home.mediaImage']({}, { locale: messageLocale }),
+    mediaVideo: m['product.home.mediaVideo']({}, { locale: messageLocale }),
+    mediaAudio: m['product.home.mediaAudio']({}, { locale: messageLocale }),
   };
 }
 
 type HomeCopy = ReturnType<typeof getCopy>;
 
-function WorkspaceCard({
-  title,
-  index,
-  description,
-  href,
-  icon,
-  openLabel,
-}: {
-  title: string;
-  index: string;
-  description: string;
-  href: string;
-  icon: ReactNode;
-  openLabel: string;
-}) {
-  return (
-    <Link href={href} className="group block h-full">
-      <article className="relative flex h-full min-h-[212px] flex-col overflow-hidden rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-6 shadow-none transition duration-300 hover:-translate-y-0.5 hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]">
-        <div className="flex items-start justify-between">
-          <span className="grid size-10 place-items-center rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-accent)] transition-shadow duration-300 group-hover:shadow-none">
-            {icon}
-          </span>
-          <span className="vh-product-display text-[11px] font-semibold tracking-[0.14em] text-[var(--vh-text-2)]">
-            {index}
-          </span>
-        </div>
-        <h3 className="vh-product-display mt-6 text-[17px] font-semibold tracking-[-0.02em] text-[var(--vh-text-1)]">
-          {title}
-        </h3>
-        <p className="mt-2 truncate whitespace-nowrap text-[13px] leading-[1.65] text-[var(--vh-text-2)]">
-          {description}
-        </p>
-        <span className="mt-auto inline-flex items-center gap-2 pt-6 text-[12.5px] font-medium text-[var(--vh-text-2)] transition-colors group-hover:text-[var(--vh-text-1)]">
-          {openLabel}
-          <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-1" />
-        </span>
-      </article>
-    </Link>
-  );
-}
+type Media = 'image' | 'video' | 'audio';
 
 function PromptComposer({ copy }: { copy: HomeCopy }) {
   const [prompt, setPrompt] = useState('');
+  const choices: Array<[Media, string, ReactNode]> = [
+    ['image', copy.mediaImage, <ImageIcon key="image" className="size-3.5" />],
+    ['video', copy.mediaVideo, <Film key="video" className="size-3.5" />],
+    ['audio', copy.mediaAudio, <AudioLines key="audio" className="size-3.5" />],
+  ];
 
   return (
     <form
       action="/studio"
       method="get"
-      className="mx-auto mt-10 flex min-h-[160px] w-full max-w-[720px] flex-col rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 text-left shadow-none sm:p-6"
+      className="mx-auto mt-10 flex min-h-[168px] w-full max-w-[760px] flex-col rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 text-left shadow-[0_12px_40px_rgba(22,22,22,0.06)] sm:p-5"
     >
       <textarea
         name="prompt"
@@ -101,14 +47,26 @@ function PromptComposer({ copy }: { copy: HomeCopy }) {
         onChange={(event) => setPrompt(event.target.value)}
         placeholder={copy.prompt}
         aria-label={copy.prompt}
-        className="min-h-16 w-full resize-none border-0 bg-transparent text-[15px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-3)] sm:text-base"
+        className="min-h-16 w-full resize-none border-0 bg-transparent px-1 text-[15px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-3)] sm:text-base"
       />
-      <div className="mt-auto flex items-end justify-end">
+      <div className="mt-auto flex flex-wrap items-end justify-between gap-3 pt-3">
+        {/* Native radios submit with the form even before the page hydrates. */}
+        <div role="radiogroup" aria-label={copy.create} className="flex items-center gap-1 rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1">
+          {choices.map(([value, label, icon]) => (
+            <label key={value} className="relative cursor-pointer">
+              <input type="radio" name="target" value={value} defaultChecked={value === 'image'} className="peer sr-only" />
+              <span className="inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px] font-medium text-[var(--vh-text-2)] transition hover:text-[var(--vh-text-1)] peer-checked:bg-[var(--vh-surface)] peer-checked:font-semibold peer-checked:text-[var(--vh-text-1)] peer-checked:shadow-[0_1px_2px_rgba(22,22,22,0.08)] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-[var(--color-ink)]">
+                {icon}
+                {label}
+              </span>
+            </label>
+          ))}
+        </div>
         <Action
           type="submit"
-          aria-label={copy.create}
-          className="grid size-10 shrink-0 place-items-center rounded-full bg-[var(--vh-accent)] text-[var(--vh-accent-ink)] shadow-none transition hover:scale-[1.04] hover:bg-[var(--vh-accent)]"
+          className="inline-flex h-11 min-w-[132px] items-center justify-center gap-2 rounded-[14px] bg-[var(--color-brand-lime)] px-6 text-[14px] font-semibold text-[var(--color-ink)] shadow-none transition hover:brightness-95"
         >
+          {copy.create}
           <ArrowUp className="size-4" />
         </Action>
       </div>
@@ -138,47 +96,8 @@ export function ProductHome({ locale }: { locale: string }) {
           <PromptComposer copy={copy} />
         </section>
 
-        <section className="pb-14">
-          <div className="mb-5 flex items-center justify-between gap-4">
-            <h2 className="vh-product-display text-xl font-semibold tracking-[-0.03em] text-[var(--vh-text-1)] sm:text-[22px]">
-              {copy.sectionTitle}
-            </h2>
-            <Link
-              href="/projects"
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--vh-text-2)] transition hover:text-[var(--vh-text-1)]"
-            >
-              {copy.projects}
-              <ArrowRight className="size-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-3">
-            <WorkspaceCard
-              title="Studio"
-              index="01"
-              description={copy.studioDescription}
-              href="/studio"
-              icon={<PanelsTopLeft className="size-5" />}
-              openLabel={copy.open}
-            />
-            <WorkspaceCard
-              title="Canvas"
-              index="02"
-              description={copy.canvasDescription}
-              href="/canvas"
-              icon={<Workflow className="size-5" />}
-              openLabel={copy.open}
-            />
-            <WorkspaceCard
-              title={copy.projectsTitle}
-              index="03"
-              description={copy.projectsDescription}
-              href="/projects"
-              icon={<FolderClock className="size-5" />}
-              openLabel={copy.open}
-            />
-          </div>
-        </section>
+        <HomeTools locale={locale} projectsLabel={copy.projects} />
+        <HomeTemplates locale={locale} />
       </main>
     </ProductShell>
   );

@@ -9,6 +9,7 @@ export const Route = createFileRoute('/canvas/$projectId')({
     target: (search.target as string) || undefined,
     model: (search.model as string) || undefined,
     prompt: (search.prompt as string) || undefined,
+    recipe: (search.recipe as string) || undefined,
     preview: (search.preview as string) || undefined,
     focus: (search.focus as string) || undefined,
   }),

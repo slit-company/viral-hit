@@ -34,3 +34,6 @@ Each phase ends with typecheck, tests, i18n, build, bundle budget, a browser tes
 
 Higgsfield's pricing, credits, promotions, community feed and account surfaces. Their media, logos and copy are not reused.
 
+## Progress
+
+- **Phase 1, 2026-10-23.** Home keeps the greeting and adds a Higgsfield-style composer (Image/Video/Audio chips as native radios that work before hydration, large lime Create), a tool bento of nine media cards, and a template gallery fed by `/api/app/recipes`. General recipes and pack scopes share one chip; specialized appears when a specialized pack is installed. Nine cards show first, with "Show all". A card links to `/studio?recipe=<id>`; after the explicit Studio start, Runs opens with that recipe selected and the parameter is removed from the address. An uninstalled recipe link explains itself. Covers and prompts: [BRAND.md](BRAND.md#explore-covers).

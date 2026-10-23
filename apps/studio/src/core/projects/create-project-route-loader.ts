@@ -11,7 +11,7 @@ export async function loadCreateProjectRoute(
   workspaceMode: WorkspaceMode
 ) {
   const locale = getLocale();
-  const { target, model, prompt } = parseProjectEntryIntent(search);
+  const { target, model, prompt, recipe } = parseProjectEntryIntent(search);
   const resolvedPrompt = prompt?.trim() || undefined;
   const messageLocale = normalizeLocale(locale);
   const projectName = resolvedPrompt
@@ -23,6 +23,7 @@ export async function loadCreateProjectRoute(
     target: target ?? null,
     model: model ?? null,
     prompt: prompt ?? null,
+    recipe: recipe ?? null,
     workspaceMode,
     projectName,
   };

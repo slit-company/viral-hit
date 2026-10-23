@@ -20,6 +20,7 @@ export type CreateProjectRouteData = {
   target: string | null;
   model: string | null;
   prompt: string | null;
+  recipe: string | null;
   workspaceMode: WorkspaceMode;
   projectName: string;
 };
@@ -58,7 +59,7 @@ export function CreateProjectRoutePage({
 }: {
   data: CreateProjectRouteData;
 }) {
-  const { locale, target, model, prompt, projectName } = data;
+  const { locale, target, model, prompt, recipe, projectName } = data;
   const copy = getCopy(locale);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,6 +86,7 @@ export function CreateProjectRoutePage({
           target: target ?? undefined,
           model: model ?? undefined,
           prompt: prompt ?? undefined,
+          recipe: recipe ?? undefined,
           mode: workspaceMode,
         })
       );

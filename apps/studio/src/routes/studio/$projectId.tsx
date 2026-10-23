@@ -9,6 +9,7 @@ export const Route = createFileRoute('/studio/$projectId')({
     target: (search.target as string) || undefined,
     model: (search.model as string) || undefined,
     prompt: (search.prompt as string) || undefined,
+    recipe: (search.recipe as string) || undefined,
   }),
   loaderDeps: ({ search }) => ({ search }),
   loader: ({ params, deps }) =>

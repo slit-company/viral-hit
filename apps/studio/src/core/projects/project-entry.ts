@@ -15,6 +15,8 @@ export type ProjectEntryIntent = {
   model?: string;
   prompt?: string;
   focus?: string;
+  /** Recipe to select in Runs when the project opens, for example from a template card. */
+  recipe?: string;
 };
 
 type ProjectWorkspaceIntent = ProjectEntryIntent & {
@@ -36,6 +38,9 @@ const applyProjectEntryIntent = (
   }
   if (intent.focus) {
     searchParams.set('focus', intent.focus);
+  }
+  if (intent.recipe) {
+    searchParams.set('recipe', intent.recipe);
   }
   return searchParams;
 };
@@ -61,6 +66,7 @@ export function parseProjectEntryIntent(
     model: readValue('model'),
     prompt: readValue('prompt'),
     focus: readValue('focus'),
+    recipe: readValue('recipe'),
   };
 }
 
@@ -121,6 +127,7 @@ export function buildPostCreateProjectDetailPath({
   target,
   model,
   prompt,
+  recipe,
   mode,
 }: ProjectWorkspaceIntent & {
   projectId: string;
@@ -132,6 +139,7 @@ export function buildPostCreateProjectDetailPath({
     target,
     model,
     prompt,
+    recipe,
     mode,
   });
 }

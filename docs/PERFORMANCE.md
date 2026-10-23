@@ -192,3 +192,7 @@ Final output: **203 public files / 8,608,399 bytes**, **2,040,168 raw JavaScript
 ## Masked edits — 2026-10-23
 
 Summed script gzip: **602,096 bytes**, **2,059 bytes** more than the color patch. The script budget changed from 601,000 to **603,000** in this reviewed decision. The added code is the Studio mask painter, its canvas helpers and the browser mask rules, in the Studio route chunk; other routes' first load is unchanged. Phosphor icons appeared as a possible saving but are used only by the reused SEED dialog and back button, so they stay to keep those components faithful. No dependency, worker or service was added.
+
+## Home as Explore — 2026-10-23
+
+Summed script gzip: **606,691 bytes**, **4,595 bytes** more than masked edits; public files **8,903,281 bytes**. The script budget changed from 603,000 to **607,000** in this reviewed decision. The increase is the tool bento, template gallery, recipe link handling and 31 new home messages in three languages; seven unused home messages and three duplicates were removed first. Thirteen cover images add 236 KB of WebP, loaded lazily below the fold. No dependency, worker or service was added.

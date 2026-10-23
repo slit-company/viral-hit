@@ -7,6 +7,7 @@ const validateProjectIntent = (search: Record<string, unknown>) => ({
   target: (search.target as string) || undefined,
   model: (search.model as string) || undefined,
   prompt: (search.prompt as string) || undefined,
+  recipe: (search.recipe as string) || undefined,
 });
 
 export const Route = createFileRoute('/studio/')({
