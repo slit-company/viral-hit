@@ -184,3 +184,8 @@ Production output remains **203 public files / 8,605,280 bytes**, **2,037,049 ra
 ## Video overlays — 2026-10-22
 
 Final output: **203 public files / 8,607,684 bytes**, **2,039,453 raw JavaScript / 599,831 summed gzip bytes**. This adds **648 gzip bytes** and passes the unchanged 10 MB/600 KB budgets. There is no new dependency, schema migration, model, worker or polling service. Only currently visible overlay videos mount a native preview decoder; export uses the existing media decoders and FFmpeg filter graph. Tests cover a short moving inset with audio and both real export paths. High layer counts, long sources, whole-host RSS and competitor throughput remain unmeasured.
+
+## Video color agreement — 2026-10-23
+
+Final output: **203 public files / 8,608,399 bytes**, **2,040,168 raw JavaScript / 600,037 summed gzip bytes**, **206 gzip bytes** more than video overlays. The script budget changed from 600,000 to **601,000** gzip bytes in this reviewed decision. The added bytes are the H.264 color-tag parser and decoder color configuration in the lazily loaded media chunk, which is fetched only for local media inspection and browser export; initial route chunks are unchanged. Before changing the budget we checked for removable code of comparable size: every bundled container format backs an editor import field, query devtools are excluded from production, and smaller patch variants measured 600,064–600,078 bytes. Upgrading Mediabunny to 1.62.0 instead measured 658,749 gzip bytes and still interpreted untagged H.264 differently from FFmpeg. No dependency, worker or service was added.
+

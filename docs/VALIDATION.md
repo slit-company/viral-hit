@@ -964,3 +964,16 @@ Overlay tracks now accept project-owned video as well as images. Existing source
 - Architecture (**633 modules / 279 browser-reachable / 21 unchanged size allowances / zero cycles**), typecheck, i18n, WorkBuddy structure, production build and bundle budgets passed. Import and preview handling were extracted from the existing editor; source-module allowances were not raised. Actual production captures at **1440×960** and **390×844** passed the frozen visual rubric at **4.33/5** and **4.225/5** (self-review). A companion phone capture verifies the unobscured moving layer after the inspector closes. The normal 3808 app was restarted on the final build and `/packs` returned 200.
 
 Ignored local evidence: `research/evidence/video-overlays/`, containing source/browser/build logs, verification corrections, production launcher/config, source/export MP4 files, sampled pixels/audio levels and frozen visual records. Test workspaces were isolated; no paid model, real social account or external publishing was used. Full color management, masks, blend modes, HDR, many-layer/long-project resource measurements and full Higgsfield parity remain open.
+
+## Video color agreement — 2026-10-23
+
+Browser export decoded untagged H.264 as BT.709 while FFmpeg used BT.601, so green patches differed by up to 39 levels (216 versus 255). The pinned Mediabunny 1.25.3 also ignored color tags stored only in the H.264 sequence parameter set, which x264 and FFmpeg write by default. A pnpm patch now reads those tags and completes the WebCodecs decoder color configuration, defaulting untagged H.264 to limited-range BT.601.
+
+- A direct WebCodecs probe on four fixtures (untagged SD, untagged HD, BT.709 tagged, BT.601 tagged) now reads every declared matrix. Untagged and BT.601 sources match FFmpeg within 2 levels. The BT.709 source keeps its existing up to 10 level difference in the blue channel of pure green, identical to the result before the patch.
+- New browser test `video-color.spec.ts` imports untagged and BT.601 tagged patch videos, exports through the browser and the server, and compares five patch centers at native 1920×1080. **Without the patch both cases fail** (browser 40,145,89 versus server 50,158,90). **With the patch both pass**, agreeing within 1 level. The existing video-overlay scenario also passes.
+- **909 source tests passed** with the full FFmpeg build. A first run without `VIRAL_HIT_FFMPEG` failed 8 tests because the default FFmpeg lacks `drawtext`, an environment issue already recorded in lessons.
+- Architecture, typecheck and i18n passed. The script budget changed from 600 KB to 601 KB with recorded measurements in [performance](PERFORMANCE.md).
+- Upgrading to Mediabunny 1.62.0 was evaluated and rejected: it measured 658,749 gzip bytes and still decoded untagged video as BT.709.
+
+This verifies export agreement for SDR H.264 MP4. It does not establish HDR or wide-gamut handling, color for VP9/AV1/HEVC sources, or the browser preview's interpretation. Headless Chromium's native video element rendered even BT.709 tagged files as BT.601, so preview color was not used as a reference. Evidence is local-only under `research/evidence/video-color/`.
+

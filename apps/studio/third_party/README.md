@@ -26,7 +26,13 @@ machine-readable pin is in
   encoding, and MP4 muxing
 
 The preserved license is in [`mediabunny/LICENSE`](./mediabunny/LICENSE).
-Mediabunny is consumed as an unmodified npm dependency. Viral Hit does not
+Mediabunny is consumed from npm with one local modification,
+[`patches/mediabunny@1.25.3.patch`](../patches/mediabunny@1.25.3.patch),
+applied by pnpm at install time. It reads H.264 color tags from the sequence
+parameter set when an MP4 has no `colr` box, and gives untagged H.264 the same
+limited-range BT.601 interpretation FFmpeg uses. The patch modifies
+`codec-data` and `isobmff-demuxer` in both `src/` and `dist/`; those
+modified files remain available under MPL-2.0 through the patch file. Viral Hit does not
 bundle a native FFmpeg executable, and browser-native editing and MP4 export do
 not require a system FFmpeg installation. Optional MCP/Node frame extraction
 and Timeline rendering require user-provided `ffmpeg`; Timeline rendering also

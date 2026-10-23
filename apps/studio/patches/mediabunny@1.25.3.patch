@@ -1,0 +1,205 @@
+diff --git a/dist/modules/src/codec-data.d.ts b/dist/modules/src/codec-data.d.ts
+index 0b09f4a7e24aba7d032579abab8365424259dd2c..cd705d0128131aa2d35c9fdd080c2a1f059cc7cf 100644
+--- a/dist/modules/src/codec-data.d.ts
++++ b/dist/modules/src/codec-data.d.ts
+@@ -54,6 +54,10 @@ export type AvcSpsInfo = {
+     constraintFlags: number;
+     levelIdc: number;
+     frameMbsOnlyFlag: number;
++    colourPrimaries?: number;
++    transferCharacteristics?: number;
++    matrixCoefficients?: number;
++    fullRangeFlag?: number;
+     chromaFormatIdc: number | null;
+     bitDepthLumaMinus8: number | null;
+     bitDepthChromaMinus8: number | null;
+diff --git a/dist/modules/src/codec-data.js b/dist/modules/src/codec-data.js
+index cac03edc8068ba98191980c82540e89a4b338435..e63e9d98cdbec7f2798f3e2ce799444203cf312c 100644
+--- a/dist/modules/src/codec-data.js
++++ b/dist/modules/src/codec-data.js
+@@ -401,11 +401,32 @@ export const parseAvcSps = (sps) => {
+         readExpGolomb(bitstream); // pic_width_in_mbs_minus1
+         readExpGolomb(bitstream); // pic_height_in_map_units_minus1
+         const frameMbsOnlyFlag = bitstream.readBits(1);
++        if (!frameMbsOnlyFlag) bitstream.skipBits(1); // mb_adaptive_frame_field_flag
++        bitstream.skipBits(1); // direct_8x8_inference_flag
++        if (bitstream.readBits(1)) { // frame_cropping_flag
++            for (let i = 0; i < 4; i++) readExpGolomb(bitstream);
++        }
++        let colourPrimaries, transferCharacteristics, matrixCoefficients, fullRangeFlag;
++        if (bitstream.readBits(1)) { // vui_parameters_present_flag
++            if (bitstream.readBits(1) && bitstream.readBits(8) === 255) bitstream.skipBits(32);
++            if (bitstream.readBits(1)) bitstream.skipBits(1); // overscan_info_present_flag
++            if (bitstream.readBits(1)) { // video_signal_type_present_flag
++                bitstream.skipBits(3);
++                fullRangeFlag = bitstream.readBits(1);
++                if (bitstream.readBits(1)) { // colour_description_present_flag
++                    colourPrimaries = bitstream.readBits(8);
++                    transferCharacteristics = bitstream.readBits(8);
++                    matrixCoefficients = bitstream.readBits(8);
++                }
++            }
++        }
++
+         return {
+             profileIdc,
+             constraintFlags,
+             levelIdc,
+             frameMbsOnlyFlag,
++            colourPrimaries, transferCharacteristics, matrixCoefficients, fullRangeFlag,
+             chromaFormatIdc,
+             bitDepthLumaMinus8,
+             bitDepthChromaMinus8,
+diff --git a/dist/modules/src/isobmff/isobmff-demuxer.js b/dist/modules/src/isobmff/isobmff-demuxer.js
+index b489a775fceceb48986ee22cd10d2b23a77632f7..56bf78550de8fbefb220c76705d907b1feb16455 100644
+--- a/dist/modules/src/isobmff/isobmff-demuxer.js
++++ b/dist/modules/src/isobmff/isobmff-demuxer.js
+@@ -6,7 +6,7 @@
+  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
+  */
+ import { extractAudioCodecString, extractVideoCodecString, OPUS_SAMPLE_RATE, parseAacAudioSpecificConfig, parsePcmCodec, PCM_AUDIO_CODECS, } from '../codec.js';
+-import { extractAv1CodecInfoFromPacket, extractVp9CodecInfoFromPacket, FlacBlockType, } from '../codec-data.js';
++import { extractAv1CodecInfoFromPacket, extractVp9CodecInfoFromPacket, FlacBlockType, parseAvcSps, deserializeAvcDecoderConfigurationRecord, } from '../codec-data.js';
+ import { Demuxer } from '../demuxer.js';
+ import { InputAudioTrack, InputVideoTrack, } from '../input-track.js';
+ import { assert, binarySearchExact, binarySearchLessOrEqual, Bitstream, COLOR_PRIMARIES_MAP_INVERSE, findLastIndex, isIso639Dash2LanguageCode, last, MATRIX_COEFFICIENTS_MAP_INVERSE, normalizeRotation, roundToMultiple, textDecoder, TRANSFER_CHARACTERISTICS_MAP_INVERSE, UNDETERMINED_LANGUAGE, toDataView, roundIfAlmostInteger, } from '../misc.js';
+@@ -2329,13 +2329,23 @@ class IsobmffVideoTrackBacking extends IsobmffTrackBacking {
+         return this.internalTrack.rotation;
+     }
+     async getColorSpace() {
++        const info = this.internalTrack.info;
++        const c = info.colorSpace ?? {};
++        if (info.codec !== 'avc' || !info.codecDescription) {
++            return { primaries: c.primaries, transfer: c.transfer, matrix: c.matrix, fullRange: c.fullRange };
++        }
++        // H.264 color tags often live only in the SPS. Untagged values follow FFmpeg's
++        // limited-range BT.601 default so browser and server exports agree.
++        const record = deserializeAvcDecoderConfigurationRecord(info.codecDescription);
++        const sps = record?.sequenceParameterSets[0] ? parseAvcSps(record.sequenceParameterSets[0]) : null;
+         return {
+-            primaries: this.internalTrack.info.colorSpace?.primaries,
+-            transfer: this.internalTrack.info.colorSpace?.transfer,
+-            matrix: this.internalTrack.info.colorSpace?.matrix,
+-            fullRange: this.internalTrack.info.colorSpace?.fullRange,
++            primaries: c.primaries ?? COLOR_PRIMARIES_MAP_INVERSE[sps?.colourPrimaries] ?? 'bt709',
++            transfer: c.transfer ?? TRANSFER_CHARACTERISTICS_MAP_INVERSE[sps?.transferCharacteristics] ?? 'bt709',
++            matrix: c.matrix ?? MATRIX_COEFFICIENTS_MAP_INVERSE[sps?.matrixCoefficients] ?? 'smpte170m',
++            fullRange: c.fullRange ?? !!sps?.fullRangeFlag,
+         };
+     }
++
+     async canBeTransparent() {
+         return false;
+     }
+@@ -2357,7 +2367,9 @@ class IsobmffVideoTrackBacking extends IsobmffTrackBacking {
+                 codedWidth: this.internalTrack.info.width,
+                 codedHeight: this.internalTrack.info.height,
+                 description: this.internalTrack.info.codecDescription ?? undefined,
+-                colorSpace: this.internalTrack.info.colorSpace ?? undefined,
++                colorSpace: this.internalTrack.info.codec === 'avc'
++                    ? await this.getColorSpace()
++                    : this.internalTrack.info.colorSpace ?? undefined,
+             };
+         })();
+     }
+diff --git a/src/codec-data.ts b/src/codec-data.ts
+index eef04ecf6761b020f307803fa4391e1a79ce324d..a3f316b50933d83da748e4ff37f92398f401a70e 100644
+--- a/src/codec-data.ts
++++ b/src/codec-data.ts
+@@ -439,6 +439,10 @@ export type AvcSpsInfo = {
+ 	constraintFlags: number;
+ 	levelIdc: number;
+ 	frameMbsOnlyFlag: number;
++	colourPrimaries?: number;
++	transferCharacteristics?: number;
++	matrixCoefficients?: number;
++	fullRangeFlag?: number;
+ 	chromaFormatIdc: number | null;
+ 	bitDepthLumaMinus8: number | null;
+ 	bitDepthChromaMinus8: number | null;
+@@ -528,12 +532,34 @@ export const parseAvcSps = (sps: Uint8Array): AvcSpsInfo | null => {
+ 		readExpGolomb(bitstream); // pic_height_in_map_units_minus1
+ 
+ 		const frameMbsOnlyFlag = bitstream.readBits(1);
++		if (!frameMbsOnlyFlag) bitstream.skipBits(1); // mb_adaptive_frame_field_flag
++		bitstream.skipBits(1); // direct_8x8_inference_flag
++		if (bitstream.readBits(1)) { // frame_cropping_flag
++			for (let i = 0; i < 4; i++) readExpGolomb(bitstream);
++		}
++		let colourPrimaries: number | undefined, transferCharacteristics: number | undefined,
++			matrixCoefficients: number | undefined, fullRangeFlag: number | undefined;
++		if (bitstream.readBits(1)) { // vui_parameters_present_flag
++			if (bitstream.readBits(1) && bitstream.readBits(8) === 255) bitstream.skipBits(32);
++			if (bitstream.readBits(1)) bitstream.skipBits(1); // overscan_info_present_flag
++			if (bitstream.readBits(1)) { // video_signal_type_present_flag
++				bitstream.skipBits(3);
++				fullRangeFlag = bitstream.readBits(1);
++				if (bitstream.readBits(1)) { // colour_description_present_flag
++					colourPrimaries = bitstream.readBits(8);
++					transferCharacteristics = bitstream.readBits(8);
++					matrixCoefficients = bitstream.readBits(8);
++				}
++			}
++		}
++
+ 
+ 		return {
+ 			profileIdc,
+ 			constraintFlags,
+ 			levelIdc,
+ 			frameMbsOnlyFlag,
++			colourPrimaries, transferCharacteristics, matrixCoefficients, fullRangeFlag,
+ 			chromaFormatIdc,
+ 			bitDepthLumaMinus8,
+ 			bitDepthChromaMinus8,
+diff --git a/src/isobmff/isobmff-demuxer.ts b/src/isobmff/isobmff-demuxer.ts
+index b76fd852d9e9fbaf9ae7d57df7a6961ba94ba118..019a62c6066030ae2f8a59e5965703b964ade283 100644
+--- a/src/isobmff/isobmff-demuxer.ts
++++ b/src/isobmff/isobmff-demuxer.ts
+@@ -25,6 +25,8 @@ import {
+ 	extractAv1CodecInfoFromPacket,
+ 	extractVp9CodecInfoFromPacket,
+ 	FlacBlockType,
++	parseAvcSps,
++	deserializeAvcDecoderConfigurationRecord,
+ 	HevcDecoderConfigurationRecord,
+ 	Vp9CodecInfo,
+ } from '../codec-data';
+@@ -2817,12 +2819,21 @@ class IsobmffVideoTrackBacking extends IsobmffTrackBacking implements InputVideo
+ 	}
+ 
+ 	async getColorSpace(): Promise<VideoColorSpaceInit> {
++		const info = this.internalTrack.info;
++		const c = (info.colorSpace ?? {}) as VideoColorSpaceInit;
++		if (info.codec !== 'avc' || !info.codecDescription) {
++			return { primaries: c.primaries, transfer: c.transfer, matrix: c.matrix, fullRange: c.fullRange };
++		}
++		// H.264 color tags often live only in the SPS. Untagged values follow FFmpeg's
++		// limited-range BT.601 default so browser and server exports agree.
++		const record = deserializeAvcDecoderConfigurationRecord(info.codecDescription);
++		const sps = record?.sequenceParameterSets[0] ? parseAvcSps(record.sequenceParameterSets[0]) : null;
+ 		return {
+-			primaries: this.internalTrack.info.colorSpace?.primaries,
+-			transfer: this.internalTrack.info.colorSpace?.transfer,
+-			matrix: this.internalTrack.info.colorSpace?.matrix,
+-			fullRange: this.internalTrack.info.colorSpace?.fullRange,
+-		};
++			primaries: c.primaries ?? COLOR_PRIMARIES_MAP_INVERSE[sps?.colourPrimaries!] ?? 'bt709',
++			transfer: c.transfer ?? TRANSFER_CHARACTERISTICS_MAP_INVERSE[sps?.transferCharacteristics!] ?? 'bt709',
++			matrix: c.matrix ?? MATRIX_COEFFICIENTS_MAP_INVERSE[sps?.matrixCoefficients!] ?? 'smpte170m',
++			fullRange: c.fullRange ?? !!sps?.fullRangeFlag,
++		} as VideoColorSpaceInit;
+ 	}
+ 
+ 	async canBeTransparent() {
+@@ -2848,7 +2859,9 @@ class IsobmffVideoTrackBacking extends IsobmffTrackBacking implements InputVideo
+ 				codedWidth: this.internalTrack.info.width,
+ 				codedHeight: this.internalTrack.info.height,
+ 				description: this.internalTrack.info.codecDescription ?? undefined,
+-				colorSpace: this.internalTrack.info.colorSpace ?? undefined,
++				colorSpace: this.internalTrack.info.codec === 'avc'
++					? await this.getColorSpace()
++					: this.internalTrack.info.colorSpace ?? undefined,
+ 			};
+ 		})();
+ 	}

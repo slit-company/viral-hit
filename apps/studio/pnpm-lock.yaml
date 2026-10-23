@@ -20,6 +20,11 @@ overrides:
   seroval: 1.6.11
   source-map-js: 1.2.2
 
+patchedDependencies:
+  mediabunny@1.25.3:
+    hash: 85e02818ad6659086f583034f1e5b7504222c2dee6b94208327afe4a71df9be6
+    path: patches/mediabunny@1.25.3.patch
+
 importers:
 
   .:
@@ -101,7 +106,7 @@ importers:
         version: 0.511.0(react@19.2.5)
       mediabunny:
         specifier: 1.25.3
-        version: 1.25.3
+        version: 1.25.3(patch_hash=85e02818ad6659086f583034f1e5b7504222c2dee6b94208327afe4a71df9be6)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -7480,7 +7485,7 @@ snapshots:
 
   media-typer@1.1.0: {}
 
-  mediabunny@1.25.3:
+  mediabunny@1.25.3(patch_hash=85e02818ad6659086f583034f1e5b7504222c2dee6b94208327afe4a71df9be6):
     dependencies:
       '@types/dom-mediacapture-transform': 0.1.12
       '@types/dom-webcodecs': 0.1.13
