@@ -9,6 +9,7 @@ export function useModelRecipeBuilder(onBuilt: (result: RecipeInspection) => voi
   const [modelId, setModelId] = useState('');
   const [counts, setCounts] = useState({ image: '0', video: '0', audio: '0' });
   const [outputIndex, setOutputIndex] = useState('0');
+  const [includeMask, setIncludeMask] = useState(false);
   const [metadata, setMetadata] = useState({ id: '', title: '', version: '1.0.0', description: '', author: '', license: '', category: 'creation' });
   const [scope, setScope] = useState('general');
   const [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -26,7 +27,7 @@ export function useModelRecipeBuilder(onBuilt: (result: RecipeInspection) => voi
   const model = models.find(item => item.id === modelId);
   function choose(id: string) {
     const next = models.find(item => item.id === id);
-    setModelId(id); setOutputIndex('0'); setError('');
+    setModelId(id); setOutputIndex('0'); setError(''); setIncludeMask(false);
     if (next) setCounts({ image: String(next.references.image.min), video: String(next.references.video.min), audio: String(next.references.audio.min) });
   }
   const total = sourceKinds.reduce((sum, kind) => sum + Number(counts[kind]), 0);
@@ -35,7 +36,7 @@ export function useModelRecipeBuilder(onBuilt: (result: RecipeInspection) => voi
   function build() {
     if (!model || !ready) return;
     return work(() => apiJsonPost<RecipeInspection>('/api/app/recipes', { action: 'build_model', expectedModelDigest: model.digest,
-      definition: { schemaVersion: 1, ...metadata, tags: [scope, model.kind], modelId, referenceCounts: { image: Number(counts.image), video: Number(counts.video), audio: Number(counts.audio) }, outputIndex: Number(outputIndex) } }), onBuilt);
+      definition: { schemaVersion: 1, ...metadata, tags: [scope, model.kind], modelId, referenceCounts: { image: Number(counts.image), video: Number(counts.video), audio: Number(counts.audio) }, outputIndex: Number(outputIndex), mask: includeMask } }), onBuilt);
   }
-  return { models, model, modelId, counts, outputIndex, metadata, scope, busy, error, ready, total, refresh, choose, setCounts, setOutputIndex, setMetadata, setScope, build };
+  return { models, model, modelId, counts, outputIndex, includeMask, setIncludeMask, metadata, scope, busy, error, ready, total, refresh, choose, setCounts, setOutputIndex, setMetadata, setScope, build };
 }

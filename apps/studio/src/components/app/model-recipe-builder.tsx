@@ -43,6 +43,8 @@ export function ModelRecipeBuilder({ onBack, onBuilt }: { onBack: () => void; on
         <div className="grid grid-cols-3 gap-2">{sourceKinds.map(kind => <Field key={kind} id={`model-source-${kind}`} label={`${kind} sources`} value={b.counts[kind]} disabled={b.busy || b.model!.references[kind].max === 0}
           min={b.model!.references[kind].min} max={Math.min(20, b.model!.references[kind].max)} hint={`${b.model!.references[kind].min}–${Math.min(20, b.model!.references[kind].max)} allowed`} onChange={value => b.setCounts({ ...b.counts, [kind]: value })} />)}</div>
         <p className="text-xs text-[var(--vh-text-2)]">Every chosen slot becomes a required project input.{b.model.kind === 'analysis' ? ' Analysis requires at least one source and returns a report.' : ' Select which returned media item to keep; the model must produce that item.'}</p>
+        {b.model.mask?.required && <p className="text-xs text-[var(--vh-text-2)]">This model edits a marked area, so the recipe adds a required Mask input. White marks the area to change.</p>}
+        {b.model.mask && !b.model.mask.required && <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={b.includeMask} disabled={b.busy} onChange={event => b.setIncludeMask(event.target.checked)} />Add a Mask input (white marks the area to change)</label>}
         {b.model.kind !== 'analysis' && <Field id="model-output-index" label="Output index (starts at 0)" value={b.outputIndex} disabled={b.busy} min={0} max={7} onChange={b.setOutputIndex} />}
       </section>
       <section className="space-y-3">

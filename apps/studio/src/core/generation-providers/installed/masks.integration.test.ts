@@ -103,3 +103,30 @@ test('a durable recipe passes the mask role through to the installed model', asy
     assert.deepEqual([result.width, result.height], [160, 80]);
   } finally { harness.close(); }
 });
+
+test('a recipe built from a mask model gets a mask input and runs with real media', async () => {
+  const { project, source, mask } = await setup();
+  const { listModelRecipeModels, buildModelRecipe } = await import('@/core/harness/model-recipe.server');
+  const { compileRecipe } = await import('@/core/harness/recipes');
+  const { DurableHarness } = await import('@/core/harness/durable');
+  const { pinRuntimePlan } = await import('@/core/harness/runtime-plan');
+  const { createRuntimeAdapters } = await import('@/core/harness/adapters');
+  const models = listModelRecipeModels();
+  const chosen = models.find(model => model.id === 'masked-image-edit')!, plain = models.find(model => model.id === 'procedural-gradient')!;
+  assert.deepEqual(chosen.mask, { required: true });
+  assert.equal(plain.mask, undefined);
+  const definition = { schemaVersion: 1 as const, id: 'marked-area-fill', title: 'Fill a marked area', version: '1.0.0', description: 'Fill the painted part of an image.', author: 'Test author', license: 'Apache-2.0', category: 'editing', tags: ['general', 'image'], modelId: chosen.id, referenceCounts: { image: 1, video: 0, audio: 0 }, outputIndex: 0 };
+  const recipe = buildModelRecipe(definition, chosen.digest);
+  assert.ok(recipe.parameters.some(parameter => parameter.id === 'mask' && parameter.type === 'asset'));
+  assert.throws(() => buildModelRecipe({ ...definition, modelId: plain.id, referenceCounts: { image: 0, video: 0, audio: 0 }, mask: true }, plain.digest), /does not accept a mask/);
+  assert.throws(() => buildModelRecipe({ ...definition, referenceCounts: { image: 0, video: 0, audio: 0 } }, chosen.digest), /image references|source/);
+  const plan = await pinRuntimePlan(compileRecipe(recipe, { prompt: 'Fill the corner', 'image-1': source.id, mask: mask.id, 'option-effect': 'fill', 'option-strength': 16, 'option-color': 'white' }, project.id));
+  let now = Date.now();
+  const harness = new DurableHarness(join(directory, 'harness-builder.sqlite'), () => now);
+  try {
+    const run = harness.enqueue(plan, 'marked-area-recipe');
+    for (let i = 0; i < 6; i++) { now += 25_000; await harness.step(run, createRuntimeAdapters()); }
+    const [job] = harness.jobs(run);
+    assert.equal(job.state, 'succeeded', job.error ?? '');
+  } finally { harness.close(); }
+});

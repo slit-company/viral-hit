@@ -1013,3 +1013,7 @@ This proves the contract and a real local processor. It does not evaluate genera
 - **Browser (production build):** with 30 extra projects, name search narrows to the two matches, recent and name order differ as expected, a literal `100%` query does not match `100 percent decoy`, an empty search says so, 26 paged projects show 24 then all 26 after "Show more", and deleting from search results updates the list. MCP `viral_hit_project_list` returns the same filtered, name-sorted projects. No horizontal overflow at 390px.
 - The first run showed that text typed before hydration was ignored; the control now adopts it on mount.
 - Home template tests still pass; 913 source tests, architecture, typecheck and i18n pass.
+
+## Mask inputs in the recipe builder — 2026-10-23
+
+The model catalog exposes mask support, and the builder adds a Mask input for mask models. An integration test builds a recipe from the example mask processor, compiles it with a real source and mask, and runs it through the durable worker to success; asking for a mask on the procedural model and a mask without a source are rejected. Recipe authoring and model requirement browser tests (6) still pass; 914 source tests, architecture and typecheck pass. Bundle: 610,842 gzip bytes, within the 612,000 budget.
