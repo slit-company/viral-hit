@@ -13,26 +13,26 @@ const STUDIO_START_HERE_IDEAS: StudioStartHereIdea[] = [
   {
     className:
       'left-0 top-[18px] size-[90px] rotate-[-8deg] rounded-[14px] sm:left-[22px] sm:top-[14px] sm:size-[132px]',
-    src: '/app/create-thumb-forest-v2.webp',
+    src: '/app/create-thumb-road.webp',
     title: 'Cinematic landscape',
   },
   {
     className:
       'left-[82px] top-[2px] size-[102px] rotate-[3deg] rounded-[17px] sm:left-[134px] sm:top-0 sm:size-[132px]',
-    src: '/app/create-thumb-character-v2.webp',
+    src: '/app/create-thumb-portrait.webp',
     title: 'Editorial character',
   },
   {
     className:
       'left-[172px] top-[10px] size-[96px] rounded-full sm:left-[250px] sm:top-[4px] sm:size-[126px]',
-    src: '/app/create-thumb-texture-v2.webp',
+    src: '/app/create-thumb-ripple.webp',
     title: 'Material study',
   },
   {
     className:
       'right-0 top-[16px] size-[98px] rotate-[6deg] rounded-[14px] sm:right-[6px] sm:top-[12px] sm:size-[128px]',
-    src: '/app/create-thumb-mask-v2.webp',
-    title: 'Surreal fashion film',
+    src: '/app/create-thumb-horse.webp',
+    title: 'Surreal film',
   },
 ];
 
