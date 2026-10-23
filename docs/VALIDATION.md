@@ -994,3 +994,9 @@ This proves the contract and a real local processor. It does not evaluate genera
 - The first run caught a real bug: clicking a media chip before hydration was ignored. The chips are now native radios inside the form.
 - **Visual review** at 1440×960 and 390×844: a duplicated General chip, identical neighbouring template covers and a stray projects link were fixed.
 - **913 source tests** pass after pointing the existing home test at the moved projects link; architecture, typecheck and i18n pass.
+
+## Workspace sidebar — 2026-10-23
+
+- **Browser (production build, 17 tests):** storyboards, storyboard authoring, reference plans, publishing, publication flows, generation providers (including the 390px header checks) and home templates pass. Sidebar links keep the accessible names of the header icons they replace ("Publish project", "Publishing connections"). Two geometry assertions that assumed the back button sat left of the Publish link now assert that the controls do not overlap.
+- **Visual review:** Studio with the sidebar expanded and collapsed, Storyboards inside the project shell, and the phone header at 390×844; no page errors or horizontal overflow.
+- **913 source tests**, architecture, typecheck and i18n pass.

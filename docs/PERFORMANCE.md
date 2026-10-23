@@ -196,3 +196,7 @@ Summed script gzip: **602,096 bytes**, **2,059 bytes** more than the color patch
 ## Home as Explore — 2026-10-23
 
 Summed script gzip: **606,691 bytes**, **4,595 bytes** more than masked edits; public files **8,903,281 bytes**. The script budget changed from 603,000 to **607,000** in this reviewed decision. The increase is the tool bento, template gallery, recipe link handling and 31 new home messages in three languages; seven unused home messages and three duplicates were removed first. Thirteen cover images add 236 KB of WebP, loaded lazily below the fold. No dependency, worker or service was added.
+
+## Workspace sidebar — 2026-10-23
+
+Summed script gzip: **608,656 bytes**, **1,965 bytes** more than the explore home. The script budget changed from 607,000 to **610,000** in this reviewed decision: the sidebar component and its 16 messages in three languages. The sidebar reuses the existing project list request with a 30 second cache; no dependency or service was added.

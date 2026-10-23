@@ -75,7 +75,7 @@ test('project publication UI retains preview, edits revisions and requires revie
   await page.getByRole('button', { name: 'Cancel delivery', exact: true }).click();
   await expect(page.getByText('Canceled', { exact: true })).toBeVisible();
   const back = page.getByRole('button', { name: 'Back home', exact: true }), publish = page.getByRole('link', { name: 'Publish project', exact: true });
-  const a = await back.boundingBox(), b = await publish.boundingBox(); expect(a!.x + a!.width).toBeLessThanOrEqual(b!.x);
+  const a = await back.boundingBox(), b = await publish.boundingBox(); expect(a!.x + a!.width <= b!.x || b!.x + b!.width <= a!.x || a!.y + a!.height <= b!.y || b!.y + b!.height <= a!.y).toBe(true);
   await page.getByRole('link', { name: 'Edit', exact: true }).click();
   await page.getByRole('link', { name: 'Publish project', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Publish your work' })).toBeVisible();

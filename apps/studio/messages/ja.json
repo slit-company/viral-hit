@@ -796,6 +796,24 @@
         },
         "endpointMissing": "ホスト型生成はオフです。サーバーで VIRAL_HIT_CLOUD_API_URL に互換 Cloud API のエンドポイントを設定してから、ここにキーを追加してください。"
       }
+    },
+    "sidebar": {
+      "navigation": "ワークスペースのナビゲーション",
+      "collapse": "サイドバーを折りたたむ",
+      "expand": "サイドバーを開く",
+      "newProject": "新規プロジェクト",
+      "project": "このプロジェクト",
+      "storyboards": "ストーリーボード",
+      "publish": "公開",
+      "library": "ライブラリ",
+      "packs": "パック",
+      "skills": "スキル",
+      "characters": "キャラクター",
+      "community": "コミュニティ",
+      "extensions": "拡張機能",
+      "connections": "接続",
+      "recentProjects": "最近のプロジェクト",
+      "allProjects": "すべてのプロジェクト"
     }
   },
   "Projects": {

@@ -796,6 +796,24 @@
         },
         "endpointMissing": "托管生成未开启。请先在服务器上将 VIRAL_HIT_CLOUD_API_URL 设置为兼容的 Cloud API 端点，再在此添加密钥。"
       }
+    },
+    "sidebar": {
+      "navigation": "工作区导航",
+      "collapse": "收起侧边栏",
+      "expand": "展开侧边栏",
+      "newProject": "新建项目",
+      "project": "当前项目",
+      "storyboards": "分镜",
+      "publish": "发布",
+      "library": "资源库",
+      "packs": "包",
+      "skills": "技能",
+      "characters": "角色",
+      "community": "社区",
+      "extensions": "扩展",
+      "connections": "连接",
+      "recentProjects": "最近的项目",
+      "allProjects": "所有项目"
     }
   },
   "Projects": {

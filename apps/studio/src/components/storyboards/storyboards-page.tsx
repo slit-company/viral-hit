@@ -1,8 +1,9 @@
 import { AnalysisImport } from './analysis-import';
 import { useState } from 'react';
 import { Action } from '@/components/base/action';
-import { ProductShell } from '@/components/marketing/product-shell';
-import { HarnessDialog } from '@/components/app/harness-dialog';
+import { useQuery } from '@tanstack/react-query';
+import { ProductPageShell } from '@/components/app/product-page-shell';
+import { apiJsonGet } from '@/lib/api-client';
 import { Link } from '@/core/i18n/navigation';
 import { useStoryboards } from './use-storyboards';
 import { downloadDraft, newShot } from './draft';
@@ -11,7 +12,8 @@ import { ReferenceImport } from './reference-import';
 import { PlanContext } from './plan-context';
 import { ShotEditor } from './shot-editor';
 
-export function StoryboardsPage({ projectId, locale }: { projectId: string; locale: string }) {
+export function StoryboardsPage({ projectId }: { projectId: string; locale: string }) {
+  const project = useQuery({ queryKey: ['storyboard-project-name', projectId], queryFn: async () => (await apiJsonGet<{ projects: Array<{ id: string; name: string }> }>('/api/app/projects')).projects.find(item => item.id === projectId) ?? null, staleTime: 30_000 });
   const c = useStoryboards(projectId);
   const [tab, setTab] = useState<'shots' | 'plan'>('shots'), [selectedId, setSelectedId] = useState('');
   const plan = c.draft?.plan;
@@ -25,9 +27,9 @@ export function StoryboardsPage({ projectId, locale }: { projectId: string; loca
     [shots[index], shots[target]] = [shots[target], shots[index]];
     c.update({ ...plan, shots });
   }
-  return <ProductShell locale={locale} active="projects"><main className="mx-auto w-full max-w-[1240px] space-y-6 px-5 pb-16 pt-10 sm:px-6">
+  return <ProductPageShell projectId={projectId} workspaceName={project.data?.name} section="storyboards"><div className="min-h-0 flex-1 overflow-y-auto"><main className="mx-auto w-full max-w-[1240px] space-y-6 px-5 pb-16 pt-10 sm:px-6">
     <header className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3"><Link href={'/editor/' + projectId} className="text-sm underline underline-offset-4">Open project editor</Link><HarnessDialog projectId={projectId} /></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><Link href={'/editor/' + projectId} className="text-sm underline underline-offset-4">Open project editor</Link></div>
       <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--vh-accent)]">STORYBOARDS</p>
       <h1 className="vh-product-display break-words text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.1] tracking-[-0.04em]">Make every shot intentional.</h1>
       <p className="max-w-2xl text-sm leading-6 text-[var(--vh-text-2)]">Plan a sequence, choose any compatible recipe, review each result and assemble editable shots. General films and specific creative jobs use the same workflow.</p>
@@ -64,5 +66,5 @@ export function StoryboardsPage({ projectId, locale }: { projectId: string; loca
         {c.view?.actions.filter(action => action.kind === 'assemble').map(action => <div key={action.requestId} className="space-y-1 border-t border-[var(--vh-border)] pt-3 text-xs"><p className="break-all font-mono">Revision {action.revision} · {action.runId ?? action.requestId}</p>{action.jobs.map(job => <p key={job.id} className="break-words">{job.nodeId}: {job.state}{job.error ? ' · ' + job.error : ''}</p>)}</div>)}
       </section>
     </>}
-  </main></ProductShell>;
+  </main></div></ProductPageShell>;
 }

@@ -7,6 +7,7 @@ import { Images, LayoutPanelTop, Link2, Scissors, Send, Workflow } from 'lucide-
 
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
 import { HarnessDialog } from '@/components/app/harness-dialog';
+import { WorkspaceSidebar } from '@/components/app/workspace-sidebar';
 import { LanguageSwitcher } from '@/components/app/language-switcher';
 import { GitHubIcon } from '@/components/icons/github';
 import { Link } from '@/core/i18n/navigation';
@@ -22,12 +23,15 @@ export function ProductPageShell({
   projectId,
   workspaceMode,
   publishing = false,
+  section,
 }: {
   children: ReactNode;
   workspaceName?: string | null;
   projectId?: string | null;
   workspaceMode?: WorkspaceMode;
   publishing?: boolean;
+  /** Project page outside the workspace modes, highlighted in the sidebar. */
+  section?: 'storyboards';
 }) {
   const t = useTranslations('AppShell');
   const router = useRouter();
@@ -121,7 +125,9 @@ export function ProductPageShell({
     }`;
 
   return (
-    <div className="vh-product-shell flex h-screen min-h-screen flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
+    <div className="vh-product-shell flex h-screen min-h-screen overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
+      {projectId && <WorkspaceSidebar projectId={projectId} current={section ?? (publishing ? 'publish' : workspaceMode === 'studio' || workspaceMode === 'canvas' || workspaceMode === 'editor' || workspaceMode === 'assets' ? workspaceMode : undefined)} />}
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
       <header className={`pointer-events-auto sticky top-0 z-40 shrink-0 border-b border-[var(--vh-border)] bg-[var(--vh-surface)]/96 text-[var(--vh-text-1)] backdrop-blur-xl ${projectId && (workspaceMode || publishing) ? 'pb-10 sm:pb-0' : ''}`}>
           <div className="flex h-14 items-center gap-3 px-4 lg:px-5">
             <div className="flex min-w-0 shrink-0 items-center gap-3 sm:flex-1">
@@ -133,10 +139,10 @@ export function ProductPageShell({
             </div>
 
             <div className="ml-auto flex min-w-0 items-center justify-end gap-2 max-sm:justify-start max-sm:overflow-x-auto max-sm:[&>*:not(nav)]:shrink-0">
-              {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs">Storyboards</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
+              {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs lg:hidden">Storyboards</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
               {projectId && (workspaceMode || publishing) ? (
                 <nav
-                  className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1 max-sm:absolute max-sm:inset-x-4 max-sm:top-14"
+                  className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1 max-sm:absolute max-sm:inset-x-4 max-sm:top-14 lg:hidden"
                   aria-label={t('header.workspaceView')}
                 >
                   <Link
@@ -179,8 +185,8 @@ export function ProductPageShell({
               ) : null}
               <ProjectBundleDialog key={`file-${projectId}`} projectId={projectId} />
               <LanguageSwitcher variant="workspace" />
-              {projectId && <Link href={`/publish/${projectId}`} aria-label="Publish project" title="Publish project" aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
-              <Link href="/connections" aria-label="Publishing connections" title="Publishing connections" className="inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>
+              {projectId && <Link href={`/publish/${projectId}`} aria-label="Publish project" title="Publish project" aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
+              <Link href="/connections" aria-label="Publishing connections" title="Publishing connections" className="inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>
               <WorkspaceApiConfigDialog
                 providerId={ACTIVE_GENERATION_PROVIDER_ID}
               />
@@ -201,6 +207,7 @@ export function ProductPageShell({
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
         {children}
       </main>
+      </div>
     </div>
   );
 }

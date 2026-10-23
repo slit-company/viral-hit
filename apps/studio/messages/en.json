@@ -796,6 +796,24 @@
         },
         "endpointMissing": "Hosted generation is off. Set VIRAL_HIT_CLOUD_API_URL on the server to a compatible Cloud API endpoint, then add its key here."
       }
+    },
+    "sidebar": {
+      "navigation": "Workspace navigation",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
+      "newProject": "New project",
+      "project": "This project",
+      "storyboards": "Storyboards",
+      "publish": "Publish",
+      "library": "Library",
+      "packs": "Packs",
+      "skills": "Skills",
+      "characters": "Characters",
+      "community": "Community",
+      "extensions": "Extensions",
+      "connections": "Connections",
+      "recentProjects": "Recent projects",
+      "allProjects": "All projects"
     }
   },
   "Projects": {
