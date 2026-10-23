@@ -1023,3 +1023,7 @@ The model catalog exposes mask support, and the builder adds a Mask input for ma
 - **Integration (real FFmpeg, 3 tests):** the example processor receives `input.references` with roles; with a red subject and blue style the output is red in the center and blue at the edge, and swapping roles swaps both. A `pose` reference to a model that declares only subject and style is rejected before generation history. Duplicate role declarations and roles on analysis models fail manifest validation.
 - **Browser (production build):** Studio uploads two images, assigns Subject and Style in Sources, sends those roles, produces the expected pixels, and restores both roles from history after clearing browser storage. Captures at 1440 and 390 with animations disabled.
 - 917 source tests (published provider schema regenerated), affected Studio, mask, results grid and recipe authoring browser tests (8), architecture, typecheck and i18n pass. Bundle 611,136 gzip bytes, within the 612,000 budget.
+
+## Source roles in built recipes — 2026-10-23
+
+An integration test builds a recipe from `subject-on-style` with `image-1` as subject and `image-2` as style, compiles it with a red and a blue image, runs it through the durable worker and gets the red subject in the center over the blurred blue style. A `pose` role and a role on a slot beyond the source count are rejected. 918 source tests, architecture and typecheck pass.

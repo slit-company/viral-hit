@@ -69,3 +69,34 @@ test('undeclared specific roles are rejected before generation history', async (
   assert.deepEqual(await listProjectGenerations(project.id), []);
 });
 
+
+test('a recipe built with slot roles runs the role model; undeclared roles and missing slots are rejected', async () => {
+  const project = await createProject({ name: 'Role recipe' });
+  const red = await importLocalProjectAsset({ projectId: project.id, filePath: files.red }), blue = await importLocalProjectAsset({ projectId: project.id, filePath: files.blue });
+  const { listModelRecipeModels, buildModelRecipe } = await import('@/core/harness/model-recipe.server');
+  const { compileRecipe } = await import('@/core/harness/recipes');
+  const { DurableHarness } = await import('@/core/harness/durable');
+  const { pinRuntimePlan } = await import('@/core/harness/runtime-plan');
+  const { createRuntimeAdapters } = await import('@/core/harness/adapters');
+  const chosen = listModelRecipeModels().find(model => model.id === 'subject-on-style')!;
+  assert.deepEqual(chosen.roles, ['subject', 'style']);
+  const definition = { schemaVersion: 1 as const, id: 'subject-on-style-card', title: 'Subject on style', version: '1.0.0', description: 'Center a subject over a style.', author: 'Test author', license: 'Apache-2.0', category: 'general', tags: ['general', 'image'], modelId: chosen.id, referenceCounts: { image: 2, video: 0, audio: 0 }, outputIndex: 0 };
+  assert.throws(() => buildModelRecipe({ ...definition, sourceRoles: { 'image-1': 'pose' } }, chosen.digest), /does not use pose/);
+  assert.throws(() => buildModelRecipe({ ...definition, sourceRoles: { 'image-3': 'subject' } }, chosen.digest), /not in this recipe/);
+  const recipe = buildModelRecipe({ ...definition, sourceRoles: { 'image-1': 'subject', 'image-2': 'style' } }, chosen.digest);
+  assert.deepEqual(recipe.parameters.filter(parameter => parameter.type === 'asset').map(parameter => parameter.label), ['Image source 1 (subject)', 'Image source 2 (style)']);
+  const plan = await pinRuntimePlan(compileRecipe(recipe, { prompt: 'Red on blue', 'image-1': red.id, 'image-2': blue.id }, project.id));
+  let now = Date.now();
+  const harness = new DurableHarness(join(directory, 'harness-roles.sqlite'), () => now);
+  try {
+    const run = harness.enqueue(plan, 'role-recipe');
+    for (let i = 0; i < 6; i++) { now += 25_000; await harness.step(run, createRuntimeAdapters()); }
+    const [job] = harness.jobs(run);
+    assert.equal(job.state, 'succeeded', job.error ?? '');
+  } finally { harness.close(); }
+  const [item] = await listProjectGenerations(project.id);
+  const asset = await getProjectAssetById({ projectId: project.id, assetId: item.resultUrl!.split('/').at(-1)! });
+  const center = pixel(resolveLocalProjectAssetPath({ objectKey: asset!.objectKey }), 254, 254);
+  assert.ok(center[0] > 240 && center[2] < 20, String(center));
+});
+

@@ -34,7 +34,7 @@ function source(model: GenerationModelDescriptor) {
     if (choices?.length) exposures.push({ parameter: { id, label, type: 'enum', options: [...choices], default: String(model.defaultParameters[key] ?? choices[0]) }, target: `/parameters/${key}` });
   }
   exposures.push(...(model.controls ?? []).map(option));
-  const projection = { id: model.id, name: model.name, providerId: model.providerId, kind: model.kind, available: model.available, references, ...(model.maskInput ? { mask: model.maskInput } : {}), parameters: exposures.map(item => item.parameter) };
+  const projection = { id: model.id, name: model.name, providerId: model.providerId, kind: model.kind, available: model.available, references, ...(model.maskInput ? { mask: model.maskInput } : {}), ...(model.referenceRoles ? { roles: [...model.referenceRoles] } : {}), parameters: exposures.map(item => item.parameter) };
   // Public contract identity only: no code, credential hash or environment values are exposed.
   const digest = fingerprint(JSON.parse(JSON.stringify({ ...projection, defaults: model.defaultParameters, targets: exposures.map(item => item.target) })) as Json);
   return { model, exposures, publicModel: { ...projection, digest } satisfies ModelRecipeModel };
@@ -47,7 +47,7 @@ function sources() {
 export function listModelRecipeModels(): ModelRecipeModel[] { return sources().map(item => item.publicModel); }
 
 export function buildModelRecipe(raw: unknown, expectedModelDigest: string): Recipe {
-  const { modelId, referenceCounts, outputIndex, mask, ...metadata } = modelRecipeDefinition.parse(raw);
+  const { modelId, referenceCounts, outputIndex, mask, sourceRoles = {}, ...metadata } = modelRecipeDefinition.parse(raw);
   const found = sources().find(item => item.model.id === modelId);
   if (!found) throw new RecipeConflictError('Installed model is unavailable. Refresh models and choose a current definition.');
   const { model, exposures, publicModel } = found;
@@ -60,14 +60,19 @@ export function buildModelRecipe(raw: unknown, expectedModelDigest: string): Rec
   const useMask = Boolean(model.maskInput?.required || mask);
   if (useMask && referenceCounts.image + referenceCounts.video === 0) throw Error('A mask needs an image or video source to apply to');
   if (useMask && total >= 20) throw Error('Leave room for the mask: choose at most 19 sources');
+  for (const [slot, role] of Object.entries(sourceRoles)) {
+    const [kind, index] = slot.split('-') as ['image' | 'video', string];
+    if (Number(index) < 1 || Number(index) > referenceCounts[kind]) throw Error('Source role ' + slot + ' names a slot that is not in this recipe');
+    if (!model.referenceRoles?.includes(role)) throw Error(model.name + ' does not use ' + role + ' references');
+  }
   const parameters = structuredClone(exposures.map(item => item.parameter));
   const bindings = exposures.map(item => ({ parameter: item.parameter.id, target: item.target }));
-  const references: { assetId: string; kind: 'image' | 'video' | 'audio'; role: 'reference' | 'audio_track' | 'mask' }[] = [];
+  const references: { assetId: string; kind: 'image' | 'video' | 'audio'; role: 'reference' | 'audio_track' | 'mask' | 'style' | 'subject' | 'pose' }[] = [];
   for (const kind of REFERENCE_MEDIA_KINDS) for (let i = 0; i < referenceCounts[kind]; i++) {
-    const id = `${kind}-${i + 1}`;
-    parameters.push({ id, label: `${kind[0].toUpperCase() + kind.slice(1)} source ${i + 1}`, type: 'asset', kind });
+    const id = `${kind}-${i + 1}`, role = kind === 'audio' ? undefined : sourceRoles[id];
+    parameters.push({ id, label: `${kind[0].toUpperCase() + kind.slice(1)} source ${i + 1}${role ? ' (' + role + ')' : ''}`, type: 'asset', kind });
     bindings.push({ parameter: id, target: `/references/${references.length}/assetId` });
-    references.push({ assetId: 'choose-project-source', kind, role: kind === 'audio' ? 'audio_track' : 'reference' });
+    references.push({ assetId: 'choose-project-source', kind, role: kind === 'audio' ? 'audio_track' : role ?? 'reference' });
   }
   if (useMask) {
     parameters.push({ id: 'mask', label: 'Mask (white marks the area to change)', type: 'asset', kind: 'image' });

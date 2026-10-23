@@ -9,6 +9,8 @@ export const modelRecipeDefinition = recipeSchema.omit({ nodes: true, parameters
   outputIndex: z.number().int().min(0).max(7).default(0),
   /** Adds a mask input for models with optional maskInput; models that require a mask always get one. */
   mask: z.boolean().optional(),
+  /** Role for an image or video slot (for example image-1: subject) when the model declares referenceRoles. */
+  sourceRoles: z.record(z.string().regex(/^(image|video)-\d{1,2}$/), z.enum(['style', 'subject', 'pose'])).optional(),
 });
 export type ModelRecipeDefinition = z.infer<typeof modelRecipeDefinition>;
 export type ModelRecipeModel = {
@@ -16,5 +18,7 @@ export type ModelRecipeModel = {
   available: boolean; references: ReferenceInputs; digest: string;
   /** Present when the model edits a marked area. */
   mask?: { required: boolean };
+  /** Specific reference roles the model declares. */
+  roles?: string[];
   parameters: Recipe['parameters'];
 };

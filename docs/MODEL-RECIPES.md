@@ -141,3 +141,7 @@ Requirements are a projection of the current loaded model catalog, not part of t
 ## Build recipes for mask models
 
 The model catalog reports `mask: { required }` for models that declare `maskInput`. Building from a model that requires a mask always adds a **Mask** image input with the `mask` role after the chosen sources; for an optional mask, pass `mask: true` (browser: "Add a Mask input"). Asking for a mask on a model without `maskInput`, or a mask with no image or video source, is rejected. The built recipe runs through the normal worker, so a contributed inpainting model becomes a shareable recipe without app changes. See [marked-area edits](VISUAL-REFERENCES.md#edit-a-marked-area).
+
+## Give sources a role
+
+The model catalog lists `roles` for models that declare `referenceRoles` (for example `subject` and `style`). A built recipe can pin a role to each image or video slot with `sourceRoles`, such as `{ "image-1": "subject", "image-2": "style" }`. The inputs are then labelled "Image source 1 (subject)", and every run sends those references to the provider with their roles. A role the model does not declare, or a slot beyond the chosen source count, is rejected while building. In the browser, each source slot has its own role picker.
