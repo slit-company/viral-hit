@@ -38,7 +38,7 @@ export function StudioAnalysisComposer({ projectId, analysis, isBusy, onMediaCha
         <Action className="vh-secondary flex items-center gap-1.5" aria-label="Upload analysis files" disabled={disabled || !model || model.available === false} onClick={() => input.current?.click()}><Upload size={15} />Upload files</Action>
         <input ref={input} aria-label="Analysis files" type="file" className="hidden" multiple accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/mp4,audio/ogg,audio/aac" onChange={event => { void analysis.upload(Array.from(event.target.files ?? [])); event.target.value = ''; }} />
         <div className="ml-auto flex items-center gap-2"><span className="text-[10px] tabular-nums text-[var(--vh-text-2)]">{draft.prompt.length}/12000</span>
-          <Action className={composerGenerateButtonClassName} aria-label={isBusy ? 'Analyzing' : 'Analyze'} disabled={disabled || !model || model.available === false || !draft.prompt.trim() || !draft.sources.length} onClick={onGenerate}>{disabled ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}</Action>
+          <Action className={composerGenerateButtonClassName} aria-label={isBusy ? 'Analyzing' : 'Analyze'} disabled={disabled || !model || model.available === false || !draft.prompt.trim() || !draft.sources.length} onClick={onGenerate}>{disabled ? <Loader2 className="size-4 animate-spin" /> : <ArrowUp className="size-4" />}<span>{isBusy ? 'Analyzing' : 'Analyze'}</span></Action>
         </div>
       </div>
     </div>

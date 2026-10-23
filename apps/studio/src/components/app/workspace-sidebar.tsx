@@ -12,6 +12,8 @@ import { cn } from '@/lib/utils';
 type Page = 'studio' | 'canvas' | 'editor' | 'assets' | 'storyboards' | 'publish';
 type RecentProject = { id: string; name: string; lastWorkspaceMode?: string | null };
 const COLLAPSED_KEY = 'viral-hit:sidebar-collapsed';
+// Canvas and Edit need the full working area, so they start collapsed and remember their own choice.
+const DENSE_PAGES = new Set<Page | undefined>(['canvas', 'editor']);
 
 function Item({ href, icon, label, accessibleLabel, active, collapsed }: { href: string; icon: ReactNode; label: string; accessibleLabel?: string; active?: boolean; collapsed: boolean }) {
   return (
@@ -31,9 +33,10 @@ function Heading({ children, collapsed }: { children: ReactNode; collapsed: bool
 /** Desktop project navigation in the style of Higgsfield's workspace sidebar. Phones keep the header tabs. */
 export function WorkspaceSidebar({ projectId, current }: { projectId: string; current?: Page }) {
   const t = useTranslations('AppShell');
-  const [collapsed, setCollapsed] = useState(false);
-  useEffect(() => { try { setCollapsed(localStorage.getItem(COLLAPSED_KEY) === '1'); } catch { /* storage unavailable */ } }, []);
-  const toggle = () => setCollapsed(value => { try { localStorage.setItem(COLLAPSED_KEY, value ? '0' : '1'); } catch { /* storage unavailable */ } return !value; });
+  const dense = DENSE_PAGES.has(current), key = dense ? COLLAPSED_KEY + ':dense' : COLLAPSED_KEY;
+  const [collapsed, setCollapsed] = useState(dense);
+  useEffect(() => { try { const saved = localStorage.getItem(key); setCollapsed(saved === null ? dense : saved === '1'); } catch { setCollapsed(dense); } }, [key, dense]);
+  const toggle = () => setCollapsed(value => { try { localStorage.setItem(key, value ? '0' : '1'); } catch { /* storage unavailable */ } return !value; });
   const recent = useQuery({ queryKey: ['sidebar-projects'], queryFn: () => apiJsonGet<{ projects: RecentProject[] }>('/api/app/projects'), staleTime: 30_000 });
   // Longer accessible names keep the visible word and match the header icons they replace on desktop.
   const accessible: Partial<Record<string, string>> = { publish: 'Publish project', '/connections': 'Publishing connections' };

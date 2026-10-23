@@ -346,6 +346,7 @@ export function CreativeCanvasComposerShell({
               ) : (
                 <ArrowUp className="size-3.5" />
               )}
+              <span>{primaryButtonLabel}</span>
             </Action>
           </div>
         </div>

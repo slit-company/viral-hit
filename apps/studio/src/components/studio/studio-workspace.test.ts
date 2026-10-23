@@ -38,9 +38,10 @@ test('studio keeps the original wide composer and a project generation feed', ()
   assert.doesNotMatch(composerSource, /RotateCw/);
   assert.match(feedSource, /max-w-\[1138px\]/);
   assert.match(feedSource, /formatStudioHistoryDateTime/);
-  assert.match(feedSource, /h-\[240px\]/);
-  assert.match(feedSource, /object-contain/);
-  assert.doesNotMatch(feedSource, /item\.prompt/);
+  // Results are a Higgsfield-style grid of square tiles with the prompt under each tile.
+  assert.match(feedSource, /aspect-square/);
+  assert.match(feedSource, /object-cover/);
+  assert.match(feedSource, /item\.prompt/);
   assert.match(studioSource, /justify-end/);
   assert.match(startHereSource, /Create Here/);
   assert.match(studioSource, /fetchProjectGenerations/);

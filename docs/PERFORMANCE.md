@@ -200,3 +200,7 @@ Summed script gzip: **606,691 bytes**, **4,595 bytes** more than masked edits; p
 ## Workspace sidebar — 2026-10-23
 
 Summed script gzip: **608,656 bytes**, **1,965 bytes** more than the explore home. The script budget changed from 607,000 to **610,000** in this reviewed decision: the sidebar component and its 16 messages in three languages. The sidebar reuses the existing project list request with a 30 second cache; no dependency or service was added.
+
+## Studio results grid — 2026-10-23
+
+Summed script gzip: **608,985 bytes**, 329 bytes more than the sidebar and within the unchanged 610,000 budget.

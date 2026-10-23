@@ -32,63 +32,33 @@ function StudioHistoryItem({
   const isVideo = item.mediaType === 'video';
   const previewUrl = item.resultUrl;
 
+  const label = isAnalysis ? t('analysis') : item.mediaType === 'audio' ? 'Audio' : isVideo ? t('video') : t('image');
+
+  // Square tile as in Higgsfield's results grid. The model chip reuses the request; the tile opens it.
   return (
-    <article className="space-y-3">
-      <Action
-        type="button"
-        onClick={onReuse}
-        className="flex flex-wrap items-center gap-2 text-left"
-      >
-        <span className={chipClassName}>
-          {isAnalysis ? t('analysis') : item.mediaType === 'audio' ? 'Audio' : isVideo ? t('video') : t('image')}
-        </span>
-        <span className={chipClassName}>
-          {item.modelName || item.modelId || t('result')}
-        </span>
-        <span className="text-[12px] text-[var(--vh-text-3)]">
-          {formatStudioHistoryDateTime(new Date(item.createdAt))}
-        </span>
-      </Action>
-      <Action
-        type="button"
-        onClick={onOpen}
-        aria-label={t('openPreview')}
-        className="block text-left"
-      >
-        <div className="h-[240px] w-[min(100%,400px)] overflow-hidden rounded-[16px] bg-[var(--vh-control)]">
-          {item.mediaType === 'audio' && previewUrl ? <div className="flex h-full flex-col items-center justify-center gap-3 p-5 text-sm text-[var(--vh-text-2)]"><Music2 size={32} /><span>Listen to generated audio</span></div> : isAnalysis && item.resultText ? (
-            <div className="h-full overflow-hidden p-5">
-              <p className="line-clamp-[8] whitespace-pre-wrap break-words text-[13px] leading-6 text-[var(--vh-text-2)]">
-                {item.resultText}
-              </p>
-            </div>
-          ) : previewUrl ? (
-            isVideo ? (
-              <video
-                src={previewUrl}
-                preload="metadata"
-                muted
-                playsInline
-                className="h-full w-full object-contain"
-              />
-            ) : (
-              <img
-                src={previewUrl}
-                alt=""
-                className="block h-full w-full object-contain"
-              />
-            )
-          ) : (
-            <div className="flex h-full items-center justify-center text-[12px] text-[var(--vh-text-3)]">
-              {isBusy ? (
-                <Loader2 className="size-5 animate-spin" />
-              ) : (
-                t('noPrompt')
-              )}
-            </div>
-          )}
-        </div>
-      </Action>
+    <article className="group min-w-0">
+      <div className="relative aspect-square overflow-hidden rounded-[16px] bg-[var(--vh-control)]">
+        <Action type="button" onClick={onReuse}
+          className="absolute bottom-2 left-2 z-10 flex max-w-[calc(100%-16px)] items-center gap-1.5 text-left opacity-100 transition sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
+          <span className={cn(chipClassName, 'bg-white/90')}>{label}</span>
+          <span className={cn(chipClassName, 'min-w-0 truncate bg-white/90')}>{item.modelName || item.modelId || t('result')}</span>
+        </Action>
+        <Action type="button" onClick={onOpen} aria-label={t('openPreview')} className="block h-full w-full text-left">
+        {item.mediaType === 'audio' && previewUrl ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center text-[var(--vh-text-2)]"><Music2 size={28} /><span className="text-xs">Listen to generated audio</span></div>
+        ) : isAnalysis ? (
+          <p className="line-clamp-[9] h-full overflow-hidden whitespace-pre-wrap break-words p-4 text-[12px] leading-5 text-[var(--vh-text-2)]">{item.resultText}</p>
+        ) : previewUrl ? (
+          isVideo
+            ? <video src={previewUrl} preload="metadata" muted playsInline className="h-full w-full object-cover" />
+            : <img src={previewUrl} alt="" className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <div className="flex h-full items-center justify-center text-[12px] text-[var(--vh-text-3)]">{isBusy ? <Loader2 className="size-5 animate-spin" /> : t('noPrompt')}</div>
+        )}
+        </Action>
+      </div>
+      <p className="mt-2 truncate text-[13px] text-[var(--vh-text-1)]">{item.prompt || t('noPrompt')}</p>
+      <p className="text-[11px] text-[var(--vh-text-3)]">{formatStudioHistoryDateTime(new Date(item.createdAt))}</p>
     </article>
   );
 }
@@ -116,7 +86,7 @@ export function StudioGenerationFeed({
 
   return (
     <>
-      <section className="mx-auto flex w-full max-w-[1138px] flex-col gap-5 pb-4">
+      <section className="mx-auto grid w-full max-w-[1138px] grid-cols-2 gap-x-3 gap-y-5 pb-4 sm:grid-cols-3 lg:grid-cols-4">
         {items.map((item) => (
           <StudioHistoryItem
             key={item.id}
@@ -125,7 +95,7 @@ export function StudioGenerationFeed({
             onReuse={() => onReuse(item)}
           />
         ))}
-        <div ref={endRef} />
+        <div ref={endRef} className="col-span-full" />
       </section>
 
       <Dialog

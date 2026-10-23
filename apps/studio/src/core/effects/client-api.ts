@@ -78,10 +78,13 @@ export const precheckEffect = async (
     body: JSON.stringify(payload.generation ? { generation: payload.generation } : payload),
   });
 
+  const data = await safeJson<PrecheckResponse & { message?: unknown }>(response);
+  // A rate-limited precheck carries a readable retry message; show it instead of the error code.
+  if (response.status === 429 && typeof data.message === 'string') data.error = data.message;
   return {
     ok: response.ok,
     status: response.status,
-    data: await safeJson<PrecheckResponse>(response),
+    data,
   };
 };
 

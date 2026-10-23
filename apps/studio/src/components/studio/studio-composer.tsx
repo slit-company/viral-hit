@@ -317,6 +317,7 @@ export function StudioComposer({
               ) : (
                 <ArrowUp className="size-3.5" />
               )}
+              <span>{primaryButtonLabel}</span>
             </Action>
           </div>
         </div>

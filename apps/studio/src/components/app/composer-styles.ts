@@ -39,6 +39,6 @@ export const getComposerParameterChipClassName = (isActive: boolean) =>
       : 'border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-1)]'
   );
 
-/** Circular Generate action in SEED ink. */
+/** Labelled Generate action in SEED brand lime, the main call to action as on Higgsfield. */
 export const composerGenerateButtonClassName =
-  'inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-[var(--vh-accent)] text-[var(--vh-accent-ink)] shadow-[var(--shadow-float)] transition hover:bg-[var(--vh-accent-hover)] disabled:cursor-not-allowed disabled:bg-[var(--vh-control)] disabled:text-[var(--vh-text-1)] disabled:shadow-none';
+  'inline-flex h-9 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[var(--color-brand-lime)] px-3.5 text-[13px] font-semibold text-[var(--color-ink)] transition hover:brightness-95 disabled:cursor-not-allowed disabled:bg-[var(--vh-control)] disabled:text-[var(--vh-text-3)]';

@@ -1000,3 +1000,10 @@ This proves the contract and a real local processor. It does not evaluate genera
 - **Browser (production build, 17 tests):** storyboards, storyboard authoring, reference plans, publishing, publication flows, generation providers (including the 390px header checks) and home templates pass. Sidebar links keep the accessible names of the header icons they replace ("Publish project", "Publishing connections"). Two geometry assertions that assumed the back button sat left of the Publish link now assert that the controls do not overlap.
 - **Visual review:** Studio with the sidebar expanded and collapsed, Storyboards inside the project shell, and the phone header at 390×844; no page errors or horizontal overflow.
 - **913 source tests**, architecture, typecheck and i18n pass.
+
+## Studio results grid — 2026-10-23
+
+- **New browser test:** three real procedural generations form one row of square tiles at 1440px and two columns at 390px; the model chip restores the first prompt; the second tile opens its preview with the right prompt; no page errors or horizontal overflow.
+- **Affected browser tests:** Studio visual references, masks, analysis, audio and audio references, multimodal Canvas analysis and generation providers pass. Runs caught three regressions that were fixed: the audio tile had lost its "Listen to generated audio" hint, a full-tile preview button covered that hint, and the expanded sidebar pushed a Canvas card off screen (Canvas and Edit now start collapsed).
+- The first grid run also exposed the raw `too_many_requests` code after quick repeated clicks; the precheck client now shows the server's retry message.
+- **913 source tests** pass after updating the source assertions that described the old list layout; architecture, typecheck and i18n pass.
