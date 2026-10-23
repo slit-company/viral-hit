@@ -476,12 +476,12 @@ export function createViralHitMcpServer() {
   server.registerTool(
     'viral_hit_project_list',
     {
-      description: 'List local ViralHit projects.',
-      inputSchema: z.object({ limit: z.number().int().min(1).max(100).default(24) }),
+      description: 'List local ViralHit projects, most recently opened first. query matches names case-insensitively; sort "name" orders alphabetically.',
+      inputSchema: z.object({ limit: z.number().int().min(1).max(200).default(24), query: z.string().trim().max(120).optional(), sort: z.enum(['recent', 'name']).default('recent') }),
       annotations: { readOnlyHint: true },
     },
-    withToolErrors(async ({ limit }) =>
-      (await loadProjects({ limit })).map((project: { id: string }) => ({
+    withToolErrors(async ({ limit, query, sort }) =>
+      (await loadProjects({ limit, query, sort })).map((project: { id: string }) => ({
         ...project,
         targeted: project.id === targetedProjectId,
       }))

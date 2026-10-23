@@ -1007,3 +1007,9 @@ This proves the contract and a real local processor. It does not evaluate genera
 - **Affected browser tests:** Studio visual references, masks, analysis, audio and audio references, multimodal Canvas analysis and generation providers pass. Runs caught three regressions that were fixed: the audio tile had lost its "Listen to generated audio" hint, a full-tile preview button covered that hint, and the expanded sidebar pushed a Canvas card off screen (Canvas and Edit now start collapsed).
 - The first grid run also exposed the raw `too_many_requests` code after quick repeated clicks; the precheck client now shows the server's retry message.
 - **913 source tests** pass after updating the source assertions that described the old list layout; architecture, typecheck and i18n pass.
+
+## Project search — 2026-10-23
+
+- **Browser (production build):** with 30 extra projects, name search narrows to the two matches, recent and name order differ as expected, a literal `100%` query does not match `100 percent decoy`, an empty search says so, 26 paged projects show 24 then all 26 after "Show more", and deleting from search results updates the list. MCP `viral_hit_project_list` returns the same filtered, name-sorted projects. No horizontal overflow at 390px.
+- The first run showed that text typed before hydration was ignored; the control now adopts it on mount.
+- Home template tests still pass; 913 source tests, architecture, typecheck and i18n pass.

@@ -39,11 +39,16 @@ export async function fetchRecentAssets(
   return apiJsonGet<RecentAssetsResponse>(`/api/app/recent-assets${query}`);
 }
 
-export async function fetchWorkspaceProjects(): Promise<{
+export async function fetchWorkspaceProjects(options: { query?: string; sort?: 'recent' | 'name'; limit?: number } = {}): Promise<{
   projects: WorkspaceProjectCardItem[];
 }> {
+  const params = new URLSearchParams();
+  if (options.query?.trim()) params.set('q', options.query.trim());
+  if (options.sort && options.sort !== 'recent') params.set('sort', options.sort);
+  if (options.limit) params.set('limit', String(options.limit));
+  const query = params.toString();
   return apiJsonGet<{ projects: WorkspaceProjectCardItem[] }>(
-    '/api/app/projects'
+    '/api/app/projects' + (query ? '?' + query : '')
   );
 }
 

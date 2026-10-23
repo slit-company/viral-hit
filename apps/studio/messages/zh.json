@@ -887,5 +887,11 @@
   "product.home.toolPacksDescription": "分享并安装通用或专用工作流。",
   "product.home.toolCharacters": "角色",
   "product.home.toolCharactersDescription": "保存常用角色的参考图像和规则。",
-  "product.home.templatesShowAll": "显示全部 {count} 个"
+  "product.home.templatesShowAll": "显示全部 {count} 个",
+  "product.history.search": "搜索项目",
+  "product.history.sortLabel": "项目排序",
+  "product.history.sortRecent": "最近打开",
+  "product.history.sortName": "名称",
+  "product.history.showMore": "显示更多",
+  "product.history.noMatches": "没有与此搜索匹配的项目。"
 }

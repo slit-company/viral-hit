@@ -887,5 +887,11 @@
   "product.home.toolPacksDescription": "Share and install general or specialized workflows.",
   "product.home.toolCharacters": "Characters",
   "product.home.toolCharactersDescription": "Keep reference images and rules for recurring characters.",
-  "product.home.templatesShowAll": "Show all {count}"
+  "product.home.templatesShowAll": "Show all {count}",
+  "product.history.search": "Search projects",
+  "product.history.sortLabel": "Sort projects",
+  "product.history.sortRecent": "Recently opened",
+  "product.history.sortName": "Name",
+  "product.history.showMore": "Show more",
+  "product.history.noMatches": "No projects match this search."
 }

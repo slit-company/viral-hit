@@ -30,8 +30,14 @@ const readProjectIds = (value: unknown) =>
         .filter((item) => item.length > 0)
     : [];
 
-async function GET() {
-  const projects = await loadProjects({});
+async function GET({ request }: { request: Request }) {
+  const params = new URL(request.url).searchParams;
+  const limit = Number(params.get('limit') ?? 24);
+  const projects = await loadProjects({
+    limit: Number.isFinite(limit) ? limit : 24,
+    query: params.get('q')?.slice(0, 120),
+    sort: params.get('sort') === 'name' ? 'name' : 'recent',
+  });
   return Response.json({ projects: projects.map(serializeProjectCenterCard) });
 }
 

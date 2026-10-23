@@ -24,6 +24,8 @@ import { buildLocalizedProjectDetailPath } from '@/core/projects/project-entry';
 import { useWorkspaceProjects } from '@/core/workspace-hooks/use-workspace-projects';
 import type { WorkspaceProjectCardItem } from '@/core/workspace-lib/app/workspace-client-api';
 import { m } from '@/paraglide/messages.js';
+import { ProjectListControls } from './project-list-controls';
+import { useProjectSearch } from './use-project-search';
 
 function getHistoryCopy(locale: string) {
   const messageLocale = normalizeLocale(locale);
@@ -78,6 +80,12 @@ function getHistoryCopy(locale: string) {
       {},
       { locale: messageLocale }
     ),
+    search: m['product.history.search']({}, { locale: messageLocale }),
+    sortLabel: m['product.history.sortLabel']({}, { locale: messageLocale }),
+    sortRecent: m['product.history.sortRecent']({}, { locale: messageLocale }),
+    sortName: m['product.history.sortName']({}, { locale: messageLocale }),
+    showMore: m['product.history.showMore']({}, { locale: messageLocale }),
+    noMatches: m['product.history.noMatches']({}, { locale: messageLocale }),
   };
 }
 
@@ -168,6 +176,8 @@ export function WorkspacePage({
     initialProjects: projects,
     enabled: true,
   });
+  const search = useProjectSearch(liveProjects);
+  const listed = search.projects;
 
   async function removeProject(project: WorkspaceProjectCardItem) {
     setDeleteTarget(project);
@@ -177,6 +187,7 @@ export function WorkspacePage({
     if (!deleteTarget) return;
     await deleteProjects([deleteTarget.id]);
     setDeleteTarget(null);
+    void search.refresh();
   }
 
   return (
@@ -208,10 +219,13 @@ export function WorkspacePage({
           </div>
         </section>
 
-        <section className="mt-12">
-          {liveProjects.length > 0 ? (
+        {(liveProjects.length > 0 || search.searching) && <ProjectListControls value={search.input} onChange={search.setInput} sort={search.sort} onSort={search.setSort} copy={copy} />}
+        <section className="mt-8">
+          {search.searching && !search.loading && listed.length === 0 ? (
+            <p role="status" className="py-16 text-center text-sm text-[var(--vh-text-2)]">{copy.noMatches}</p>
+          ) : listed.length > 0 ? (
             <div className="grid gap-x-4 gap-y-7 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {liveProjects.map((project) => {
+              {listed.map((project) => {
                 const name = projectName(project.name, copy.untitled);
                 return (
                   <article key={project.id} className="group relative min-w-0">
@@ -253,6 +267,7 @@ export function WorkspacePage({
                   </article>
                 );
               })}
+              {search.canShowMore && <div className="col-span-full flex justify-center"><Action className="vh-secondary" onClick={search.showMore}>{copy.showMore}</Action></div>}
             </div>
           ) : (
             <div className="flex min-h-[330px] flex-col items-center justify-center rounded-[var(--vh-radius)] border border-dashed border-[var(--vh-border)] bg-[var(--vh-surface)] px-6 text-center">

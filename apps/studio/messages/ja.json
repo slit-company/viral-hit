@@ -887,5 +887,11 @@
   "product.home.toolPacksDescription": "汎用・特化型のワークフローを共有してインストールします。",
   "product.home.toolCharacters": "キャラクター",
   "product.home.toolCharactersDescription": "繰り返し登場するキャラクターの参照画像とルールを保存します。",
-  "product.home.templatesShowAll": "すべて表示（{count}）"
+  "product.home.templatesShowAll": "すべて表示（{count}）",
+  "product.history.search": "プロジェクトを検索",
+  "product.history.sortLabel": "プロジェクトの並び順",
+  "product.history.sortRecent": "最近開いた順",
+  "product.history.sortName": "名前順",
+  "product.history.showMore": "さらに表示",
+  "product.history.noMatches": "この検索に一致するプロジェクトはありません。"
 }

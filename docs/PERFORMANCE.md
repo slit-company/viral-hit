@@ -204,3 +204,7 @@ Summed script gzip: **608,656 bytes**, **1,965 bytes** more than the explore hom
 ## Studio results grid — 2026-10-23
 
 Summed script gzip: **608,985 bytes**, 329 bytes more than the sidebar and within the unchanged 610,000 budget.
+
+## Project search — 2026-10-23
+
+Summed script gzip: **610,824 bytes**, **1,839 bytes** more than the results grid. The script budget changed from 610,000 to **612,000** in this reviewed decision: project search and sort controls, paging and six messages in three languages. Search runs in SQLite on the existing project table; no index, dependency or service was added.

@@ -9,7 +9,7 @@ import {
   isDestructiveEmptyProjectSnapshot,
   normalizeProjectSnapshotDocument,
 } from '@/core/projects/project-snapshot';
-import { and, desc, eq, getTableColumns } from 'drizzle-orm';
+import { and, asc, desc, eq, getTableColumns, sql } from 'drizzle-orm';
 import {
   defaultWorkspaceMode,
   resolveWorkspaceMode,
@@ -63,11 +63,22 @@ export const createProject = async ({
   };
 };
 
+export type ProjectListSort = 'recent' | 'name';
+
 export const loadProjects = async ({
   limit = 24,
+  query,
+  sort = 'recent',
 }: {
   limit?: number;
+  /** Case-insensitive name search; %, _ and ! are matched literally. */
+  query?: string;
+  sort?: ProjectListSort;
 }) => {
+  const term = query?.trim();
+  const nameMatches = term
+    ? sql`${project.name} LIKE ${'%' + term.replace(/[!%_]/g, (character) => '!' + character) + '%'} ESCAPE '!'`
+    : undefined;
   const db = await getDb();
   const projects = await db
     .select({
@@ -76,13 +87,14 @@ export const loadProjects = async ({
     })
     .from(project)
     .leftJoin(userAsset, eq(project.coverAssetId, userAsset.id))
-    .where(eq(project.status, 'active'))
+    .where(nameMatches ? and(eq(project.status, 'active'), nameMatches) : eq(project.status, 'active'))
     .orderBy(
+      ...(sort === 'name' ? [asc(sql`${project.name} COLLATE NOCASE`)] : []),
       desc(project.lastOpenedAt),
       desc(project.updatedAt),
       desc(project.createdAt)
     )
-    .limit(limit);
+    .limit(Math.min(Math.max(1, Math.floor(limit)), 200));
 
   return projects.map((entry: any) => ({
     ...entry,
