@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "role-collage",
+  "label": "Local role collage",
+  "scope": "general",
+  "description": "Optional FFmpeg processor that places the subject image over a blurred style image. Shows how reference roles reach a model. No AI.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "referenceDelivery": "project-media",
+  "models": [
+    {
+      "id": "subject-on-style", "name": "Subject on style", "kind": "image",
+      "aspectRatios": ["1:1"],
+      "referenceInputs": {"image":{"min":1,"max":2},"video":{"min":0,"max":0},"audio":{"min":0,"max":0}},
+      "referenceRoles": ["subject", "style"]
+    }
+  ]
+}

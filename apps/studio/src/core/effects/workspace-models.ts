@@ -1,5 +1,6 @@
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from '@/core/generation-providers/mask-input';
+import type { ReferenceRoles } from '@/core/generation-providers/reference-roles';
 import type { AnalysisInputs } from '@/core/generation-providers/analysis-inputs';
 import { buildCreateProjectPath } from '@/core/projects/project-entry';
 import { getGenerationModelBinding } from '@/core/generation-providers/catalog';
@@ -45,6 +46,7 @@ export type WorkspaceModelOption = {
   analysisInputs?: AnalysisInputs;
   referenceInputs?: ReferenceInputs;
   maskInput?: MaskInput;
+  referenceRoles?: ReferenceRoles;
   mode?: WorkspaceModelMode;
   defaultMode?: WorkspaceModelMode;
   modeOptions?: WorkspaceModelMode[];

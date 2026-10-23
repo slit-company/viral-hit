@@ -36,6 +36,7 @@ export function providerInput(input: unknown) {
     ...(Array.isArray(value.audio_urls) ? { audioUrls: value.audio_urls.filter(url => typeof url === 'string') } : {}),
     ...(typeof value.video_url === 'string' ? { videoUrl: value.video_url } : {}),
     ...(typeof value.mask_url === 'string' ? { maskUrl: value.mask_url } : {}),
+    ...(Array.isArray(value.reference_roles) ? { references: value.reference_roles.filter((entry): entry is { url: string; role: string } => Boolean(entry) && typeof entry.url === 'string' && typeof entry.role === 'string').map(({ url, role }) => ({ url, role })) } : {}),
     ...(typeof value.analysis_depth === 'string' ? { analysisDepth: value.analysis_depth } : {}),
     ...(typeof value.max_output_tokens === 'number' ? { maxOutputTokens: value.max_output_tokens } : {}),
   };

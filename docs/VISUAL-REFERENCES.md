@@ -24,7 +24,7 @@ Omitting `referenceInputs` preserves the legacy visual declaration: `maxReferenc
 
 Discovery returns the count declaration and media slots. Studio, Canvas, asset-first HTTP/MCP/CLI requests and `generation.model` recipes use the same model registration. Server admission and adapter entry validate required/maximum counts, accepted aspect ratios/durations, distinct reference URLs and supported array fields before importing provider code. Internal `video_url`, `image_url`, frame aliases or forged parameters do not override the owned references.
 
-Providers receive ordered `input.imageUrls`, `input.videoUrls` and `input.audioUrls`. These preserve order within each kind, not cross-kind interleaving. `referenceDelivery: "project-media"` provides verified call-scoped `media` and `readMedia`; otherwise the existing managed upload path supplies authorized delivery URLs. Counts alone do not establish that a model understands a reference, performs lip-sync, or maintains identity/motion. Custom per-reference roles and semantic quality need separate contracts/evaluation.
+Providers receive ordered `input.imageUrls`, `input.videoUrls` and `input.audioUrls`. These preserve order within each kind, not cross-kind interleaving. `referenceDelivery: "project-media"` provides verified call-scoped `media` and `readMedia`; otherwise the existing managed upload path supplies authorized delivery URLs. Counts alone do not establish that a model understands a reference, performs lip-sync, or maintains identity/motion. Models that need to know what each reference is for declare [reference roles](#reference-roles); semantic quality still needs separate evaluation.
 
 ## Studio selection and recovery
 
@@ -53,3 +53,17 @@ Admission rejects a mask for a model without `maskInput`, a missing mask when it
 In Studio, choosing a mask-capable model shows **Mark area**. The painter draws over the first selected image with brush, eraser, whole-image and clear actions, and saves the mask as a new project file; the original is never modified. The mask stays with the selection after reload and is restored when a request is reused from history. Removing its image drops the mask.
 
 The optional [masked edit processor](../examples/providers/masked-edit/README.md) blurs, desaturates, pixelates or fills only the marked area with FFmpeg. It proves the contract with real pixels; it is not generative inpainting. A diffusion inpainting model, ComfyUI graph or hosted editing API plugs into the same declaration without app changes.
+
+## Reference roles
+
+A model that needs to know what each reference is for declares the specific roles it understands:
+
+```json
+{ "referenceInputs": { "image": { "min": 1, "max": 2 }, "video": { "min": 0, "max": 0 }, "audio": { "min": 0, "max": 0 } }, "referenceRoles": ["subject", "style"] }
+```
+
+Specific roles are `style`, `subject` and `pose`. Every model accepts `reference`, `source` and `audio_track`; `mask` has its own [contract](#edit-a-marked-area). A request that gives a specific role to a model that did not declare it is rejected before any intent, upload or generation record, through UI, HTTP, MCP, CLI and recipes alike, so roles are never silently dropped. Analysis models describe sources with `analysisInputs` instead.
+
+Providers receive `input.references`, a list of `{ url, role }` in request order next to the existing per-kind arrays, and read files with the same verified `readMedia`. This is the extension point for motion transfer (a source video and a subject image), subject replacement, style transfer or pose-guided generation from independent contributors.
+
+In Studio, a model that declares roles shows a role picker for each visual file in **Sources**. Roles survive reload and are restored when a request is reused from history. The optional [role collage](../examples/providers/role-collage/README.md) processor centers the subject over a blurred style image with FFmpeg, so swapping roles visibly swaps the result; it is not a generative model.

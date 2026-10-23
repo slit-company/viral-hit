@@ -36,6 +36,8 @@ export type ProjectGenerationItem = {
   referenceAudios: string[];
   /** Painted mask sent separately from references, when the model edited a marked area. */
   referenceMask?: string;
+  /** Roles sent with references, keyed by the same playback URLs as the reference lists. */
+  referenceRoles?: Array<{ url: string; role: string }>;
   analysisDepth?: VideoAnalysisDepth;
   modelOptions?: ModelOptionsDraft;
   error: string | null;
@@ -156,6 +158,7 @@ export const toProjectGenerationItem = (
     referenceVideos: readUrlList(input?.video_urls, input?.video_url),
     referenceAudios: readUrlList(input?.audio_urls, input?.audio_url),
     ...(readUrlList(input?.mask_url).length ? { referenceMask: readUrlList(input?.mask_url)[0] } : {}),
+    ...(Array.isArray(input?.reference_roles) ? { referenceRoles: input.reference_roles.flatMap((entry: unknown) => { const value = entry as { url?: unknown; role?: unknown }; return typeof value?.url === 'string' && typeof value.role === 'string' ? [{ url: readUrlList(value.url)[0], role: value.role }] : []; }) } : {}),
     error: row.error,
     createdAt,
   };

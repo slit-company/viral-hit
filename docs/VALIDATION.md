@@ -1017,3 +1017,9 @@ This proves the contract and a real local processor. It does not evaluate genera
 ## Mask inputs in the recipe builder — 2026-10-23
 
 The model catalog exposes mask support, and the builder adds a Mask input for mask models. An integration test builds a recipe from the example mask processor, compiles it with a real source and mask, and runs it through the durable worker to success; asking for a mask on the procedural model and a mask without a source are rejected. Recipe authoring and model requirement browser tests (6) still pass; 914 source tests, architecture and typecheck pass. Bundle: 610,842 gzip bytes, within the 612,000 budget.
+
+## Reference roles — 2026-10-23
+
+- **Integration (real FFmpeg, 3 tests):** the example processor receives `input.references` with roles; with a red subject and blue style the output is red in the center and blue at the edge, and swapping roles swaps both. A `pose` reference to a model that declares only subject and style is rejected before generation history. Duplicate role declarations and roles on analysis models fail manifest validation.
+- **Browser (production build):** Studio uploads two images, assigns Subject and Style in Sources, sends those roles, produces the expected pixels, and restores both roles from history after clearing browser storage. Captures at 1440 and 390 with animations disabled.
+- 917 source tests (published provider schema regenerated), affected Studio, mask, results grid and recipe authoring browser tests (8), architecture, typecheck and i18n pass. Bundle 611,136 gzip bytes, within the 612,000 budget.

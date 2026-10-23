@@ -16,7 +16,7 @@ export function StudioVisualSourceControls({ projectId, model, source, disabled 
   return <div className="space-y-2">
     {source.unreadable && <div role="status" className="flex flex-wrap items-center gap-2 text-xs"><span>Saved source selection is unreadable and retained. New selections are not saved yet.</span><Action className="vh-secondary" disabled={disabled} onClick={source.replaceUnreadable}>Replace saved sources</Action></div>}
     {(accepts || source.sources.length > 0) && <div className="flex flex-wrap items-center gap-2">
-      <StudioMediaSources projectId={projectId} sources={source.sources} limits={limits} onAdd={source.add} onRemove={source.remove} label="Visual" disabled={disabled} />
+      <StudioMediaSources projectId={projectId} sources={source.sources} limits={limits} onAdd={source.add} onRemove={source.remove} label="Visual" disabled={disabled} roles={model?.referenceRoles} onRole={source.setRole} />
       {accepts && <Action className="vh-secondary flex items-center gap-1.5" aria-label="Upload visual reference files" disabled={disabled || model?.available === false} onClick={() => input.current?.click()}><Upload size={15} />Upload files</Action>}
       <StudioMaskEditor projectId={projectId} model={model} source={source} disabled={disabled || model?.available === false} />
       <span className="text-xs text-[var(--vh-text-2)]">{REFERENCE_MEDIA_KINDS.filter(kind => limits[kind].max || counts[kind]).map(kind => `${kind}: ${counts[kind]} / ${limits[kind].min}–${limits[kind].max}`).join(' · ')}</span>

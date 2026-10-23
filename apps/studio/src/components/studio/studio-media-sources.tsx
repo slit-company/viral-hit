@@ -2,12 +2,15 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Action } from '@/components/base/action';
 import { Input } from '@/components/ui/input';
+import { NativeSelect } from '@/components/ui/native-select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { REFERENCE_MEDIA_KINDS, type ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import { studioSourceCounts, type StudioMediaSource } from '@/core/studio/studio-media-sources';
 import { loadStudioSources } from './use-studio-source-actions';
 
-export function StudioMediaSources({ projectId, sources, limits, onAdd, onRemove, label, disabled }: { projectId: string; sources: StudioMediaSource[]; limits: ReferenceInputs; onAdd: (source: StudioMediaSource) => void; onRemove: (id: string) => void; label: 'Analysis' | 'Audio' | 'Visual'; disabled: boolean }) {
+export function StudioMediaSources({ projectId, sources, limits, onAdd, onRemove, label, disabled, roles, onRole }: { projectId: string; sources: StudioMediaSource[]; limits: ReferenceInputs; onAdd: (source: StudioMediaSource) => void; onRemove: (id: string) => void; label: 'Analysis' | 'Audio' | 'Visual'; disabled: boolean;
+  /** Specific roles the selected model declares; each visual source can take one. */
+  roles?: readonly ('style' | 'subject' | 'pose')[]; onRole?: (id: string, role: StudioMediaSource['role']) => void }) {
   const [open, setOpen] = useState(false), [search, setSearch] = useState('');
   const library = useQuery({ queryKey: ['studio-media-sources', projectId], queryFn: () => loadStudioSources(projectId), enabled: open && !disabled, staleTime: 0 });
   const selected = new Set(sources.map(source => source.id));
@@ -26,6 +29,9 @@ export function StudioMediaSources({ projectId, sources, limits, onAdd, onRemove
         <div className="min-h-0 space-y-3 overflow-y-auto pr-1">
           {sources.map(source => <div key={source.id} className="flex items-center gap-3 rounded-lg border border-[var(--vh-border)] p-3 text-sm">
             <span className="min-w-0 flex-1 break-words">{source.filename}<small className="block text-[var(--vh-text-2)]">{source.type} · {source.id.slice(0, 8)}</small></span>
+            {roles?.length && onRole && source.type !== 'audio' ? <NativeSelect aria-label={`Role of ${source.filename}`} disabled={disabled} value={source.role && roles.includes(source.role) ? source.role : ''} onChange={event => onRole(source.id, (event.target.value || undefined) as StudioMediaSource['role'])} className="h-9 w-auto shrink-0">
+              <option value="">Reference</option>{roles.map(role => <option key={role} value={role}>{role[0].toUpperCase() + role.slice(1)}</option>)}
+            </NativeSelect> : null}
             <Action className="vh-secondary shrink-0" aria-label={`Remove source ${source.filename} (${source.id})`} disabled={disabled} onClick={() => onRemove(source.id)}>Remove</Action>
           </div>)}
           <p className="text-xs font-semibold text-[var(--vh-text-2)]">Project library</p>

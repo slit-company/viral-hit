@@ -1,5 +1,6 @@
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from './mask-input';
+import type { ReferenceRoles } from './reference-roles';
 import type { ModelControl } from './model-controls';
 import type { AnalysisInputs } from './analysis-inputs';
 import type { BaseAdapter, EffectRecord } from '@/core/adapters/base-adapter';
@@ -14,6 +15,8 @@ export type GenerationProviderModelBinding = {
   referenceInputs?: ReferenceInputs;
   /** Declared only by models that edit a marked area. */
   maskInput?: MaskInput;
+  /** Specific reference roles the model declares. */
+  referenceRoles?: ReferenceRoles;
   /** Explicit output type/name for installed analysis models outside the image/video registry. */
   kind?: 'image' | 'video' | 'audio' | 'analysis';
   name?: string;

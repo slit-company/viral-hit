@@ -21,15 +21,20 @@ export function appendVisualSource(draft: z.infer<typeof visualSourcesSchema>, s
 export function visualSourceReferences(sources: StudioMediaSource[], model?: WorkspaceModelOption | null, mask?: StudioMask) {
   if (!model || model.available === false) throw Error('Choose an available model first.');
   validateReferenceCounts(studioSourceCounts(sources), visualReferenceInputs(model), model.name);
-  const references: Array<{ assetId: string; role: 'audio_track' | 'reference' | 'source' | 'mask' }> = sources.map(source => ({ assetId: source.id, role: source.type === 'audio' ? 'audio_track' as const : 'reference' as const }));
+  const references: Array<{ assetId: string; role: 'audio_track' | 'reference' | 'source' | 'mask' | 'style' | 'subject' | 'pose' }> = sources.map(source => ({ assetId: source.id,
+    role: source.type === 'audio' ? 'audio_track' as const : source.role && model.referenceRoles?.includes(source.role) ? source.role : 'reference' as const }));
   if (!model.maskInput) return references;
   const active = activeStudioMask(sources, mask);
   if (model.maskInput.required && !active) throw Error('Mark the area to change first.');
   if (!active) return references;
-  return [...references.map(reference => reference.assetId === active.targetId ? { ...reference, role: 'source' as const } : reference), { assetId: active.id, role: 'mask' as const }];
+  return [...references.map(reference => reference.assetId === active.targetId && reference.role === 'reference' ? { ...reference, role: 'source' as const } : reference), { assetId: active.id, role: 'mask' as const }];
 }
-export function restoreVisualSources(projectId: string, item: Pick<ProjectGenerationItem, 'referenceImages' | 'referenceVideos' | 'referenceAudios' | 'referenceMask'>, library: StudioMediaSource[]) {
-  const sources = restoreStudioSources(projectId, item, library);
+export function restoreVisualSources(projectId: string, item: Pick<ProjectGenerationItem, 'referenceImages' | 'referenceVideos' | 'referenceAudios' | 'referenceMask' | 'referenceRoles'>, library: StudioMediaSource[]) {
+  const roles = new Map((item.referenceRoles ?? []).map(entry => [entry.url, entry.role]));
+  const sources = restoreStudioSources(projectId, item, library).map(source => {
+    const role = roles.get(source.publicUrl);
+    return role === 'style' || role === 'subject' || role === 'pose' ? { ...source, role } : source;
+  });
   const local = item.referenceMask ? parseLocalProjectAssetUrl(item.referenceMask) : null;
   if (local && local.projectId !== projectId) throw Error('Saved mask belongs to another project');
   const target = sources.find(source => source.type === 'image');

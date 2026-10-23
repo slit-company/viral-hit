@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { checkReferenceRoleEntries } from '../reference-roles';
 import { MAX_GENERATION_PROMPT_CHARS } from '@/core/effects/validation';
 import { validateReferenceCounts } from '../reference-inputs';
 import type { ProviderModel } from './manifest';
@@ -25,5 +26,6 @@ export function validateInstalledVisualInput(input: unknown, model: ProviderMode
   validateReferenceCounts({ image: parsed.image_urls?.length ?? 0, video: parsed.video_urls?.length ?? 0, audio: parsed.audio_urls?.length ?? 0 }, limits, model.name);
   if (parsed.aspect_ratio !== undefined && !model.aspectRatios.includes(parsed.aspect_ratio as ProviderModel['aspectRatios'][number])) throw Error('Choose an aspect ratio declared by this model');
   if (parsed.wmDuration !== undefined && !model.durations?.includes(parsed.wmDuration)) throw Error('Choose a duration declared by this model');
+  checkReferenceRoleEntries((input as Record<string, unknown>).reference_roles, [...(parsed.image_urls ?? []), ...(parsed.video_urls ?? []), ...(parsed.audio_urls ?? [])]);
   return parsed;
 }

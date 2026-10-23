@@ -430,6 +430,19 @@
             },
             "additionalProperties": false
           },
+          "referenceRoles": {
+            "minItems": 1,
+            "maxItems": 3,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "style",
+                "subject",
+                "pose"
+              ]
+            }
+          },
           "upstreamModelId": {
             "type": "string",
             "minLength": 1,

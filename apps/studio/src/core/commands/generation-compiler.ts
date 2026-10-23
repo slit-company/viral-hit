@@ -13,6 +13,7 @@ const MEDIA_PARAMETER_KEYS = new Set([
   'audio_url',
   'audio_urls',
   'mask_url',
+  'reference_roles',
   'first_frame',
   'last_frame',
   'callBackUrl',
@@ -50,6 +51,7 @@ export async function compileAssetFirstGenerationInput({
   const videoUrls: string[] = [];
   const audioUrls: string[] = [];
   let maskUrl: string | undefined;
+  const roles = new Map<string, string>();
 
   for (const reference of generation.references) {
     const asset = await getProjectAssetById({
@@ -78,6 +80,7 @@ export async function compileAssetFirstGenerationInput({
       maskUrl = deliveryUrl;
       continue;
     }
+    if (!roles.has(deliveryUrl)) roles.set(deliveryUrl, reference.role);
     if (reference.role === 'audio_track' && asset.type !== 'audio') {
       throw new GenerationReferenceError(`Asset ${reference.assetId} is not an audio track.`);
     }
@@ -109,6 +112,7 @@ export async function compileAssetFirstGenerationInput({
     ...(videoUrls.length > 0 ? { video_urls: [...new Set(videoUrls)] } : {}),
     ...(audioUrls.length > 0 ? { audio_urls: [...new Set(audioUrls)] } : {}),
     ...(maskUrl ? { mask_url: maskUrl } : {}),
+    ...(roles.size > 0 ? { reference_roles: [...roles].map(([url, role]) => ({ url, role })) } : {}),
     ...(generation.mode === 'analysis' && new Set(videoUrls).size === 1
       ? { video_url: videoUrls[0] }
       : {}),

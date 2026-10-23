@@ -31,6 +31,7 @@ async function GET({ request }: { request: Request }) {
       ...(descriptor?.controls ? { controls: descriptor.controls } : {}),
       ...(descriptor?.referenceInputs ? { referenceInputs: descriptor.referenceInputs } : {}),
       ...(descriptor?.maskInput ? { maskInput: descriptor.maskInput } : {}),
+      ...(descriptor?.referenceRoles ? { referenceRoles: descriptor.referenceRoles } : {}),
       defaultProviderModelVariant: model.defaultVariant
         ? resolveWorkspaceEffectProviderModelVariant({
             modelId: model.id,

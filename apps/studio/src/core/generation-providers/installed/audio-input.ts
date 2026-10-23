@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { checkReferenceRoleEntries } from '../reference-roles';
 import { MAX_GENERATION_PROMPT_CHARS } from '@/core/effects/validation';
 import { resolveAudioReferenceInputs, validateReferenceCounts, type ReferenceInputs } from '../reference-inputs';
 
@@ -18,5 +19,6 @@ const audioInput = z.object({
 export function validateInstalledAudioInput(input: unknown, declared?: ReferenceInputs) {
   const parsed = audioInput.parse(input);
   validateReferenceCounts({ image: parsed.image_urls?.length ?? 0, video: parsed.video_urls?.length ?? 0, audio: parsed.audio_urls?.length ?? 0 }, resolveAudioReferenceInputs(declared), 'Audio');
+  checkReferenceRoleEntries((input as Record<string, unknown>).reference_roles, [...(parsed.image_urls ?? []), ...(parsed.video_urls ?? []), ...(parsed.audio_urls ?? [])]);
   return parsed;
 }

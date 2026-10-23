@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { checkReferenceRoleEntries } from '../reference-roles';
 import { validateAnalysisReferenceCounts, type AnalysisInputs } from '../analysis-inputs';
 
 const urls = z.array(z.string().url().max(4096)).max(20);
@@ -25,5 +26,6 @@ export function validateInstalledAnalysisInput(input: unknown, declared?: Analys
   const videoUrls = parsed.video_urls?.length ? parsed.video_urls : parsed.video_url ? [parsed.video_url] : [];
   if (parsed.video_url && [...(parsed.image_urls ?? []), ...(parsed.audio_urls ?? [])].includes(parsed.video_url)) throw Error('Analysis reference URLs must be distinct across media types');
   validateAnalysisReferenceCounts({ image: parsed.image_urls?.length ?? 0, video: videoUrls.length, audio: parsed.audio_urls?.length ?? 0 }, declared);
+  checkReferenceRoleEntries((input as Record<string, unknown>).reference_roles, [...(parsed.image_urls ?? []), ...videoUrls, ...(parsed.audio_urls ?? [])]);
   return parsed;
 }

@@ -1,5 +1,6 @@
 import { referenceInputsSchema } from '../reference-inputs';
 import { maskInputSchema } from '../mask-input';
+import { referenceRolesSchema } from '../reference-roles';
 import { modelControlsSchema } from '../model-controls';
 import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
@@ -21,6 +22,8 @@ export const providerModelSchema = z.object({
   analysisInputs: analysisInputsSchema.optional(),
   referenceInputs: referenceInputsSchema.optional(),
   maskInput: maskInputSchema.optional(),
+  /** Specific roles (style, subject, pose) the model understands; delivered to the module as input.references. */
+  referenceRoles: referenceRolesSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
   aspectRatios: z.array(z.enum(PROVIDER_ASPECT_RATIOS)).max(PROVIDER_ASPECT_RATIOS.length).default([]),
   defaultAspectRatio: z.enum(PROVIDER_ASPECT_RATIOS).optional(),
@@ -35,6 +38,7 @@ export const providerModelSchema = z.object({
   if (model.kind === 'analysis' && model.referenceInputs) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, not referenceInputs' });
   if (model.referenceInputs && (model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Use referenceInputs alone instead of legacy image reference settings' });
   if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });
+  if (model.referenceRoles && model.kind === 'analysis') ctx.addIssue({ code: 'custom', message: 'Analysis models describe sources with analysisInputs, not reference roles' });
   if (model.maskInput && model.kind !== 'image' && model.kind !== 'video') ctx.addIssue({ code: 'custom', message: 'Only image and video models accept a mask' });
   if (model.maskInput && !(model.referenceInputs ? model.referenceInputs.image.max + model.referenceInputs.video.max : model.maxReferenceImages)) ctx.addIssue({ code: 'custom', message: 'A mask needs at least one image or video reference to apply to' });
   if (model.defaultAspectRatio && !model.aspectRatios.includes(model.defaultAspectRatio)) ctx.addIssue({ code: 'custom', message: 'defaultAspectRatio must be one of aspectRatios' });

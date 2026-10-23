@@ -6,6 +6,8 @@ import { parseLocalProjectAssetUrl } from '../projects/local-project-asset-url';
 export const studioMediaSourceSchema = z.object({
   id: z.string().min(1).max(200), type: z.enum(['image', 'video', 'audio']),
   publicUrl: z.string().min(1).max(4096), filename: z.string().max(500),
+  /** Specific role chosen for a model that declares referenceRoles. */
+  role: z.enum(['style', 'subject', 'pose']).optional(),
 }).strict();
 export type StudioMediaSource = z.infer<typeof studioMediaSourceSchema>;
 export const studioSourceCounts = (sources: Pick<StudioMediaSource, 'type'>[]) => sources.reduce((counts, source) => ({ ...counts, [source.type]: counts[source.type] + 1 }), { image: 0, video: 0, audio: 0 });

@@ -1,5 +1,6 @@
 import { resolveModelOptions } from './model-controls';
 import { validateMaskReferences } from './mask-input';
+import { validateReferenceRoles } from './reference-roles';
 import { prepareLocalGenerationReferences } from './local-media.server';
 import { readFile, stat } from 'node:fs/promises';
 
@@ -163,6 +164,7 @@ export async function preflightAssetFirstGeneration(source: unknown) {
   }
   const { binding } = found;
   validateMaskReferences(generation.references, binding.maskInput, binding.name ?? generation.modelId);
+  validateReferenceRoles(generation.references, binding.referenceRoles, binding.name ?? generation.modelId);
   if (binding.controls || generation.parameters.provider_options !== undefined) generation = { ...generation, parameters: { ...generation.parameters, provider_options: resolveModelOptions(binding.controls, generation.parameters.provider_options) } };
   const descriptor = getGenerationModelDescriptor(generation.modelId);
   if (!descriptor || descriptor.kind !== generation.mode) {
