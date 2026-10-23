@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "kind": "viral-hit-provider",
+  "id": "masked-edit",
+  "label": "Local masked edit",
+  "scope": "general",
+  "description": "Optional FFmpeg processor that changes only the white area of a mask. No AI or prompt interpretation.",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "referenceDelivery": "project-media",
+  "models": [
+    {
+      "id": "masked-image-edit", "name": "Edit marked area", "kind": "image",
+      "aspectRatios": ["auto"],
+      "referenceInputs": {"image":{"min":1,"max":1},"video":{"min":0,"max":0},"audio":{"min":0,"max":0}},
+      "maskInput": {"required": true},
+      "controls": [
+        {"key":"effect","label":"Change in marked area","type":"select","default":"blur","choices":[
+          {"value":"blur","label":"Blur"},{"value":"grayscale","label":"Grayscale"},
+          {"value":"pixelate","label":"Pixelate"},{"value":"fill","label":"Fill with color"}
+        ]},
+        {"key":"strength","label":"Strength","type":"number","min":1,"max":50,"integer":true,"default":16},
+        {"key":"color","label":"Fill color","type":"select","default":"white","choices":[
+          {"value":"white","label":"White"},{"value":"black","label":"Black"},{"value":"gray","label":"Gray"}
+        ]}
+      ]
+    }
+  ]
+}

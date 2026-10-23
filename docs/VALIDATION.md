@@ -977,3 +977,13 @@ Browser export decoded untagged H.264 as BT.709 while FFmpeg used BT.601, so gre
 
 This verifies export agreement for SDR H.264 MP4. It does not establish HDR or wide-gamut handling, color for VP9/AV1/HEVC sources, or the browser preview's interpretation. Headless Chromium's native video element rendered even BT.709 tagged files as BT.601, so preview color was not used as a reference. Evidence is local-only under `research/evidence/video-color/`.
 
+## Masked edits — 2026-10-23
+
+Installed image/video models can declare `maskInput`; a `mask` reference role reaches the provider as `maskUrl` through the shared admission path.
+
+- **Integration (real FFmpeg, 4 tests):** the example processor fills only the white area of a quarter-resolution mask while red and blue originals outside it stay exact; source and mask files stay byte-identical. Masks for unsupported models, missing required masks, two masks, a video mask, a mask reused as the source and a mask alone are all rejected before any generation record. A durable `generation.model` recipe passes the mask role through and produces a 160×80 image.
+- **Browser (production build):** Studio upload, model options, pointer painting, saved mask, generation. Submitted roles were `source` and `mask`; decoded output pixels are white in the painted stroke and unchanged elsewhere. The mask survives reload and is restored by history reuse after clearing browser storage. The first run caught the history field returning an internal reference address instead of a project file address; it now uses the same converter as other references.
+- **Visual review:** desktop 1440×960 and phone 390×844 dialog captures. A red overlay was nearly invisible on red images and Paint/Erase looked identical; the overlay now uses an inverting blend and the active tool uses the primary style.
+- **913 source tests** pass with the full FFmpeg build after regenerating the published provider schema. Architecture, typecheck and i18n pass.
+
+This proves the contract and a real local processor. It does not evaluate generative inpainting quality, video masks in the Studio painter, or relighting/decomposition/layered export.

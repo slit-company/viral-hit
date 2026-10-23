@@ -1,5 +1,6 @@
 import { resolveAudioReferenceInputs } from './reference-inputs';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
+import type { MaskInput } from './mask-input';
 import { resolveModelOptions, type ModelControl } from './model-controls';
 import { resolveAnalysisInputs, type AnalysisInputs } from './analysis-inputs';
 import {
@@ -41,6 +42,7 @@ export type GenerationModelDescriptor = {
   controls?: ModelControl[];
   analysisInputs?: AnalysisInputs;
   referenceInputs?: ReferenceInputs;
+  maskInput?: MaskInput;
   parameterSchema: unknown;
   defaultParameters: Record<string, unknown>;
   referenceSchema: unknown;
@@ -85,6 +87,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         parameterSchema: effect.inputSchema,
         defaultParameters: { ...defaultsFromEntry(entry), ...(binding.controls ? { provider_options: resolveModelOptions(binding.controls, undefined) } : {}) },
         ...(binding.referenceInputs ? { referenceInputs: binding.referenceInputs } : {}),
+        ...(binding.maskInput ? { maskInput: binding.maskInput } : {}),
         referenceSchema: entry.workspaceType === 'ai-audio' ? resolveAudioReferenceInputs(binding.referenceInputs) : getWorkspaceMediaSchema(entry.id),
       },
     ];

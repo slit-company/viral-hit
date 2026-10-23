@@ -35,6 +35,7 @@ export function providerInput(input: unknown) {
     ...(Array.isArray(value.video_urls) ? { videoUrls: value.video_urls.filter(url => typeof url === 'string') } : {}),
     ...(Array.isArray(value.audio_urls) ? { audioUrls: value.audio_urls.filter(url => typeof url === 'string') } : {}),
     ...(typeof value.video_url === 'string' ? { videoUrl: value.video_url } : {}),
+    ...(typeof value.mask_url === 'string' ? { maskUrl: value.mask_url } : {}),
     ...(typeof value.analysis_depth === 'string' ? { analysisDepth: value.analysis_depth } : {}),
     ...(typeof value.max_output_tokens === 'number' ? { maxOutputTokens: value.max_output_tokens } : {}),
   };

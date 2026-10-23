@@ -11,6 +11,8 @@ export const generationReferenceRoleSchema = z.enum([
   'subject',
   'pose',
   'audio_track',
+  /** Marks the area to change in another reference; requires a model with maskInput. */
+  'mask',
 ]);
 
 export type GenerationReferenceRole = z.infer<

@@ -30,6 +30,7 @@ async function GET({ request }: { request: Request }) {
       inputSchema: descriptor?.parameterSchema ?? null,
       ...(descriptor?.controls ? { controls: descriptor.controls } : {}),
       ...(descriptor?.referenceInputs ? { referenceInputs: descriptor.referenceInputs } : {}),
+      ...(descriptor?.maskInput ? { maskInput: descriptor.maskInput } : {}),
       defaultProviderModelVariant: model.defaultVariant
         ? resolveWorkspaceEffectProviderModelVariant({
             modelId: model.id,

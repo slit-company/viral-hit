@@ -52,4 +52,7 @@ export async function linkInputAssets(
       await linkGenerationInputAssetsByUrls({ generationId, urls });
     }
   }
+  if (typeof input.mask_url === 'string') {
+    await linkGenerationInputAssetsByUrls({ generationId, urls: [input.mask_url] });
+  }
 }

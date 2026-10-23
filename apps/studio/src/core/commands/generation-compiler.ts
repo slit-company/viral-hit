@@ -12,6 +12,7 @@ const MEDIA_PARAMETER_KEYS = new Set([
   'video_urls',
   'audio_url',
   'audio_urls',
+  'mask_url',
   'first_frame',
   'last_frame',
   'callBackUrl',
@@ -48,6 +49,7 @@ export async function compileAssetFirstGenerationInput({
   const imageUrls: string[] = [];
   const videoUrls: string[] = [];
   const audioUrls: string[] = [];
+  let maskUrl: string | undefined;
 
   for (const reference of generation.references) {
     const asset = await getProjectAssetById({
@@ -70,6 +72,12 @@ export async function compileAssetFirstGenerationInput({
       );
     }
 
+    if (reference.role === 'mask') {
+      if (asset.type !== 'image') throw new GenerationReferenceError(`Mask ${reference.assetId} must be an image.`);
+      if (maskUrl !== undefined) throw new GenerationReferenceError('Use one mask per generation.');
+      maskUrl = deliveryUrl;
+      continue;
+    }
     if (reference.role === 'audio_track' && asset.type !== 'audio') {
       throw new GenerationReferenceError(`Asset ${reference.assetId} is not an audio track.`);
     }
@@ -100,6 +108,7 @@ export async function compileAssetFirstGenerationInput({
     ...(imageUrls.length > 0 ? { image_urls: [...new Set(imageUrls)] } : {}),
     ...(videoUrls.length > 0 ? { video_urls: [...new Set(videoUrls)] } : {}),
     ...(audioUrls.length > 0 ? { audio_urls: [...new Set(audioUrls)] } : {}),
+    ...(maskUrl ? { mask_url: maskUrl } : {}),
     ...(generation.mode === 'analysis' && new Set(videoUrls).size === 1
       ? { video_url: videoUrls[0] }
       : {}),

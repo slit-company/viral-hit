@@ -1,4 +1,5 @@
 import { referenceInputsSchema } from '../reference-inputs';
+import { maskInputSchema } from '../mask-input';
 import { modelControlsSchema } from '../model-controls';
 import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
@@ -19,6 +20,7 @@ export const providerModelSchema = z.object({
   controls: modelControlsSchema.optional(),
   analysisInputs: analysisInputsSchema.optional(),
   referenceInputs: referenceInputsSchema.optional(),
+  maskInput: maskInputSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
   aspectRatios: z.array(z.enum(PROVIDER_ASPECT_RATIOS)).max(PROVIDER_ASPECT_RATIOS.length).default([]),
   defaultAspectRatio: z.enum(PROVIDER_ASPECT_RATIOS).optional(),
@@ -33,6 +35,8 @@ export const providerModelSchema = z.object({
   if (model.kind === 'analysis' && model.referenceInputs) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, not referenceInputs' });
   if (model.referenceInputs && (model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Use referenceInputs alone instead of legacy image reference settings' });
   if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });
+  if (model.maskInput && model.kind !== 'image' && model.kind !== 'video') ctx.addIssue({ code: 'custom', message: 'Only image and video models accept a mask' });
+  if (model.maskInput && !(model.referenceInputs ? model.referenceInputs.image.max + model.referenceInputs.video.max : model.maxReferenceImages)) ctx.addIssue({ code: 'custom', message: 'A mask needs at least one image or video reference to apply to' });
   if (model.defaultAspectRatio && !model.aspectRatios.includes(model.defaultAspectRatio)) ctx.addIssue({ code: 'custom', message: 'defaultAspectRatio must be one of aspectRatios' });
   if (model.kind !== 'video' && model.durations) ctx.addIssue({ code: 'custom', message: 'Only video models have durations' });
   if (model.defaultDuration && !model.durations?.includes(model.defaultDuration)) ctx.addIssue({ code: 'custom', message: 'defaultDuration must be one of durations' });

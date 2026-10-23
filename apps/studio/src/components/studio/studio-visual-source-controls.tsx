@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Upload } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { StudioMediaSources } from './studio-media-sources';
+import { StudioMaskEditor } from './studio-mask-editor';
 import { visualReferenceInputs } from '@/core/studio/studio-visual-sources';
 import { REFERENCE_MEDIA_KINDS } from '@/core/generation-providers/reference-inputs';
 import { studioSourceCounts } from '@/core/studio/studio-media-sources';
@@ -17,6 +18,7 @@ export function StudioVisualSourceControls({ projectId, model, source, disabled 
     {(accepts || source.sources.length > 0) && <div className="flex flex-wrap items-center gap-2">
       <StudioMediaSources projectId={projectId} sources={source.sources} limits={limits} onAdd={source.add} onRemove={source.remove} label="Visual" disabled={disabled} />
       {accepts && <Action className="vh-secondary flex items-center gap-1.5" aria-label="Upload visual reference files" disabled={disabled || model?.available === false} onClick={() => input.current?.click()}><Upload size={15} />Upload files</Action>}
+      <StudioMaskEditor projectId={projectId} model={model} source={source} disabled={disabled || model?.available === false} />
       <span className="text-xs text-[var(--vh-text-2)]">{REFERENCE_MEDIA_KINDS.filter(kind => limits[kind].max || counts[kind]).map(kind => `${kind}: ${counts[kind]} / ${limits[kind].min}–${limits[kind].max}`).join(' · ')}</span>
     </div>}
     <input ref={input} aria-label="Visual reference files" type="file" className="hidden" multiple accept="image/png,image/jpeg,image/webp,video/mp4,video/quicktime,video/webm,audio/mpeg,audio/wav,audio/mp4,audio/ogg,audio/aac" onChange={event => { void source.upload(Array.from(event.target.files ?? [])); event.target.value = ''; }} />

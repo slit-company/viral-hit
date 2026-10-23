@@ -74,7 +74,7 @@ export function StudioComposer({
     findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
   const referenceUrls = visualSources.sources.filter(source => source.type === 'image').map(source => source.publicUrl);
   let referencesValid = true;
-  try { visualSourceReferences(visualSources.sources, selectedModel); } catch { referencesValid = false; }
+  try { visualSourceReferences(visualSources.sources, selectedModel, visualSources.mask); } catch { referencesValid = false; }
   const promptRequired = getGenerationPromptConstraints({
     modelId: selectedModel?.id,
   }).required;

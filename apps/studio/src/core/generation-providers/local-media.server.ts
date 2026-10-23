@@ -25,7 +25,7 @@ export async function prepareLocalGenerationReferences(generation: AssetFirstGen
 }
 
 function referenceUrls(input: Record<string, unknown>) {
-  const values = [input.videoUrl, ...(Array.isArray(input.imageUrls) ? input.imageUrls : []), ...(Array.isArray(input.videoUrls) ? input.videoUrls : []), ...(Array.isArray(input.audioUrls) ? input.audioUrls : [])];
+  const values = [input.videoUrl, input.maskUrl, ...(Array.isArray(input.imageUrls) ? input.imageUrls : []), ...(Array.isArray(input.videoUrls) ? input.videoUrls : []), ...(Array.isArray(input.audioUrls) ? input.audioUrls : [])];
   return [...new Set(values.filter((item): item is string => typeof item === 'string'))];
 }
 

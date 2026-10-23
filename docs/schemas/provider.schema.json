@@ -420,6 +420,16 @@
             ],
             "additionalProperties": false
           },
+          "maskInput": {
+            "type": "object",
+            "properties": {
+              "required": {
+                "default": false,
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          },
           "upstreamModelId": {
             "type": "string",
             "minLength": 1,

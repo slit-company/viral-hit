@@ -34,6 +34,8 @@ export type ProjectGenerationItem = {
   referenceImages: string[];
   referenceVideos: string[];
   referenceAudios: string[];
+  /** Painted mask sent separately from references, when the model edited a marked area. */
+  referenceMask?: string;
   analysisDepth?: VideoAnalysisDepth;
   modelOptions?: ModelOptionsDraft;
   error: string | null;
@@ -153,6 +155,7 @@ export const toProjectGenerationItem = (
     ),
     referenceVideos: readUrlList(input?.video_urls, input?.video_url),
     referenceAudios: readUrlList(input?.audio_urls, input?.audio_url),
+    ...(readUrlList(input?.mask_url).length ? { referenceMask: readUrlList(input?.mask_url)[0] } : {}),
     error: row.error,
     createdAt,
   };

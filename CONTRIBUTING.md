@@ -10,7 +10,7 @@ Viral Hit is a general creative workspace. Work that only makes sense for one fo
 | A workflow for one job, such as vertical product ads, a weekly show format or a team's campaign style | A recipe, or several recipes in a pack labeled `specialized` | [Packs](docs/PACKS.md), [recipes](docs/EXTENDING.md) |
 | Reusable building blocks that fit any project | A pack labeled `general` | [Packs](docs/PACKS.md) |
 | A new engine, model server or render farm | An external adapter, optionally shipped as an extension with its own `pack.json` | [External adapters](docs/EXTERNAL-ADAPTERS.md) |
-| An image or video model with its own API, general or for one job | A provider folder (provider.json plus one module) in your own repository, installed with `VIRAL_HIT_PROVIDERS_DIR` | [Providers](apps/studio/docs/PROVIDERS.md#install-a-provider-without-changing-the-app) |
+| An image or video model with its own API, general or for one job, including models that edit a painted area (`maskInput`) | A provider folder (provider.json plus one module) in your own repository, installed with `VIRAL_HIT_PROVIDERS_DIR` | [Providers](apps/studio/docs/PROVIDERS.md#install-a-provider-without-changing-the-app) |
 | A new publishing destination | An installed publishing connector, using the shared review and delivery worker | [Publishing connector guide](docs/PUBLISHING.md#install-a-publishing-connector) |
 | Know-how an AI agent should follow, for any project or one job | A skill folder in your own repository, shared as a portable file or loaded with `VIRAL_HIT_SKILLS_DIR`; propose it as official with an evaluation | [Skills](docs/SKILLS.md), [official skill rules](apps/studio/skills/official/README.md) |
 

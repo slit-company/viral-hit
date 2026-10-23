@@ -67,7 +67,7 @@ const getReferencedUrls = (input: Record<string, unknown>) => {
       );
     }
   }
-  for (const key of ['image_url', 'video_url', 'audio_url'] as const) {
+  for (const key of ['image_url', 'video_url', 'audio_url', 'mask_url'] as const) {
     if (typeof input[key] === 'string') urls.push(input[key]);
   }
   return [...new Set(urls.map((url) => url.trim()).filter(Boolean))];

@@ -37,3 +37,19 @@ Canvas continues to use its per-kind media slots and server validation. Studio c
 ## Optional real processor
 
 [Visual conform](../examples/providers/visual-conform/README.md) independently implements video-to-image frame extraction and short video formatting with an optional image overlay and soundtrack. It uses actual local PNG/MP4/WAV files and separately installed FFmpeg/FFprobe. A durable video → frame recipe and a browser Studio → frame → editable sequence → MP4 flow are verified. This processor does not interpret prompts or perform AI inference. Contributors can implement other general or specialized models behind the same declaration.
+
+## Edit a marked area
+
+A model that changes part of an image declares `maskInput` next to its reference counts:
+
+```json
+{ "referenceInputs": { "image": { "min": 1, "max": 1 }, "video": { "min": 0, "max": 0 }, "audio": { "min": 0, "max": 0 } }, "maskInput": { "required": true } }
+```
+
+Only image and video models can declare it, and the model must accept at least one image or video to apply the mask to. The mask is a separate project image: white marks the area to change, black keeps the original. Requests send it as a reference with role `mask`; the provider receives it as `input.maskUrl`, kept apart from `imageUrls`, and reads it through the same verified `readMedia` call when `referenceDelivery` is `project-media`. A mask does not have to match the source resolution.
+
+Admission rejects a mask for a model without `maskInput`, a missing mask when it is required, more than one mask, a mask that is not an image, a mask reused as the edited media, and a mask with nothing to apply to. All of these fail before an intent, upload or generation record exists, through UI, HTTP, MCP, CLI and `generation.model` recipes alike. Built-in models do not declare masks, so a mask is never silently dropped.
+
+In Studio, choosing a mask-capable model shows **Mark area**. The painter draws over the first selected image with brush, eraser, whole-image and clear actions, and saves the mask as a new project file; the original is never modified. The mask stays with the selection after reload and is restored when a request is reused from history. Removing its image drops the mask.
+
+The optional [masked edit processor](../examples/providers/masked-edit/README.md) blurs, desaturates, pixelates or fills only the marked area with FFmpeg. It proves the contract with real pixels; it is not generative inpainting. A diffusion inpainting model, ComfyUI graph or hosted editing API plugs into the same declaration without app changes.

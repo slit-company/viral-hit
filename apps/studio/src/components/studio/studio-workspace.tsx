@@ -156,7 +156,7 @@ export function StudioWorkspace({
         const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id });
         if (promptConstraints.required && !draft.prompt.trim()) throw new Error('Describe what you want to create first.');
         const initialInput = buildDraftModelParameters(draft, (await getEffectsMetadata([selectedModel!.id])).data.effects?.[selectedModel!.id]?.inputSchema);
-        const references = visualSourceReferences(visualSources.sources, selectedModel);
+        const references = visualSourceReferences(visualSources.sources, selectedModel, visualSources.mask);
         request = { version: GENERATION_REQUEST_VERSION, projectId, mode: draft.type, modelId: selectedModel!.id, prompt: draft.prompt, references, parameters: initialInput };
       }
       const precheck = await precheckEffect({ generation: request });
