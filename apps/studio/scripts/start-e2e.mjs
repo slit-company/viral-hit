@@ -48,6 +48,8 @@ env.VIRAL_HIT_META_APP_ID = '123';
 env.VIRAL_HIT_META_APP_SECRET = 'fixture-meta-only-secret';
 env.VIRAL_HIT_META_LOGIN_CONFIG_ID = '456';
 env.VIRAL_HIT_META_REDIRECT_URI = 'http://127.0.0.1:3042/api/app/publishing/instagram/callback';
+// Browser tests that need delivered posts start the real publication worker with this workspace.
+await writeFile(join(tmpdir(), 'viral-hit-e2e-worker.json'), JSON.stringify({ VIRAL_HIT_DATA_DIR: directory, VIRAL_HIT_PUBLISHING_CONNECTORS_DIR: publishingConnectors, VIRAL_HIT_ARCHIVE_DIR: env.VIRAL_HIT_ARCHIVE_DIR }));
 execFileSync('pnpm', ['db:push'], { env, stdio: 'inherit' });
 execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-media.ts'], { env, stdio: 'inherit' });
 execFileSync(process.execPath, ['--import', 'tsx', 'scripts/seed-e2e-packs.ts'], { env, stdio: 'inherit' });

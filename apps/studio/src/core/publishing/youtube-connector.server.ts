@@ -4,6 +4,8 @@ import type { JsonValue } from '../../lib/canonical-json';
 import { youtubeMetadataSchema, youtubeResource, type YouTubeUploadResult } from './youtube-contract';
 import { uploadSessionUrl, YouTubeTransportError } from './youtube-http.server';
 import { createYouTubeTransport, YOUTUBE_CHUNK_BYTES } from './youtube-transport.server';
+import { youtubeMeasurement } from './platform-metrics';
+import { MeasurementUnavailable } from '../measurement/contract';
 
 export const YOUTUBE_CONNECTOR_VERSION = '1';
 const checkpointSchema = z.object({ sessionUrl: z.string(), nextByte: z.number().int().nonnegative() }).strict();
@@ -74,6 +76,16 @@ export function createYouTubeConnector(options: Options): PublicationConnector {
       if (receipt.privacy === 'public') return { state: 'published', receipt };
       if (receipt.privacy === 'private' && receipt.publishAt) return { state: 'scheduled', receipt, retryAfterMs: 60000 };
       return { state: 'ready', receipt };
+    },
+    async measure(spec, raw, signal) {
+      validateYouTubePublication(spec);
+      const identity = receiptIdentitySchema.parse(raw);
+      if (identity.channelId !== spec.destinationId) throw new Error('Receipt belongs to another destination');
+      let statistics;
+      try { statistics = await transport(spec).videoStatistics(identity.videoId, signal); }
+      catch (error) { throw new MeasurementUnavailable(error instanceof YouTubeTransportError && error.status === 403 ? 'permission-missing' : 'unavailable'); }
+      if (!statistics) throw new MeasurementUnavailable('not-found');
+      return youtubeMeasurement(statistics);
     },
   };
 }

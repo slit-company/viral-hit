@@ -1027,3 +1027,10 @@ The model catalog exposes mask support, and the builder adds a Mask input for ma
 ## Source roles in built recipes — 2026-10-23
 
 An integration test builds a recipe from `subject-on-style` with `image-1` as subject and `image-2` as style, compiles it with a red and a blue image, runs it through the durable worker and gets the red subject in the center over the blurred blue style. A `pose` role and a role on a slot beyond the source count are rejected. 918 source tests, architecture and typecheck pass.
+
+## Creative performance readings — 2026-10-23
+
+- **Integration (real worker, 3 tests):** the example archive connector delivers a post through the durable worker, then reports unavailable (no numbers yet), partial (`downloads` missing) and complete readings with sequence 1–3; a repeat within one minute is reused; the reviewed publication digest is unchanged. Manual entries are idempotent by request key, reject conflicting content and future times, and drafts cannot be measured. HTTP rejects untrusted origins, malformed IDs and unknown publications.
+- **Recorded responses (4 tests):** YouTube statistics keep hidden likes as missing and separate removed videos (not-found), 403 (permission-missing) and outages. Instagram requests kind-specific insights, normalizes `saved` to `saves`, leaves unreported insights missing and treats a missing media ID or rejected call as unavailable. No live account was contacted.
+- **Browser (dev server plus real publication worker):** a post delivered by the worker shows "no numbers yet", Update reads 42 views and 5 downloads, a hand-entered 50 shows +8 and "entered by hand", and MCP reports the same latest/previous change and two-entry history. Desktop 1440 and phone 390 captures have no horizontal overflow. Publication, Instagram and installed-destination browser tests (6) still pass.
+- 925 source tests, architecture, typecheck and i18n pass. Summed script gzip 613,977 bytes within the reviewed 614,000 budget.

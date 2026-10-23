@@ -69,3 +69,13 @@ export async function publish(request) {
   } finally { await file.close(); await unlink(temporary); }
   return inspect(request);
 }
+// Read-only performance. Whatever serves the archive may write metrics.json beside release.json,
+// for example {"views": 12, "downloads": 3}. Missing numbers are reported, never invented.
+export async function measure(request) {
+  const root = location(request, request.receipt.session);
+  const raw = await readFile(join(root, 'metrics.json'), 'utf8').catch(error => { if (error.code === 'ENOENT') return null; throw error; });
+  if (raw === null) return { unavailable: { issue: 'not-found' } };
+  const counts = JSON.parse(raw), metrics = {};
+  for (const name of request.metrics) if (Number.isFinite(counts[name]) && counts[name] >= 0) metrics[name] = counts[name];
+  return { metrics, missing: request.metrics.filter(name => !(name in metrics)) };
+}

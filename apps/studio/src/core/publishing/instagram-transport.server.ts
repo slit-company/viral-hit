@@ -114,6 +114,11 @@ export function createInstagramTransport(options: Options) {
       }
       finally { stopped = true; if (!body.locked) await body.cancel().catch(() => undefined); }
     },
+    /** Read-only insights for a published media ID. Requires the optional instagram_manage_insights permission. */
+    async insights(target: { instagramId: string; pageId: string }, mediaId: string, metrics: readonly string[], signal: AbortSignal) {
+      const credential = await authorize(target.instagramId, target.pageId, signal);
+      return json(graph(`${instagramIdSchema.parse(mediaId)}/insights?metric=${metrics.map(name => encodeURIComponent(name)).join(',')}`), credential, signal);
+    },
     async publish(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number; publishAt?: string }, signal: AbortSignal) {
       const credential = await authorize(target.instagramId, target.pageId, signal);
       let before: InstagramContainer;

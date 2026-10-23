@@ -132,6 +132,24 @@
       "additionalProperties": {
         "$ref": "#/$defs/__schema1"
       }
+    },
+    "measurement": {
+      "type": "object",
+      "properties": {
+        "metrics": {
+          "minItems": 1,
+          "maxItems": 40,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          }
+        }
+      },
+      "required": [
+        "metrics"
+      ],
+      "additionalProperties": false
     }
   },
   "required": [

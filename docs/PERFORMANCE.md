@@ -208,3 +208,7 @@ Summed script gzip: **608,985 bytes**, 329 bytes more than the sidebar and withi
 ## Project search — 2026-10-23
 
 Summed script gzip: **610,824 bytes**, **1,839 bytes** more than the results grid. The script budget changed from 610,000 to **612,000** in this reviewed decision: project search and sort controls, paging and six messages in three languages. Search runs in SQLite on the existing project table; no index, dependency or service was added.
+
+## Creative performance readings — 2026-10-23
+
+Summed script gzip: **613,977 bytes**, **2,576 bytes** more than source roles. The script budget changed from 612,000 to **614,000** in this reviewed decision. The added code is the Performance section, its manual entry dialog and number formatting in the publishing route chunk; other routes' first load is unchanged and the dialog, input and action components were already shared. Readings run only when someone asks for one, through the existing publication runtime. There is no background poller, new dependency, worker or service; observations go to one append-only SQLite file beside publications.

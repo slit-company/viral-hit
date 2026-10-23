@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { youtubeMetadataSchema, youtubeResource, type YouTubeMetadata } from './youtube-contract';
+import { youtubeStatisticsSchema } from './platform-metrics';
 import { boundedJson, parseReceipt, retryAfter, uploadResponse, uploadSessionUrl, YouTubeTransportError } from './youtube-http.server';
 
 export const YOUTUBE_CHUNK_BYTES = 8 * 1024 * 1024;
@@ -90,6 +91,15 @@ export function createYouTubeTransport(options: Options) {
       const receipt = parseReceipt(result.data.items[0], channelId);
       if (receipt.videoId !== videoId) throw new YouTubeTransportError('YouTube returned another video; reconcile the original receipt', 'unknown');
       return receipt;
+    },
+    /** Read-only public counters; null when the video is no longer visible to this channel. */
+    async videoStatistics(videoId: string, signal: AbortSignal) {
+      if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) throw new Error('Invalid YouTube video ID');
+      const response = await authorized(`${base}/youtube/v3/videos?part=statistics&id=${videoId}`, { method: 'GET' }, signal, 'unavailable');
+      if (!response.ok) { await response.body?.cancel(); throw new YouTubeTransportError(`YouTube statistics lookup failed (HTTP ${response.status})`, 'unavailable', response.status); }
+      const parsed = youtubeStatisticsSchema.safeParse(await boundedJson(response, signal));
+      if (!parsed.success) throw new YouTubeTransportError('YouTube statistics are malformed', 'unavailable');
+      return parsed.data.items.length === 1 && parsed.data.items[0].id === videoId ? parsed.data.items[0].statistics : null;
     },
   };
 }

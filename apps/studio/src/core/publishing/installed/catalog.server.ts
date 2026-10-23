@@ -49,8 +49,8 @@ function configuredConnector(files: Files): InstalledConnector {
   const hash = createHash('sha256').update(canonicalJson({ definitionHash: files.definitionHash, environment })).digest('hex');
   const runtimeVersion = manifest.version + ':' + hash;
   const missingEnvironment = manifest.environment.filter(name => !environment[name]);
-  const { id, version, label, description, scope, author, license, mediaTypes, maxAssets, metadataSchema } = manifest;
-  const descriptor: InstalledConnectorDescriptor = { id, version, label, description, scope, author, license, mediaTypes, maxAssets, metadataSchema,
+  const { id, version, label, description, scope, author, license, mediaTypes, maxAssets, metadataSchema, measurement } = manifest;
+  const descriptor: InstalledConnectorDescriptor = { id, version, label, description, scope, author, license, mediaTypes, maxAssets, metadataSchema, ...(measurement ? { measurement } : {}),
     runtimeVersion, configured: !missingEnvironment.length, missingEnvironment,
     destinations: manifest.destinations.map(({ configuration: _, ...destination }) => destination) };
   return { ...files, runtimeVersion, environment, descriptor };

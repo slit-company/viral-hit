@@ -17,7 +17,7 @@ Inspected in Aside on 2026-10-20:
 - [Long-lived access tokens](https://developers.facebook.com/documentation/facebook-login/guides/access-tokens/get-long-lived): long-lived user exchange followed by Page tokens; Page tokens may have no fixed expiry.
 - [Instagram onboarding and Page discovery](https://developers.facebook.com/documentation/instagram-platform/instagram-api-with-facebook-login/business-login-for-instagram): Page/Instagram account relationship and explicit selection when several Pages are returned.
 
-The implementation uses a Facebook Login for Business **User access token** configuration with `instagram_basic`, `instagram_content_publish`, `pages_read_engagement` and `pages_show_list`. The configuration ID is required; scopes are verified on the server instead of inferred from requested permissions. The older Instagram-specific implicit token-fragment flow is not used. Business integration system user configurations are rejected by token-type verification in this version. Graph remains pinned to `v26.0`.
+The implementation uses a Facebook Login for Business **User access token** configuration with `instagram_basic`, `instagram_content_publish`, `pages_read_engagement` and `pages_show_list`. The configuration ID is required; scopes are verified on the server instead of inferred from requested permissions. Adding the optional `instagram_manage_insights` permission enables [performance readings](../MEASUREMENT.md); it is not required for publishing. The older Instagram-specific implicit token-fragment flow is not used. Business integration system user configurations are rejected by token-type verification in this version. Graph remains pinned to `v26.0`.
 
 ## Credential and callback boundary
 

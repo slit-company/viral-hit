@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import type { JsonValue } from '../../lib/canonical-json';
+import type { MeasurementResult } from '../measurement/contract';
 
 const id = z.string().regex(/^[a-zA-Z0-9_.-]{1,128}$/);
 export const publicationAssetSchema = z.object({
@@ -68,4 +69,6 @@ export interface PublicationConnector {
   inspect(spec: PublicationSpec, receipt: JsonValue, signal: AbortSignal): Promise<RemoteObservation>;
   /** Optional second non-idempotent write, called only after a committed publishing fence. */
   publish?(spec: PublicationSpec, receipt: JsonValue, signal: AbortSignal): Promise<RemoteObservation>;
+  /** Optional read-only performance reading for a delivered publication. Throw MeasurementUnavailable when nothing could be read. */
+  measure?(spec: PublicationSpec, receipt: JsonValue, signal: AbortSignal): Promise<MeasurementResult>;
 }

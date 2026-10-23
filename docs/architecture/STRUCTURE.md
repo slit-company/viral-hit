@@ -21,6 +21,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/community/` | Bounded independent catalog metadata, review diffs and local snapshots | Artifact execution/installation, background network discovery or a second package library |
 | `src/core/runtime-packages/` | Reviewed executable package metadata/source, immutable releases, atomic desired-state changes and process snapshots | A second execution engine, install scripts, dependency downloads or hot task migration |
 | `src/core/extensions/` | Read-only public diagnostic projections of installed extension catalogs, shared by UI/MCP/CLI | Runtime installation, module execution, provider probes, configuration values or independent registration state |
+| `src/core/measurement/` | Append-only performance observations linked to delivered publications, declared measures and manual entries | Mutating publications or media, background polling, attribution claims or credentials |
 | `src/core/publishing/` | Approved media/destination intents, leases, resumable transfer, remote receipts and reconciliation | Generation, shared UI, credentials in public views or remote calls inside transactions |
 | `src/core/db/`, `src/core/workspace-db/`, storage modules | Database/file persistence and transaction boundaries | UI or provider workflows |
 | `examples/adapters/`, `recipes/` | Independently replaceable processors and portable workflows | Imports from app internals, private account data or product-wide assumptions |
@@ -53,7 +54,7 @@ Native media, file, range and color controls may remain where appropriate. Prese
 
 Meta, YouTube and other destinations belong behind publishing connectors with explicit account selection, credential isolation, immutable export identity, review/approval state, scheduled delivery, remote receipt and reconciliation. A network timeout must not authorize a duplicate post. Analytics is a versioned observation linked to a published creative, not a mutation of accepted source media. reference pipeline and marketing repositories are references for reusable implementations; private sessions, credentials, business rules and datasets are excluded from the generic core.
 
-These are required contracts for upcoming work. Publishing connectors and analytics are not implemented merely because they appear in this document.
+Performance readings live in `core/measurement/`. Connectors expose an optional read-only `measure()`; installed connectors must declare their measures in `connector.json` so discovery never imports code. A reading is appended, never edited, and a missing measure is never stored as zero. See [creative performance](../MEASUREMENT.md).
 
 ## Automated gate and known debt
 

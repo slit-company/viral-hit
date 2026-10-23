@@ -13,6 +13,7 @@
   "mediaTypes": ["image/png", "image/jpeg", "image/webp", "video/mp4", "video/webm", "audio/wav", "audio/mpeg", "audio/mp4", "audio/ogg"],
   "maxAssets": 20,
   "destinations": [{ "id": "archive", "destinationId": "local-releases", "label": "Local releases", "configuration": {} }],
+  "measurement": { "metrics": ["views", "downloads"] },
   "metadataSchema": {
     "type": "object",
     "additionalProperties": false,

@@ -1,6 +1,7 @@
 import { registerAssetGenerationTools } from './asset-generation-tools';
 import type { McpServer } from '@modelcontextprotocol/server';
 import { registerPublishingTools } from './publishing-tools';
+import { registerPerformanceTools } from './performance-tools';
 import { registerProjectBundleTools } from './project-bundle-tools';
 import { registerRecipePackTools } from './recipe-pack-tools';
 import { registerCreativePackTools } from './creative-pack-tools';
@@ -12,6 +13,7 @@ import { registerStoryboardTools } from './storyboard-tools';
 export function registerWorkspaceTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   registerAssetGenerationTools(server);
   registerPublishingTools(server, project);
+  registerPerformanceTools(server, project);
   registerProjectBundleTools(server);
   registerRecipePackTools(server);
   registerCharacterTools(server);

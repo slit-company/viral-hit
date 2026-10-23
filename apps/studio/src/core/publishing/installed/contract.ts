@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import type { JsonValue } from '@/lib/canonical-json';
 import type { PublicationAsset } from '../contracts';
+import { metricDeclaration } from '../../measurement/contract';
 
 export const installedConnectorId = z.string().regex(/^ext\.[a-z][a-z0-9-]{0,59}$/);
 const identifier = z.string().regex(/^[a-zA-Z0-9_.-]{1,128}$/);
@@ -17,12 +18,14 @@ export const connectorManifestSchema = z.object({
     configuration: z.record(z.string(), z.json()).default({}),
   }).strict()).min(1).max(30),
   metadataSchema: z.record(z.string(), z.json()),
+  /** Declares an exported measure() and the metric names it can report. */
+  measurement: metricDeclaration.optional(),
 }).strict().superRefine((manifest, ctx) => {
   if (new Set(manifest.destinations.map(item => item.id)).size !== manifest.destinations.length) ctx.addIssue({ code: 'custom', message: 'Destination IDs must be unique' });
   if (manifest.metadataSchema.type !== 'object' || manifest.metadataSchema.$async) ctx.addIssue({ code: 'custom', message: 'Metadata must use a synchronous object JSON Schema' });
 });
 export type ConnectorManifest = z.infer<typeof connectorManifestSchema>;
-export type InstalledConnectorDescriptor = Pick<ConnectorManifest, 'id' | 'version' | 'label' | 'description' | 'scope' | 'author' | 'license' | 'mediaTypes' | 'maxAssets' | 'metadataSchema'> & {
+export type InstalledConnectorDescriptor = Pick<ConnectorManifest, 'id' | 'version' | 'label' | 'description' | 'scope' | 'author' | 'license' | 'mediaTypes' | 'maxAssets' | 'metadataSchema' | 'measurement'> & {
   runtimeVersion: string; configured: boolean; missingEnvironment: string[];
   destinations: Pick<ConnectorManifest['destinations'][number], 'id' | 'label' | 'destinationId'>[];
 };

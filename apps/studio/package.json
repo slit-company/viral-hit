@@ -48,6 +48,7 @@
     "recipe": "tsx scripts/recipe.ts",
     "adapter": "tsx scripts/adapter.ts",
     "publication": "tsx scripts/publication.ts",
+    "performance": "tsx scripts/performance.ts",
     "publication:worker": "tsx scripts/publication-worker.ts",
     "project:file": "tsx scripts/project-file.ts",
     "character": "tsx scripts/character.ts",

@@ -229,3 +229,7 @@ The [model recipe builder](MODEL-RECIPES.md#author-a-recipe-from-installed-model
 Before running a shared installed-model recipe, use [model requirements](MODEL-RECIPES.md#check-a-shared-recipe-in-another-installation) to inspect exact model IDs, configuration presence and incompatible fixed inputs in the receiving workspace. The same read-only report is available during recipe review and through HTTP/MCP/CLI preflight; it does not install dependencies, execute provider modules or change the recipe's identity. Deferred sources and upstream values still pass through normal admission and worker checks.
 
 Installed-model workflows can bind typed upstream data to individual declared controls or their complete options object. Fixed settings remain validated even when other inputs are dynamic; resolved values are validated again before a generation intent exists. See [typed model bindings](MODEL-RECIPES.md#pass-typed-analysis-or-adapter-outputs-into-model-controls) and the portable measured-calibration example. This contract works with independent general and specialized producers; no particular analysis model is hardcoded into the harness.
+
+## Report performance from a destination
+
+An installed publishing connector can also report how delivered posts perform. Declare the measures in `connector.json` and export a read-only `measure()`; the studio, agents and CLI then collect and compare readings without app changes. See [creative performance](MEASUREMENT.md#add-a-metrics-source-without-changing-the-app).

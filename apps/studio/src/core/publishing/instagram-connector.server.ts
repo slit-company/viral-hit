@@ -4,6 +4,8 @@ import { instagramCheckpointSchema, instagramIdSchema, instagramMetadataSchema, 
 import { createInstagramTransport, type InstagramCredential } from './instagram-transport.server';
 import { InstagramTransportError } from './instagram-http.server';
 import type { JsonValue } from '../../lib/canonical-json';
+import { instagramInsightRequest, instagramMeasurement } from './platform-metrics';
+import { MeasurementUnavailable } from '../measurement/contract';
 
 export const INSTAGRAM_CONNECTOR_VERSION = '1';
 type Options = { credential: (accountId: string, signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch; invalidateCredential?: (accountId: string, token: string, revision?: number) => Promise<void> };
@@ -70,6 +72,15 @@ export function createInstagramConnector(options: Options): PublicationConnector
         if (error instanceof InstagramTransportError && error.outcome === 'unavailable') throw new PublicationPublishError('unavailable');
         throw error;
       }
+    },
+    async measure(spec, raw, signal) {
+      const identity = target(spec, raw, true), prior = instagramReceiptSchema.parse(raw), kind = validateInstagramPublication(spec).metadata.kind;
+      if (!prior.mediaId) throw new MeasurementUnavailable('not-found');
+      let response: unknown;
+      // Graph does not return a safe reason; a missing insights permission and an outage look alike here.
+      try { response = await transport(spec).insights(identity, prior.mediaId, instagramInsightRequest(kind), signal); }
+      catch { throw new MeasurementUnavailable('unavailable'); }
+      return instagramMeasurement(kind, response);
     },
   };
 }

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec } from '../contracts';
 import type { JsonValue } from '@/lib/canonical-json';
 import { validateInstalledPublication, type InstalledConnector } from './catalog.server';
+import { measurementIssue, measurementResultSchema, MeasurementUnavailable } from '../../measurement/contract';
 
 const json = z.json().refine(value => value !== null && Buffer.byteLength(JSON.stringify(value)) <= 64_000, 'Connector checkpoint/receipt must be non-null and at most 64 KB');
 const retry = z.number().int().min(0).max(86_400_000).optional();
@@ -14,8 +15,9 @@ const transferResult = z.discriminatedUnion('kind', [
 ]);
 const remoteResult = z.object({ state: z.enum(['processing', 'staged', 'ready', 'scheduled', 'published', 'failed']), receipt: json, retryAfterMs: retry }).strict();
 const publishResult = z.union([remoteResult, z.object({ notPublished: notWritten }).strict()]);
+const measureResult = z.union([measurementResultSchema, z.object({ unavailable: z.object({ issue: measurementIssue }).strict() }).strict()]);
 type Method = (request: Record<string, unknown>) => Promise<unknown>;
-type Module = { start: Method; transfer: Method; reconcile: Method; inspect: Method; publish?: Method; notBefore?: (request: Record<string, unknown>) => number | null };
+type Module = { start: Method; transfer: Method; reconcile: Method; inspect: Method; publish?: Method; measure?: Method; notBefore?: (request: Record<string, unknown>) => number | null };
 const nativeImport = new Function('url', 'return import(url)') as (url: string) => Promise<Module>;
 const modules = new Map<string, Promise<Module>>();
 
@@ -26,6 +28,7 @@ async function load(entry: InstalledConnector) {
     pending = nativeImport('data:text/javascript;base64,' + Buffer.from(entry.source).toString('base64')).then(module => {
       for (const method of ['start', 'transfer', 'reconcile', 'inspect'] as const) if (typeof module[method] !== 'function') throw new Error('Connector must export ' + method);
       if (module.publish !== undefined && typeof module.publish !== 'function') throw new Error('Invalid publish function');
+      if (module.measure !== undefined && typeof module.measure !== 'function') throw new Error('Invalid measure function');
       if (module.notBefore !== undefined && typeof module.notBefore !== 'function') throw new Error('Invalid scheduling function');
       return module;
     });
@@ -65,6 +68,12 @@ export async function openInstalledPublicationConnector(spec: PublicationSpec): 
     ...(module.publish ? { async publish(current: PublicationSpec, receipt: JsonValue, signal: AbortSignal) {
       const result = publishResult.parse(await module.publish!({ ...context(current, signal), receipt: structuredClone(receipt) }));
       if ('notPublished' in result) throw new PublicationPublishError(result.notPublished.outcome, result.notPublished.retryAfterMs);
+      return result;
+    } } : {}),
+    // Only connectors that declare measurement in connector.json are asked for readings.
+    ...(module.measure && entry.manifest.measurement ? { async measure(current: PublicationSpec, receipt: JsonValue, signal: AbortSignal) {
+      const result = measureResult.parse(await module.measure!({ ...context(current, signal), receipt: structuredClone(receipt), metrics: [...entry.manifest.measurement!.metrics] }));
+      if ('unavailable' in result) throw new MeasurementUnavailable(result.unavailable.issue);
       return result;
     } } : {}),
   };
