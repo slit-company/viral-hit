@@ -15,6 +15,7 @@ These rules govern new work and changes to existing code. Read them before imple
 | `src/core/harness/` | Plans, durable jobs, bindings, recovery, receipts and runtime adapters | Product-specific campaign logic or UI state |
 | `src/core/references/` | Explicit source acquisition, verified originals/samples and bounded visual-cut analysis with editable interval output | Inbox session management, sending messages, pretending previews are full media or semantic analysis |
 | `src/core/transcripts/` | Provider-independent machine transcript validation and relative subtitle serialization | Model installation, independent execution queues or claiming recognition accuracy |
+| `src/core/inspection/` | Bounded, browser-safe app-inspection report contract | Target access, engine installation, analysis execution or claiming reconstructed behavior |
 | `src/core/storyboards/` | Revisioned creative plans, source observations, accepted shot identities and orchestration through existing runs/sequences | A second execution engine, invented visual inspection or brand-specific format constraints |
 | `src/core/creative-packs/` | Reviewed composition/transfer of recipe, skill and character definitions, verified images and explicit partial-install recovery | A second execution engine, unchecked cross-library overwrite or silent runtime installation |
 | `src/core/skills/` | Bounded skill definitions, compatibility, reviewed lifecycle and atomic managed storage | Executing skill text, project mutation, remote polling or overriding official/operator files |
@@ -29,6 +30,8 @@ These rules govern new work and changes to existing code. Read them before imple
 | `research/upstream/`, `research/evidence/` | Ignored reference checkouts and local evidence | Runtime dependencies or distributable private content |
 
 Dependencies point from presentation/transport into domain services and then persistence/provider adapters. Core never imports UI or routes. Shared controls never import feature/domain logic. Runtime imports reachable from browser components must not reach Node built-ins, database drivers or provider SDKs. Use type-only imports for server-owned types. New browser/server mixed modules must be split at the boundary, not hidden behind `typeof window` branches.
+
+App inspection follows [the optional REA boundary](APP-INSPECTION.md): operator-selected targets, bounded engine processes, retained private evidence and the existing harness. The core only validates the report projection.
 
 Use feature-local components and hooks instead of adding another top-level abstraction directory. Keep a pure eligibility/formatting rule beside its domain owner and export its types explicitly. Name server-only additions `*.server.ts` when they do not already live in an established server-only domain module. Avoid a global barrel exporting browser and server code together.
 

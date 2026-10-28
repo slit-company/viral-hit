@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "app-inspection",
+  "version": "1.0.0",
+  "title": "App and website inspection",
+  "summary": "Turn REA evidence into a feature map and a testable reconstruction plan for one selected app feature.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": { "minimumViralHitVersion": "0.2.4", "requiredMcpTools": ["viral_hit_runs_change", "viral_hit_runs_list", "viral_hit_recipes_list"] },
+  "requiredCapabilities": [],
+  "inputs": [
+    { "id": "target", "label": "Configured target ID", "description": "An operator-registered website or JavaScript application target.", "kind": "text", "required": true },
+    { "id": "question", "label": "Feature to investigate", "description": "One concrete behavior to explain or rebuild.", "kind": "text", "required": true }
+  ],
+  "stages": [
+    { "id": "inspect", "title": "Collect evidence", "description": "Run the matching installed recipe and verify retained evidence and coverage." },
+    { "id": "map", "title": "Map the feature", "description": "Separate direct observations, static candidates and unanswered behavior questions." },
+    { "id": "plan", "title": "Prepare a reconstruction", "description": "Define inputs, outputs, states and behavior checks with evidence references." }
+  ]
+}

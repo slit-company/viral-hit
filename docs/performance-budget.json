@@ -1,5 +1,5 @@
 {
   "schemaVersion": 1,
-  "client": { "totalBytes": 10000000, "allScriptsGzipBytes": 614000 },
-  "separateRuntimePackages": ["music2-gen", "vid2-gen", "ima2-gen", "bun"]
+  "client": { "totalBytes": 10000000, "allScriptsGzipBytes": 616000 },
+  "separateRuntimePackages": ["music2-gen", "vid2-gen", "ima2-gen", "rea-agents", "bun"]
 }

@@ -73,6 +73,8 @@ Optional [ima2 image recipes](extensions/ima2/README.md) connect a separately co
 
 Optional [local media recipes](extensions/local-media/README.md) compose project images, footage, music and narration into real videos. Fork a recipe to expose different controls or change the layout; generated assets can feed later composition steps without copying host paths.
 
+Optional [REA inspection recipes](extensions/rea/README.md) analyze registered JavaScript/Electron artifacts and browser targets. Runs retain evidence summaries, static candidates and coverage limits; a companion skill turns those findings into a feature map and reconstruction plan. REA is installed separately.
+
 Built-in [editable sequences](docs/EDITABLE-SEQUENCES.md) let any workflow prepare separate visual, overlay, music, voice and caption clips. Accept the edit after your current timeline, then change each part independently. The included image-story and narrated-scene manifests are forkable examples of the same contract.
 
 Bring source videos into a project with [reference intake](docs/REFERENCE-INTAKE.md). Runs includes portable YouTube collection and project-video sampling recipes, with five frame previews and timeline attachment. CLI also accepts explicit Instagram direct-video items. Independent adapters can consume the resulting project video; automatic Instagram inbox collection remains pending.
