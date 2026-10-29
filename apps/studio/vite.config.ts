@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import mdx from '@mdx-js/rollup';
 import tailwindcss from '@tailwindcss/vite';
@@ -10,7 +11,11 @@ import { seedDesignPlugin } from '@seed-design/vite-plugin';
 import { paraglideCompilerOptions } from './src/config/paraglide';
 import { shouldNormalizeProjectAssetMediaRequest } from './src/lib/project-asset-media-request';
 
+const cssLayerOrder = readFileSync(new URL('./src/styles/globals.css', import.meta.url), 'utf8').split('\n')[0];
+
 export default defineConfig({
+  // Keep the creation/editor client within its existing budget without adding runtime dependencies.
+  build: { rolldownOptions: { output: { codeSplitting: { groups: [{ name: 'shared-vendor', test: /node_modules/, minShareCount: 2 }] } } } },
   server: {
     host: '127.0.0.1',
     port: 3020,
@@ -21,6 +26,14 @@ export default defineConfig({
   },
   ssr: { resolve: { conditions: ['seed-layered', ...defaultServerConditions] }, noExternal: [/^@seed-design\//] },
   plugins: [
+    {
+      name: 'viral-hit-seed-layer-order',
+      enforce: 'pre',
+      // Split vendor CSS can load before globals; establish the same cascade before hashing either file.
+      transform(source, id) {
+        if (id.includes('@seed-design') && id.endsWith('.layered.css')) return `${cssLayerOrder}\n${source}`;
+      },
+    },
     seedDesignPlugin({ colorMode: 'light-only' }),
     {
       name: 'viral-hit-project-asset-media-routes',
