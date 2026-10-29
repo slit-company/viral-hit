@@ -1,0 +1,44 @@
+// Run only against an isolated preview with the documented balance transport fixture.
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
+const require = createRequire(new URL('../../../apps/studio/package.json', import.meta.url));
+const { chromium } = require('@playwright/test');
+const base = process.env.VIRAL_HIT_QA_URL;
+if (!base || !/^http:\/\/127\.0\.0\.1:\d+$/.test(base)) throw Error('Set VIRAL_HIT_QA_URL to the isolated fixture preview');
+const evidence = resolve('research/evidence/sume/visual'); await mkdir(evidence, { recursive: true });
+const browser = await chromium.launch({ headless: true });
+try {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+  const errors = []; page.on('pageerror', error => errors.push(error.message));
+  await page.goto(base + '/extensions');
+  const section = page.getByRole('region', { name: 'Creative API connections' });
+  await section.waitFor();
+  const key = section.getByLabel('Sume API key', { exact: true });
+  assert.equal(await section.getByRole('button', { name: 'Check connection', exact: true }).isEnabled(), false);
+  await key.fill('fixture-ui-key');
+  await section.getByRole('button', { name: 'Save settings', exact: true }).click();
+  await section.getByText('Settings saved. Check the connection to verify authentication.', { exact: true }).waitFor();
+  assert.equal(await key.inputValue(), '');
+  await section.getByRole('button', { name: 'Check connection', exact: true }).click();
+  await section.getByText('Authentication confirmed. Paid generation and output quality have not been tested.', { exact: true }).waitFor();
+  const headers = { 'x-viral-hit-workspace-request': '1', 'Content-Type': 'application/json' };
+  const metadata = await page.request.get(base + '/api/app/provider-connections', { headers });
+  assert.equal((await metadata.text()).includes('fixture-ui-key'), false);
+  assert.equal((await page.request.post(base + '/api/app/provider-connections', { data: {} })).status(), 403);
+  const malformed = await page.request.post(base + '/api/app/provider-connections', { headers, data: '{"secret":"fixture-ui-key"' });
+  assert.equal(malformed.status(), 400); assert.equal((await malformed.text()).includes('fixture-ui-key'), false);
+  await section.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: evidence + '/desktop-auth.png', animations: 'disabled' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await section.scrollIntoViewIfNeeded();
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  await page.screenshot({ path: evidence + '/mobile-auth.png', animations: 'disabled' });
+  await section.getByRole('button', { name: 'Remove saved key', exact: true }).click();
+  await section.getByText('Saved credentials removed.', { exact: true }).waitFor();
+  await page.reload(); await key.waitFor();
+  assert.equal(await section.getByRole('button', { name: 'Check connection', exact: true }).isEnabled(), false);
+  assert.deepEqual(errors, []);
+  console.log('Browser fixture passed: saved/checked/removed; no exposed secret, cross-site write or horizontal overflow. No real provider call.');
+} finally { await browser.close(); }
