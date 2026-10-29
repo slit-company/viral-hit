@@ -58,6 +58,9 @@ export const providerManifestSchema = z.object({
   author: z.string().trim().min(1).max(120).optional(),
   license: z.string().trim().min(1).max(80).optional(),
   referenceDelivery: z.literal('project-media').optional(),
+  /** Opt in to encrypted workspace settings passed as request.configuration. */
+  configurationDelivery: z.literal('request').optional(),
+  connectionTest: z.boolean().optional(),
   entry: z.string().regex(/^[A-Za-z0-9_-]+\.m?js$/).default('provider.mjs'),
   /** Hosts allowed to serve result URLs; plain http is accepted only for localhost and 127.0.0.1. */
   mediaHosts: z.array(hostname).max(20).default([]),
@@ -75,10 +78,15 @@ export type ProviderModel = ProviderManifest['models'][number];
 export const installedEffectId = (providerId: string, modelId: string) =>
   1_000_000_000 + Number.parseInt(createHash('sha256').update(providerId + '\0' + modelId).digest('hex').slice(0, 7), 16);
 
+const costAmounts = { reserved: z.number().finite().nonnegative().optional(), captured: z.number().finite().nonnegative().optional(), refunded: z.number().finite().nonnegative().optional(), released: z.number().finite().nonnegative().optional() };
+/** Public amounts reported by the provider, never a fabricated cost estimate. */
+const providerCostSchema = z.object({ state: z.enum(['unknown', 'reserved', 'captured', 'refunded']), final: z.boolean(), unit: z.string().min(1).max(32).optional(), ...costAmounts, usdCents: z.object(costAmounts).strict().optional() }).strict();
+
 /** What a provider module returns from createGeneration and checkStatus. */
 export const providerResultSchema = z.object({
   status: z.enum(['succeeded', 'processing', 'pending', 'failed']),
   taskId: z.string().min(1).max(200).optional(),
+  cost: providerCostSchema.optional(),
   media: z.array(z.union([
     z.object({ url: z.string().url().max(4096) }).strict(),
     z.object({ data: z.instanceof(Uint8Array), mimeType: z.enum(['image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'video/webm', 'audio/wav', 'audio/mpeg', 'audio/ogg', 'audio/mp4', 'audio/aac']) }).strict(),

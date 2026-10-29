@@ -1,3 +1,4 @@
+import { resolveProviderConfiguration } from './credentials.server';
 import { validateInstalledVisualInput } from './visual-input';
 import { validateInstalledAudioInput } from './audio-input';
 import { resolveModelOptions } from '../model-controls';
@@ -20,7 +21,7 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // A native import, so neither the build nor the dev server's module runner tries to resolve operator code.
 const nativeImport = new Function('url', 'return import(url)') as (url: string) => Promise<Partial<ProviderModule>>;
 
-type ProviderModule = { createGeneration: (request: unknown) => Promise<unknown>; checkStatus?: (request: unknown) => Promise<unknown> };
+type ProviderModule = { createGeneration: (request: unknown) => Promise<unknown>; checkStatus?: (request: unknown) => Promise<unknown>; testConnection?: (request: unknown) => Promise<unknown> };
 
 /** The request a provider module receives: clean field names, never internal Viral Hit fields. */
 export function providerInput(input: unknown) {
@@ -42,7 +43,11 @@ export function providerInput(input: unknown) {
   };
 }
 
-const message = (error: unknown) => (error instanceof Error ? error.message : String(error)).slice(0, 400);
+export const redactProviderError = (error: unknown, values: Record<string, string>) => {
+  let text = error instanceof Error ? error.message : 'Provider request failed';
+  for (const value of Object.values(values)) if (value) text = text.split(value).join('[redacted]');
+  return text.slice(0, 400);
+};
 
 /** Loads one installed provider module on first use and turns its results into generation results. */
 export class InstalledProviderRuntime {
@@ -58,6 +63,20 @@ export class InstalledProviderRuntime {
     return this.module;
   }
 
+  async testConnection() {
+    if (!this.manifest.connectionTest || this.manifest.configurationDelivery !== 'request') throw Error('This provider has no connection check');
+    const configuration = resolveProviderConfiguration(this.manifest);
+    if (this.manifest.environment.some(name => !configuration[name])) throw Error('Save the required settings first');
+    const loaded = await this.load();
+    if (!loaded.testConnection) throw Error('Connection check is unavailable');
+    try {
+      const result = await loaded.testConnection({ configuration, signal: AbortSignal.timeout(15_000) });
+      if (!result || typeof result !== 'object' || !('ok' in result) || result.ok !== true) throw Error('The provider did not confirm authentication');
+      if (JSON.stringify(configuration) !== JSON.stringify(resolveProviderConfiguration(this.manifest))) throw Error('Settings changed during the connection check');
+      return { ok: true, checkedAt: new Date().toISOString() };
+    } catch (error) { throw Error(redactProviderError(error, configuration)); }
+  }
+
   /** createGeneration problems fail the generation; checkStatus errors are thrown so polling retries them. */
   async call(method: 'createGeneration' | 'checkStatus', effect: EffectRecord, request: Record<string, unknown>, projectId?: unknown, expectedRuntime?: string, executionSignal?: AbortSignal): Promise<GenerationResult> {
     const { label } = this.manifest;
@@ -69,7 +88,8 @@ export class InstalledProviderRuntime {
     const runtime = this.managed || expectedRuntime || (typeof request.taskId === 'string' && request.taskId.startsWith('vh-runtime-v1:')) ? providerRuntimeDigest(this.manifest,this.source) : undefined;
     if (expectedRuntime && runtime !== expectedRuntime) throw Error('Provider runtime changed after queueing; restore the original release and configuration');
     if(runtime && method==='checkStatus') request={...request,taskId:unpinProviderTask(request.taskId,runtime,model.id)};
-    const missing = this.manifest.environment.filter(name => !process.env[name]?.trim());
+    const configuration = resolveProviderConfiguration(this.manifest);
+    const missing = this.manifest.environment.filter(name => !configuration[name]);
     if (missing.length) throw new Error('Provider configuration is missing: ' + missing.join(', '));
     let raw: unknown;
     let mediaContext: Awaited<ReturnType<typeof createProviderMediaContext>> | undefined;
@@ -83,16 +103,16 @@ export class InstalledProviderRuntime {
       if (method === 'checkStatus' && !loaded.checkStatus) return { status: 'failed', error: label + ' cannot report progress for unfinished work' };
       if (runtime && providerRuntimeDigest(this.manifest, this.source) !== runtime) throw Error('Provider configuration changed before execution');
       signal.throwIfAborted();
-      raw = await loaded[method]!({ model: { id: model.id, upstreamModelId: model.upstreamModelId ?? model.id, kind: model.kind }, ...request, signal, ...(mediaContext ? { media: mediaContext.media, readMedia: mediaContext.readMedia } : {}) });
+      raw = await loaded[method]!({ model: { id: model.id, upstreamModelId: model.upstreamModelId ?? model.id, kind: model.kind }, ...request, signal, ...(this.manifest.configurationDelivery === 'request' ? { configuration } : {}), ...(mediaContext ? { media: mediaContext.media, readMedia: mediaContext.readMedia } : {}) });
     } catch (error) {
-      if (method === 'checkStatus') throw error;
-      return { status: 'failed', error: label + ': ' + message(error) };
+      if (method === 'checkStatus') throw Error(redactProviderError(error, configuration));
+      return { status: 'failed', error: label + ': ' + redactProviderError(error, configuration) };
     } finally { await mediaContext?.dispose(); }
-    try { return await this.toResult(raw, model, runtime); }
-    catch (error) { return { status: 'failed', error: label + ' returned an unusable result: ' + message(error) }; }
+    try { return await this.toResult(raw, model, runtime, configuration); }
+    catch (error) { return { status: 'failed', error: label + ' returned an unusable result: ' + redactProviderError(error, configuration) }; }
   }
 
-  private async toResult(raw: unknown, model: ProviderModel, runtime?:string): Promise<GenerationResult> {
+  private async toResult(raw: unknown, model: ProviderModel, runtime?:string, configuration: Record<string, string> = {}): Promise<GenerationResult> {
     const result = providerResultSchema.parse(raw);
     if (model.kind === 'analysis') {
       if (result.media?.length) throw new Error('Analysis models return text, not media');
@@ -106,8 +126,8 @@ export class InstalledProviderRuntime {
     }
     return {
       status: result.status,
-      output: { ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text || result.report ? { analysis_text: result.text ?? result.report!.summary } : {}), ...(result.report ? { analysis_report: result.report } : {}) },
-      ...(result.error ? { error: result.error } : {}),
+      output: { ...(result.cost ? { providerCost: result.cost } : {}), ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text || result.report ? { analysis_text: result.text ?? result.report!.summary } : {}), ...(result.report ? { analysis_report: result.report } : {}) },
+      ...(result.error ? { error: redactProviderError(new Error(result.error), configuration) } : {}),
     };
   }
 
@@ -154,7 +174,7 @@ export class InstalledProviderAdapter extends BaseAdapter {
     if (model && (this.effect.type === 1 || this.effect.type === 2)) validateInstalledVisualInput(input, model);
     if (this.effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs);
     const options = resolveModelOptions(model?.controls, (input as Record<string, unknown> | null)?.provider_options);
-    return this.runtime.call('createGeneration', this.effect, { input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId, typeof (input as Record<string, unknown> | null)?._runtimeIdentity === 'string' ? String((input as Record<string, unknown>)._runtimeIdentity) : undefined, (input as Record<string, unknown> | null)?._executionSignal instanceof AbortSignal ? (input as Record<string, unknown>)._executionSignal as AbortSignal : undefined);
+    return this.runtime.call('createGeneration', this.effect, { requestKey: (input as Record<string, unknown> | null)?._requestKey, input: { ...providerInput(input), ...(model?.controls ? { options } : {}) } }, (input as Record<string, unknown> | null)?._referenceProjectId, typeof (input as Record<string, unknown> | null)?._runtimeIdentity === 'string' ? String((input as Record<string, unknown>)._runtimeIdentity) : undefined, (input as Record<string, unknown> | null)?._executionSignal instanceof AbortSignal ? (input as Record<string, unknown>)._executionSignal as AbortSignal : undefined);
   }
   checkStatus(taskId: string) { return this.runtime.call('checkStatus', this.effect, { taskId }); }
 }

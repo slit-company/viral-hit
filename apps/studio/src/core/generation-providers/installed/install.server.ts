@@ -1,3 +1,4 @@
+import { resolveProviderConfiguration } from './credentials.server';
 import { validateInstalledVisualInput } from './visual-input';
 import { providerRuntimeDigest } from './task-pin.server';
 import { validateInstalledAudioInput } from './audio-input';
@@ -18,7 +19,7 @@ import { installedEffectId, providerManifestSchema, type ProviderManifest } from
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { InstalledProviderAdapter, InstalledProviderRuntime } from './runtime.server';
 
-export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
+export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery' | 'configurationDelivery' | 'connectionTest'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
 export type InstalledProviderProblem = { location: string; message: string };
 
 class ProviderLoadError extends Error {}
@@ -26,8 +27,9 @@ const problemMessage = (error: unknown) => error instanceof z.ZodError
   ? error.issues.slice(0, 4).map(issue => (issue.path.join('.') || 'manifest') + ': ' + issue.code).join('; ')
   : error instanceof ProviderLoadError ? error.message : 'Provider files are unreadable or invalid. Run provider check on the server for details.';
 
-export function missingProviderEnvironment(manifest: Pick<ProviderManifest, 'environment'>) {
-  return manifest.environment.filter(name => !process.env[name]?.trim());
+export function missingProviderEnvironment(manifest: Pick<ProviderManifest, 'id' | 'environment' | 'configurationDelivery'>) {
+  const configuration = resolveProviderConfiguration(manifest);
+  return manifest.environment.filter(name => !configuration[name]);
 }
 function assertProviderConfigured(manifest: ProviderManifest) {
   const missing = missingProviderEnvironment(manifest);
@@ -47,6 +49,9 @@ export function readProviderFolder(path: string) {
   // One self-contained file: node: built-ins work, other dependencies must be bundled into it.
   return { manifest, source: readFileSync(entryPath, 'utf8') };
 }
+
+const connectionRuntimes = new Map<string, InstalledProviderRuntime>();
+export function installedConnectionRuntime(id: string) { installGenerationProviders(); return connectionRuntimes.get(id); }
 
 function install({ manifest, source }: ReturnType<typeof readProviderFolder>, managed = false): InstalledProviderSummary {
   if (getGenerationProviderMetadata(manifest.id)) throw new ProviderLoadError('Provider id ' + manifest.id + ' is already used');
@@ -73,9 +78,10 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
     registerInstalledWorkspaceMediaSchema(model.id, { image: section('image'), video: section('video'), audio: section('audio') });
   }
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
+  connectionRuntimes.set(manifest.id, runtime);
   registerGenerationProvider({ ...metadata, executionIdentity: () => providerRuntimeDigest(manifest, source), assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); if (model && (effect.type === 1 || effect.type === 2)) validateInstalledVisualInput(input, model); resolveModelOptions(model?.controls, input.provider_options); } });
-  const { id, label, scope, author, license, description, environment, referenceDelivery } = manifest;
-  return { id, label, scope, author, license, description, environment, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
+  const { id, label, scope, author, license, description, environment, referenceDelivery, configurationDelivery, connectionTest } = manifest;
+  return { id, label, scope, author, license, description, environment, configurationDelivery, connectionTest, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }
 
 let loadedDirectory: string | undefined, sourceStamp = '';

@@ -35,7 +35,13 @@ test('UI and MCP generation requests compile identically through the shared serv
   await submitAssetFirstGeneration({ generation, generationIntentId: intent, origin: 'ui' });
   await submitAssetFirstGeneration({ generation, origin: 'mcp' });
   assert.equal(inputs.length, 2);
-  assert.deepEqual(inputs[0], inputs[1]);
+  const first = inputs[0] as Record<string, unknown>, second = inputs[1] as Record<string, unknown>;
+  assert.equal(typeof first._requestKey, 'string');
+  assert.notEqual(first._requestKey, second._requestKey, 'Distinct admitted generations need distinct idempotency identities');
+  const { listProjectGenerations } = await import('@/core/effects/project-generations');
+  const ids = (await listProjectGenerations(project.id)).map(item => item.id);
+  assert.ok(ids.includes(String(first._requestKey)) && ids.includes(String(second._requestKey)));
+  assert.deepEqual({ ...first, _requestKey: undefined }, { ...second, _requestKey: undefined });
 });
 
 test('missing assets and invalid parameters fail before any provider execution or upload', async () => {

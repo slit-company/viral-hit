@@ -75,3 +75,7 @@ The storyboard workspace reuses SEED Action, SEED TextField, the shared NativeSe
 Video layers reuse the existing Overlay import action, shared inspector and native range controls. The inspector identifies the clip as a visual overlay and exposes audio volume only for video. Native video preview lives inside the existing selectable/draggable layer control; no alternate button, dialog or theme is introduced. Mobile uses the same SEED inspector dialog and scrollable controls.
 
 App inspection reports reuse SEED Action, the existing Runs dialog, native details/summary disclosure and the shared surface/text tokens. Captured labels and source locations render as plain text. Findings retain observed/static-candidate labels and a separate partial-analysis state; the download exports the validated summary. This is shared component/token reuse, with no added browser UI dependency.
+
+### Provider connection form
+
+`components/extensions/provider-connections.tsx` reuses the existing SEED `Action`, SEED `TextField`, `vh-field` and product surface tokens. It adds password-only entry, per-provider save/check/remove actions, and distinct saved/authentication/result states. It does not introduce a separate design system or copy third-party UI assets. Verification targets desktop 1440×1000 and mobile 390×844.

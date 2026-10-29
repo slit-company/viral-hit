@@ -233,3 +233,11 @@ Installed-model workflows can bind typed upstream data to individual declared co
 ## Report performance from a destination
 
 An installed publishing connector can also report how delivered posts perform. Declare the measures in `connector.json` and export a read-only `measure()`; the studio, agents and CLI then collect and compare readings without app changes. See [creative performance](MEASUREMENT.md#add-a-metrics-source-without-changing-the-app).
+
+### Provider connection settings and receipts
+
+An installed model provider can opt in to `configurationDelivery: "request"`. The declared `environment` names then resolve from server environment values or encrypted workspace settings and arrive as `request.configuration`. Only opted-in modules appear in Extensions' API connection form. Do not copy credentials into manifests, outputs or error messages. An optional `connectionTest: true` enables an explicit `testConnection({ configuration, signal })` export that returns `{ ok: true }` after a read-only authenticated request; discovery never calls it.
+
+`createGeneration` also receives `requestKey`, the durable generation ID. Use it as the basis of upstream idempotency rather than creating a new ID on transport retry. `checkStatus` receives the retained upstream task ID. Neither a lost submit response nor a poll failure authorizes another paid submission.
+
+A result may include `cost: { state, final, unit?, reserved?, captured?, refunded?, released?, usdCents? }`. State is `unknown`, `reserved`, `captured` or `refunded`; numeric values are public provider-reported amounts, with corresponding optional amount fields under `usdCents`. Core retains this as `output.providerCost`. Missing costs are unknown, never zero. Omit cost on subsequent polls without new billing information to preserve the last known receipt. See the optional [Sume extension](../extensions/sume/README.md) and [connection architecture](architecture/PROVIDER-CONNECTIONS.md).

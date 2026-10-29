@@ -45,6 +45,13 @@
       "type": "string",
       "const": "project-media"
     },
+    "configurationDelivery": {
+      "type": "string",
+      "const": "request"
+    },
+    "connectionTest": {
+      "type": "boolean"
+    },
     "entry": {
       "default": "provider.mjs",
       "type": "string",

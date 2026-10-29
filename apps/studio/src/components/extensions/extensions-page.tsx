@@ -1,3 +1,4 @@
+import { ProviderConnections } from './provider-connections';
 import { useState } from 'react';
 import { RefreshCw, Puzzle } from 'lucide-react';
 import { Action } from '@/components/base/action';
@@ -23,6 +24,7 @@ export function ExtensionsPage({ locale }: { locale: string }) {
     <div className="flex items-start gap-3 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 text-sm leading-6 text-[var(--vh-text-2)]"><Puzzle size={18} className="mt-1 shrink-0 text-[var(--vh-text-1)]" /><p><strong className="font-semibold text-[var(--vh-text-1)]">Execution is not tested here.</strong> Metadata and setting presence do not verify credentials or output quality. Refresh does not run extensions or contact providers.</p></div>
     {status.data?.restartRequired && <p role="status" className="scroll-mt-24 rounded-xl bg-amber-100 p-4 text-sm leading-6 text-amber-950">Managed runtime changes are pending. Restart studio, MCP and workers together to activate them.</p>}
     {status.error && <p role="alert" className="rounded-xl bg-red-500/10 p-4 text-sm text-red-800">{status.error} {status.data && 'Showing the previous check.'}</p>}
+    <ProviderConnections locale={locale} onChange={status.refresh} />
     <div role="group" aria-label="Extension categories" className="grid grid-cols-2 gap-3 sm:grid-cols-4">{categories.map(item => {
       const result = status.data?.groups.find(group => group.kind === item.kind), issues = result ? result.problems.length + result.items.filter(entry => entry.state === 'needs-setup').length : 0;
       return <Action key={item.kind} disabled={!status.data} aria-pressed={selected === item.kind} onClick={() => setSelected(item.kind)} className={'flex min-h-24 min-w-0 flex-col items-start gap-2 rounded-2xl border p-4 text-left ' + (selected === item.kind ? 'border-[var(--vh-text-1)] bg-[var(--vh-surface)]' : 'border-[var(--vh-border)] bg-transparent')}><span className="text-sm font-semibold">{item.title}</span><span className="text-xs text-[var(--vh-text-2)]">{result ? result.items.length + ' found' + (issues ? ' · ' + issues + ' to review' : '') : 'Loading…'}</span></Action>;

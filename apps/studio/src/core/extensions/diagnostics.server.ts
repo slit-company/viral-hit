@@ -19,7 +19,7 @@ export async function extensionDiagnostics(): Promise<ExtensionDiagnostics> {
     const catalog = generationProviderDiagnostics();
     groups.push({ kind: 'providers', refresh: 'restart', sourceChanged: catalog.sourceChanged, problems: catalog.problems,
       items: catalog.providers.map(provider => ({ id: provider.id, label: provider.label, description: provider.description, scope: provider.scope, source: managed.has('provider:' + provider.id) ? 'installed' : 'operator',
-        state: provider.missingEnvironment.length ? 'needs-setup' : 'loaded', configuration: presence(provider.environment),
+        state: provider.missingEnvironment.length ? 'needs-setup' : 'loaded', configuration: provider.environment.map(name => ({ name, present: !provider.missingEnvironment.includes(name) })),
         capabilities: provider.models.map(model => ({ id: model.id, label: model.name + ' · ' + model.kind })), issues: [] })) });
   } catch { groups.push(failure('providers', 'restart', 'Provider discovery failed. Check provider files on the server.')); }
   try {

@@ -302,7 +302,7 @@ export async function submitEffectGeneration({
   try {
     await linkInputAssets(generationId, adapterInput);
     executionSignal?.throwIfAborted();
-    const result = await createAdapter(effect).createGeneration({ ...adapterInput, ...(executionSignal ? { _executionSignal: executionSignal } : {}) });
+    const result = await createAdapter(effect).createGeneration({ ...adapterInput, _requestKey: generationId, ...(executionSignal ? { _executionSignal: executionSignal } : {}) });
     const providerError = 'error' in result ? result.error ?? null : null;
     const transition = resolveGenerationSubmitTransition({
       generationId,
