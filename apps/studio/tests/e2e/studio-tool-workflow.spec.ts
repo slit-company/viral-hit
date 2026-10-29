@@ -1,0 +1,45 @@
+import { test, expect } from '@playwright/test';
+import { selectStudioModel } from './studio-tools';
+const headers = { 'x-viral-hit-workspace-request': '1' };
+
+test('task-first Studio switches independent providers, retains the chosen model and sends actual output to the editor', async ({ page, request }) => {
+  const projectId = (await (await request.post('/api/app/projects', { headers, data: { name: 'Task-first Studio' } })).json()).id;
+  const requests: Array<{ modelId: string; parameters: unknown }> = [], failures: string[] = [];
+  page.on('pageerror', error => failures.push(error.message));
+  page.on('request', req => { if (req.url().endsWith('/api/effects/generate')) requests.push(req.postDataJSON().generation); });
+  await page.goto('/studio/' + projectId);
+  await expect(page.getByRole('navigation', { name: '만들기 도구' }).getByRole('button')).toHaveCount(9);
+  await selectStudioModel(page, 'procedural-gradient');
+  await page.getByLabel('장면 설명', { exact: true }).fill('First local fixture image');
+  await page.getByLabel('화면 비율', { exact: true }).selectOption('16:9');
+  await page.getByRole('button', { name: '만들기', exact: true }).click();
+  await expect(page.locator('article img')).toHaveCount(1);
+  // The existing admission limiter applies to local providers too.
+  await page.waitForTimeout(1100);
+  await selectStudioModel(page, 'studio-secondary-image');
+  await page.getByLabel('장면 설명', { exact: true }).fill('Second independent local fixture image');
+  await page.getByRole('button', { name: '만들기', exact: true }).click();
+  await expect(page.locator('article img')).toHaveCount(2);
+  expect(requests.map(request => request.modelId)).toEqual(['procedural-gradient', 'studio-secondary-image']);
+  expect(requests[1].parameters).toEqual({ aspect_ratio: '16:9' });
+  await page.reload();
+  await expect(page.getByLabel('작업 모델', { exact: true })).toHaveValue('studio-secondary-image');
+  await page.locator('article').first().getByRole('button').nth(1).click();
+  await page.getByRole('button', { name: '편집기에 추가', exact: true }).click();
+  await expect(page.getByRole('button', { name: '편집기에 추가됨', exact: true })).toBeDisabled();
+  const timeline = (await (await request.get(`/api/app/projects/${projectId}/timeline`)).json()).timeline.document;
+  const clips = timeline.tracks.flatMap((track: { clips: unknown[] }) => track.clips);
+  expect(clips).toHaveLength(1);
+  expect(clips[0].assetId).toBeTruthy();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole('button', { name: '편집기에 추가됨', exact: true })).toBeInViewport();
+  await expect(page.getByRole('dialog').getByRole('link', { name: '편집기 열기', exact: true })).toBeInViewport();
+  await page.getByRole('dialog').getByRole('link', { name: '편집기 열기', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp(`/editor/${projectId}$`));
+  await page.goto('/studio/' + projectId);
+  await page.getByRole('navigation', { name: '만들기 도구' }).getByRole('button', { name: '리믹스', exact: true }).click();
+  await expect(page.getByText('아직 이 작업을 지원하는 모델이 없어요.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: '만들기', exact: true })).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(failures).toEqual([]);
+});

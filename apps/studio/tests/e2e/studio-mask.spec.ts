@@ -1,10 +1,11 @@
+import { selectStudioModel } from './studio-tools';
 import { test, expect, type Page } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const headers = { 'x-viral-hit-workspace-request': '1' }, evidence = '../../research/evidence/studio-mask';
 const ffmpeg = process.env.VIRAL_HIT_FFMPEG || 'ffmpeg';
-async function choose(page: Page, name: string) { await page.getByRole('button', { name: 'Model', exact: true }).click(); await page.getByRole('option', { name, exact: true }).click(); }
+const choose = selectStudioModel;
 const pixel = (path: string, x: number, y: number) => [...execFileSync(ffmpeg, ['-v', 'error', '-i', path, '-vf', `crop=4:4:${x}:${y},scale=1:1`, '-frames:v', '1', '-pix_fmt', 'rgb24', '-f', 'rawvideo', '-'])];
 
 test('painting a mask in Studio changes only the marked area and survives reload and history reuse', async ({ page, request }) => {
@@ -22,11 +23,9 @@ test('painting a mask in Studio changes only the marked area and survives reload
   await expect(page.getByRole('button', { name: 'Mark area to change', exact: true })).toBeDisabled();
   await page.getByLabel('Visual reference files', { exact: true }).setInputFiles(source);
   await expect(page.getByRole('button', { name: 'Visual sources', exact: true })).toHaveText('Sources · 1');
-  await expect(page.getByRole('button', { name: 'Generate', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: '만들기', exact: true })).toBeDisabled();
 
-  await page.getByRole('button', { name: 'Model options', exact: true }).click();
   await page.getByLabel('Change in marked area', { exact: true }).selectOption('fill');
-  await page.getByRole('button', { name: 'Apply options', exact: true }).click();
 
   await page.getByRole('button', { name: 'Mark area to change', exact: true }).click();
   const surface = page.getByLabel('Mask drawing area', { exact: true });
@@ -40,7 +39,7 @@ test('painting a mask in Studio changes only the marked area and survives reload
   await page.getByRole('button', { name: 'Use this mask', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Edit marked area', exact: true })).toHaveText('Area marked');
 
-  await page.getByRole('button', { name: 'Generate', exact: true }).click();
+  await page.getByRole('button', { name: '만들기', exact: true }).click();
   await expect.poll(async () => (await (await request.get(`/api/app/projects/${projectId}/generations`)).json()).items[0]?.status).toBe('succeeded');
   expect(submitted[0].references.map(reference => reference.role)).toEqual(['source', 'mask']);
   const [item] = (await (await request.get(`/api/app/projects/${projectId}/generations`)).json()).items;

@@ -1,3 +1,4 @@
+import type { StudioToolId } from '@/core/studio/tools';
 import type { GenerationProviderMetadata } from './contracts';
 
 export const CLOUD_API_PROVIDER_ID = 'cloud-api';
@@ -31,7 +32,14 @@ export const CLOUD_API_MODEL_BINDINGS = [
   ['video-analysis', 1001, 'effects/video-analysis', 'video'],
 ] as const;
 
+// Explicit capabilities of this adapter; product navigation never infers tasks from names.
+const IMAGE_EFFECTS = new Set([5, 6, 12, 16, 23, 25, 26, 27, 28]);
+function studioTasks(effectId: number): StudioToolId[] {
+  if (IMAGE_EFFECTS.has(effectId)) return ['image-generate', 'image-edit'];
+  if (effectId === 19 || effectId === 20) return ['motion-control'];
+  return [effectId === 1001 ? 'media-analysis' : 'video-generate'];
+}
 export const cloudApiMetadata: GenerationProviderMetadata = {
   id: CLOUD_API_PROVIDER_ID, label: 'Cloud API', supports: ['image', 'video', 'analysis'],
-  modelBindings: CLOUD_API_MODEL_BINDINGS.map(([modelId, effectId, uploadPath, imageBucketName]) => ({ modelId, effectId, upstreamModelId: modelId, uploadPath, imageBucketName })),
+  modelBindings: CLOUD_API_MODEL_BINDINGS.map(([modelId, effectId, uploadPath, imageBucketName]) => ({ modelId, effectId, upstreamModelId: modelId, studioTasks: studioTasks(effectId), uploadPath, imageBucketName })),
 };

@@ -1,3 +1,10 @@
+import { useStudioTools } from './use-studio-tools';
+import { StudioToolNavigation, StudioToolSelection } from './studio-tool-navigation';
+import { StudioToolComposer } from './studio-tool-composer';
+import { StudioToolGuide } from './studio-tool-guide';
+import { defaultStudioTool, STUDIO_TOOL_KINDS } from '@/core/studio/tools';
+import { Action } from '@/components/base/action';
+import { Link } from '@/core/i18n/navigation';
 import { useStudioVisualSources } from './use-studio-visual-sources';
 import { visualSourceReferences } from '@/core/studio/studio-visual-sources';
 import { StudioAudioComposer } from './studio-audio-composer';
@@ -7,9 +14,7 @@ import { useStudioAnalysis } from './use-studio-analysis';
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { StudioComposer } from '@/components/studio/studio-composer';
 import { StudioGenerationFeed } from '@/components/studio/studio-generation-feed';
-import { StudioStartHere } from '@/components/studio/studio-start-here';
 import type { CanvasCardMediaType } from '@/core/creative-canvas/canvas-types';
 import { resolveWmTaskId } from '@/core/effects/client-api';
 import { resolveOutputMedia } from '@/core/effects/output-media';
@@ -40,7 +45,6 @@ import { buildDraftModelParameters } from '@/core/effects/model-parameters';
 import { invalidateWorkspaceAfterGeneration } from '@/core/workspace-lib/app/workspace-query-invalidation';
 import { projectGenerationsKeys } from '@/core/workspace-lib/app/workspace-query-keys';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
-import { useAvailableModels } from '@/core/workspace-hooks/use-available-models';
 
 type GenerationResponse = {
   status?: 'pending' | 'processing' | 'succeeded' | 'failed';
@@ -97,7 +101,10 @@ export function StudioWorkspace({
       : initialTarget === 'video'
         ? 'video'
         : 'image';
-  const { imageModels, videoModels } = useAvailableModels();
+  const tools = useStudioTools(projectId, initialTarget, initialModelId);
+  const imageModels = tools.models.filter(model => model.workspaceType === 'ai-image');
+  const videoModels = tools.models.filter(model => model.workspaceType === 'ai-video');
+  const [resultView, setResultView] = useState<'history' | 'guide'>('history');
   const [draft, setDraft] = useState(() => {
     const draftMedia = initialMedia === 'video' ? 'video' : 'image';
     const models = draftMedia === 'video' ? videoModels : imageModels;
@@ -116,9 +123,7 @@ export function StudioWorkspace({
   const [error, setError] = useState('');
   const analysis = useStudioAnalysis({ projectId, initialModelId: initialMedia === 'analysis' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
   const audio = useStudioAudio({ projectId, initialModelId: initialMedia === 'audio' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
-  const models = draft.type === 'video' ? videoModels : imageModels;
-  const selectedModel =
-    findWorkspaceModelOption(models, draft.modelId) ?? models[0] ?? null;
+  const selectedModel = tools.model && ['ai-image', 'ai-video'].includes(tools.model.workspaceType) ? tools.model : null;
   const visualSources = useStudioVisualSources(projectId, selectedModel, setError);
 
   const generationsQuery = useQuery({
@@ -131,19 +136,21 @@ export function StudioWorkspace({
         ? 2500
         : false,
   });
-  const feedItems = (generationsQuery.data?.items ?? []).filter(
-    (item) => item.status !== 'failed'
-  );
+  const feedItems = generationsQuery.data?.items ?? [];
 
   useEffect(() => {
-    if (!selectedModel || selectedModel.id === draft.modelId) return;
-    setDraft((current) =>
-      applyStudioDraftModel({ draft: current, model: selectedModel })
-    );
-  }, [draft.modelId, selectedModel]);
+    if (!tools.ready) return;
+    const kind = STUDIO_TOOL_KINDS[tools.tool];
+    setMedia(kind);
+    if (!tools.model) return;
+    if (kind === 'audio') { if (audio.draft.modelId !== tools.model.id) audio.update({ modelId: tools.model.id }); }
+    else if (kind === 'analysis') { if (analysis.draft.modelId !== tools.model.id) analysis.update({ modelId: tools.model.id }); }
+    else if (draft.modelId !== tools.model.id || draft.type !== kind) setDraft(current => applyStudioDraftModel({ draft: { ...current, type: kind }, model: tools.model! }));
+  }, [tools.ready, tools.tool, tools.model?.id, audio.draft.modelId, analysis.draft.modelId, draft.modelId, draft.type]);
 
   const generation = useMutation({
     mutationFn: async () => {
+      if (!tools.model || tools.model.available === false) throw Error('사용할 모델의 API를 먼저 연결해주세요.');
       if (visualSources.busy) throw Error('Wait for source files to finish loading.');
       const isAnalysis = media === 'analysis';
       if (!isAnalysis && media !== 'audio' && !selectedModel) {
@@ -195,100 +202,44 @@ export function StudioWorkspace({
     },
   });
 
-  function changeMedia(nextMedia: StudioMedia) {
-    if (generation.isPending || analysis.busy || audio.busy || visualSources.busy) return;
-    setMedia(nextMedia);
-    if (nextMedia === 'analysis' || nextMedia === 'audio') return;
-    const nextType = nextMedia === 'video' ? 'video' : 'image';
-    const nextModels = nextType === 'video' ? videoModels : imageModels;
-    const nextModel = nextModels[0] ?? null;
-    if (nextModel) {
-      setDraft((current) =>
-        applyStudioDraftModel({
-          draft: { ...current, type: nextType },
-          model: nextModel,
-        })
-      );
-    }
+  const busy = !tools.ready || generation.isPending || analysis.busy || audio.busy || visualSources.busy;
+  function changeMedia(next: StudioMedia) { if (!busy) tools.selectTool(defaultStudioTool(next)); }
+  function reuse(item: (typeof feedItems)[number]) {
+    if (busy) return;
+    if (item.modelId) tools.selectModel(item.modelId);
+    if (item.mediaType === 'audio') { void audio.reuse(item); return; }
+    if (item.mediaType === 'analysis') { void analysis.reuse(item); return; }
+    const next = applyStudioHistoryItem({ item, imageModels, videoModels });
+    setDraft(next.draft);
+    void visualSources.reuse(item);
   }
-
-  return (
-    <section className="relative flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
-      <div className="pointer-events-none absolute inset-0 bg-[var(--vh-surface)]" />
-      <div className="pointer-events-none absolute inset-x-[8%] top-0 h-[62%] opacity-25 [background-image:radial-gradient(rgba(255,255,255,0.16)_0.75px,transparent_0.75px)] [background-size:18px_18px] [mask-image:linear-gradient(to_bottom,black,transparent)]" />
-
-      <div className="relative min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-[340px] pt-8 sm:px-6 sm:pb-[290px]">
-        {feedItems.length > 0 ? (
-          <div className="flex min-h-full w-full flex-col justify-end">
-            <StudioGenerationFeed
-              items={feedItems}
-              onReuse={(item) => {
-                if (generation.isPending || analysis.busy || audio.busy || visualSources.busy) return;
-                if (item.mediaType === 'audio') { setMedia('audio'); void audio.reuse(item); return; }
-                if (item.mediaType === 'analysis') { setMedia('analysis'); void analysis.reuse(item); return; }
-                const next = applyStudioHistoryItem({
-                  item,
-                  imageModels,
-                  videoModels,
-                });
-                setMedia(next.media);
-                setDraft(next.draft);
-                void visualSources.reuse(item);
-              }}
-            />
-          </div>
-        ) : (
-          <div className="flex flex-1 items-center justify-center">
-            <StudioStartHere />
-          </div>
-        )}
-      </div>
-
-      {media === 'audio' ? <StudioAudioComposer projectId={projectId} audio={audio} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : media === 'analysis' ? <StudioAnalysisComposer projectId={projectId} analysis={analysis} isBusy={generation.isPending} onMediaChange={changeMedia} onGenerate={() => { setError(''); generation.mutate(); }} /> : <StudioComposer
-        draft={draft}
-        media={media}
-        imageModels={imageModels}
-        videoModels={videoModels}
-        isBusy={generation.isPending || visualSources.busy}
-        promptCharacterLimit={
-          getGenerationPromptMaxChars({ modelId: selectedModel?.id })
-        }
-        takeCount={feedItems.length}
-        onDraftChange={(next) => {
-          if (generation.isPending || visualSources.busy) return;
-          if (next.type !== draft.type || next.modelId !== draft.modelId) {
-            const nextModels =
-              next.type === 'video' ? videoModels : imageModels;
-            const nextModel =
-              findWorkspaceModelOption(nextModels, next.modelId) ??
-              nextModels[0] ??
-              null;
-            if (nextModel) {
-              setDraft(
-                applyStudioDraftModel({
-                  draft: { ...next, type: next.type as CanvasCardMediaType },
-                  model: nextModel,
-                })
-              );
-              return;
-            }
-          }
-          setDraft(next);
-        }}
-        onMediaChange={changeMedia}
-        projectId={projectId}
-        visualSources={visualSources}
-        onGenerate={() => {
-          setError('');
-          generation.mutate();
-        }}
-      />}
-
-      {error ? (
-        <p role="alert" className="absolute inset-x-3 top-3 z-30 rounded-xl border border-red-200 bg-white p-3 text-sm text-red-800">
-          {error}
-        </p>
-      ) : null}
-    </section>
-  );
+  function setPrompt(prompt: string) {
+    if (busy) return;
+    if (media === 'audio') audio.update({ prompt });
+    else if (media === 'analysis') analysis.update({ prompt });
+    else setDraft(current => ({ ...current, prompt }));
+  }
+  const start = () => { setError(''); setResultView('history'); generation.mutate(); };
+  return <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
+    <StudioToolNavigation tools={tools} disabled={busy} />
+    <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[380px_minmax(0,1fr)] lg:overflow-hidden xl:grid-cols-[400px_minmax(0,1fr)]">
+      <aside aria-label="제작 설정" className="min-w-0 space-y-5 border-b border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+        <StudioToolSelection tools={tools} disabled={busy} />
+        {(tools.model || tools.missingModelId) && (media === 'audio' ? <StudioAudioComposer panel projectId={projectId} audio={audio} isBusy={generation.isPending || Boolean(tools.model && tools.model.id !== audio.draft.modelId)} onMediaChange={changeMedia} onGenerate={start} />
+          : media === 'analysis' ? <StudioAnalysisComposer panel projectId={projectId} analysis={analysis} isBusy={generation.isPending || Boolean(tools.model && tools.model.id !== analysis.draft.modelId)} onMediaChange={changeMedia} onGenerate={start} />
+          : selectedModel && <StudioToolComposer projectId={projectId} tool={tools.tool} draft={draft} model={selectedModel} sources={visualSources} busy={busy} onChange={next => { if (!busy) setDraft(next); }} onGenerate={start} />)}
+        {error && <p role="alert" className="break-words rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
+      </aside>
+      <section aria-label="프로젝트 결과" className="min-w-0 bg-[var(--vh-bg)] lg:overflow-y-auto">
+        <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--vh-border)] px-5 py-3">
+          <div role="group" aria-label="결과 보기" className="flex gap-1 rounded-full bg-[var(--vh-control)] p-1">{(['history', 'guide'] as const).map(view => <Action key={view} aria-pressed={resultView === view} onClick={() => setResultView(view)} className={'rounded-full px-4 py-2 text-xs ' + (resultView === view ? 'bg-[var(--vh-surface)] font-semibold shadow-sm' : 'text-[var(--vh-text-2)]')}>{view === 'history' ? '작업 결과' + (feedItems.length ? ' · ' + feedItems.length : '') : '사용 방법'}</Action>)}</div>
+          <Link href={'/editor/' + projectId} className="text-xs font-semibold underline-offset-4 hover:underline">편집기 열기 ↗</Link>
+        </header>
+        <div className="p-4 sm:p-6">
+          {generationsQuery.isError && <p role="alert" className="mb-4 text-sm text-red-700">작업 기록을 불러오지 못했어요. <Action className="underline" onClick={() => void generationsQuery.refetch()}>다시 확인</Action></p>}
+          {resultView === 'history' && feedItems.length > 0 ? <StudioGenerationFeed projectId={projectId} items={feedItems} onReuse={reuse} /> : <StudioToolGuide tool={tools.tool} projectId={projectId} onPrompt={setPrompt} disabled={busy} />}
+        </div>
+      </section>
+    </div>
+  </section>;
 }

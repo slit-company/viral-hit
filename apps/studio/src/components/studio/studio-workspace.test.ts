@@ -25,10 +25,12 @@ test('studio uses the shared creative surface without a persistent media sidebar
   assert.doesNotMatch(studioSource, /w-14 shrink-0 flex-col/);
 });
 
-test('studio keeps the original wide composer and a project generation feed', () => {
-  assert.match(studioSource, /StudioComposer/);
+test('studio uses tool-first production panels and the existing project generation feed', () => {
+  assert.match(studioSource, /StudioToolComposer/);
   assert.match(studioSource, /StudioGenerationFeed/);
-  assert.match(studioSource, /StudioStartHere/);
+  assert.match(studioSource, /StudioToolGuide/);
+  assert.match(studioSource, /StudioToolNavigation/);
+  assert.match(studioSource, /StudioToolSelection/);
   assert.match(composerSource, /max-w-\[1138px\]/);
   assert.match(composerSource, /ariaLabel="Media type"/);
   assert.match(composerSource, /WorkspaceSelect/);
@@ -42,7 +44,8 @@ test('studio keeps the original wide composer and a project generation feed', ()
   assert.match(feedSource, /aspect-square/);
   assert.match(feedSource, /object-cover/);
   assert.match(feedSource, /item\.prompt/);
-  assert.match(studioSource, /justify-end/);
+  assert.match(studioSource, /제작 설정/);
+  assert.match(studioSource, /프로젝트 결과/);
   assert.match(startHereSource, /Create Here/);
   assert.match(studioSource, /fetchProjectGenerations/);
   assert.match(composerSource, /value: 'analysis'/);

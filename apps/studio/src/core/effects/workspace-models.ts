@@ -1,3 +1,4 @@
+import type { StudioToolId } from '@/core/studio/tools';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from '@/core/generation-providers/mask-input';
 import type { ReferenceRoles } from '@/core/generation-providers/reference-roles';
@@ -40,6 +41,9 @@ export type {
 } from './effect-registry';
 
 export type WorkspaceModelOption = {
+  providerId?: string;
+  providerLabel?: string;
+  studioTasks?: StudioToolId[];
   id: string;
   name: string;
   mediaSchema?: WorkspaceMediaSchema;

@@ -1,3 +1,5 @@
+import { getConfig } from '@/modules/config/service';
+import { getCloudApiBaseUrl } from '@/core/generation-providers/cloud-api-endpoint.server';
 import { createFileRoute } from '@tanstack/react-router';
 import { resolveWorkspaceEffectProviderModelVariant } from '@/core/effects/effect-registry';
 import { getGenerationModelDescriptor, listGenerationModelDescriptors } from '@/core/generation-providers/model-catalog';
@@ -10,6 +12,8 @@ const isWorkspaceType = (value: string | null): value is WorkspaceType =>
   value === 'ai-image' || value === 'ai-video' || value === 'ai-audio';
 
 async function GET({ request }: { request: Request }) {
+  const cloudReady = Boolean(getCloudApiBaseUrl() && await getConfig('CLOUD_API_KEY'));
+  const available = (model: { providerId: string; available: boolean } | null | undefined) => model?.providerId === 'cloud-api' ? cloudReady : model?.available ?? false;
   const { searchParams } = new URL(request.url);
   const requestedType = searchParams.get('type');
   const types = isWorkspaceType(requestedType)
@@ -27,6 +31,7 @@ async function GET({ request }: { request: Request }) {
 
     return {
       ...model,
+      providerId: descriptor?.providerId, providerLabel: descriptor?.providerLabel, studioTasks: descriptor?.studioTasks,
       inputSchema: descriptor?.parameterSchema ?? null,
       ...(descriptor?.controls ? { controls: descriptor.controls } : {}),
       ...(descriptor?.referenceInputs ? { referenceInputs: descriptor.referenceInputs } : {}),
@@ -38,12 +43,12 @@ async function GET({ request }: { request: Request }) {
             variant: model.defaultVariant,
           })
         : null,
-      available: descriptor?.available ?? true,
+      available: available(descriptor),
     };
   });
 
   const analysisModels = listGenerationModelDescriptors().filter(model => model.kind === 'analysis').map(model => ({
-    id: model.id, name: model.name, available: model.available, workspaceType: 'analysis',
+    id: model.id, name: model.name, providerId: model.providerId, providerLabel: model.providerLabel, studioTasks: model.studioTasks, available: available(model), workspaceType: 'analysis',
     uploadPath: '', imageBucketName: '',
     ...(model.analysisInputs ? { analysisInputs: model.analysisInputs, maxReferenceImages: model.analysisInputs.image.max, maxSourceVideos: model.analysisInputs.video.max, maxReferenceAudios: model.analysisInputs.audio.max, supportsSourceVideo: model.analysisInputs.video.max > 0 } : { supportsSourceVideo: true, maxSourceVideos: 1 }),
     ...(model.controls ? { controls: model.controls } : {}), inputSchema: model.parameterSchema, defaultProviderModelVariant: null,

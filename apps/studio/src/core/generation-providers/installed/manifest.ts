@@ -1,3 +1,4 @@
+import { STUDIO_TOOL_IDS, STUDIO_TOOL_KINDS } from '@/core/studio/tools';
 import { referenceInputsSchema } from '../reference-inputs';
 import { maskInputSchema } from '../mask-input';
 import { referenceRolesSchema } from '../reference-roles';
@@ -19,6 +20,7 @@ export const providerModelSchema = z.object({
   name: z.string().trim().min(1).max(80),
   kind: z.enum(['image', 'video', 'audio', 'analysis']),
   controls: modelControlsSchema.optional(),
+  studioTasks: z.array(z.enum(STUDIO_TOOL_IDS)).min(1).max(8).refine(items => new Set(items).size === items.length).optional(),
   analysisInputs: analysisInputsSchema.optional(),
   referenceInputs: referenceInputsSchema.optional(),
   maskInput: maskInputSchema.optional(),
@@ -32,6 +34,7 @@ export const providerModelSchema = z.object({
   maxReferenceImages: z.number().int().min(0).max(30).default(0),
   requiresImageInput: z.boolean().default(false),
 }).strict().superRefine((model, ctx) => {
+  if (model.studioTasks?.some(task => STUDIO_TOOL_KINDS[task] !== model.kind)) ctx.addIssue({ code: 'custom', message: 'Studio tasks must match the output kind' });
   if ((model.kind === 'image' || model.kind === 'video') && !model.aspectRatios.length) ctx.addIssue({ code: 'custom', message: 'Image/video models require aspectRatios' });
   if (model.kind === 'analysis' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, with no image-generation or output aspect-ratio settings' });
   if (model.kind === 'audio' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Audio models use referenceInputs without visual aspect ratios or image-generation settings' });

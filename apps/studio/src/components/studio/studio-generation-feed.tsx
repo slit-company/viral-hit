@@ -1,3 +1,4 @@
+import { StudioResultActions } from './studio-result-actions';
 import { Action } from '@/components/base/action';
 import { Loader2, Music2, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -53,7 +54,7 @@ function StudioHistoryItem({
             ? <video src={previewUrl} preload="metadata" muted playsInline className="h-full w-full object-cover" />
             : <img src={previewUrl} alt="" className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : (
-          <div className="flex h-full items-center justify-center text-[12px] text-[var(--vh-text-3)]">{isBusy ? <Loader2 className="size-5 animate-spin" /> : t('noPrompt')}</div>
+          <div className="flex h-full items-center justify-center text-[12px] text-[var(--vh-text-3)]">{isBusy ? <Loader2 className="size-5 animate-spin" /> : item.status === 'failed' ? '생성 실패 · 상세 확인' : t('noPrompt')}</div>
         )}
         </Action>
       </div>
@@ -66,8 +67,10 @@ function StudioHistoryItem({
 export function StudioGenerationFeed({
   items,
   onReuse,
+  projectId,
 }: {
   items: ProjectGenerationItem[];
+  projectId?: string;
   onReuse: (item: ProjectGenerationItem) => void;
 }) {
   const t = useTranslations('AppShell.studio.feed');
@@ -76,7 +79,7 @@ export function StudioGenerationFeed({
   const selected = items.find((item) => item.id === selectedId) ?? null;
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' });
+    if (!projectId) endRef.current?.scrollIntoView({ block: 'end' });
   }, [
     items.length,
     items.at(-1)?.status,
@@ -86,7 +89,7 @@ export function StudioGenerationFeed({
 
   return (
     <>
-      <section className="mx-auto grid w-full max-w-[1138px] grid-cols-2 gap-x-3 gap-y-5 pb-4 sm:grid-cols-3 lg:grid-cols-4">
+      <section className="mx-auto grid w-full max-w-[1138px] grid-cols-2 gap-x-3 gap-y-5 pb-4 sm:grid-cols-3 2xl:grid-cols-4">
         {items.map((item) => (
           <StudioHistoryItem
             key={item.id}
@@ -168,7 +171,9 @@ export function StudioGenerationFeed({
                     </span>
                   ) : null}
                 </div>
+                {projectId && <StudioResultActions key={selected.id} item={selected} projectId={projectId} onReuse={() => { onReuse(selected); setSelectedId(null); }} />}
                 <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
+                  {selected.error && <p role="alert" className="break-words text-sm text-red-700">{selected.error}</p>}
                   <div className={cn("flex flex-col rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4", selected.mediaType === 'audio' ? "max-h-44 min-h-24" : "h-[min(260px,34vh)] min-h-[180px]")}>
                     <p className="shrink-0 text-[13px] text-[var(--vh-text-3)]">
                       {t('prompt')}

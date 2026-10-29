@@ -1,3 +1,4 @@
+import type { StudioToolId } from '@/core/studio/tools';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from './mask-input';
 import type { ReferenceRoles } from './reference-roles';
@@ -11,6 +12,7 @@ export type GenerationProviderModelBinding = {
   /** Stable ViralHit product model id. */
   modelId: string;
   controls?: ModelControl[];
+  studioTasks?: StudioToolId[];
   analysisInputs?: AnalysisInputs;
   referenceInputs?: ReferenceInputs;
   /** Declared only by models that edit a marked area. */

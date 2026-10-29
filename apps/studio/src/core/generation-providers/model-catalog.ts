@@ -1,3 +1,4 @@
+import type { StudioToolId } from '@/core/studio/tools';
 import { resolveAudioReferenceInputs } from './reference-inputs';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from './mask-input';
@@ -37,6 +38,8 @@ export type GenerationModelDescriptor = {
   id: string;
   name: string;
   providerId: string;
+  providerLabel?: string;
+  studioTasks?: StudioToolId[];
   referenceDelivery?: 'project-media';
   kind: 'image' | 'video' | 'audio' | 'analysis';
   available: boolean;
@@ -59,7 +62,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         {
           id: binding.modelId,
           name: effect.name,
-          providerId: provider.id,
+          providerId: provider.id, providerLabel: provider.label, ...(binding.studioTasks ? { studioTasks: binding.studioTasks } : {}),
           ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
           kind: 'analysis' as const,
           ...(binding.analysisInputs ? { analysisInputs: binding.analysisInputs } : {}),
@@ -81,7 +84,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
       {
         id: entry.id,
         name: entry.name,
-        providerId: provider.id,
+        providerId: provider.id, providerLabel: provider.label, ...(binding.studioTasks ? { studioTasks: binding.studioTasks } : {}),
         ...(provider.referenceDelivery ? { referenceDelivery: provider.referenceDelivery } : {}),
         kind: entry.workspaceType === 'ai-image' ? ('image' as const) : entry.workspaceType === 'ai-audio' ? ('audio' as const) : ('video' as const),
         available: getGenerationProvider(provider.id)?.isConfigured?.() !== false,

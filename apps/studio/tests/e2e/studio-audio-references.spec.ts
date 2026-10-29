@@ -1,3 +1,4 @@
+import { selectStudioModel } from './studio-tools';
 import { test, expect } from '@playwright/test';
 import { execFileSync } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
@@ -33,18 +34,17 @@ test('Studio uses audio/video references, preserves selections across model swit
   await expect(page.getByRole('button', { name: 'Done', exact: true })).toBeInViewport();
   await page.screenshot({ path: evidence + '/sources-mobile.png', animations: 'disabled' });
   await page.getByRole('button', { name: 'Done', exact: true }).click();
-  await page.getByLabel('Audio model', { exact: true }).selectOption('procedural-sound');
+  await selectStudioModel(page, 'procedural-sound');
   await expect(page.getByRole('button', { name: 'Audio sources', exact: true })).toHaveText('Sources · 2');
   await expect(page.getByRole('button', { name: 'Generate audio', exact: true })).toBeDisabled();
   await expect(page.getByText('Selected sources do not match this model.', { exact: false })).toBeVisible();
-  await page.getByLabel('Audio model', { exact: true }).selectOption('audio-conform');
-  await page.getByRole('button', { name: 'Model options', exact: true }).click();
+  await selectStudioModel(page, 'audio-conform');
   await page.getByLabel('Gain', { exact: true }).fill('.5');
   await page.getByLabel('Start in source (seconds)', { exact: true }).fill('.2');
   await page.getByLabel('Length without video (seconds)', { exact: true }).fill('.8');
-  await page.getByRole('button', { name: 'Apply options', exact: true }).click();
   await page.reload();
   await expect(page.getByRole('button', { name: 'Audio sources', exact: true })).toHaveText('Sources · 2');
+  await page.getByRole('button', { name: 'Generate audio', exact: true }).scrollIntoViewIfNeeded();
   await expect(page.getByRole('button', { name: 'Generate audio', exact: true })).toBeInViewport();
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: evidence + '/composer-mobile.png', animations: 'disabled' });

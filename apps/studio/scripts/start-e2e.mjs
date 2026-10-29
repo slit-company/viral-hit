@@ -19,6 +19,11 @@ await cp('../../examples/adapter-recipes/procedural-tone.json', join(recipes, 'p
 // Installed generation providers: the dependency-free example stands in for a model an operator adds.
 const providers = join(directory, 'providers');
 await cp('../../examples/providers', providers, { recursive: true });
+// A second, independent provider exercises task-first provider selection without Sume or paid APIs.
+await cp('../../examples/providers/procedural-images', join(providers, 'studio-secondary'), { recursive: true });
+const secondaryManifest = JSON.parse(await readFile(join(providers, 'studio-secondary', 'provider.json'), 'utf8'));
+Object.assign(secondaryManifest, { id: 'studio-secondary', label: 'Studio secondary fixture', models: [{ ...secondaryManifest.models[0], id: 'studio-secondary-image', name: 'Secondary local image fixture', studioTasks: ['image-generate'] }] });
+await writeFile(join(providers, 'studio-secondary', 'provider.json'), JSON.stringify(secondaryManifest));
 await cp('../../examples/providers/procedural-images', join(providers, 'protected-fixture'), { recursive: true });
 const protectedManifest = JSON.parse(await readFile(join(providers, 'protected-fixture', 'provider.json'), 'utf8'));
 Object.assign(protectedManifest, { id: 'protected-fixture', label: 'Studio image service', scope: 'specialized', environment: ['VIRAL_HIT_E2E_PROVIDER_KEY'], models: [{ ...protectedManifest.models[0], id: 'protected-fixture-image', name: 'Studio image model' }] });

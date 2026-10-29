@@ -285,6 +285,36 @@
               ]
             }
           },
+          "studioTasks": {
+            "minItems": 1,
+            "maxItems": 8,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "image-generate",
+                "image-edit",
+                "remove-background",
+                "image-upscale",
+                "video-generate",
+                "video-edit",
+                "motion-control",
+                "motion-transfer",
+                "object-swap",
+                "restyle",
+                "image-lipsync",
+                "video-lipsync",
+                "text-to-speech",
+                "voice-change",
+                "audio-generate",
+                "music-generate",
+                "video-caption",
+                "video-dubbing",
+                "video-upscale",
+                "media-analysis"
+              ]
+            }
+          },
           "analysisInputs": {
             "type": "object",
             "properties": {
