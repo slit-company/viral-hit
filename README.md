@@ -78,11 +78,11 @@ The #OpenSourceHiggsfield challenge produced close to a hundred projects. Most r
   </tr>
   <tr>
     <td><img src="docs/readme/editor.jpg" alt="Multitrack editor with player, timeline and inspector" /></td>
-    <td><img src="docs/readme/connections.jpg" alt="API connections for Comfy, Higgsfield and Sume" /></td>
+    <td><img src="docs/readme/connections.jpg" alt="Connections: model API keys for nine services with a Get a key link each, plus publishing channels" /></td>
   </tr>
   <tr>
     <td><b>Edit.</b> A real multitrack timeline: visuals, overlays, audio and captions, reversible takes, recovered drafts and MP4 export in the browser or on the server.</td>
-    <td><b>Connections.</b> Paste a key once. Keys stay encrypted on your server, are never sent to the browser, and each job remembers the key it started with.</td>
+    <td><b>Connections.</b> Model API keys and publishing channels on one page. <b>Get a key</b> opens each service's official key page; keys stay encrypted on your server and each job remembers the key it started with.</td>
   </tr>
 </table>
 
