@@ -19,7 +19,7 @@ import { installedEffectId, providerManifestSchema, type ProviderManifest } from
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { InstalledProviderAdapter, InstalledProviderRuntime } from './runtime.server';
 
-export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery' | 'configurationDelivery' | 'connectionTest'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
+export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery' | 'configurationDelivery' | 'connectionTest' | 'setupUrl' | 'keyFormat'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
 export type InstalledProviderProblem = { location: string; message: string };
 
 class ProviderLoadError extends Error {}
@@ -80,12 +80,17 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
   connectionRuntimes.set(manifest.id, runtime);
   registerGenerationProvider({ ...metadata, executionIdentity: () => providerRuntimeDigest(manifest, source), assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); if (model && (effect.type === 1 || effect.type === 2)) validateInstalledVisualInput(input, model); resolveModelOptions(model?.controls, input.provider_options); } });
-  const { id, label, scope, author, license, description, environment, referenceDelivery, configurationDelivery, connectionTest } = manifest;
-  return { id, label, scope, author, license, description, environment, configurationDelivery, connectionTest, ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
+  const { id, label, scope, author, license, description, environment, referenceDelivery, configurationDelivery, connectionTest, setupUrl, keyFormat } = manifest;
+  return { id, label, scope, author, license, description, environment, configurationDelivery, connectionTest, ...(setupUrl ? { setupUrl } : {}), ...(keyFormat ? { keyFormat } : {}), ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }
 
 let loadedDirectory: string | undefined, sourceStamp = '';
 let installed: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] } | null = null;
+// Dev servers can re-evaluate this module while the model catalog keeps its registrations; reuse the
+// process-wide snapshot instead of registering the same providers twice.
+type Held = { state: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] }; directory?: string; stamp: string; runtimes: Map<string, InstalledProviderRuntime> };
+const HELD = Symbol.for('viral-hit.installed-generation-providers');
+const held = globalThis as typeof globalThis & { [HELD]?: Held };
 
 /**
  * Registers the generation providers in VIRAL_HIT_PROVIDERS_DIR once per server process, next to the
@@ -93,8 +98,15 @@ let installed: { providers: InstalledProviderSummary[]; problems: InstalledProvi
  */
 export function installGenerationProviders(directory = process.env.VIRAL_HIT_PROVIDERS_DIR?.trim() || undefined) {
   if (installed) return installed;
+  const previous = held[HELD];
+  if (previous && previous.state.providers.every(provider => getGenerationProviderMetadata(provider.id))) {
+    installed = previous.state; loadedDirectory = previous.directory; sourceStamp = previous.stamp;
+    for (const [id, runtime] of previous.runtimes) connectionRuntimes.set(id, runtime);
+    return installed;
+  }
   const state: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] } = { providers: [], problems: [] };
   installed = state; loadedDirectory = directory; sourceStamp = providerSourceStamp(directory);
+  held[HELD] = { state, directory, stamp: sourceStamp, runtimes: connectionRuntimes };
   const managed = managedRuntimeEntries('provider');
   if (!directory && !managed.length) return state;
   let folders: string[];

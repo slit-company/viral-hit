@@ -20,7 +20,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Link } from '@/core/i18n/navigation';
-import { buildLocalizedProjectDetailPath } from '@/core/projects/project-entry';
+import { buildLocalizedProjectDetailPath, buildPostCreateProjectDetailPath } from '@/core/projects/project-entry';
+import { apiJsonPost } from '@/lib/api-client';
 import { useWorkspaceProjects } from '@/core/workspace-hooks/use-workspace-projects';
 import type { WorkspaceProjectCardItem } from '@/core/workspace-lib/app/workspace-client-api';
 import { m } from '@/paraglide/messages.js';
@@ -107,11 +108,28 @@ function CreateProjectDialog({
   open,
   onOpenChange,
   copy,
+  locale,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   copy: HistoryCopy;
+  locale: string;
 }) {
+  const [creating, setCreating] = useState<'studio' | 'canvas' | null>(null);
+  // The user already chose a workspace here, so create the project now instead of asking again on /studio or /canvas.
+  // The links stay as a fallback when scripts are unavailable.
+  async function create(event: { preventDefault: () => void }, mode: 'studio' | 'canvas') {
+    event.preventDefault();
+    if (creating) return;
+    setCreating(mode);
+    try {
+      const project = await apiJsonPost<{ id?: string }>('/api/app/projects', { name: copy.untitled, workspaceMode: mode });
+      if (!project?.id) throw Error('Project was not created');
+      window.location.assign(buildPostCreateProjectDetailPath({ locale, projectId: project.id, mode }));
+    } catch {
+      window.location.assign(mode === 'studio' ? '/studio' : '/canvas');
+    }
+  }
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="overflow-hidden rounded-[26px] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-0 text-[var(--vh-text-1)] shadow-none ring-0 sm:max-w-[620px] [&_[data-slot=dialog-close]]:right-4 [&_[data-slot=dialog-close]]:top-4 [&_[data-slot=dialog-close]]:text-[var(--vh-text-2)] [&_[data-slot=dialog-close]]:hover:bg-[var(--vh-control)] [&_[data-slot=dialog-close]]:hover:text-[var(--vh-text-1)]">
@@ -127,6 +145,8 @@ function CreateProjectDialog({
         <div className="grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
           <Link
             href="/studio"
+            onClick={event => void create(event, 'studio')}
+            aria-busy={creating === 'studio'}
             className="group relative min-h-[190px] overflow-hidden rounded-[20px] border border-[var(--vh-border-strong)]/35 bg-[var(--vh-surface)] p-5 transition hover:-translate-y-0.5 hover:border-[var(--vh-border-strong)]/65 hover:bg-[var(--vh-surface)]"
           >
             <span className="grid size-11 place-items-center rounded-[14px] bg-[var(--vh-accent)] text-[var(--vh-text-2)] shadow-none">
@@ -142,6 +162,8 @@ function CreateProjectDialog({
 
           <Link
             href="/canvas"
+            onClick={event => void create(event, 'canvas')}
+            aria-busy={creating === 'canvas'}
             className="group relative min-h-[190px] overflow-hidden rounded-[20px] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 transition hover:-translate-y-0.5 hover:border-[var(--vh-border)] hover:bg-[var(--vh-surface)]"
           >
             <span className="grid size-11 place-items-center rounded-[14px] border border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-1)]">
@@ -293,7 +315,7 @@ export function WorkspacePage({
         </section>
       </main>
 
-      <CreateProjectDialog
+      <CreateProjectDialog locale={locale}
         open={createOpen}
         onOpenChange={setCreateOpen}
         copy={copy}

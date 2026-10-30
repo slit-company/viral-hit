@@ -10,7 +10,7 @@ const SIZES = {
 };
 const controls = [select('resolution', 'Resolution', ['1K', '2K']), select('quality', 'Quality', ['auto', 'low', 'medium', 'high', 'xhigh', 'max']), select('background', 'Background', ['auto', 'opaque', 'transparent'])];
 const image = (id, name, upstreamModelId) => ({ id, name, kind: 'image', upstreamModelId, studioTasks: ['image-generate', 'image-edit'], aspectRatios: ['auto', ...Object.keys(SIZES['1K'])], defaultAspectRatio: 'auto', controls, referenceInputs: refs([0, 16]) });
-export const manifest = { id: 'openai', label: 'OpenAI', description: 'GPT Image 2.5 Sunburst and Flare through the OpenAI Image API: text-to-image and edits with up to 16 reference images.', environment: ['OPENAI_API_KEY'], models: [image('openai-gpt-image-2.5-sunburst', 'GPT Image 2.5 Sunburst', 'gpt-image-2.5-sunburst'), image('openai-gpt-image-2.5-flare', 'GPT Image 2.5 Flare', 'gpt-image-2.5-flare')] };
+export const manifest = { id: 'openai', setupUrl: 'https://platform.openai.com/api-keys', label: 'OpenAI', description: 'GPT Image 2.5 Sunburst and Flare through the OpenAI Image API: text-to-image and edits with up to 16 reference images.', environment: ['OPENAI_API_KEY'], models: [image('openai-gpt-image-2.5-sunburst', 'GPT Image 2.5 Sunburst', 'gpt-image-2.5-sunburst'), image('openai-gpt-image-2.5-flare', 'GPT Image 2.5 Flare', 'gpt-image-2.5-flare')] };
 
 const key = configuration => credential(configuration, 'OPENAI_API_KEY', 'OpenAI', /^sk-[\w-]{16,}$/);
 

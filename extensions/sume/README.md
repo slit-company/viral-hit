@@ -11,7 +11,7 @@ npm run --prefix extensions/sume build
 
 Import `extensions/sume/dist/sume.runtime.json` in Runtime packages, review and activate it, then restart Studio, MCP and workers together. Alternatively set `VIRAL_HIT_PROVIDERS_DIR` to the absolute `extensions/sume/dist/providers` directory on each process (do not install the same provider twice).
 
-Open **Extensions → Connect creative APIs**, save a Sume API key, and choose **Check connection**. Keys are encrypted in the private workspace data directory; their values are never returned to the browser. An operator may instead set `SUME_API_KEY` on every process; environment configuration takes precedence. All processes must use the same workspace data directory. Finish pending work before replacing keys: changing credentials fences existing tasks until their original configuration is restored.
+Open **Connections**, save a Sume API key under Model APIs, and choose **Check**. Keys are encrypted in the private workspace data directory; their values are never returned to the browser. An operator may instead set `SUME_API_KEY` on every process; environment configuration takes precedence. All processes must use the same workspace data directory. Finish pending work before replacing keys: changing credentials fences existing tasks until their original configuration is restored.
 
 The check calls `GET /v1/open/balance`. It verifies authentication, not a paid generation or output quality. Generation requires Sume account balance and may be gated by model/account. A model catalog read checks current supported options before uploading references or submitting a router job.
 

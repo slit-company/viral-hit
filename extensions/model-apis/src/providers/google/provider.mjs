@@ -7,7 +7,7 @@ const API = 'https://generativelanguage.googleapis.com/v1beta';
 const IMAGE_RATIOS = ['auto', '1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '4:5', '5:4', '21:9'];
 const image = (id, name, upstreamModelId, maxRefs) => ({ id, name, kind: 'image', upstreamModelId, studioTasks: ['image-generate', 'image-edit'], aspectRatios: IMAGE_RATIOS, defaultAspectRatio: 'auto', controls: [select('image_size', 'Resolution', ['1K', '2K', '4K'])], referenceInputs: refs([0, maxRefs]) });
 export const manifest = {
-  id: 'google', label: 'Google Gemini', description: 'Nano Banana image generation and editing, and Gemini Omni Flash video with audio, through the Gemini API.', environment: ['GEMINI_API_KEY'],
+  id: 'google', setupUrl: 'https://aistudio.google.com/apikey', label: 'Google Gemini', description: 'Nano Banana image generation and editing, and Gemini Omni Flash video with audio, through the Gemini API.', environment: ['GEMINI_API_KEY'],
   models: [
     image('google-nano-banana-2.1', 'Nano Banana 2.1', 'gemini-nano-banana-2.1', 14),
     image('google-nano-banana-pro', 'Nano Banana Pro', 'gemini-3-pro-image', 14),

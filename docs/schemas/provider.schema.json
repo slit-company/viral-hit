@@ -52,6 +52,16 @@
     "connectionTest": {
       "type": "boolean"
     },
+    "setupUrl": {
+      "type": "string",
+      "maxLength": 300,
+      "format": "uri"
+    },
+    "keyFormat": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
+    },
     "entry": {
       "default": "provider.mjs",
       "type": "string",

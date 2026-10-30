@@ -8,7 +8,7 @@ const RATIOS = ['auto', '1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '21:9
 const VIDEO_RATIOS = ['16:9', '9:16', '1:1', '4:3', '3:4', '3:2', '2:3', '21:9'];
 const video = (id, name, upstreamModelId) => ({ id, name, kind: 'video', upstreamModelId, studioTasks: ['video-generate'], aspectRatios: VIDEO_RATIOS, defaultAspectRatio: '16:9', durations: ['3s', '5s', '6s', '8s', '10s', '12s', '15s'], defaultDuration: '8s', controls: [select('resolution', 'Resolution', ['720p', '480p', '1080p']), select('image_use', 'Image use', ['first-frame', 'references'], 'first-frame', { 'first-frame': 'First frame (and last)', references: 'Reference images' })], referenceInputs: refs([0, 7]) });
 export const manifest = {
-  id: 'xai', label: 'xAI Grok Imagine', description: 'Grok Imagine image generation and editing, and Grok Imagine Video 1.5 with first/last frames or reference images.', environment: ['XAI_API_KEY'],
+  id: 'xai', setupUrl: 'https://console.x.ai', label: 'xAI Grok Imagine', description: 'Grok Imagine image generation and editing, and Grok Imagine Video 1.5 with first/last frames or reference images.', environment: ['XAI_API_KEY'],
   models: [
     { id: 'xai-grok-imagine-image-2', name: 'Grok Imagine Image 2', kind: 'image', upstreamModelId: 'grok-imagine-image-2.0', studioTasks: ['image-generate', 'image-edit'], aspectRatios: RATIOS, defaultAspectRatio: 'auto', controls: [select('resolution', 'Resolution', ['1k', '1.5k', '2k'])], referenceInputs: refs([0, 5]) },
     video('xai-grok-imagine-video-1.5', 'Grok Imagine Video 1.5', 'grok-imagine-video-1.5'),

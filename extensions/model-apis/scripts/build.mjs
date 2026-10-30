@@ -14,7 +14,7 @@ for (const id of ids) {
   if (manifest?.id !== id) throw Error(id + '/provider.mjs must export a manifest with id ' + id);
   await mkdir(directory, { recursive: true });
   await build({ entryPoints: [source], outfile: join(directory, 'provider.mjs'), platform: 'node', format: 'esm', bundle: true, target: 'node24', legalComments: 'none' });
-  const json = { schemaVersion: 1, kind: 'viral-hit-provider', id, label: manifest.label, description: manifest.description, scope: 'general', author: 'Viral Hit contributors', license: 'Apache-2.0', referenceDelivery: 'project-media', configurationDelivery: 'request', connectionTest: true, entry: 'provider.mjs', mediaHosts: [], environment: manifest.environment, models: manifest.models };
+  const json = { schemaVersion: 1, kind: 'viral-hit-provider', id, label: manifest.label, description: manifest.description, scope: 'general', author: 'Viral Hit contributors', license: 'Apache-2.0', referenceDelivery: 'project-media', configurationDelivery: 'request', connectionTest: true, ...(manifest.setupUrl ? { setupUrl: manifest.setupUrl } : {}), ...(manifest.keyFormat ? { keyFormat: manifest.keyFormat } : {}), entry: 'provider.mjs', mediaHosts: [], environment: manifest.environment, models: manifest.models };
   await writeFile(join(directory, 'provider.json'), JSON.stringify(json) + '\n');
   entries.push({ kind: 'provider', manifest: json, source: await readFile(join(directory, 'provider.mjs'), 'utf8') });
   console.log(id.padEnd(11) + manifest.models.length + ' models');

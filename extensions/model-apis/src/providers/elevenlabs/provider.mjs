@@ -6,7 +6,7 @@ import { promptOf, optionsOf, referencesOf, select, toggle, number, text, refs }
 const API = 'https://api.elevenlabs.io/v1';
 const VOICE = text('voice_id', 'Voice ID', 'JBFqnCBsd6RMkjVDRZzb', 64);
 export const manifest = {
-  id: 'elevenlabs', label: 'ElevenLabs', description: 'Voice, music, sound effects and voice changing through the ElevenLabs API.', environment: ['ELEVENLABS_API_KEY'],
+  id: 'elevenlabs', setupUrl: 'https://elevenlabs.io/app/settings/api-keys', label: 'ElevenLabs', description: 'Voice, music, sound effects and voice changing through the ElevenLabs API.', environment: ['ELEVENLABS_API_KEY'],
   models: [
     { id: 'elevenlabs-speech', name: 'ElevenLabs voice', kind: 'audio', upstreamModelId: 'text-to-speech', studioTasks: ['text-to-speech'], controls: [select('model_id', 'Voice model', ['eleven_v4', 'eleven_v4_turbo', 'eleven_multilingual_v2', 'eleven_flash_v2_5']), VOICE, number('stability', 'Stability', 0, 1, 0.5), number('similarity_boost', 'Similarity', 0, 1, 0.75), number('style', 'Style', 0, 1, 0), number('speed', 'Speed', 0.7, 1.2, 1)] },
     { id: 'elevenlabs-music', name: 'Eleven Music 2.5', kind: 'audio', upstreamModelId: 'music_v2_5', studioTasks: ['music-generate'], controls: [number('seconds', 'Length (seconds)', 3, 600, 30, true), toggle('force_instrumental', 'Instrumental only')] },

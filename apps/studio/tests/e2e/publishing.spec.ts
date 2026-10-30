@@ -7,7 +7,7 @@ test('publishing connections expose retained channel state and revision-checked 
   const before = await response.json(); expect(before.youtube).toBe('ready'); expect(before.accounts).toHaveLength(1);
   expect(JSON.stringify(before)).not.toMatch(/e2e-token|e2e-refresh|credential|verifier/);
   await page.goto('/connections');
-  await expect(page.getByRole('heading', { name: 'Connect your channels' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Connect models and channels' })).toBeVisible();
   const card = page.getByRole('article', { name: 'Channel Open Studio · Stories, experiments and creative projects' });
   await expect(card.getByText('Connected', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Connect YouTube', exact: true })).toBeEnabled();
@@ -60,8 +60,8 @@ test('mobile editor retains reachable project and connection controls without ov
   expect(nav!.y).toBeGreaterThanOrEqual(backBox!.y + backBox!.height);
   await runs.click(); await expect(page.getByRole('dialog')).toBeVisible(); await page.keyboard.press('Escape');
   await page.screenshot({ path: 'test-results/publishing-editor-mobile.png' });
-  await page.getByRole('link', { name: 'Publishing connections', exact: true }).click();
-  await expect(page.getByRole('heading', { name: 'Connect your channels' })).toBeVisible();
+  await page.getByRole('link', { name: 'API keys and channels', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Connect models and channels' })).toBeVisible();
   await page.getByRole('button', { name: 'Back home', exact: true }).click();
   await expect(page).toHaveURL(/\/(projects)?$/);
 });

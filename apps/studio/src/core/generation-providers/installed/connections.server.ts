@@ -8,7 +8,9 @@ export const connectionChange = z.discriminatedUnion('action', [
 ]);
 export function providerConnections() {
   return installGenerationProviders().providers.filter(provider => provider.configurationDelivery === 'request').map(provider => ({
-    id: provider.id, label: provider.label, canTest: Boolean(provider.connectionTest), ...providerConfigurationView(provider),
+    id: provider.id, label: provider.label, canTest: Boolean(provider.connectionTest), modelCount: provider.models.length,
+    ...(provider.description ? { description: provider.description } : {}), ...(provider.setupUrl ? { setupUrl: provider.setupUrl } : {}), ...(provider.keyFormat ? { keyFormat: provider.keyFormat } : {}),
+    ...providerConfigurationView(provider),
   }));
 }
 export async function changeProviderConnection(input: z.infer<typeof connectionChange>) {

@@ -101,7 +101,7 @@ test('an independent analysis model is selectable, runs through Canvas and retai
   expect(backBox!.x + backBox!.width).toBeLessThanOrEqual(boardBox!.x);
   await page.getByRole('button',{name:'Generation runs',exact:true}).click();
   await expect(page.getByRole('dialog')).toBeVisible(); await page.keyboard.press('Escape');
-  const connections = page.getByRole('link',{name:'Publishing connections',exact:true});
+  const connections = page.getByRole('link',{name:'API keys and channels',exact:true});
   await connections.scrollIntoViewIfNeeded(); await connections.click();
   await expect(page).toHaveURL('/connections'); await page.goBack();
   await expect(page).toHaveURL('/studio/' + projectId); await back.click();

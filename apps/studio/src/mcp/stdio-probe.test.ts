@@ -1,7 +1,7 @@
 import { tmpdir } from 'node:os';
 import assert from 'node:assert/strict';
 import { execFileSync, spawn } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
 
@@ -139,12 +139,10 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     ).contents?.[0]?.text;
     assert.ok(catalogText);
     const catalog = JSON.parse(catalogText) as { skills?: { manifest: { id: string; scope: string }; source: string; compatible: boolean }[]; problems?: unknown[] };
-    assert.deepEqual((catalog.skills ?? []).map(skill => [skill.manifest.id, skill.source, skill.manifest.scope, skill.compatible]), [
-      ['consistent-characters', 'official', 'general', true],
-      ['product-ad-shots', 'local', 'specialized', true],
-      ['recipe-packs', 'official', 'general', true],
-      ['storyboard', 'official', 'general', true],
-    ]);
+    // Every bundled official skill plus the specialized example loaded from the operator folder, sorted by id.
+    const officialIds = readdirSync('skills/official', { withFileTypes: true }).filter(entry => entry.isDirectory()).map(entry => entry.name);
+    const expected = [...officialIds.map(id => [id, 'official', 'general', true]), ['product-ad-shots', 'local', 'specialized', true]].sort((a, b) => String(a[0]).localeCompare(String(b[0])));
+    assert.deepEqual((catalog.skills ?? []).map(skill => [skill.manifest.id, skill.source, skill.manifest.scope, skill.compatible]), expected);
     assert.deepEqual(catalog.problems, []);
 
     send(child, {
@@ -157,7 +155,7 @@ test('MCP stdio handshake lists the catalogued tools and can list projects', asy
     const skillPayload = listedSkills.result as {
       structuredContent?: { result?: { skills?: { manifest: { id: string } }[] } };
     };
-    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), ['consistent-characters', 'product-ad-shots', 'recipe-packs', 'storyboard']);
+    assert.deepEqual(skillPayload.structuredContent?.result?.skills?.map(skill => skill.manifest.id), expected.map(item => item[0]));
 
     send(child, {
       jsonrpc: '2.0',

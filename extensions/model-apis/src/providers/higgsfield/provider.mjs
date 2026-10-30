@@ -39,4 +39,4 @@ async function poll(api, id) {
 }
 
 export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'hf', label: 'Higgsfield', catalog, client, upload, submit, poll, test: api => api.call('/v1/custom-references/list?page=1&page_size=1') });
-export const manifest = { id: 'higgsfield', label: 'Higgsfield', description: 'Direct Higgsfield API: Soul, Cinema Studio, Ads Studio, Seedance 2.5 create/edit/extend, Kling 3 and O3, motion control, Wan 3, MiniMax H3, LTX 2.5 and Genjutsu.', environment: ['HIGGSFIELD_API_KEY'], models: catalog.models.map(entry => entry.model) };
+export const manifest = { id: 'higgsfield', setupUrl: 'https://console.higgsfield.ai', keyFormat: 'KEY_ID:KEY_SECRET', label: 'Higgsfield', description: 'Direct Higgsfield API: Soul, Cinema Studio, Ads Studio, Seedance 2.5 create/edit/extend, Kling 3 and O3, motion control, Wan 3, MiniMax H3, LTX 2.5 and Genjutsu.', environment: ['HIGGSFIELD_API_KEY'], models: catalog.models.map(entry => entry.model) };

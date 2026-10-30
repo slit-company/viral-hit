@@ -1,7 +1,7 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Blocks, BookOpenText, Clapperboard, Images, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Users, Workflow } from 'lucide-react';
+import { Blocks, BookOpenText, Clapperboard, Images, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Workflow } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
@@ -50,12 +50,14 @@ export function WorkspaceSidebar({ projectId, current }: { projectId: string; cu
     ['publish', '/publish/' + projectId, t('sidebar.publish'), <Send key="p" className="size-4" />],
   ];
   const library: Array<[string, string, ReactNode]> = [
-    ['/packs', t('sidebar.packs'), <Blocks key="pk" className="size-4" />],
-    ['/skills', t('sidebar.skills'), <Sparkles key="sk" className="size-4" />],
     ['/characters', t('sidebar.characters'), <UserRound key="ch" className="size-4" />],
-    ['/community', t('sidebar.community'), <Users key="co" className="size-4" />],
-    ['/extensions', t('sidebar.extensions'), <Puzzle key="ex" className="size-4" />],
+    ['/skills', t('sidebar.skills'), <Sparkles key="sk" className="size-4" />],
+    ['/packs', t('sidebar.packs'), <Blocks key="pk" className="size-4" />],
+  ];
+  // Keys, channels and installed parts live together under Setup; Community is reached from Skills and Packs.
+  const setup: Array<[string, string, ReactNode]> = [
     ['/connections', t('sidebar.connections'), <Link2 key="cn" className="size-4" />],
+    ['/extensions', t('sidebar.extensions'), <Puzzle key="ex" className="size-4" />],
   ];
   return (
     <aside aria-label={t('sidebar.navigation')} className={cn('hidden shrink-0 flex-col border-r border-[var(--vh-border)] bg-[var(--vh-surface)] transition-[width] duration-200 lg:flex', collapsed ? 'w-[64px]' : 'w-[232px]')}>
@@ -73,6 +75,8 @@ export function WorkspaceSidebar({ projectId, current }: { projectId: string; cu
         {pages.map(([page, href, label, icon]) => <Item key={page} href={href} label={label} accessibleLabel={accessible[page]} icon={icon} active={current === page} collapsed={collapsed} />)}
         <Heading collapsed={collapsed}>{t('sidebar.library')}</Heading>
         {library.map(([href, label, icon]) => <Item key={href} href={href} label={label} accessibleLabel={accessible[href]} icon={icon} collapsed={collapsed} />)}
+        <Heading collapsed={collapsed}>{t('sidebar.setup')}</Heading>
+        {setup.map(([href, label, icon]) => <Item key={href} href={href} label={label} accessibleLabel={accessible[href]} icon={icon} collapsed={collapsed} />)}
         {!collapsed && <>
           <Heading collapsed={false}>{t('sidebar.recentProjects')}</Heading>
           {(recent.data?.projects ?? []).slice(0, 6).map(project => (

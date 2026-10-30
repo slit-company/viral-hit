@@ -12,17 +12,17 @@ const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = []; page.on('pageerror', error => errors.push(error.message));
-  await page.goto(base + '/extensions');
-  const section = page.getByRole('region', { name: 'Creative API connections' });
+  await page.goto(base + '/connections');
+  const section = page.getByRole('form', { name: 'Sume' });
   await section.waitFor();
   const key = section.getByLabel('Sume API key', { exact: true });
-  assert.equal(await section.getByRole('button', { name: 'Check connection', exact: true }).isEnabled(), false);
+  assert.equal(await section.getByRole('button', { name: 'Check', exact: true }).isEnabled(), false);
   await key.fill('fixture-ui-key');
-  await section.getByRole('button', { name: 'Save settings', exact: true }).click();
-  await section.getByText('Settings saved. Check the connection to verify authentication.', { exact: true }).waitFor();
+  await section.getByRole('button', { name: 'Save', exact: true }).click();
+  await section.getByText('Saved. Press Check to confirm the key works.', { exact: true }).waitFor();
   assert.equal(await key.inputValue(), '');
-  await section.getByRole('button', { name: 'Check connection', exact: true }).click();
-  await section.getByText('Authentication confirmed. Paid generation and output quality have not been tested.', { exact: true }).waitFor();
+  await section.getByRole('button', { name: 'Check', exact: true }).click();
+  await section.getByText('Key confirmed. Generation is billed by this service.', { exact: true }).waitFor();
   const headers = { 'x-viral-hit-workspace-request': '1', 'Content-Type': 'application/json' };
   const metadata = await page.request.get(base + '/api/app/provider-connections', { headers });
   assert.equal((await metadata.text()).includes('fixture-ui-key'), false);
@@ -35,10 +35,10 @@ try {
   await section.scrollIntoViewIfNeeded();
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await page.screenshot({ path: evidence + '/mobile-auth.png', animations: 'disabled' });
-  await section.getByRole('button', { name: 'Remove saved key', exact: true }).click();
-  await section.getByText('Saved credentials removed.', { exact: true }).waitFor();
+  await section.getByRole('button', { name: 'Remove key', exact: true }).click();
+  await section.getByText('Saved key removed.', { exact: true }).waitFor();
   await page.reload(); await key.waitFor();
-  assert.equal(await section.getByRole('button', { name: 'Check connection', exact: true }).isEnabled(), false);
+  assert.equal(await section.getByRole('button', { name: 'Check', exact: true }).isEnabled(), false);
   assert.deepEqual(errors, []);
   console.log('Browser fixture passed: saved/checked/removed; no exposed secret, cross-site write or horizontal overflow. No real provider call.');
 } finally { await browser.close(); }

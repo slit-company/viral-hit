@@ -5,6 +5,8 @@ import { ExternalLink, Link2, RefreshCw, Youtube } from 'lucide-react';
 import { ProductPageShell } from '@/components/app/product-page-shell';
 import { Button } from '@/components/ui/button';
 import { accountErrorMessage, usePublishingAccounts } from './use-publishing-accounts';
+import { ProviderConnections } from '@/components/extensions/provider-connections';
+import { getLocale } from '@/paraglide/runtime.js';
 
 export function PublishingAccountsPage({ callbackIssue, instagramIssue, instagramState, onInstagramSelectionDone }: { callbackIssue?: string; instagramIssue?: string; instagramState?: string; onInstagramSelectionDone: () => void }) {
   const { snapshot, loading, pending, error, refresh, connect, disconnect } = usePublishingAccounts();
@@ -14,11 +16,13 @@ export function PublishingAccountsPage({ callbackIssue, instagramIssue, instagra
     <div className="flex-1 overflow-y-auto px-4 py-8 sm:px-8 sm:py-12">
       <div className="mx-auto w-full max-w-3xl space-y-6">
         <div className="space-y-3">
-          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--vh-text-2)]"><Link2 className="size-4" aria-hidden="true" /> {uiMessages["ui.publishing.publishing"]()}</span>
+          <span className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-[var(--vh-text-2)]"><Link2 className="size-4" aria-hidden="true" /> {uiMessages["ui.app.publishing_connections"]()}</span>
           <h1 className="text-3xl font-semibold tracking-tight">{uiMessages["ui.publishing.connect_your_channels"]()}</h1>
           <p className="max-w-xl text-sm leading-6 text-[var(--vh-text-2)]">{uiMessages["ui.publishing.choose_where_your_work_can_go_connections_belong_to_this_workspace_and_can_"]()}</p>
         </div>
         {callbackIssue && callbackIssue !== 'connected' && <p role="status" className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-4 text-sm">{accountErrorMessage(callbackIssue)}</p>}
+        <ProviderConnections locale={getLocale()} />
+        <h2 className="flex items-center gap-2 pt-4 text-xl font-semibold"><Link2 size={20} aria-hidden="true" />{uiMessages["ui.publishing.publishing"]()}</h2>
         {error && <p role="alert" className="rounded-xl border border-destructive/30 p-4 text-sm">{error}</p>}
         <section aria-label={uiMessages["ui.publishing.youtube_connection"]()} className="overflow-hidden rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)]">
           <div className="flex flex-wrap items-start justify-between gap-4 p-5 sm:p-6">

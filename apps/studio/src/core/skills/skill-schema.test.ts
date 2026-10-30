@@ -21,7 +21,10 @@ test('the published skill.json schema matches the runtime contract and accepts e
     assert.ok(validate(manifest), entry.name + ': ' + JSON.stringify(validate.errors?.slice(0, 3)));
     checked++;
   }
-  assert.equal(checked, 4);
+  // Every official skill plus the specialized example; a skill folder that fails to load would shrink this.
+  const officialCount = (await readdir('skills/official', { withFileTypes: true })).filter(entry => entry.isDirectory()).length;
+  assert.ok(officialCount >= 3);
+  assert.equal(checked, officialCount + 1);
   const official = JSON.parse(await readFile('skills/official/recipe-packs/skill.json', 'utf8'));
   assert.equal(validate({ ...official, scope: 'everyone' }), false);
 });

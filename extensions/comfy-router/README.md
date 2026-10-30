@@ -21,7 +21,7 @@ pnpm --dir extensions/comfy-router test
 pnpm --dir apps/studio provider check ../../extensions/comfy-router/dist/providers/comfy
 ```
 
-Copy `dist/providers/comfy` into the server's `VIRAL_HIT_PROVIDERS_DIR`, or import `dist/comfy.runtime.json` in **Extensions → Manage runtime packages**, then restart the studio and worker. Save `COMFY_API_KEY` in **Extensions → Connect creative APIs → Comfy** and press **Check connection**, which reads one page of the model catalog and starts nothing. A server environment variable with the same name takes precedence over the saved key.
+Copy `dist/providers/comfy` into the server's `VIRAL_HIT_PROVIDERS_DIR`, or import `dist/comfy.runtime.json` in **Extensions → Manage runtime packages**, then restart the studio and worker. Save `COMFY_API_KEY` in **Connections → Model APIs → Comfy** and press **Check**, which reads one page of the model catalog and starts nothing. A server environment variable with the same name takes precedence over the saved key.
 
 ## How a generation runs
 

@@ -64,6 +64,10 @@ export const providerManifestSchema = z.object({
   /** Opt in to encrypted workspace settings passed as request.configuration. */
   configurationDelivery: z.literal('request').optional(),
   connectionTest: z.boolean().optional(),
+  /** Official page where a user creates the key this provider needs (shown as "Get a key"). */
+  setupUrl: z.string().url().max(300).refine(value => value.startsWith('https://'), 'Use an https:// setup URL').optional(),
+  /** Short format hint for the key field, for example KEY_ID:KEY_SECRET. Never a real value. */
+  keyFormat: z.string().trim().min(1).max(60).optional(),
   entry: z.string().regex(/^[A-Za-z0-9_-]+\.m?js$/).default('provider.mjs'),
   /** Hosts allowed to serve result URLs; plain http is accepted only for localhost and 127.0.0.1. */
   mediaHosts: z.array(hostname).max(20).default([]),

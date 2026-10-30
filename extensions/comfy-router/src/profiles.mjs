@@ -70,5 +70,5 @@ export function outputUrl(profile, data) {
   }
 }
 export function providerManifest() {
-  return { schemaVersion: 1, kind: 'viral-hit-provider', id: 'comfy', label: 'Comfy', description: 'Comfy Router with one Comfy API key: FLUX 3 image and video, LTX 2.5 and MiniMax H3. Usage is billed to your Comfy account.', scope: 'general', author: 'Viral Hit contributors', license: 'Apache-2.0', referenceDelivery: 'project-media', configurationDelivery: 'request', connectionTest: true, entry: 'provider.mjs', environment: ['COMFY_API_KEY'], models: profiles };
+  return { schemaVersion: 1, kind: 'viral-hit-provider', id: 'comfy', label: 'Comfy', description: 'Comfy Router with one Comfy API key: FLUX 3 image and video, LTX 2.5 and MiniMax H3. Usage is billed to your Comfy account.', scope: 'general', author: 'Viral Hit contributors', license: 'Apache-2.0', referenceDelivery: 'project-media', configurationDelivery: 'request', connectionTest: true, setupUrl: 'https://platform.comfy.org/profile/api-keys', entry: 'provider.mjs', environment: ['COMFY_API_KEY'], models: profiles };
 }

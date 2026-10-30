@@ -104,7 +104,7 @@ export function StudioToolSelection({
             </span>
           ) : (
             <Link
-              href="/extensions"
+              href="/connections"
               className="flex items-center gap-1 text-xs text-[var(--vh-text-2)] underline-offset-4 hover:underline"
             >
               <PlugZap size={12} />
