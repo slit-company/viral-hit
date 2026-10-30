@@ -12,6 +12,8 @@ const directory = await mkdtemp(join(tmpdir(), 'vh-model-recipes-'));
 process.env.VIRAL_HIT_DATA_DIR = directory;
 process.env.VIRAL_HIT_PROVIDERS_DIR = join(directory, 'providers');
 process.env.VH_MODEL_RECIPE_SETTING = 'original';
+// The media-inspector example declares VIRAL_HIT_FFPROBE as a required setting.
+process.env.VIRAL_HIT_FFPROBE ||= 'ffprobe';
 for (const name of ['VIRAL_HIT_ADAPTERS_DIR', 'VIRAL_HIT_HARNESS_DB']) delete process.env[name];
 execFileSync('pnpm', ['exec', 'drizzle-kit', 'push', '--force'], { env: process.env, stdio: 'pipe' });
 for (const name of ['procedural-images', 'procedural-audio', 'audio-conform', 'media-inspector']) await cp(resolve('../../examples/providers', name), join(process.env.VIRAL_HIT_PROVIDERS_DIR, name), { recursive: true });

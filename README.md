@@ -122,7 +122,7 @@ Fal, Runway and Higgsfield models are generated from each service's published JS
 
 ## Run it in two minutes
 
-Requires Node 24+, pnpm 10 and FFmpeg.
+Requires Node 24+, pnpm 10 and FFmpeg with captions support (drawtext; on macOS `brew install ffmpeg-full`, then set `VIRAL_HIT_FFMPEG` and `VIRAL_HIT_FFPROBE` in `apps/studio/.env.local`).
 
 ```sh
 git clone https://github.com/slit-company/viral-hit.git

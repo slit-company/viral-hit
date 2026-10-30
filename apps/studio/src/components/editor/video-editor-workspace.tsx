@@ -71,7 +71,9 @@ import {
   type TimelineClip,
   type TimelineDocument,
 } from '@/core/editor/timeline-document';
-import { DEFAULT_IMAGE_CLIP_DURATION } from '@/core/editor/timeline-client';
+import { DEFAULT_IMAGE_CLIP_DURATION, loadBrowserMediaDuration } from '@/core/editor/timeline-client';
+import { EditorMediaPanel, type ProjectAssetKind } from './editor-media-panel';
+import type { RecentAsset } from '@/core/workspace-lib/app/workspace-client-api';
 import {
   downloadBlob,
   exportTimelineMp4,
@@ -843,6 +845,20 @@ export function VideoEditorWorkspace({
       setError(cause instanceof Error ? cause.message : t('errors.inspectFailed'));
     } finally {
       setIsInspecting(false);
+    }
+  };
+
+  // Places a project asset (Studio result, import or render) on the timeline without re-uploading it.
+  const addProjectAsset = async (asset: RecentAsset, kind: ProjectAssetKind) => {
+    setError(null);
+    try {
+      const sourceDuration = kind === 'image' ? DEFAULT_IMAGE_CLIP_DURATION : asset.durationMs && asset.durationMs > 0 ? asset.durationMs / 1000 : await loadBrowserMediaDuration(asset.publicUrl, kind);
+      const next = applyEditorOperations(documentRef.current ?? document, [{ type: 'add_clip', assetId: asset.id, sourceUrl: asset.publicUrl, name: asset.filename?.trim() || t(`clipInspector.type.${kind}`), sourceType: kind, sourceDuration, ...(kind === 'audio' ? { startTime: 0, audioRole: 'music' as const } : {}) }]).document;
+      commitDocument(next);
+      const added = next.tracks.flatMap((track) => track.clips).find((clip) => clip.assetId === asset.id);
+      if (added && kind !== 'audio') selectClip(added);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : t('errors.inspectFailed'));
     }
   };
 
@@ -1665,78 +1681,9 @@ export function VideoEditorWorkspace({
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto p-4">
-            {projectMedia.length > 0 ? (
-              <div
-                className={
-                  mediaView === 'grid'
-                    ? 'grid grid-cols-2 gap-2.5'
-                    : 'flex flex-col gap-2'
-                }
-              >
-                {projectMedia.map((clip) => (
-                  <Action
-                    key={clip.assetId}
-                    type="button"
-                    onClick={() => selectClip(clip, Math.max(clip.startTime, timelineCurrentTime))}
-                    className={`group min-w-0 overflow-hidden rounded-[10px] border text-left transition ${
-                      selectedClip?.assetId === clip.assetId
-                        ? 'border-[var(--vh-accent)]/70 bg-[var(--vh-accent)]/[0.08]'
-                        : 'border-[var(--vh-border)] bg-[var(--vh-control)] hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)]'
-                    } ${mediaView === 'list' ? 'flex items-center gap-2.5 p-2' : 'p-1.5'}`}
-                  >
-                    <span
-                      className={`relative grid shrink-0 place-items-center overflow-hidden rounded-[7px] bg-[var(--vh-control)] ${
-                        mediaView === 'list' ? 'size-12' : 'aspect-video w-full'
-                      }`}
-                    >
-                      {clip.sourceType === 'image' ? (
-                        <img src={clip.sourceUrl} alt="" className="size-full object-cover" />
-                      ) : clip.sourceType === 'video' ? (
-                        <video
-                          src={clip.sourceUrl}
-                          muted
-                          playsInline
-                          preload="metadata"
-                          className="size-full object-cover opacity-80"
-                          onLoadedMetadata={(event) =>
-                            seekStaticVideoPreview(event.currentTarget)
-                          }
-                        />
-                      ) : (
-                        <Music2 className="size-4 text-[var(--vh-graph)]" />
-                      )}
-                      <span className="absolute bottom-1 right-1 rounded bg-black/72 px-1 py-0.5 text-[8px] font-[560] tabular-nums text-white/90">
-                        {formatTime(clip.duration)}
-                      </span>
-                    </span>
-                    <span className={`block min-w-0 ${mediaView === 'grid' ? 'px-1 pb-1 pt-2' : 'flex-1'}`}>
-                      <span className="block truncate text-[11px] font-[550] text-[var(--vh-text-1)]">
-                        {clip.name}
-                      </span>
-                      <span className="mt-0.5 block text-[9px] capitalize text-[var(--vh-text-2)]">
-                        {t(`clipInspector.type.${clip.sourceType}`)}
-                      </span>
-                    </span>
-                  </Action>
-                ))}
-              </div>
-            ) : (
-              <Action
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="flex h-full min-h-56 w-full flex-col items-center justify-center rounded-xl border border-dashed border-[var(--vh-border)] px-5 text-center text-[var(--vh-text-2)] transition hover:border-[var(--vh-border)] hover:bg-[var(--vh-control)] hover:text-[var(--vh-text-2)]"
-              >
-                <span className="mb-4 grid size-14 place-items-center rounded-2xl bg-[var(--vh-control)]">
-                  <Upload className="size-5" />
-                </span>
-                <span className="text-xs font-[560] text-[var(--vh-text-2)]">
-                  {mediaSearch ? t('media.noResults') : t('media.empty')}
-                </span>
-                <span className="mt-2 max-w-44 text-[11px] leading-5">
-                  {t('media.drop')}
-                </span>
-              </Action>
-            )}
+            <EditorMediaPanel projectId={projectId} clips={projectMedia} view={mediaView} search={mediaSearch} selectedAssetId={selectedClip?.assetId}
+              labels={{ type: kind => t(`clipInspector.type.${kind}`), projectAssets: t('media.projectAssets'), add: name => t('media.addToTimeline', { name }), empty: mediaSearch ? t('media.noResults') : t('media.empty'), drop: t('media.drop') }}
+              onSelect={clip => selectClip(clip, Math.max(clip.startTime, timelineCurrentTime))} onAdd={(asset, kind) => void addProjectAsset(asset, kind)} onImport={() => fileInputRef.current?.click()} />
           </div>
         </aside>
 

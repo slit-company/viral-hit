@@ -45,6 +45,11 @@ test('a network failure after submission reports an unknown outcome instead of r
   await assert.rejects(falProvider.createGeneration({ model: { id: 'fal-google-nano-banana-2.1', kind: 'image' }, input: { prompt: 'cat' }, configuration: { FAL_KEY: 'key-id:key-secret-value' }, readMedia, requestKey: 'job-2' }), /outcome is unknown/);
 });
 
+test('a rejected request carries the service explanation, including array-wrapped Gemini errors', async () => {
+  server({ 'POST https://generativelanguage.googleapis.com/v1beta/interactions': json([{ error: { code: 402, message: 'Your prepayment credits are depleted.', status: 'RESOURCE_EXHAUSTED' } }], 402) });
+  await assert.rejects(googleProvider.createGeneration({ model: { id: 'google-nano-banana-2-lite', kind: 'image' }, input: { prompt: 'dot' }, configuration: { GEMINI_API_KEY: 'AQ.TestKeyValue1234567890' }, readMedia }), /HTTP 402\): Your prepayment credits are depleted/);
+});
+
 test('Runway sends small references inline and reports task credits', async () => {
   const calls = server({
     'POST https://api.dev.runwayml.com/v1/image_to_video': json({ id: '11111111-2222-3333-4444-555555555555' }),

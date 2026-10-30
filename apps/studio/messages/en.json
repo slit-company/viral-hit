@@ -499,7 +499,9 @@
         "noResults": "No matching media",
         "drop": "Drop an image or video here",
         "localOnly": "The original stays on this device",
-        "stillDuration": "Still image · {duration}s"
+        "stillDuration": "Still image · {duration}s",
+        "projectAssets": "Project assets",
+        "addToTimeline": "Add {name} to the timeline"
       },
       "empty": {
         "title": "Import an image or video to start editing",

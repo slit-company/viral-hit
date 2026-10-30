@@ -37,10 +37,14 @@ export const defaultStudioTool = (kind: string): StudioToolId =>
 export function modelStudioTools(model: {
   studioTasks?: readonly StudioToolId[];
   workspaceType: string;
+  referenceInputs?: { image?: { min: number } };
+  maskInput?: { required?: boolean };
 }) {
-  return model.studioTasks?.length
-    ? model.studioTasks
-    : [defaultStudioTool(model.workspaceType.replace('ai-', ''))];
+  if (model.studioTasks?.length) return model.studioTasks;
+  const kind = model.workspaceType.replace('ai-', '');
+  // An undeclared image model that cannot run without a source image or mask edits images; it must not become the default for creating one.
+  if (kind === 'image' && ((model.referenceInputs?.image?.min ?? 0) > 0 || model.maskInput?.required)) return ['image-edit'] as const;
+  return [defaultStudioTool(kind)];
 }
 export function toolModels<
   T extends {

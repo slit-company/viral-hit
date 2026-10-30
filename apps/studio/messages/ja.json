@@ -499,7 +499,9 @@
         "noResults": "一致するメディアはありません",
         "drop": "画像または動画をここにドロップ",
         "localOnly": "元ファイルはこのデバイスに保持されます",
-        "stillDuration": "静止画 · {duration}秒"
+        "stillDuration": "静止画 · {duration}秒",
+        "projectAssets": "プロジェクト素材",
+        "addToTimeline": "{name} をタイムラインに追加"
       },
       "empty": {
         "title": "画像または動画を読み込んで編集を始める",

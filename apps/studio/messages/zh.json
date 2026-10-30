@@ -499,7 +499,9 @@
         "noResults": "没有匹配的素材",
         "drop": "拖入图片或视频",
         "localOnly": "原文件只保留在当前设备",
-        "stillDuration": "静态画面 {duration} 秒"
+        "stillDuration": "静态画面 {duration} 秒",
+        "projectAssets": "项目素材",
+        "addToTimeline": "将 {name} 添加到时间线"
       },
       "empty": {
         "title": "导入图片或视频，开始剪辑",

@@ -30,7 +30,8 @@ async function readLimited(response, maxBytes, label) {
 
 function errorDetail(bytes) {
   try {
-    const data = JSON.parse(Buffer.from(bytes).toString());
+    // Some APIs (Gemini) wrap the error object in a one-item array.
+    const parsed = JSON.parse(Buffer.from(bytes).toString()), data = Array.isArray(parsed) ? parsed[0] : parsed;
     const message = data?.error?.message ?? data?.detail?.message ?? data?.message ?? data?.error ?? data?.detail ?? data?.failure ?? data?.base_resp?.status_msg;
     return typeof message === 'string' ? message.slice(0, 300) : Array.isArray(message) ? JSON.stringify(message).slice(0, 300) : '';
   } catch { return Buffer.from(bytes).toString().replace(/\s+/g, ' ').slice(0, 200); }

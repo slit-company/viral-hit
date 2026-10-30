@@ -55,7 +55,7 @@ export function RecipeLibrary({ selected, installed = false, onInstalled, onRemo
       <p className="break-words text-sm font-semibold">{inspection.recipe.title}</p>
       <p className="break-words">{inspection.recipe.id} · v{inspection.recipe.version}</p>
       <p className="break-words">{inspection.recipe.author} · {inspection.recipe.license}</p>
-      <p>{inspection.nodeCount} {uiMessages["ui.app.steps"]()}{inspection.parameterCount} {uiMessages["ui.app.inputs"]()}</p>
+      <p>{inspection.nodeCount} {uiMessages["ui.app.steps"]()} {inspection.parameterCount} {uiMessages["ui.app.inputs"]()}</p>
       <p className="break-words">{uiMessages["ui.app.operations"]()}{inspection.operations.join(', ')}</p>
       {inspection.modelRequirements && <RecipeRequirementsReport report={inspection.modelRequirements} />}
       {inspection.unavailableOperations.length > 0 && <p className="text-amber-800">{uiMessages["ui.app.missing_runtime_adapters"]()}{inspection.unavailableOperations.join(', ')}{uiMessages["ui.app.you_can_keep_this_recipe_but_this_runtime_cannot_execute_it_yet"]()}</p>}

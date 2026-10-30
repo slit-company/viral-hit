@@ -1,17 +1,17 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { selectStudioModel } from './studio-tools';
 
 const headers = { 'x-viral-hit-workspace-request': '1' }, evidence = '../../research/evidence/higgsfield-ui';
-async function choose(page: Page, name: string) { await page.getByRole('button', { name: 'Model', exact: true }).click(); await page.getByRole('option', { name, exact: true }).click(); }
 
 test('studio results form a media grid with reuse and preview on each tile', async ({ page, request }) => {
   const projectId = (await (await request.post('/api/app/projects', { headers, data: { name: 'Results grid' } })).json()).id;
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/studio/' + projectId + '?target=image&model=procedural-gradient');
-  await choose(page, 'Gradient (instant)');
-  const prompt = page.locator('[data-vh-composer] textarea');
-  const generate = page.getByRole('button', { name: 'Generate', exact: true });
-  await expect(generate).toContainText('Generate');
+  await selectStudioModel(page, 'procedural-gradient');
+  const prompt = page.getByLabel('Scene description', { exact: true });
+  const generate = page.getByRole('button', { name: 'Create', exact: true });
+  await expect(generate).toBeVisible();
   for (const [index, text] of ['Dawn gradient', 'Dusk gradient', 'Night gradient'].entries()) {
     await prompt.fill(text);
     // The precheck accepts one request per project every 500 ms.

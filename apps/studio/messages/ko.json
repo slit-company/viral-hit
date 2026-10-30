@@ -506,7 +506,9 @@
         "noResults": "검색 결과가 없어요",
         "drop": "이미지나 영상을 여기로 끌어다 놓으세요",
         "localOnly": "원본은 이 기기에 보관해요",
-        "stillDuration": "정지 이미지 · {duration}초"
+        "stillDuration": "정지 이미지 · {duration}초",
+        "projectAssets": "프로젝트 에셋",
+        "addToTimeline": "{name} 타임라인에 추가"
       },
       "empty": {
         "title": "이미지나 영상을 가져와 편집을 시작하세요",

@@ -4,6 +4,7 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { readFile, stat, writeFile } from 'node:fs/promises';
 import { execFileSync } from 'node:child_process';
 import { createDemoMedia } from '../../scripts/demo-media.mjs';
+import { selectStudioModel } from './studio-tools';
 
 const headers = { 'x-viral-hit-workspace-request': '1' };
 test('recipe image inputs list this project only and preview the selected local asset', async ({ page, request }) => {
@@ -236,21 +237,40 @@ test('MCP captions appear without reload and local caption edits persist through
   await expect(page.getByText('Locally edited caption', { exact: true }).first()).toBeVisible();
 });
 
-test('Studio sends asset-first validation and does not submit when provider setup is missing', async ({ page, request }) => {
+test('Studio blocks a model without its key and sends asset-first validation for a configured one', async ({ page, request }) => {
   const id = await project(request, 'Studio validation QA');
   const submissions: string[] = [];
   page.on('request', (req) => { if (req.url().endsWith('/api/effects/generate')) submissions.push(req.url()); });
   await page.goto(`/studio/${id}`);
-  const prompt = page.locator('textarea').first();
-  await prompt.fill('A bright green geometric sculpture');
+  // The fixture provider declares a server setting that the e2e server leaves unset.
+  await selectStudioModel(page, 'protected-fixture-image');
+  // A model without its key is blocked before any request, with a pointer to the fix.
+  await expect(page.getByText("Connect this model's API key or choose another provider.", { exact: true })).toBeVisible();
+  await expect(page.getByLabel('Scene description', { exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Create', exact: true })).toBeDisabled();
+  expect(submissions).toHaveLength(0);
+  // A configured model sends the asset-first request shape to precheck.
+  await selectStudioModel(page, 'procedural-gradient');
+  await page.getByLabel('Scene description', { exact: true }).fill('A bright green geometric sculpture');
   const validation = page.waitForRequest((req) => req.url().endsWith('/api/effects/precheck'));
-  await page.getByRole('button', { name: /generate/i }).last().click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   const payload = (await validation).postDataJSON();
   expect(payload.generation.projectId).toBe(id);
-  expect(payload.generation.modelId).toBeTruthy();
+  expect(payload.generation.modelId).toBe('procedural-gradient');
   expect(payload.effectId).toBeUndefined();
-  await expect(page.getByText(/key|configured|connect/i).last()).toBeVisible();
-  expect(submissions).toHaveLength(0);
+});
+
+test('the editor media bin lists project assets and places one on the saved timeline', async ({ page, request }) => {
+  const id = await project(request, 'Editor asset bin QA');
+  const uploaded = await request.post(`/api/app/projects/${id}/assets`, { headers, multipart: { file: { name: 'studio-result.png', mimeType: 'image/png', buffer: await readFile('public/logo.png') } } });
+  expect(uploaded.ok()).toBe(true);
+  await page.goto(`/editor/${id}`);
+  const bin = page.getByRole('region', { name: 'Project assets', exact: true });
+  await bin.getByRole('button', { name: 'Add studio-result.png to the timeline', exact: true }).click();
+  await expect.poll(async () => (await (await request.get(`/api/app/projects/${id}/timeline`, { headers })).json()).timeline?.document.tracks.flatMap((track: { clips: unknown[] }) => track.clips).length ?? 0).toBe(1);
+  // A placed asset moves out of the add list and into the timeline media.
+  await expect(bin).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Export MP4', exact: true })).toBeEnabled();
 });
 
 test('MCP renders edited video, captions and audio to a durable project asset', async ({ request }) => {
