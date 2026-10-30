@@ -1,0 +1,4107 @@
+{
+ "source": "runway",
+ "synced": "2026-10-30",
+ "models": [
+  {
+   "model": {
+    "id": "runway-text-to-video-gen4.5",
+    "name": "Gen-4.5 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/gen4.5",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "2s",
+     "3s",
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s"
+    ],
+    "defaultDuration": "5s"
+   },
+   "binding": {
+    "endpoint": "text_to_video/gen4.5",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "gen4.5"
+    },
+    "controls": [],
+    "media": [],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 1000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720"
+      },
+      "9:16": {
+       "720p": "720:1280"
+      }
+     }
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-veo3.1",
+    "name": "Veo 3.1 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/veo3.1",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "4s",
+     "6s",
+     "8s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio for the video. Audio inclusion affects pricing.",
+      "type": "boolean",
+      "default": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "text_to_video/veo3.1",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "veo3.1"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 1000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720",
+       "1080p": "1920:1080"
+      },
+      "9:16": {
+       "720p": "720:1280",
+       "1080p": "1080:1920"
+      }
+     }
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-veo3.1-fast",
+    "name": "Veo 3.1 Fast · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/veo3.1_fast",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "4s",
+     "6s",
+     "8s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio for the video. Audio inclusion affects pricing.",
+      "type": "boolean",
+      "default": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "text_to_video/veo3.1_fast",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "veo3.1_fast"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 1000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720",
+       "1080p": "1920:1080"
+      },
+      "9:16": {
+       "720p": "720:1280",
+       "1080p": "1080:1920"
+      }
+     }
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-seedance2-5",
+    "name": "Seedance 2.5 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/seedance2_5",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio for the video. Defaults to `true`.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_video/seedance2_5",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "seedance2_5"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 14,
+      "required": false
+     },
+     {
+      "field": "referenceVideos",
+      "kind": "video",
+      "many": true,
+      "shape": "uri-object",
+      "type": "video",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 15000
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "21:9": {
+       "480p": "992:432",
+       "720p": "2206:946"
+      },
+      "16:9": {
+       "480p": "854:480",
+       "720p": "1280:720",
+       "1080p": "1920:1080"
+      },
+      "4:3": {
+       "480p": "752:560",
+       "720p": "1112:834",
+       "1080p": "1664:1248"
+      },
+      "1:1": {
+       "480p": "640:640",
+       "720p": "960:960",
+       "1080p": "1440:1440"
+      },
+      "3:4": {
+       "480p": "560:752",
+       "720p": "834:1112",
+       "1080p": "1248:1664"
+      },
+      "9:16": {
+       "480p": "480:854",
+       "720p": "720:1280",
+       "1080p": "1080:1920"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-kling-4",
+    "name": "Kling 4 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/kling_4",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "ratio",
+      "label": "Ratio",
+      "description": "The target output size. Use a pixel ratio such as `1280:720` or `auto_720p` / `auto_1080p` for adaptive framing.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "1280:720",
+        "label": "1280:720"
+       },
+       {
+        "value": "720:1280",
+        "label": "720:1280"
+       },
+       {
+        "value": "940:940",
+        "label": "940:940"
+       },
+       {
+        "value": "1460:624",
+        "label": "1460:624"
+       },
+       {
+        "value": "1920:1080",
+        "label": "1920:1080"
+       },
+       {
+        "value": "1080:1920",
+        "label": "1080:1920"
+       },
+       {
+        "value": "1440:1440",
+        "label": "1440:1440"
+       },
+       {
+        "value": "2200:940",
+        "label": "2200:940"
+       },
+       {
+        "value": "auto_720p",
+        "label": "auto_720p"
+       },
+       {
+        "value": "auto_1080p",
+        "label": "auto_1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "text_to_video/kling_4",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "kling_4"
+    },
+    "controls": [
+     {
+      "key": "ratio",
+      "field": "ratio"
+     }
+    ],
+    "media": [
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 10,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 26000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-hailuo3",
+    "name": "Hailuo 3 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/hailuo3",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The output resolution. Hailuo 3.0 supports 768p and 2k.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "768p",
+        "label": "768p"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       },
+       {
+        "value": "768P",
+        "label": "768P"
+       },
+       {
+        "value": "2K",
+        "label": "2K"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 9
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_video/hailuo3",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "hailuo3"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 9,
+      "required": false
+     },
+     {
+      "field": "referenceVideos",
+      "kind": "video",
+      "many": true,
+      "shape": "uri-object",
+      "type": "video",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 6000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "ratio",
+     "map": {
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-wan3",
+    "name": "Wan 3 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/wan3",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio with the video.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "ratio",
+      "label": "Ratio",
+      "description": "The resolution of the output video, as `<width>:<height>`. Keyframe image-to-video requests must use `auto_480p`, `auto_720p`, or `auto_1080",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "832:480",
+        "label": "832:480"
+       },
+       {
+        "value": "720:544",
+        "label": "720:544"
+       },
+       {
+        "value": "624:624",
+        "label": "624:624"
+       },
+       {
+        "value": "544:720",
+        "label": "544:720"
+       },
+       {
+        "value": "480:832",
+        "label": "480:832"
+       },
+       {
+        "value": "1280:720",
+        "label": "1280:720"
+       },
+       {
+        "value": "1104:832",
+        "label": "1104:832"
+       },
+       {
+        "value": "960:960",
+        "label": "960:960"
+       },
+       {
+        "value": "832:1104",
+        "label": "832:1104"
+       },
+       {
+        "value": "720:1280",
+        "label": "720:1280"
+       },
+       {
+        "value": "1920:1080",
+        "label": "1920:1080"
+       },
+       {
+        "value": "1648:1248",
+        "label": "1648:1248"
+       },
+       {
+        "value": "1440:1440",
+        "label": "1440:1440"
+       },
+       {
+        "value": "1248:1648",
+        "label": "1248:1648"
+       },
+       {
+        "value": "1080:1920",
+        "label": "1080:1920"
+       },
+       {
+        "value": "auto_480p",
+        "label": "auto_480p"
+       },
+       {
+        "value": "auto_720p",
+        "label": "auto_720p"
+       },
+       {
+        "value": "auto_1080p",
+        "label": "auto_1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "text_to_video/wan3",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "wan3"
+    },
+    "controls": [
+     {
+      "key": "audio",
+      "field": "audio"
+     },
+     {
+      "key": "ratio",
+      "field": "ratio"
+     }
+    ],
+    "media": [
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 10,
+      "required": false
+     },
+     {
+      "field": "referenceVideos",
+      "kind": "video",
+      "many": true,
+      "shape": "uri-object",
+      "type": "video",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 20000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-h3-max",
+    "name": "MiniMax H3 Max · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/h3_max",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The output resolution. MiniMax H3 Max supports 480p and 768p.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "768p",
+        "label": "768p"
+       }
+      ]
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "label": "Prompt expansion mode",
+      "description": "How the model rewrites the prompt before generating. disabled keeps the prompt as written. balanced (the default) does a short rewrite. qual",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "disabled",
+        "label": "disabled"
+       },
+       {
+        "value": "balanced",
+        "label": "balanced"
+       },
+       {
+        "value": "quality",
+        "label": "quality"
+       }
+      ]
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "text_to_video/h3_max",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "h3_max"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "field": "promptExpansionMode"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 6000
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-grok-imagine-1-5",
+    "name": "Grok Imagine 1.5 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/grok_imagine_1_5",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "1:1",
+     "16:9",
+     "9:16",
+     "4:3",
+     "3:4",
+     "3:2",
+     "2:3"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The output resolution. Requests with image references are capped at 720p.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 7
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_video/grok_imagine_1_5",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "grok_imagine_1_5"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 7,
+      "required": false
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 2500
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "ratio",
+     "map": {
+      "1:1": "1:1",
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "3:2": "3:2",
+      "2:3": "2:3"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-video-gemini-omni-flash-1.1",
+    "name": "Gemini Omni Flash 1.1 · Runway",
+    "kind": "video",
+    "upstreamModelId": "text_to_video/gemini_omni_flash_1.1",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "4k",
+        "label": "4k"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 5
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_video/gemini_omni_flash_1.1",
+    "path": "/v1/text_to_video",
+    "fixed": {
+     "model": "gemini_omni_flash_1.1"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     }
+    ],
+    "media": [
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 5,
+      "required": false
+     },
+     {
+      "field": "referenceVideos",
+      "kind": "video",
+      "many": true,
+      "shape": "uri-object",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 4000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "480p": "640:360",
+       "720p": "1280:720",
+       "1080p": "1920:1080",
+       "4k": "3840:2160"
+      },
+      "9:16": {
+       "480p": "360:640",
+       "720p": "720:1280",
+       "1080p": "1080:1920",
+       "4k": "2160:3840"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-gen4.5",
+    "name": "Gen-4.5 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/gen4.5",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "4:3",
+     "1:1",
+     "3:4",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "2s",
+     "3s",
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "image_to_video/gen4.5",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "gen4.5"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 1000
+    },
+    "seed": "seed",
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720"
+      },
+      "9:16": {
+       "720p": "720:1280"
+      },
+      "4:3": {
+       "720p": "1104:832"
+      },
+      "1:1": {
+       "720p": "960:960"
+      },
+      "3:4": {
+       "720p": "832:1104"
+      },
+      "21:9": {
+       "480p": "1584:672"
+      }
+     }
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-veo3.1",
+    "name": "Veo 3.1 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/veo3.1",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "4s",
+     "6s",
+     "8s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio for the video. Audio inclusion affects pricing.",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "image_to_video/veo3.1",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "veo3.1"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 1000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720",
+       "1080p": "1920:1080"
+      },
+      "9:16": {
+       "720p": "720:1280",
+       "1080p": "1080:1920"
+      }
+     }
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-veo3.1-fast",
+    "name": "Veo 3.1 Fast · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/veo3.1_fast",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "4s",
+     "6s",
+     "8s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio for the video. Audio inclusion affects pricing.",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "image_to_video/veo3.1_fast",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "veo3.1_fast"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 1000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720",
+       "1080p": "1920:1080"
+      },
+      "9:16": {
+       "720p": "720:1280",
+       "1080p": "1080:1920"
+      }
+     }
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-seedance2-5",
+    "name": "Seedance 2.5 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/seedance2_5",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio for the video.",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "image_to_video/seedance2_5",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "seedance2_5"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 15000
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "21:9": {
+       "480p": "992:432",
+       "720p": "2206:946"
+      },
+      "16:9": {
+       "480p": "854:480",
+       "720p": "1280:720",
+       "1080p": "1920:1080"
+      },
+      "4:3": {
+       "480p": "752:560",
+       "720p": "1112:834",
+       "1080p": "1664:1248"
+      },
+      "1:1": {
+       "480p": "640:640",
+       "720p": "960:960",
+       "1080p": "1440:1440"
+      },
+      "3:4": {
+       "480p": "560:752",
+       "720p": "834:1112",
+       "1080p": "1248:1664"
+      },
+      "9:16": {
+       "480p": "480:854",
+       "720p": "720:1280",
+       "1080p": "1080:1920"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-kling-4",
+    "name": "Kling 4 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/kling_4",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "ratio",
+      "label": "Ratio",
+      "description": "Output quality tier. The video keeps the input media framing.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "auto_720p",
+        "label": "auto_720p"
+       },
+       {
+        "value": "auto_1080p",
+        "label": "auto_1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 12
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "image_to_video/kling_4",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "kling_4"
+    },
+    "controls": [
+     {
+      "key": "ratio",
+      "field": "ratio"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     },
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 10,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 26000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-hailuo3",
+    "name": "Hailuo 3 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/hailuo3",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The output resolution. Hailuo 3.0 supports 768p and 2k.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "768p",
+        "label": "768p"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       },
+       {
+        "value": "768P",
+        "label": "768P"
+       },
+       {
+        "value": "2K",
+        "label": "2K"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "image_to_video/hailuo3",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "hailuo3"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 6000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "ratio",
+     "map": {
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-wan3",
+    "name": "Wan 3 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/wan3",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Whether to generate audio with the video.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "ratio",
+      "label": "Ratio",
+      "description": "The resolution of the output video, as `<width>:<height>`. Keyframe image-to-video requests must use `auto_480p`, `auto_720p`, or `auto_1080",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "832:480",
+        "label": "832:480"
+       },
+       {
+        "value": "720:544",
+        "label": "720:544"
+       },
+       {
+        "value": "624:624",
+        "label": "624:624"
+       },
+       {
+        "value": "544:720",
+        "label": "544:720"
+       },
+       {
+        "value": "480:832",
+        "label": "480:832"
+       },
+       {
+        "value": "1280:720",
+        "label": "1280:720"
+       },
+       {
+        "value": "1104:832",
+        "label": "1104:832"
+       },
+       {
+        "value": "960:960",
+        "label": "960:960"
+       },
+       {
+        "value": "832:1104",
+        "label": "832:1104"
+       },
+       {
+        "value": "720:1280",
+        "label": "720:1280"
+       },
+       {
+        "value": "1920:1080",
+        "label": "1920:1080"
+       },
+       {
+        "value": "1648:1248",
+        "label": "1648:1248"
+       },
+       {
+        "value": "1440:1440",
+        "label": "1440:1440"
+       },
+       {
+        "value": "1248:1648",
+        "label": "1248:1648"
+       },
+       {
+        "value": "1080:1920",
+        "label": "1080:1920"
+       },
+       {
+        "value": "auto_480p",
+        "label": "auto_480p"
+       },
+       {
+        "value": "auto_720p",
+        "label": "auto_720p"
+       },
+       {
+        "value": "auto_1080p",
+        "label": "auto_1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "image_to_video/wan3",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "wan3"
+    },
+    "controls": [
+     {
+      "key": "audio",
+      "field": "audio"
+     },
+     {
+      "key": "ratio",
+      "field": "ratio"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     },
+     {
+      "field": "referenceVideos",
+      "kind": "video",
+      "many": true,
+      "shape": "uri-object",
+      "type": "video",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "referenceAudio",
+      "kind": "audio",
+      "many": true,
+      "shape": "uri-object",
+      "type": "audio",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 20000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-h3-max",
+    "name": "MiniMax H3 Max · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/h3_max",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The output resolution. MiniMax H3 Max supports 480p and 768p.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "768p",
+        "label": "768p"
+       }
+      ]
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "label": "Prompt expansion mode",
+      "description": "How the model rewrites the prompt before generating. disabled keeps the prompt as written. balanced (the default) does a short rewrite. qual",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "disabled",
+        "label": "disabled"
+       },
+       {
+        "value": "balanced",
+        "label": "balanced"
+       },
+       {
+        "value": "quality",
+        "label": "quality"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "image_to_video/h3_max",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "h3_max"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "field": "promptExpansionMode"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 6000
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-grok-imagine-1-5",
+    "name": "Grok Imagine 1.5 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/grok_imagine_1_5",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The output resolution. Output aspect ratio follows the input image.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "image_to_video/grok_imagine_1_5",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "grok_imagine_1_5"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 2500
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-to-video-gemini-omni-flash-1.1",
+    "name": "Gemini Omni Flash 1.1 · Image to video · Runway",
+    "kind": "video",
+    "upstreamModelId": "image_to_video/gemini_omni_flash_1.1",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "4k",
+        "label": "4k"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "image_to_video/gemini_omni_flash_1.1",
+    "path": "/v1/image_to_video",
+    "fixed": {
+     "model": "gemini_omni_flash_1.1"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     }
+    ],
+    "media": [
+     {
+      "field": "promptImage",
+      "kind": "image",
+      "shape": "keyframes",
+      "max": 2,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 4000
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "480p": "640:360",
+       "720p": "1280:720",
+       "1080p": "1920:1080",
+       "4k": "3840:2160"
+      },
+      "9:16": {
+       "480p": "360:640",
+       "720p": "720:1280",
+       "1080p": "1080:1920",
+       "4k": "2160:3840"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-video-to-video-aleph2",
+    "name": "Aleph 2 · Video edit · Runway",
+    "kind": "video",
+    "upstreamModelId": "video_to_video/aleph2",
+    "studioTasks": [
+     "video-edit",
+     "restyle"
+    ],
+    "controls": [
+     {
+      "key": "target_aspect_ratio",
+      "label": "Target aspect ratio",
+      "description": "Target aspect ratio for expand/outpaint. Letterboxes the input video and keyframes before generation.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "16:9",
+        "label": "16:9"
+       },
+       {
+        "value": "4:3",
+        "label": "4:3"
+       },
+       {
+        "value": "3:2",
+        "label": "3:2"
+       },
+       {
+        "value": "1:1",
+        "label": "1:1"
+       },
+       {
+        "value": "2:3",
+        "label": "2:3"
+       },
+       {
+        "value": "3:4",
+        "label": "3:4"
+       },
+       {
+        "value": "9:16",
+        "label": "9:16"
+       },
+       {
+        "value": "21:9",
+        "label": "21:9"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 5
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "video_to_video/aleph2",
+    "path": "/v1/video_to_video",
+    "fixed": {
+     "model": "aleph2"
+    },
+    "controls": [
+     {
+      "key": "target_aspect_ratio",
+      "field": "targetAspectRatio"
+     }
+    ],
+    "media": [
+     {
+      "field": "videoUri",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "keyframes",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 5,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": false,
+     "max": 1000
+    },
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "runway-video-to-video-klingo3-pro",
+    "name": "Kling O3 · Video edit · Runway",
+    "kind": "video",
+    "upstreamModelId": "video_to_video/klingO3_pro",
+    "studioTasks": [
+     "video-edit"
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "video_to_video/klingO3_pro",
+    "path": "/v1/video_to_video",
+    "fixed": {
+     "model": "klingO3_pro"
+    },
+    "controls": [],
+    "media": [
+     {
+      "field": "promptVideo",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "references",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 2500
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-gen4-image",
+    "name": "Gen-4 Image · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/gen4_image",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "4:3",
+     "16:9",
+     "3:4",
+     "21:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 3
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_image/gen4_image",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "gen4_image"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 1000
+    },
+    "seed": "seed",
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "1:1": {
+       "1080p": "1024:1024",
+       "720p": "720:720"
+      },
+      "4:3": {
+       "720p": "1168:880",
+       "1080p": "1440:1080"
+      },
+      "16:9": {
+       "720p": "1360:768",
+       "1080p": "1920:1080"
+      },
+      "3:4": {
+       "1080p": "1080:1440",
+       "720p": "720:960"
+      },
+      "21:9": {
+       "720p": "1808:768"
+      },
+      "9:16": {
+       "1080p": "1080:1920",
+       "720p": "720:1280"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-gpt-image-2-5-sunburst",
+    "name": "GPT Image 2.5 Sunburst · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/gpt_image_2_5_sunburst",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Rendering quality. Higher qualities consume more credits. Defaults to `high`.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       },
+       {
+        "value": "xhigh",
+        "label": "xhigh"
+       },
+       {
+        "value": "max",
+        "label": "max"
+       }
+      ]
+     },
+     {
+      "key": "background",
+      "label": "Background",
+      "description": "Background treatment. Defaults to `auto`, which lets the model pick. Use `transparent` to generate a PNG with an alpha-channel background.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "transparent",
+        "label": "transparent"
+       },
+       {
+        "value": "opaque",
+        "label": "opaque"
+       },
+       {
+        "value": "auto",
+        "label": "auto"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_image/gpt_image_2_5_sunburst",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "gpt_image_2_5_sunburst"
+    },
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "background",
+      "field": "background"
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 32000
+    },
+    "aspect": {
+     "field": "ratio",
+     "map": {
+      "auto": "auto"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-nano-banana-2.1",
+    "name": "Nano Banana 2.1 · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/nano_banana_2.1",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "2:3",
+     "3:2",
+     "3:4",
+     "4:3",
+     "4:5",
+     "5:4",
+     "9:16",
+     "16:9",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "4k",
+        "label": "4k"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "thinking_level",
+      "label": "Thinking level",
+      "description": "How much the model reasons about the prompt before generating. Defaults to medium.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "minimal",
+        "label": "minimal"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_image/nano_banana_2.1",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "nano_banana_2.1"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "thinking_level",
+      "field": "thinkingLevel"
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 5500
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "1:1": {
+       "1080p": "1024:1024",
+       "4k": "2048:2048"
+      },
+      "2:3": {
+       "720p": "848:1264",
+       "1080p": "1696:2528",
+       "4k": "3392:5056"
+      },
+      "3:2": {
+       "720p": "1264:848",
+       "1080p": "2528:1696",
+       "4k": "5056:3392"
+      },
+      "3:4": {
+       "720p": "896:1200",
+       "1080p": "1792:2400",
+       "4k": "3584:4800"
+      },
+      "4:3": {
+       "720p": "1200:896",
+       "1080p": "2400:1792",
+       "4k": "4800:3584"
+      },
+      "4:5": {
+       "720p": "928:1152",
+       "1080p": "1856:2304",
+       "4k": "3712:4608"
+      },
+      "5:4": {
+       "720p": "1152:928",
+       "1080p": "2304:1856",
+       "4k": "4608:3712"
+      },
+      "9:16": {
+       "720p": "768:1376",
+       "1080p": "1536:2752",
+       "4k": "3072:5504"
+      },
+      "16:9": {
+       "720p": "1376:768",
+       "1080p": "2752:1536",
+       "4k": "5504:3072"
+      },
+      "21:9": {
+       "480p": "1584:672",
+       "1080p": "3168:1344",
+       "4k": "6336:2688"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-gemini-image3-pro",
+    "name": "Nano Banana Pro · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/gemini_image3_pro",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1",
+     "21:9",
+     "2:3",
+     "3:2",
+     "3:4",
+     "4:3",
+     "4:5",
+     "5:4"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "4k",
+        "label": "4k"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_image/gemini_image3_pro",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "gemini_image3_pro"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 5500
+    },
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1344:768",
+       "1080p": "2752:1536",
+       "4k": "5504:3072"
+      },
+      "9:16": {
+       "720p": "768:1344",
+       "1080p": "1536:2752",
+       "4k": "3072:5504"
+      },
+      "1:1": {
+       "1080p": "1024:1024",
+       "4k": "2048:2048"
+      },
+      "21:9": {
+       "480p": "1536:672",
+       "1080p": "3168:1344",
+       "4k": "6336:2688"
+      },
+      "2:3": {
+       "720p": "832:1248",
+       "1080p": "1696:2528",
+       "4k": "3392:5056"
+      },
+      "3:2": {
+       "720p": "1248:832",
+       "1080p": "2528:1696",
+       "4k": "5056:3392"
+      },
+      "3:4": {
+       "1080p": "1792:2400",
+       "4k": "3584:4800"
+      },
+      "4:3": {
+       "1080p": "2400:1792",
+       "4k": "4800:3584"
+      },
+      "4:5": {
+       "1080p": "1856:2304",
+       "4k": "3712:4608"
+      },
+      "5:4": {
+       "1080p": "2304:1856",
+       "4k": "4608:3712"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-seedream5-pro",
+    "name": "Seedream 5 Pro · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/seedream5_pro",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "controls": [
+     {
+      "key": "ratio",
+      "label": "Ratio",
+      "description": "The resolution of the output image, expressed as `<width>:<height>`. Use `auto_1k` or `auto_2k` to let the model pick aspect ratio at a fixe",
+      "type": "select",
+      "default": "1024:1024",
+      "choices": [
+       {
+        "value": "1024:1024",
+        "label": "1024:1024"
+       },
+       {
+        "value": "1184:896",
+        "label": "1184:896"
+       },
+       {
+        "value": "896:1184",
+        "label": "896:1184"
+       },
+       {
+        "value": "1376:768",
+        "label": "1376:768"
+       },
+       {
+        "value": "768:1376",
+        "label": "768:1376"
+       },
+       {
+        "value": "1296:864",
+        "label": "1296:864"
+       },
+       {
+        "value": "864:1296",
+        "label": "864:1296"
+       },
+       {
+        "value": "2048:2048",
+        "label": "2048:2048"
+       },
+       {
+        "value": "2304:1728",
+        "label": "2304:1728"
+       },
+       {
+        "value": "1728:2304",
+        "label": "1728:2304"
+       },
+       {
+        "value": "2720:1530",
+        "label": "2720:1530"
+       },
+       {
+        "value": "1530:2720",
+        "label": "1530:2720"
+       },
+       {
+        "value": "2496:1664",
+        "label": "2496:1664"
+       },
+       {
+        "value": "1664:2496",
+        "label": "1664:2496"
+       },
+       {
+        "value": "auto_1k",
+        "label": "auto_1k"
+       },
+       {
+        "value": "auto_2k",
+        "label": "auto_2k"
+       }
+      ]
+     },
+     {
+      "key": "grounding",
+      "label": "Grounding",
+      "description": "When true, enable live web search so the model can use current brand, trend, or event context. Default false for deterministic output.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "text_to_image/seedream5_pro",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "seedream5_pro"
+    },
+    "controls": [
+     {
+      "key": "ratio",
+      "field": "ratio"
+     },
+     {
+      "key": "grounding",
+      "field": "grounding"
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 10,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 4000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-ideogram-4-5",
+    "name": "Ideogram 4.5 · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/ideogram_4_5",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto",
+    "maskInput": {
+     "required": false
+    },
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "How much rendering effort the model spends on each image. Defaults to `medium` (8 credits per image) when generating from reference images a",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "very_low",
+        "label": "very_low"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       }
+      ]
+     },
+     {
+      "key": "precise_edit",
+      "label": "Precise edit",
+      "description": "When true, edit the first reference image while preserving its composition and dimensions. Requires at least one reference image.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 5
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "text_to_image/ideogram_4_5",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "ideogram_4_5"
+    },
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "precise_edit",
+      "field": "preciseEdit"
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 5,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "ratio",
+     "map": {
+      "auto": "auto"
+     }
+    },
+    "mask": "maskUri"
+   }
+  },
+  {
+   "model": {
+    "id": "runway-text-to-image-grok-imagine-image-2",
+    "name": "Grok Imagine Image 2 · Runway",
+    "kind": "image",
+    "upstreamModelId": "text_to_image/grok_imagine_image_2",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "How much rendering effort the model spends on the output. Defaults to `medium`; `low` is faster and costs 2 fewer credits per image.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       }
+      ]
+     },
+     {
+      "key": "ratio",
+      "label": "Ratio",
+      "description": "The resolution of the output image, expressed as `<width>:<height>`. 2K ratios cost 2 additional credits per image. Use `auto_1k` or `auto_2",
+      "type": "select",
+      "default": "1024:1024",
+      "choices": [
+       {
+        "value": "1024:1024",
+        "label": "1024:1024"
+       },
+       {
+        "value": "1280:720",
+        "label": "1280:720"
+       },
+       {
+        "value": "720:1280",
+        "label": "720:1280"
+       },
+       {
+        "value": "1152:864",
+        "label": "1152:864"
+       },
+       {
+        "value": "864:1152",
+        "label": "864:1152"
+       },
+       {
+        "value": "1248:832",
+        "label": "1248:832"
+       },
+       {
+        "value": "832:1248",
+        "label": "832:1248"
+       },
+       {
+        "value": "1248:576",
+        "label": "1248:576"
+       },
+       {
+        "value": "576:1248",
+        "label": "576:1248"
+       },
+       {
+        "value": "1280:576",
+        "label": "1280:576"
+       },
+       {
+        "value": "576:1280",
+        "label": "576:1280"
+       },
+       {
+        "value": "1408:704",
+        "label": "1408:704"
+       },
+       {
+        "value": "704:1408",
+        "label": "704:1408"
+       },
+       {
+        "value": "2048:2048",
+        "label": "2048:2048"
+       },
+       {
+        "value": "2816:1584",
+        "label": "2816:1584"
+       },
+       {
+        "value": "1584:2816",
+        "label": "1584:2816"
+       },
+       {
+        "value": "2368:1776",
+        "label": "2368:1776"
+       },
+       {
+        "value": "1776:2368",
+        "label": "1776:2368"
+       },
+       {
+        "value": "2496:1664",
+        "label": "2496:1664"
+       },
+       {
+        "value": "1664:2496",
+        "label": "1664:2496"
+       },
+       {
+        "value": "2912:1344",
+        "label": "2912:1344"
+       },
+       {
+        "value": "1344:2912",
+        "label": "1344:2912"
+       },
+       {
+        "value": "3200:1440",
+        "label": "3200:1440"
+       },
+       {
+        "value": "1440:3200",
+        "label": "1440:3200"
+       },
+       {
+        "value": "2912:1456",
+        "label": "2912:1456"
+       },
+       {
+        "value": "1456:2912",
+        "label": "1456:2912"
+       },
+       {
+        "value": "auto_1k",
+        "label": "auto_1k"
+       },
+       {
+        "value": "auto_2k",
+        "label": "auto_2k"
+       }
+      ]
+     },
+     {
+      "key": "edit",
+      "label": "Edit",
+      "description": "When true with exactly one reference image, edit that image directly instead of using it as a loose visual reference. With several reference",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 3
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "text_to_image/grok_imagine_image_2",
+    "path": "/v1/text_to_image",
+    "fixed": {
+     "model": "grok_imagine_image_2"
+    },
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "ratio",
+      "field": "ratio"
+     },
+     {
+      "key": "edit",
+      "field": "edit"
+     }
+    ],
+    "media": [
+     {
+      "field": "referenceImages",
+      "kind": "image",
+      "many": true,
+      "shape": "uri-object",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 2500
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-image-upscale-magnific-precision-upscaler-v2",
+    "name": "Magnific image upscale · Runway",
+    "kind": "image",
+    "upstreamModelId": "image_upscale/magnific_precision_upscaler_v2",
+    "studioTasks": [
+     "image-upscale"
+    ],
+    "controls": [
+     {
+      "key": "sharpen",
+      "label": "Sharpen",
+      "description": "Sharpness intensity from 0 (none) to 100.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     },
+     {
+      "key": "smart_grain",
+      "label": "Smart grain",
+      "description": "Grain and texture enhancement from 0 to 100.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     },
+     {
+      "key": "ultra_detail",
+      "label": "Ultra detail",
+      "description": "Fine detail enhancement from 0 to 100.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     },
+     {
+      "key": "flavor",
+      "label": "Flavor",
+      "description": "Optimization preset: `sublime` (illustration), `photo` (photographic), or `photo_denoiser` (noisy photos).",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "sublime",
+        "label": "sublime"
+       },
+       {
+        "value": "photo",
+        "label": "photo"
+       },
+       {
+        "value": "photo_denoiser",
+        "label": "photo_denoiser"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "image_upscale/magnific_precision_upscaler_v2",
+    "path": "/v1/image_upscale",
+    "fixed": {
+     "model": "magnific_precision_upscaler_v2"
+    },
+    "controls": [
+     {
+      "key": "sharpen",
+      "field": "sharpen"
+     },
+     {
+      "key": "smart_grain",
+      "field": "smartGrain"
+     },
+     {
+      "key": "ultra_detail",
+      "field": "ultraDetail"
+     },
+     {
+      "key": "flavor",
+      "field": "flavor"
+     }
+    ],
+    "media": [
+     {
+      "field": "imageUri",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ]
+   }
+  },
+  {
+   "model": {
+    "id": "runway-video-upscale-magnific-video-upscaler-creative",
+    "name": "Magnific video upscale · Runway",
+    "kind": "video",
+    "upstreamModelId": "video_upscale/magnific_video_upscaler_creative",
+    "studioTasks": [
+     "video-upscale"
+    ],
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Target output resolution from 720p to 4k. Defaults to `2k`.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "creativity",
+      "label": "Creativity",
+      "description": "How much AI-generated detail to add during upscaling, from 0 (faithful) to 100.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     },
+     {
+      "key": "sharpen",
+      "label": "Sharpen",
+      "description": "Sharpness intensity from 0 (none) to 100.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     },
+     {
+      "key": "smart_grain",
+      "label": "Smart grain",
+      "description": "Grain and texture enhancement from 0 to 100.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     },
+     {
+      "key": "flavor",
+      "label": "Flavor",
+      "description": "Processing style: `vivid` for enhanced color and detail, `natural` for faithful reproduction.",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "vivid",
+        "label": "vivid"
+       },
+       {
+        "value": "natural",
+        "label": "natural"
+       }
+      ]
+     },
+     {
+      "key": "fps_boost",
+      "label": "Fps boost",
+      "description": "Whether to increase the output frame rate.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 0
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "video_upscale/magnific_video_upscaler_creative",
+    "path": "/v1/video_upscale",
+    "fixed": {
+     "model": "magnific_video_upscaler_creative"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "creativity",
+      "field": "creativity"
+     },
+     {
+      "key": "sharpen",
+      "field": "sharpen"
+     },
+     {
+      "key": "smart_grain",
+      "field": "smartGrain"
+     },
+     {
+      "key": "flavor",
+      "field": "flavor"
+     },
+     {
+      "key": "fps_boost",
+      "field": "fpsBoost"
+     }
+    ],
+    "media": [
+     {
+      "field": "videoUri",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ]
+   }
+  },
+  {
+   "model": {
+    "id": "runway-character-performance-act-two",
+    "name": "Act-Two · Character performance · Runway",
+    "kind": "video",
+    "upstreamModelId": "character_performance/act_two",
+    "studioTasks": [
+     "motion-transfer"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1",
+     "4:3",
+     "3:4",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       }
+      ]
+     },
+     {
+      "key": "body_control",
+      "label": "Body control",
+      "description": "A boolean indicating whether to enable body control. When enabled, non-facial movements and gestures will be applied to the character in add",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "expression_intensity",
+      "label": "Expression intensity",
+      "description": "An integer between 1 and 5 (inclusive). A larger value increases the intensity of the character's expression.",
+      "type": "number",
+      "min": 1,
+      "max": 5,
+      "default": 3,
+      "integer": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "character_performance/act_two",
+    "path": "/v1/character_performance",
+    "fixed": {
+     "model": "act_two"
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "synthetic": true
+     },
+     {
+      "key": "body_control",
+      "field": "bodyControl"
+     },
+     {
+      "key": "expression_intensity",
+      "field": "expressionIntensity"
+     }
+    ],
+    "media": [
+     {
+      "field": "character",
+      "kind": "image",
+      "shape": "uri-object",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "reference",
+      "kind": "video",
+      "shape": "uri-object",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "seed": "seed",
+    "aspect": {
+     "field": "ratio",
+     "table": {
+      "16:9": {
+       "720p": "1280:720"
+      },
+      "9:16": {
+       "720p": "720:1280"
+      },
+      "1:1": {
+       "720p": "960:960"
+      },
+      "4:3": {
+       "720p": "1104:832"
+      },
+      "3:4": {
+       "720p": "832:1104"
+      },
+      "21:9": {
+       "480p": "1584:672"
+      }
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "runway-sound-effect-eleven-text-to-sound-v2",
+    "name": "Sound effect · Runway",
+    "kind": "audio",
+    "upstreamModelId": "sound_effect/eleven_text_to_sound_v2",
+    "studioTasks": [
+     "audio-generate"
+    ],
+    "controls": [
+     {
+      "key": "duration",
+      "label": "Length (seconds)",
+      "type": "number",
+      "min": 1,
+      "max": 30,
+      "default": 5,
+      "integer": false
+     },
+     {
+      "key": "loop",
+      "label": "Loop",
+      "description": "Whether the output sound effect should be designed to loop seamlessly.",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "sound_effect/eleven_text_to_sound_v2",
+    "path": "/v1/sound_effect",
+    "fixed": {
+     "model": "eleven_text_to_sound_v2"
+    },
+    "controls": [
+     {
+      "key": "duration",
+      "field": "duration",
+      "format": "number"
+     },
+     {
+      "key": "loop",
+      "field": "loop"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "promptText",
+     "required": true,
+     "max": 3000
+    }
+   }
+  }
+ ]
+}

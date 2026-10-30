@@ -71,7 +71,7 @@ Rules and limits:
 
 ## Forking the built-in provider
 
-To replace the default provider itself, a fork can register one in `src/config/generation-providers.ts`, bind only the logical models they support, and change `ACTIVE_GENERATION_PROVIDER_ID` in the same file. Cloud API remains the built-in default; an unknown configured id fails explicitly so it cannot accidentally submit a task to another provider. This repository does not ship placeholder KIE, Vidu, Evolink, Gemini, Fal, Replicate, or payment-provider integrations.
+To replace the default provider itself, a fork can register one in `src/config/generation-providers.ts`, bind only the logical models they support, and change `ACTIVE_GENERATION_PROVIDER_ID` in the same file. Cloud API remains the built-in default; an unknown configured id fails explicitly so it cannot accidentally submit a task to another provider. Hosted model services ship as installed providers instead: [model APIs](../../../extensions/model-apis/README.md) (OpenAI, Google Gemini, xAI, ElevenLabs, fal, Runway, Higgsfield), [Comfy](../../../extensions/comfy-router/README.md) and [Sume](../../../extensions/sume/README.md).
 
 A custom provider definition owns adapter construction, readiness checks, parameter validation, model bindings, upstream model names, and upload paths. Provider credentials must stay server-side. Switching providers does not change Canvas nodes, Editor clips, Asset IDs, or MCP requests; each submitted task also records its provider/model identity so polling does not silently follow a later default-provider change.
 

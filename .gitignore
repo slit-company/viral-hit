@@ -12,4 +12,5 @@ __pycache__/
 
 .agent-lessons/
 
-providers/
+# Built provider folders at the repository root (pnpm providers); source lives under extensions/.
+/providers/

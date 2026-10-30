@@ -1,0 +1,1 @@
+{"name":"@viral-hit/model-apis","version":"0.1.0","private":true,"type":"module","license":"Apache-2.0","engines":{"node":">=24"},"scripts":{"build":"node scripts/build.mjs","sync":"node scripts/sync-catalogs.mjs","test":"node --test test/*.test.mjs"},"devDependencies":{"esbuild":"0.28.1"}}

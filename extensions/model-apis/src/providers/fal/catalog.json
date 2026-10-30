@@ -1,0 +1,4817 @@
+{
+ "source": "fal",
+ "synced": "2026-10-30",
+ "models": [
+  {
+   "model": {
+    "id": "fal-google-nano-banana-2.1",
+    "name": "Nano Banana 2.1",
+    "kind": "image",
+    "upstreamModelId": "google/nano-banana-2.1",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "3:2",
+     "4:3",
+     "5:4",
+     "1:1",
+     "4:5",
+     "3:4",
+     "2:3",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the image to generate.",
+      "type": "select",
+      "default": "1K",
+      "choices": [
+       {
+        "value": "1K",
+        "label": "1K"
+       },
+       {
+        "value": "2K",
+        "label": "2K"
+       },
+       {
+        "value": "4K",
+        "label": "4K"
+       }
+      ]
+     },
+     {
+      "key": "enable_web_search",
+      "label": "Enable web search",
+      "description": "Enable web search for the image generation task. This will allow the model to use the latest information from the web to generate the image.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "thinking_level",
+      "label": "Thinking level",
+      "description": "How much the model reasons before generating. Higher levels can improve complex compositions and use more thinking tokens.",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "minimal",
+        "label": "minimal"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "google/nano-banana-2.1",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "enable_web_search",
+      "field": "enable_web_search"
+     },
+     {
+      "key": "thinking_level",
+      "field": "thinking_level"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 50000
+    },
+    "seed": "seed",
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "3:2": "3:2",
+      "4:3": "4:3",
+      "5:4": "5:4",
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "3:4": "3:4",
+      "2:3": "2:3",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-google-nano-banana-2.1-edit",
+    "name": "Nano Banana 2.1 · Edit",
+    "kind": "image",
+    "upstreamModelId": "google/nano-banana-2.1/edit",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "3:2",
+     "4:3",
+     "5:4",
+     "1:1",
+     "4:5",
+     "3:4",
+     "2:3",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the image to generate.",
+      "type": "select",
+      "default": "1K",
+      "choices": [
+       {
+        "value": "1K",
+        "label": "1K"
+       },
+       {
+        "value": "2K",
+        "label": "2K"
+       },
+       {
+        "value": "4K",
+        "label": "4K"
+       }
+      ]
+     },
+     {
+      "key": "enable_web_search",
+      "label": "Enable web search",
+      "description": "Enable web search for the image generation task. This will allow the model to use the latest information from the web to generate the image.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "thinking_level",
+      "label": "Thinking level",
+      "description": "How much the model reasons before generating. Higher levels can improve complex compositions and use more thinking tokens.",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "minimal",
+        "label": "minimal"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "google/nano-banana-2.1/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "enable_web_search",
+      "field": "enable_web_search"
+     },
+     {
+      "key": "thinking_level",
+      "field": "thinking_level"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 50000
+    },
+    "seed": "seed",
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "3:2": "3:2",
+      "4:3": "4:3",
+      "5:4": "5:4",
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "3:4": "3:4",
+      "2:3": "2:3",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-nano-banana-pro",
+    "name": "Nano Banana Pro",
+    "kind": "image",
+    "upstreamModelId": "fal-ai/nano-banana-pro",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "3:2",
+     "4:3",
+     "5:4",
+     "1:1",
+     "4:5",
+     "3:4",
+     "2:3",
+     "9:16"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the image to generate.",
+      "type": "select",
+      "default": "1K",
+      "choices": [
+       {
+        "value": "1K",
+        "label": "1K"
+       },
+       {
+        "value": "2K",
+        "label": "2K"
+       },
+       {
+        "value": "4K",
+        "label": "4K"
+       }
+      ]
+     },
+     {
+      "key": "max_output_tokens",
+      "label": "Max output tokens",
+      "description": "Maximum output tokens for the generation. Omit to retain the provider default. Explicit values use a direct Google or Vertex API.",
+      "type": "number",
+      "min": 1,
+      "max": 32768,
+      "default": 1,
+      "integer": true
+     },
+     {
+      "key": "include_thoughts",
+      "label": "Include thoughts",
+      "description": "Whether to include thought summaries. Omit to preserve the existing behavior: an explicit thinking_level requests summaries. Set limit_gener",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "top_p",
+      "label": "Top p",
+      "description": "Nucleus sampling probability. Omit to use the provider default of 0.95. Explicit values use a direct Google or Vertex API.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "enable_web_search",
+      "label": "Enable web search",
+      "description": "Enable web search for the image generation task. This will allow the model to use the latest information from the web to generate the image.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "temperature",
+      "label": "Temperature",
+      "description": "Sampling temperature. Omit to use the provider default of 1. Explicit values use a direct Google or Vertex API.",
+      "type": "number",
+      "min": 0,
+      "max": 2,
+      "default": 0
+     },
+     {
+      "key": "return_history",
+      "label": "Return history",
+      "description": "Return reusable native conversations with original image parts and provider thought signatures. Uses a native provider. Each generated conve",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "fal-ai/nano-banana-pro",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "max_output_tokens",
+      "field": "max_output_tokens"
+     },
+     {
+      "key": "include_thoughts",
+      "field": "include_thoughts"
+     },
+     {
+      "key": "top_p",
+      "field": "top_p"
+     },
+     {
+      "key": "enable_web_search",
+      "field": "enable_web_search"
+     },
+     {
+      "key": "temperature",
+      "field": "temperature"
+     },
+     {
+      "key": "return_history",
+      "field": "return_history"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 50000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "3:2": "3:2",
+      "4:3": "4:3",
+      "5:4": "5:4",
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "3:4": "3:4",
+      "2:3": "2:3",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-nano-banana-pro-edit",
+    "name": "Nano Banana Pro · Edit",
+    "kind": "image",
+    "upstreamModelId": "fal-ai/nano-banana-pro/edit",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "3:2",
+     "4:3",
+     "5:4",
+     "1:1",
+     "4:5",
+     "3:4",
+     "2:3",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the image to generate.",
+      "type": "select",
+      "default": "1K",
+      "choices": [
+       {
+        "value": "1K",
+        "label": "1K"
+       },
+       {
+        "value": "2K",
+        "label": "2K"
+       },
+       {
+        "value": "4K",
+        "label": "4K"
+       }
+      ]
+     },
+     {
+      "key": "max_output_tokens",
+      "label": "Max output tokens",
+      "description": "Maximum output tokens for the generation. Omit to retain the provider default. Explicit values use a direct Google or Vertex API.",
+      "type": "number",
+      "min": 1,
+      "max": 32768,
+      "default": 1,
+      "integer": true
+     },
+     {
+      "key": "include_thoughts",
+      "label": "Include thoughts",
+      "description": "Whether to include thought summaries. Omit to preserve the existing behavior: an explicit thinking_level requests summaries. Set limit_gener",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "top_p",
+      "label": "Top p",
+      "description": "Nucleus sampling probability. Omit to use the provider default of 0.95. Explicit values use a direct Google or Vertex API.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "enable_web_search",
+      "label": "Enable web search",
+      "description": "Enable web search for the image generation task. This will allow the model to use the latest information from the web to generate the image.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "temperature",
+      "label": "Temperature",
+      "description": "Sampling temperature. Omit to use the provider default of 1. Explicit values use a direct Google or Vertex API.",
+      "type": "number",
+      "min": 0,
+      "max": 2,
+      "default": 0
+     },
+     {
+      "key": "return_history",
+      "label": "Return history",
+      "description": "Return reusable native conversations with original image parts and provider thought signatures. Uses a native provider. Each generated conve",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "fal-ai/nano-banana-pro/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "max_output_tokens",
+      "field": "max_output_tokens"
+     },
+     {
+      "key": "include_thoughts",
+      "field": "include_thoughts"
+     },
+     {
+      "key": "top_p",
+      "field": "top_p"
+     },
+     {
+      "key": "enable_web_search",
+      "field": "enable_web_search"
+     },
+     {
+      "key": "temperature",
+      "field": "temperature"
+     },
+     {
+      "key": "return_history",
+      "field": "return_history"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 50000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "3:2": "3:2",
+      "4:3": "4:3",
+      "5:4": "5:4",
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "3:4": "3:4",
+      "2:3": "2:3",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-openai-gpt-image-2.5-sunburst-text-to-image",
+    "name": "GPT Image 2.5 Sunburst",
+    "kind": "image",
+    "upstreamModelId": "openai/gpt-image-2.5/sunburst/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Quality for the generated image. Higher settings increase detail, latency, and token usage. Use 'auto' to let the model choose.",
+      "type": "select",
+      "default": "high",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       },
+       {
+        "value": "xhigh",
+        "label": "xhigh"
+       },
+       {
+        "value": "max",
+        "label": "max"
+       }
+      ]
+     },
+     {
+      "key": "background",
+      "label": "Background",
+      "description": "Background for the generated image",
+      "type": "select",
+      "default": "auto",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "transparent",
+        "label": "transparent"
+       },
+       {
+        "value": "opaque",
+        "label": "opaque"
+       }
+      ]
+     },
+     {
+      "key": "output_compression",
+      "label": "Output compression",
+      "description": "Compression level from 0 to 100. Only supported when output_format is 'jpeg' or 'webp'.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "openai/gpt-image-2.5/sunburst/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "background",
+      "field": "background"
+     },
+     {
+      "key": "output_compression",
+      "field": "output_compression"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 32000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-openai-gpt-image-2.5-sunburst-edit",
+    "name": "GPT Image 2.5 Sunburst · Edit",
+    "kind": "image",
+    "upstreamModelId": "openai/gpt-image-2.5/sunburst/edit",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "maskInput": {
+     "required": false
+    },
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Quality for the generated image. Higher settings increase detail, latency, and token usage. Use 'auto' to let the model choose.",
+      "type": "select",
+      "default": "high",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       },
+       {
+        "value": "xhigh",
+        "label": "xhigh"
+       },
+       {
+        "value": "max",
+        "label": "max"
+       }
+      ]
+     },
+     {
+      "key": "background",
+      "label": "Background",
+      "description": "Background for the generated image",
+      "type": "select",
+      "default": "auto",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "transparent",
+        "label": "transparent"
+       },
+       {
+        "value": "opaque",
+        "label": "opaque"
+       }
+      ]
+     },
+     {
+      "key": "output_compression",
+      "label": "Output compression",
+      "description": "Compression level from 0 to 100. Only supported when output_format is 'jpeg' or 'webp'.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "openai/gpt-image-2.5/sunburst/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "background",
+      "field": "background"
+     },
+     {
+      "key": "output_compression",
+      "field": "output_compression"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 32000
+    },
+    "mask": "mask_url"
+   }
+  },
+  {
+   "model": {
+    "id": "fal-openai-gpt-image-2.5-flare-text-to-image",
+    "name": "GPT Image 2.5 Flare",
+    "kind": "image",
+    "upstreamModelId": "openai/gpt-image-2.5/flare/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Quality for the generated image. Higher settings increase detail, latency, and token usage. Use 'auto' to let the model choose.",
+      "type": "select",
+      "default": "high",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       },
+       {
+        "value": "xhigh",
+        "label": "xhigh"
+       },
+       {
+        "value": "max",
+        "label": "max"
+       }
+      ]
+     },
+     {
+      "key": "background",
+      "label": "Background",
+      "description": "Background for the generated image",
+      "type": "select",
+      "default": "auto",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "transparent",
+        "label": "transparent"
+       },
+       {
+        "value": "opaque",
+        "label": "opaque"
+       }
+      ]
+     },
+     {
+      "key": "output_compression",
+      "label": "Output compression",
+      "description": "Compression level from 0 to 100. Only supported when output_format is 'jpeg' or 'webp'.",
+      "type": "number",
+      "min": 0,
+      "max": 100,
+      "default": 0,
+      "integer": true
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "openai/gpt-image-2.5/flare/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "background",
+      "field": "background"
+     },
+     {
+      "key": "output_compression",
+      "field": "output_compression"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 32000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-blackforestlabs-flux-3-text-to-image",
+    "name": "FLUX 3",
+    "kind": "image",
+    "upstreamModelId": "blackforestlabs/flux-3/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "2:1",
+     "16:9",
+     "3:2",
+     "4:3",
+     "5:4",
+     "1:1",
+     "4:5",
+     "3:4",
+     "2:3",
+     "9:16",
+     "1:2"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution tier. 4k can take several minutes.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "768sq",
+        "label": "768sq"
+       },
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "1.5k",
+        "label": "1.5k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "blackforestlabs/flux-3/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "2:1": "2:1",
+      "16:9": "16:9",
+      "3:2": "3:2",
+      "4:3": "4:3",
+      "5:4": "5:4",
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "3:4": "3:4",
+      "2:3": "2:3",
+      "9:16": "9:16",
+      "1:2": "1:2"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-blackforestlabs-flux-3-edit-image",
+    "name": "FLUX 3 · Edit",
+    "kind": "image",
+    "upstreamModelId": "blackforestlabs/flux-3/edit-image",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "2:1",
+     "16:9",
+     "3:2",
+     "4:3",
+     "5:4",
+     "1:1",
+     "4:5",
+     "3:4",
+     "2:3",
+     "9:16",
+     "1:2"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution tier. 4k can take several minutes.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "768sq",
+        "label": "768sq"
+       },
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "1.5k",
+        "label": "1.5k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "blackforestlabs/flux-3/edit-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 10,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "2:1": "2:1",
+      "16:9": "16:9",
+      "3:2": "3:2",
+      "4:3": "4:3",
+      "5:4": "5:4",
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "3:4": "3:4",
+      "2:3": "2:3",
+      "9:16": "9:16",
+      "1:2": "1:2"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-flux-pro-kontext-max",
+    "name": "FLUX Kontext Max",
+    "kind": "image",
+    "upstreamModelId": "fal-ai/flux-pro/kontext/max",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "21:9",
+     "16:9",
+     "4:3",
+     "3:2",
+     "1:1",
+     "2:3",
+     "3:4",
+     "9:16",
+     "9:21"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "enhance_prompt",
+      "label": "Enhance prompt",
+      "description": "Whether to enhance the prompt for better results.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "guidance_scale",
+      "label": "Guidance scale",
+      "description": " The CFG (Classifier Free Guidance) scale is a measure of how close you want the model to stick to your prompt when looking for a related im",
+      "type": "number",
+      "min": 1,
+      "max": 20,
+      "default": 3.5
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "fal-ai/flux-pro/kontext/max",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "enhance_prompt",
+      "field": "enhance_prompt"
+     },
+     {
+      "key": "guidance_scale",
+      "field": "guidance_scale"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "3:2": "3:2",
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "9:21": "9:21"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bytedance-seedream-v5-pro-text-to-image",
+    "name": "Seedream 5 Pro",
+    "kind": "image",
+    "upstreamModelId": "bytedance/seedream/v5/pro/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "enhance_prompt_mode",
+      "label": "Enhance prompt mode",
+      "description": "Prompt optimization mode. `standard` prioritizes image quality; `fast` reduces generation time.",
+      "type": "select",
+      "default": "standard",
+      "choices": [
+       {
+        "value": "standard",
+        "label": "standard"
+       },
+       {
+        "value": "fast",
+        "label": "fast"
+       }
+      ]
+     },
+     {
+      "key": "watermark",
+      "label": "Watermark",
+      "description": "Whether to add the provider's visible watermark.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedream/v5/pro/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "enhance_prompt_mode",
+      "field": "enhance_prompt_mode"
+     },
+     {
+      "key": "watermark",
+      "field": "watermark"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bytedance-seedream-v5-pro-edit",
+    "name": "Seedream 5 Pro · Edit",
+    "kind": "image",
+    "upstreamModelId": "bytedance/seedream/v5/pro/edit",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "controls": [
+     {
+      "key": "enhance_prompt_mode",
+      "label": "Enhance prompt mode",
+      "description": "Prompt optimization mode. `standard` prioritizes image quality; `fast` reduces generation time.",
+      "type": "select",
+      "default": "standard",
+      "choices": [
+       {
+        "value": "standard",
+        "label": "standard"
+       },
+       {
+        "value": "fast",
+        "label": "fast"
+       }
+      ]
+     },
+     {
+      "key": "watermark",
+      "label": "Watermark",
+      "description": "Whether to add the provider's visible watermark.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "background",
+      "label": "Background",
+      "description": "Use `transparent` with exactly one alpha-channel reference and PNG output to preserve transparency.",
+      "type": "select",
+      "default": "opaque",
+      "choices": [
+       {
+        "value": "opaque",
+        "label": "opaque"
+       },
+       {
+        "value": "transparent",
+        "label": "transparent"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedream/v5/pro/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "enhance_prompt_mode",
+      "field": "enhance_prompt_mode"
+     },
+     {
+      "key": "watermark",
+      "field": "watermark"
+     },
+     {
+      "key": "background",
+      "field": "background"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-xai-grok-imagine-image-v2.0-text-to-image",
+    "name": "Grok Imagine Image 2",
+    "kind": "image",
+    "upstreamModelId": "xai/grok-imagine-image/v2.0/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "2:1",
+     "16:9",
+     "4:3",
+     "3:2",
+     "1:1",
+     "2:3",
+     "3:4",
+     "9:16",
+     "1:2",
+     "auto",
+     "21:9"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Resolution of the generated image: 1k, 1.5k, or 2k.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "1.5k",
+        "label": "1.5k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     },
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Quality level of the generated image. `auto` lets xAI choose; it currently uses `low` for generation.",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "auto",
+        "label": "auto"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "xai/grok-imagine-image/v2.0/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "quality",
+      "field": "quality"
+     }
+    ],
+    "media": [],
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "2:1": "2:1",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "3:2": "3:2",
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "1:2": "1:2",
+      "auto": "auto",
+      "21:9": "21:9"
+     }
+    },
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 8000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-xai-grok-imagine-image-v2.0-edit",
+    "name": "Grok Imagine Image 2 · Edit",
+    "kind": "image",
+    "upstreamModelId": "xai/grok-imagine-image/v2.0/edit",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "2:1",
+     "16:9",
+     "4:3",
+     "3:2",
+     "1:1",
+     "2:3",
+     "3:4",
+     "9:16",
+     "1:2",
+     "auto",
+     "21:9"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Resolution of the generated image: 1k, 1.5k, or 2k.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "1.5k",
+        "label": "1.5k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     },
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Quality level of the edited image. `auto` lets xAI choose; it currently uses `medium` for editing.",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "auto",
+        "label": "auto"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "xai/grok-imagine-image/v2.0/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "quality",
+      "field": "quality"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "2:1": "2:1",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "3:2": "3:2",
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "1:2": "1:2",
+      "auto": "auto",
+      "21:9": "21:9"
+     }
+    },
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 8000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-ideogram-v4.5",
+    "name": "Ideogram 4.5",
+    "kind": "image",
+    "upstreamModelId": "ideogram/v4.5",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "quality",
+      "label": "Quality",
+      "description": "Text-to-image quality.",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       }
+      ]
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "ideogram/v4.5",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "quality",
+      "field": "quality"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-alibaba-qwen-image-3-text-to-image",
+    "name": "Qwen Image 3",
+    "kind": "image",
+    "upstreamModelId": "alibaba/qwen-image-3/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "description": "Content to avoid in the generated image. Max 500 characters.",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "alibaba/qwen-image-3/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-krea-v3-text-to-image",
+    "name": "Krea 3",
+    "kind": "image",
+    "upstreamModelId": "krea/v3/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "description": "What to keep out of the image. Used by berry only.",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     },
+     {
+      "key": "reasoning_level",
+      "label": "Reasoning level",
+      "description": "How much effort the harness spends reasoning about the given prompt. Higher reasoning effort means slower generation time. Both levels bill ",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       }
+      ]
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "krea/v3/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     },
+     {
+      "key": "reasoning_level",
+      "field": "reasoning_level"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-z-image-turbo",
+    "name": "Z-Image Turbo",
+    "kind": "image",
+    "upstreamModelId": "fal-ai/z-image/turbo",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "controls": [
+     {
+      "key": "num_inference_steps",
+      "label": "Num inference steps",
+      "description": "The number of inference steps to perform.",
+      "type": "number",
+      "min": 1,
+      "max": 8,
+      "default": 8,
+      "integer": true
+     }
+    ],
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "fal-ai/z-image/turbo",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "num_inference_steps",
+      "field": "num_inference_steps"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bria-background-remove",
+    "name": "Remove background · Bria",
+    "kind": "image",
+    "upstreamModelId": "fal-ai/bria/background/remove",
+    "studioTasks": [
+     "remove-background"
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "fal-ai/bria/background/remove",
+    "fixed": {},
+    "controls": [],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-topaz-upscale-image-precision",
+    "name": "Topaz image upscale",
+    "kind": "image",
+    "upstreamModelId": "topaz/upscale/image/precision",
+    "studioTasks": [
+     "image-upscale"
+    ],
+    "controls": [
+     {
+      "key": "strength",
+      "label": "Strength",
+      "description": "Enhancement strength (0.01-1.0). Applies to Text Refine model only.",
+      "type": "number",
+      "min": 0.01,
+      "max": 1,
+      "default": 0.01
+     },
+     {
+      "key": "denoise",
+      "label": "Denoise",
+      "description": "Denoising level (0.0-1.0). Default varies by model.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "fix_compression",
+      "label": "Fix compression",
+      "description": "Compression artifact removal level (0.0-1.0). Not supported by the CGI model.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "crop_to_fill",
+      "label": "Crop to fill",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "face_enhancement_creativity",
+      "label": "Face enhancement creativity",
+      "description": "Creativity level for face enhancement. 0.0 means no creativity, 1.0 means maximum creativity. Ignored if face enhancement is disabled.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "face_enhancement",
+      "label": "Face enhancement",
+      "description": "Whether to apply face enhancement to the image.",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "upscale_factor",
+      "label": "Upscale factor",
+      "description": "Factor to upscale the image by (e.g. 2.0 doubles width and height)",
+      "type": "number",
+      "min": 1,
+      "max": 4,
+      "default": 2
+     },
+     {
+      "key": "subject_detection",
+      "label": "Subject detection",
+      "description": "Subject detection mode for the image enhancement.",
+      "type": "select",
+      "default": "All",
+      "choices": [
+       {
+        "value": "All",
+        "label": "All"
+       },
+       {
+        "value": "Foreground",
+        "label": "Foreground"
+       },
+       {
+        "value": "Background",
+        "label": "Background"
+       }
+      ]
+     },
+     {
+      "key": "face_enhancement_strength",
+      "label": "Face enhancement strength",
+      "description": "Strength of the face enhancement. 0.0 means no enhancement, 1.0 means maximum enhancement. Ignored if face enhancement is disabled.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.8
+     },
+     {
+      "key": "sharpen",
+      "label": "Sharpen",
+      "description": "Sharpening level (0.0-1.0). Default varies by model.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "topaz/upscale/image/precision",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "strength",
+      "field": "strength"
+     },
+     {
+      "key": "denoise",
+      "field": "denoise"
+     },
+     {
+      "key": "fix_compression",
+      "field": "fix_compression"
+     },
+     {
+      "key": "crop_to_fill",
+      "field": "crop_to_fill"
+     },
+     {
+      "key": "face_enhancement_creativity",
+      "field": "face_enhancement_creativity"
+     },
+     {
+      "key": "face_enhancement",
+      "field": "face_enhancement"
+     },
+     {
+      "key": "upscale_factor",
+      "field": "upscale_factor"
+     },
+     {
+      "key": "subject_detection",
+      "field": "subject_detection"
+     },
+     {
+      "key": "face_enhancement_strength",
+      "field": "face_enhancement_strength"
+     },
+     {
+      "key": "sharpen",
+      "field": "sharpen"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ]
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bytedance-seedance-2.5-us-text-to-video",
+    "name": "Seedance 2.5",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/us/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Video resolution - 480p for faster generation, 720p for balance, 1080p for high quality.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "description": "Whether to generate synchronized audio for the video, including sound effects, ambient sounds, and lip-synced speech. The cost of video gene",
+      "type": "boolean",
+      "default": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/us/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    },
+    "duration": {
+     "field": "duration",
+     "format": "string"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bytedance-seedance-2.5-us-image-to-video",
+    "name": "Seedance 2.5 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/us/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Video resolution - 480p for faster generation, 720p for balance, 1080p for high quality.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "description": "Whether to generate synchronized audio for the video, including sound effects, ambient sounds, and lip-synced speech. The cost of video gene",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/us/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "string"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bytedance-seedance-2.5-us-reference-to-video",
+    "name": "Seedance 2.5 · References",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/us/reference-to-video",
+    "studioTasks": [
+     "video-generate",
+     "video-edit"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Video resolution - 480p for faster generation, 720p for balance, 1080p for high quality.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "description": "Whether to generate synchronized audio for the video, including sound effects, ambient sounds, and lip-synced speech. The cost of video gene",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "task",
+      "label": "Task",
+      "description": "The type of video generation task. Reference uses the supplied media as guidance. Editing modifies a reference video and automatically coerc",
+      "type": "select",
+      "default": "reference",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "reference",
+        "label": "reference"
+       },
+       {
+        "value": "editing",
+        "label": "editing"
+       },
+       {
+        "value": "extension",
+        "label": "extension"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/us/reference-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "task",
+      "field": "task"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "duration": {
+     "field": "duration",
+     "format": "string"
+    },
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    },
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "fal-kling-v4-text-to-video",
+    "name": "Kling 4",
+    "kind": "video",
+    "upstreamModelId": "kling/v4/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution.",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "kling/v4/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 26000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-kling-v4-image-to-video",
+    "name": "Kling 4 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "kling/v4/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution.",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "kling/v4/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "start_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "middle_image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 8,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 26000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-kling-v4-video-to-video-edit",
+    "name": "Kling 4 · Video edit",
+    "kind": "video",
+    "upstreamModelId": "kling/v4/video-to-video/edit",
+    "studioTasks": [
+     "video-edit"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution.",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 1,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "kling/v4/video-to-video/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 10,
+      "required": false
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "voice_ids",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 26000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-kling-video-v3-pro-motion-control",
+    "name": "Kling 3 · Motion control",
+    "kind": "video",
+    "upstreamModelId": "fal-ai/kling-video/v3/pro/motion-control",
+    "studioTasks": [
+     "motion-control"
+    ],
+    "controls": [
+     {
+      "key": "character_orientation",
+      "label": "Character orientation",
+      "description": "Controls whether the output character's orientation matches the reference image or video. 'video': orientation matches reference video - bet",
+      "type": "select",
+      "default": "image",
+      "choices": [
+       {
+        "value": "image",
+        "label": "image"
+       },
+       {
+        "value": "video",
+        "label": "video"
+       }
+      ]
+     },
+     {
+      "key": "keep_original_sound",
+      "label": "Keep original sound",
+      "description": "Whether to keep the original sound from the reference video.",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "fal-ai/kling-video/v3/pro/motion-control",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "character_orientation",
+      "field": "character_orientation"
+     },
+     {
+      "key": "keep_original_sound",
+      "field": "keep_original_sound"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 2500
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-google-gemini-omni-flash-v1.1-text-to-video",
+    "name": "Gemini Omni Flash",
+    "kind": "video",
+    "upstreamModelId": "google/gemini-omni-flash/v1.1/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s"
+    ],
+    "defaultDuration": "8s",
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the generated video.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "360p",
+        "label": "360p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "google/gemini-omni-flash/v1.1/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 20000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-google-gemini-omni-flash-v1.1-image-to-video",
+    "name": "Gemini Omni Flash · Image to video",
+    "kind": "video",
+    "upstreamModelId": "google/gemini-omni-flash/v1.1/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s"
+    ],
+    "defaultDuration": "8s",
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the generated video.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "360p",
+        "label": "360p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "google/gemini-omni-flash/v1.1/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 20000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-google-gemini-omni-flash-v1.1-edit",
+    "name": "Gemini Omni Flash · Video edit",
+    "kind": "video",
+    "upstreamModelId": "google/gemini-omni-flash/v1.1/edit",
+    "studioTasks": [
+     "video-edit"
+    ],
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the edited video.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "360p",
+        "label": "360p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 0
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "google/gemini-omni-flash/v1.1/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 20000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-minimax-h3-max-text-to-video",
+    "name": "MiniMax H3 Max",
+    "kind": "video",
+    "upstreamModelId": "minimax/h3-max/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The native generation resolution, or 1080P latent refinement from a native 768P source.",
+      "type": "select",
+      "default": "768P",
+      "choices": [
+       {
+        "value": "480P",
+        "label": "480P"
+       },
+       {
+        "value": "768P",
+        "label": "768P"
+       },
+       {
+        "value": "1080P",
+        "label": "1080P"
+       }
+      ]
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "label": "Prompt expansion mode",
+      "description": "How much effort to spend rewriting the prompt before generation. 'disabled' skips prompt expansion. 'balanced' returns in about a second. 'q",
+      "type": "select",
+      "default": "balanced",
+      "choices": [
+       {
+        "value": "disabled",
+        "label": "disabled"
+       },
+       {
+        "value": "balanced",
+        "label": "balanced"
+       },
+       {
+        "value": "quality",
+        "label": "quality"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 0
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 1
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "minimax/h3-max/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "field": "prompt_expansion_mode"
+     }
+    ],
+    "media": [
+     {
+      "field": "target_audio_url",
+      "kind": "audio",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    },
+    "seed": "seed",
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    },
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 50000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-minimax-h3-max-image-to-video",
+    "name": "MiniMax H3 Max · Image to video",
+    "kind": "video",
+    "upstreamModelId": "minimax/h3-max/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The native generation resolution, or 1080P latent refinement from a native 768P source.",
+      "type": "select",
+      "default": "768P",
+      "choices": [
+       {
+        "value": "480P",
+        "label": "480P"
+       },
+       {
+        "value": "768P",
+        "label": "768P"
+       },
+       {
+        "value": "1080P",
+        "label": "1080P"
+       }
+      ]
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "label": "Prompt expansion mode",
+      "description": "How much effort to spend rewriting the prompt before generation. 'disabled' skips prompt expansion. 'balanced' returns in about a second. 'q",
+      "type": "select",
+      "default": "balanced",
+      "choices": [
+       {
+        "value": "disabled",
+        "label": "disabled"
+       },
+       {
+        "value": "balanced",
+        "label": "balanced"
+       },
+       {
+        "value": "quality",
+        "label": "quality"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 1
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "minimax/h3-max/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_expansion_mode",
+      "field": "prompt_expansion_mode"
+     }
+    ],
+    "media": [
+     {
+      "field": "target_audio_url",
+      "kind": "audio",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    },
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 50000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-alibaba-wan-3.0-text-to-video",
+    "name": "Wan 3.0",
+    "kind": "video",
+    "upstreamModelId": "alibaba/wan-3.0/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output video resolution tier.",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Include generated audio.",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "description": "Enable enhanced reasoning before generation.",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "alibaba/wan-3.0/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 20000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "seed": "seed",
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-alibaba-wan-3.0-image-to-video",
+    "name": "Wan 3.0 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "alibaba/wan-3.0/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output video resolution tier.",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "audio",
+      "label": "Audio",
+      "description": "Include generated audio.",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "description": "Enable enhanced reasoning before generation.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "alibaba/wan-3.0/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "audio",
+      "field": "audio"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [
+     {
+      "field": "start_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 20000
+    },
+    "seed": "seed",
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-xai-grok-imagine-video-v1.5-text-to-video",
+    "name": "Grok Imagine Video 1.5",
+    "kind": "video",
+    "upstreamModelId": "xai/grok-imagine-video/v1.5/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "3:2",
+     "1:1",
+     "2:3",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Resolution of the output video.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "xai/grok-imagine-video/v1.5/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 4096
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "3:2": "3:2",
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-xai-grok-imagine-video-v1.5-image-to-video",
+    "name": "Grok Imagine Video 1.5 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "xai/grok-imagine-video/v1.5/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Resolution of the output video.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "xai/grok-imagine-video/v1.5/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 4096
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-blackforestlabs-flux-3-max-text-to-video",
+    "name": "FLUX 3 Max Video",
+    "kind": "video",
+    "upstreamModelId": "blackforestlabs/flux-3-max/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "2:1",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "durations": [
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Resolution of the generated video.",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "description": "Whether to generate audio for the video.",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "reasoning_level",
+      "label": "Reasoning level",
+      "description": "How much effort the harness spends reasoning about the given prompt. Higher reasoning effort means slower generation time.",
+      "type": "select",
+      "default": "high",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "blackforestlabs/flux-3-max/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "reasoning_level",
+      "field": "reasoning_level"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "2:1": "2:1",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "fal-wan-v2.2-14b-animate-replace",
+    "name": "Wan Animate · Replace subject",
+    "kind": "video",
+    "upstreamModelId": "fal-ai/wan/v2.2-14b/animate/replace",
+    "studioTasks": [
+     "object-swap"
+    ],
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Resolution of the generated video (480p, 580p, or 720p).",
+      "type": "select",
+      "default": "480p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "580p",
+        "label": "580p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       }
+      ]
+     },
+     {
+      "key": "video_quality",
+      "label": "Video quality",
+      "description": "The quality of the output video. Higher quality means better visual quality but larger file size.",
+      "type": "select",
+      "default": "high",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       },
+       {
+        "value": "maximum",
+        "label": "maximum"
+       }
+      ]
+     },
+     {
+      "key": "video_write_mode",
+      "label": "Video write mode",
+      "description": "The write mode of the output video. Faster write mode means faster results but larger file size, balanced write mode is a good compromise be",
+      "type": "select",
+      "default": "balanced",
+      "choices": [
+       {
+        "value": "fast",
+        "label": "fast"
+       },
+       {
+        "value": "balanced",
+        "label": "balanced"
+       },
+       {
+        "value": "small",
+        "label": "small"
+       }
+      ]
+     },
+     {
+      "key": "enable_output_safety_checker",
+      "label": "Enable output safety checker",
+      "description": "If set to true, output video will be checked for safety after generation.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "guidance_scale",
+      "label": "Guidance scale",
+      "description": "Classifier-free guidance scale. Higher values give better adherence to the prompt but may decrease quality.",
+      "type": "number",
+      "min": 1,
+      "max": 10,
+      "default": 1
+     },
+     {
+      "key": "use_turbo",
+      "label": "Use turbo",
+      "description": "If true, applies quality enhancement for faster generation with improved quality. When enabled, parameters are automatically optimized for b",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "shift",
+      "label": "Shift",
+      "description": "Shift value for the video. Must be between 1.0 and 10.0.",
+      "type": "number",
+      "min": 1,
+      "max": 10,
+      "default": 5
+     },
+     {
+      "key": "return_frames_zip",
+      "label": "Return frames zip",
+      "description": "If true, also return a ZIP archive containing per-frame images generated on GPU (lossless).",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "num_inference_steps",
+      "label": "Num inference steps",
+      "description": "Number of inference steps for sampling. Higher values give better quality but take longer.",
+      "type": "number",
+      "min": 2,
+      "max": 40,
+      "default": 20,
+      "integer": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "fal-ai/wan/v2.2-14b/animate/replace",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "video_quality",
+      "field": "video_quality"
+     },
+     {
+      "key": "video_write_mode",
+      "field": "video_write_mode"
+     },
+     {
+      "key": "enable_output_safety_checker",
+      "field": "enable_output_safety_checker"
+     },
+     {
+      "key": "guidance_scale",
+      "field": "guidance_scale"
+     },
+     {
+      "key": "use_turbo",
+      "field": "use_turbo"
+     },
+     {
+      "key": "shift",
+      "field": "shift"
+     },
+     {
+      "key": "return_frames_zip",
+      "field": "return_frames_zip"
+     },
+     {
+      "key": "num_inference_steps",
+      "field": "num_inference_steps"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "fal-sync-lipsync-v3",
+    "name": "Sync lipsync 3",
+    "kind": "video",
+    "upstreamModelId": "fal-ai/sync-lipsync/v3",
+    "studioTasks": [
+     "video-lipsync"
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 0
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 1,
+      "max": 1
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "fal-ai/sync-lipsync/v3",
+    "fixed": {},
+    "controls": [],
+    "media": [
+     {
+      "field": "audio_url",
+      "kind": "audio",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ]
+   }
+  },
+  {
+   "model": {
+    "id": "fal-bytedance-omnihuman-v1.5",
+    "name": "OmniHuman 1.5 · Talking photo",
+    "kind": "video",
+    "upstreamModelId": "fal-ai/bytedance/omnihuman/v1.5",
+    "studioTasks": [
+     "image-lipsync"
+    ],
+    "maskInput": {
+     "required": false
+    },
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "The resolution of the generated video. Defaults to 1080p. 720p generation is faster and higher in quality. 1080p generation is limited to 30",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "turbo_mode",
+      "label": "Turbo mode",
+      "description": "Generate a video at a faster rate with a slight quality trade-off.",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 1,
+      "max": 1
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "fal-ai/bytedance/omnihuman/v1.5",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "turbo_mode",
+      "field": "turbo_mode"
+     }
+    ],
+    "media": [
+     {
+      "field": "audio_url",
+      "kind": "audio",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "mask": "mask_url"
+   }
+  },
+  {
+   "model": {
+    "id": "fal-topaz-upscale-video-precision",
+    "name": "Topaz video upscale",
+    "kind": "video",
+    "upstreamModelId": "topaz/upscale/video/precision",
+    "studioTasks": [
+     "video-upscale"
+    ],
+    "controls": [
+     {
+      "key": "target_fps",
+      "label": "Target fps",
+      "description": "Target FPS for the output. Frame interpolation is enabled only when this differs from the source FPS.",
+      "type": "number",
+      "min": 16,
+      "max": 60,
+      "default": 16,
+      "integer": true
+     },
+     {
+      "key": "h264_output",
+      "label": "H264 output",
+      "description": "Whether to use H264 codec for output video. Default is H265.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "upscale_factor",
+      "label": "Upscale factor",
+      "description": "Factor to upscale the video by (e.g. 2.0 doubles width and height)",
+      "type": "number",
+      "min": 1,
+      "max": 4,
+      "default": 2
+     },
+     {
+      "key": "recover_detail",
+      "label": "Recover detail",
+      "description": "Recover original detail level (0.0-1.0). Higher values preserve more original detail.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "halo",
+      "label": "Halo",
+      "description": "Halo reduction level (0.0-1.0). Default varies by model.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "noise",
+      "label": "Noise",
+      "description": "Noise reduction level (0.0-1.0). Default varies by model.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "compression",
+      "label": "Compression",
+      "description": "Compression artifact removal level (0.0-1.0). Default varies by model.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0
+     },
+     {
+      "key": "grain",
+      "label": "Grain",
+      "description": "Film grain amount (0.0-0.1). Default varies by model.",
+      "type": "number",
+      "min": 0,
+      "max": 0.1,
+      "default": 0
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 0
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "topaz/upscale/video/precision",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "target_fps",
+      "field": "target_fps"
+     },
+     {
+      "key": "h264_output",
+      "field": "H264_output"
+     },
+     {
+      "key": "upscale_factor",
+      "field": "upscale_factor"
+     },
+     {
+      "key": "recover_detail",
+      "field": "recover_detail"
+     },
+     {
+      "key": "halo",
+      "field": "halo"
+     },
+     {
+      "key": "noise",
+      "field": "noise"
+     },
+     {
+      "key": "compression",
+      "field": "compression"
+     },
+     {
+      "key": "grain",
+      "field": "grain"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ]
+   }
+  },
+  {
+   "model": {
+    "id": "fal-elevenlabs-tts-eleven-v4",
+    "name": "ElevenLabs v4 voice",
+    "kind": "audio",
+    "upstreamModelId": "elevenlabs/tts/eleven-v4",
+    "studioTasks": [
+     "text-to-speech"
+    ],
+    "controls": [
+     {
+      "key": "voice",
+      "label": "Voice",
+      "description": "The voice to use for speech generation",
+      "type": "string",
+      "default": "Rachel",
+      "maxLength": 2000,
+      "multiline": false
+     },
+     {
+      "key": "apply_text_normalization",
+      "label": "Apply text normalization",
+      "description": "Whether to normalize text such as numbers and dates before generation.",
+      "type": "select",
+      "default": "auto",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "on",
+        "label": "on"
+       },
+       {
+        "value": "off",
+        "label": "off"
+       }
+      ]
+     },
+     {
+      "key": "stability",
+      "label": "Stability",
+      "description": "Voice stability. Lower values allow more expressive delivery; higher values make delivery more consistent.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.5
+     },
+     {
+      "key": "similarity_boost",
+      "label": "Similarity boost",
+      "description": "How closely the output follows the reference voice. Higher values increase similarity but may reduce naturalness.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.75
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "elevenlabs/tts/eleven-v4",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "voice",
+      "field": "voice"
+     },
+     {
+      "key": "apply_text_normalization",
+      "field": "apply_text_normalization"
+     },
+     {
+      "key": "stability",
+      "field": "stability"
+     },
+     {
+      "key": "similarity_boost",
+      "field": "similarity_boost"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "text",
+     "required": true,
+     "max": 5000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-minimax-speech-2.8-hd",
+    "name": "MiniMax Speech 2.8 HD",
+    "kind": "audio",
+    "upstreamModelId": "fal-ai/minimax/speech-2.8-hd",
+    "studioTasks": [
+     "text-to-speech"
+    ]
+   },
+   "binding": {
+    "endpoint": "fal-ai/minimax/speech-2.8-hd",
+    "fixed": {},
+    "controls": [],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-elevenlabs-music-v2.5",
+    "name": "ElevenLabs Music 2.5",
+    "kind": "audio",
+    "upstreamModelId": "elevenlabs/music/v2.5",
+    "studioTasks": [
+     "music-generate"
+    ],
+    "controls": [
+     {
+      "key": "music_length_ms",
+      "label": "Music length ms",
+      "description": "The length of the song to generate in milliseconds. Used only in conjunction with prompt. Must be between 3000ms and 600000ms. Optional - if",
+      "type": "number",
+      "min": 3000,
+      "max": 600000,
+      "default": 3000,
+      "integer": true
+     },
+     {
+      "key": "force_instrumental",
+      "label": "Force instrumental",
+      "description": "If true, guarantees that the generated song will be instrumental. If false, the song may or may not be instrumental depending on the prompt.",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "elevenlabs/music/v2.5",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "music_length_ms",
+      "field": "music_length_ms"
+     },
+     {
+      "key": "force_instrumental",
+      "field": "force_instrumental"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 4100
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-google-lyria-3.5",
+    "name": "Lyria 3.5",
+    "kind": "audio",
+    "upstreamModelId": "google/lyria-3.5",
+    "studioTasks": [
+     "music-generate"
+    ],
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "description": "Negative prompting is not supported by Lyria 3.5.",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "google/lyria-3.5",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-elevenlabs-sound-effects-v2",
+    "name": "ElevenLabs sound effects",
+    "kind": "audio",
+    "upstreamModelId": "fal-ai/elevenlabs/sound-effects/v2",
+    "studioTasks": [
+     "audio-generate"
+    ],
+    "controls": [
+     {
+      "key": "duration_seconds",
+      "label": "Length (seconds)",
+      "type": "number",
+      "min": 1,
+      "max": 20,
+      "default": 5,
+      "integer": false
+     },
+     {
+      "key": "loop",
+      "label": "Loop",
+      "description": "Whether to create a sound effect that loops smoothly.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "prompt_influence",
+      "label": "Prompt influence",
+      "description": "How closely to follow the prompt (0-1). Higher values mean less variation.",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.3
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "fal-ai/elevenlabs/sound-effects/v2",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "duration_seconds",
+      "field": "duration_seconds",
+      "format": "number"
+     },
+     {
+      "key": "loop",
+      "field": "loop"
+     },
+     {
+      "key": "prompt_influence",
+      "field": "prompt_influence"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "text",
+     "required": true,
+     "max": 450
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "fal-mmaudio-v2",
+    "name": "MMAudio · Sound for video",
+    "kind": "audio",
+    "upstreamModelId": "fal-ai/mmaudio-v2",
+    "studioTasks": [
+     "audio-generate"
+    ],
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "description": "The negative prompt to generate the audio for.",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     },
+     {
+      "key": "duration",
+      "label": "Length (seconds)",
+      "type": "number",
+      "min": 1,
+      "max": 30,
+      "default": 8,
+      "integer": false
+     },
+     {
+      "key": "mask_away_clip",
+      "label": "Mask away clip",
+      "description": "Whether to mask away the clip.",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "cfg_strength",
+      "label": "Cfg strength",
+      "description": "The strength of Classifier Free Guidance.",
+      "type": "number",
+      "min": 0,
+      "max": 20,
+      "default": 4.5
+     },
+     {
+      "key": "num_steps",
+      "label": "Num steps",
+      "description": "The number of steps to generate the audio for.",
+      "type": "number",
+      "min": 4,
+      "max": 50,
+      "default": 25,
+      "integer": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 0
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "fal-ai/mmaudio-v2",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     },
+     {
+      "key": "duration",
+      "field": "duration",
+      "format": "number"
+     },
+     {
+      "key": "mask_away_clip",
+      "field": "mask_away_clip"
+     },
+     {
+      "key": "cfg_strength",
+      "field": "cfg_strength"
+     },
+     {
+      "key": "num_steps",
+      "field": "num_steps"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  }
+ ]
+}

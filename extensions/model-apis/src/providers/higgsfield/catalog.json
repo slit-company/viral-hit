@@ -1,0 +1,5006 @@
+{
+ "source": "higgsfield",
+ "synced": "2026-10-30",
+ "models": [
+  {
+   "model": {
+    "id": "higgsfield-soul-2",
+    "name": "Soul 2",
+    "kind": "image",
+    "upstreamModelId": "higgsfield-ai/soul/v2/standard",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "9:16",
+     "16:9",
+     "4:3",
+     "3:4",
+     "1:1",
+     "2:3",
+     "3:2"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "style_strength",
+      "label": "Style strength",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 1
+     },
+     {
+      "key": "enhance_prompt",
+      "label": "Enhance prompt",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "custom_reference_strength",
+      "label": "Custom reference strength",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 1
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "higgsfield-ai/soul/v2/standard",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "style_strength",
+      "field": "style_strength"
+     },
+     {
+      "key": "enhance_prompt",
+      "field": "enhance_prompt"
+     },
+     {
+      "key": "custom_reference_strength",
+      "field": "custom_reference_strength"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "9:16": "9:16",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:2": "3:2"
+     }
+    },
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-seedance-2",
+    "name": "Seedance 2.0",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.0/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.0/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-genjutsu-motion-transfer",
+    "name": "Genjutsu · Motion transfer",
+    "kind": "video",
+    "upstreamModelId": "higgsfield/genjutsu/motion-transfer/v1.0",
+    "studioTasks": [
+     "motion-transfer"
+    ],
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 8
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "higgsfield/genjutsu/motion-transfer/v1.0",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 8,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-genjutsu-object-swap",
+    "name": "Genjutsu · Object swap",
+    "kind": "video",
+    "upstreamModelId": "higgsfield/genjutsu/object-swap/v1.0",
+    "studioTasks": [
+     "object-swap"
+    ],
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 8
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "higgsfield/genjutsu/object-swap/v1.0",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 8,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-higgsfield-ai-soul-cinema",
+    "name": "Soul Cinema",
+    "kind": "image",
+    "upstreamModelId": "higgsfield-ai/soul/cinema",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "9:16",
+     "16:9",
+     "4:3",
+     "3:4",
+     "1:1",
+     "2:3",
+     "3:2"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "enhance_prompt",
+      "label": "Enhance prompt",
+      "type": "boolean",
+      "default": false
+     },
+     {
+      "key": "custom_reference_strength",
+      "label": "Custom reference strength",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 1
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "higgsfield-ai/soul/cinema",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "enhance_prompt",
+      "field": "enhance_prompt"
+     },
+     {
+      "key": "custom_reference_strength",
+      "field": "custom_reference_strength"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "9:16": "9:16",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:2": "3:2"
+     }
+    },
+    "seed": "seed"
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-higgsfield-cinema-studio-4.0",
+    "name": "Cinema Studio 4.0",
+    "kind": "video",
+    "upstreamModelId": "higgsfield/cinema-studio/4.0",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       }
+      ]
+     },
+     {
+      "key": "camera_model",
+      "label": "Camera model",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "modern",
+        "label": "modern"
+       },
+       {
+        "value": "35mm-film",
+        "label": "35mm-film"
+       },
+       {
+        "value": "8mm-film",
+        "label": "8mm-film"
+       },
+       {
+        "value": "dv-camcorder",
+        "label": "dv-camcorder"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "camera_lens",
+      "label": "Camera lens",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "clean-sharp",
+        "label": "clean-sharp"
+       },
+       {
+        "value": "anamorphic",
+        "label": "anamorphic"
+       },
+       {
+        "value": "vintage-anamorphic",
+        "label": "vintage-anamorphic"
+       },
+       {
+        "value": "warm-vintage",
+        "label": "warm-vintage"
+       },
+       {
+        "value": "halation-vintage",
+        "label": "halation-vintage"
+       }
+      ]
+     },
+     {
+      "key": "camera_aperture",
+      "label": "Camera aperture",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "f14-wide-open",
+        "label": "f14-wide-open"
+       },
+       {
+        "value": "f4-moderate",
+        "label": "f4-moderate"
+       },
+       {
+        "value": "f11-deep-focus",
+        "label": "f11-deep-focus"
+       }
+      ]
+     },
+     {
+      "key": "era",
+      "label": "Era",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "1960s",
+        "label": "1960s"
+       },
+       {
+        "value": "1980s",
+        "label": "1980s"
+       },
+       {
+        "value": "1990s",
+        "label": "1990s"
+       },
+       {
+        "value": "2000s",
+        "label": "2000s"
+       },
+       {
+        "value": "2020s",
+        "label": "2020s"
+       }
+      ]
+     },
+     {
+      "key": "genre",
+      "label": "Genre",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "epic",
+        "label": "epic"
+       },
+       {
+        "value": "drama",
+        "label": "drama"
+       },
+       {
+        "value": "noir",
+        "label": "noir"
+       },
+       {
+        "value": "comedy",
+        "label": "comedy"
+       },
+       {
+        "value": "horror",
+        "label": "horror"
+       },
+       {
+        "value": "action",
+        "label": "action"
+       }
+      ]
+     },
+     {
+      "key": "light",
+      "label": "Light",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "silhouette",
+        "label": "silhouette"
+       },
+       {
+        "value": "practicals",
+        "label": "practicals"
+       },
+       {
+        "value": "window",
+        "label": "window"
+       },
+       {
+        "value": "overhead-fall",
+        "label": "overhead-fall"
+       },
+       {
+        "value": "contre-jour",
+        "label": "contre-jour"
+       },
+       {
+        "value": "soft-cross",
+        "label": "soft-cross"
+       }
+      ]
+     },
+     {
+      "key": "pacing",
+      "label": "Pacing",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "chaotic",
+        "label": "chaotic"
+       },
+       {
+        "value": "dynamic",
+        "label": "dynamic"
+       },
+       {
+        "value": "calm",
+        "label": "calm"
+       },
+       {
+        "value": "single-shot",
+        "label": "single-shot"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "higgsfield/cinema-studio/4.0",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "camera_model",
+      "field": "camera_model"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "camera_lens",
+      "field": "camera_lens"
+     },
+     {
+      "key": "camera_aperture",
+      "field": "camera_aperture"
+     },
+     {
+      "key": "era",
+      "field": "era"
+     },
+     {
+      "key": "genre",
+      "field": "genre"
+     },
+     {
+      "key": "light",
+      "field": "light"
+     },
+     {
+      "key": "pacing",
+      "field": "pacing"
+     }
+    ],
+    "media": [
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-higgsfield-ads-studio-v1.0",
+    "name": "Ads Studio",
+    "kind": "video",
+    "upstreamModelId": "higgsfield/ads-studio/v1.0",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "4:5",
+     "5:4",
+     "16:9",
+     "9:16",
+     "4:3",
+     "3:4",
+     "21:9",
+     "3:2",
+     "2:3",
+     "2:1",
+     "1:2"
+    ],
+    "defaultAspectRatio": "1:1",
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "higgsfield/ads-studio/v1.0",
+    "fixed": {},
+    "controls": [],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 10,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 8000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "1:1": "1:1",
+      "4:5": "4:5",
+      "5:4": "5:4",
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "21:9": "21:9",
+      "3:2": "3:2",
+      "2:3": "2:3",
+      "2:1": "2:1",
+      "1:2": "1:2"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-marketing-studio-image-sunburst",
+    "name": "Marketing Studio · Image",
+    "kind": "image",
+    "upstreamModelId": "marketing-studio/image/sunburst",
+    "studioTasks": [
+     "image-generate",
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "auto",
+     "1:1",
+     "3:2",
+     "2:3",
+     "4:3",
+     "3:4",
+     "16:9",
+     "9:16",
+     "21:9"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "2k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "quality",
+      "label": "Quality",
+      "type": "select",
+      "default": "high",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       },
+       {
+        "value": "high",
+        "label": "high"
+       },
+       {
+        "value": "xhigh",
+        "label": "xhigh"
+       },
+       {
+        "value": "max",
+        "label": "max"
+       }
+      ]
+     },
+     {
+      "key": "moderation",
+      "label": "Moderation",
+      "type": "select",
+      "default": "auto",
+      "choices": [
+       {
+        "value": "auto",
+        "label": "auto"
+       },
+       {
+        "value": "low",
+        "label": "low"
+       }
+      ]
+     },
+     {
+      "key": "enhance_prompt",
+      "label": "Enhance prompt",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "marketing-studio/image/sunburst",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "quality",
+      "field": "quality"
+     },
+     {
+      "key": "moderation",
+      "field": "moderation"
+     },
+     {
+      "key": "enhance_prompt",
+      "field": "enhance_prompt"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "1:1": "1:1",
+      "3:2": "3:2",
+      "2:3": "2:3",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-xai-grok-imagine-image-2.0",
+    "name": "Grok Imagine Image 2",
+    "kind": "image",
+    "upstreamModelId": "xai/grok-imagine-image-2.0",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "auto",
+     "1:1",
+     "1:2",
+     "2:1",
+     "3:2",
+     "2:3",
+     "4:3",
+     "3:4",
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     },
+     {
+      "key": "quality",
+      "label": "Quality",
+      "type": "select",
+      "default": "medium",
+      "choices": [
+       {
+        "value": "low",
+        "label": "low"
+       },
+       {
+        "value": "medium",
+        "label": "medium"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "xai/grok-imagine-image-2.0",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "quality",
+      "field": "quality"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 10,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "1:1": "1:1",
+      "1:2": "1:2",
+      "2:1": "2:1",
+      "3:2": "3:2",
+      "2:3": "2:3",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "16:9": "16:9",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-qwen-image-3-text-to-image",
+    "name": "Qwen Image 3",
+    "kind": "image",
+    "upstreamModelId": "alibaba/qwen-image-3/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "2:3",
+     "3:2",
+     "3:4",
+     "4:3",
+     "9:16",
+     "16:9",
+     "21:9"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution tier. Both tiers produce PNG images.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     },
+     {
+      "key": "prompt_extend_mode",
+      "label": "Prompt extend mode",
+      "description": "Direct enhancement is available for every request; agent enhancement is text-to-image only.",
+      "type": "select",
+      "default": "direct",
+      "choices": [
+       {
+        "value": "direct",
+        "label": "direct"
+       },
+       {
+        "value": "agent",
+        "label": "agent"
+       }
+      ]
+     },
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "description": "Content, styles, or artifacts to avoid in the output.",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     },
+     {
+      "key": "prompt_extend",
+      "label": "Prompt extend",
+      "description": "Improve the prompt before generation. Required when thinking mode is enabled.",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "description": "Use model reasoning to improve image quality. Requires prompt enhancement.",
+      "type": "boolean",
+      "default": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "alibaba/qwen-image-3/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_extend_mode",
+      "field": "prompt_extend_mode"
+     },
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     },
+     {
+      "key": "prompt_extend",
+      "field": "prompt_extend"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:2": "3:2",
+      "3:4": "3:4",
+      "4:3": "4:3",
+      "9:16": "9:16",
+      "16:9": "16:9",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-qwen-image-3-edit",
+    "name": "Qwen Image 3 · Edit",
+    "kind": "image",
+    "upstreamModelId": "alibaba/qwen-image-3/edit",
+    "studioTasks": [
+     "image-edit"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "2:3",
+     "3:2",
+     "3:4",
+     "4:3",
+     "9:16",
+     "16:9",
+     "21:9"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution tier. Both tiers produce PNG images.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     },
+     {
+      "key": "prompt_extend_mode",
+      "label": "Prompt extend mode",
+      "description": "Direct enhancement is available for every request; agent enhancement is text-to-image only.",
+      "type": "select",
+      "default": "direct",
+      "choices": [
+       {
+        "value": "direct",
+        "label": "direct"
+       }
+      ]
+     },
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "description": "Content, styles, or artifacts to avoid in the output.",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     },
+     {
+      "key": "prompt_extend",
+      "label": "Prompt extend",
+      "description": "Improve the prompt before generation. Required when thinking mode is enabled.",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "description": "Use model reasoning to improve image quality. Requires prompt enhancement.",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 3
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "alibaba/qwen-image-3/edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_extend_mode",
+      "field": "prompt_extend_mode"
+     },
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     },
+     {
+      "key": "prompt_extend",
+      "field": "prompt_extend"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     }
+    ],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:2": "3:2",
+      "3:4": "3:4",
+      "4:3": "4:3",
+      "9:16": "9:16",
+      "16:9": "16:9",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-recraft-v4.1-pro-text-to-image",
+    "name": "Recraft 4.1 Pro",
+    "kind": "image",
+    "upstreamModelId": "recraft/v4.1/pro/text-to-image",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "2:1",
+     "1:2",
+     "3:2",
+     "2:3",
+     "4:3",
+     "3:4",
+     "5:4",
+     "4:5",
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "2k",
+      "choices": [
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "recraft/v4.1/pro/text-to-image",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "1:1": "1:1",
+      "2:1": "2:1",
+      "1:2": "1:2",
+      "3:2": "3:2",
+      "2:3": "2:3",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "5:4": "5:4",
+      "4:5": "4:5",
+      "16:9": "16:9",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-ideogram-v4.0",
+    "name": "Ideogram 4",
+    "kind": "image",
+    "upstreamModelId": "ideogram/v4.0",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "1:2",
+     "2:1",
+     "2:3",
+     "3:2",
+     "4:5",
+     "5:4",
+     "9:16",
+     "16:9",
+     "3:4",
+     "4:3"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "image_weight",
+      "label": "Image weight",
+      "description": "How strongly the output should preserve the input image.",
+      "type": "number",
+      "min": 1,
+      "max": 100,
+      "default": 1,
+      "integer": true
+     },
+     {
+      "key": "rendering_speed",
+      "label": "Rendering speed",
+      "type": "select",
+      "default": "DEFAULT",
+      "choices": [
+       {
+        "value": "TURBO",
+        "label": "TURBO"
+       },
+       {
+        "value": "DEFAULT",
+        "label": "DEFAULT"
+       },
+       {
+        "value": "QUALITY",
+        "label": "QUALITY"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "ideogram/v4.0",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "image_weight",
+      "field": "image_weight"
+     },
+     {
+      "key": "rendering_speed",
+      "field": "rendering_speed"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 2048
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "1:1": "1:1",
+      "1:2": "1:2",
+      "2:1": "2:1",
+      "2:3": "2:3",
+      "3:2": "3:2",
+      "4:5": "4:5",
+      "5:4": "5:4",
+      "9:16": "9:16",
+      "16:9": "16:9",
+      "3:4": "3:4",
+      "4:3": "4:3"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-z-image-turbo",
+    "name": "Z-Image Turbo",
+    "kind": "image",
+    "upstreamModelId": "z-image/turbo",
+    "studioTasks": [
+     "image-generate"
+    ],
+    "aspectRatios": [
+     "1:1",
+     "2:3",
+     "3:2",
+     "3:4",
+     "4:3",
+     "9:16",
+     "16:9",
+     "21:9"
+    ],
+    "defaultAspectRatio": "1:1",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "description": "Output resolution tier. Both tiers produce PNG images.",
+      "type": "select",
+      "default": "1k",
+      "choices": [
+       {
+        "value": "1k",
+        "label": "1k"
+       },
+       {
+        "value": "2k",
+        "label": "2k"
+       }
+      ]
+     },
+     {
+      "key": "prompt_extend",
+      "label": "Prompt extend",
+      "description": "Rewrite and reason over the prompt before generation; this uses the enhanced price tier.",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "z-image/turbo",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "prompt_extend",
+      "field": "prompt_extend"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 800
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "1:1": "1:1",
+      "2:3": "2:3",
+      "3:2": "3:2",
+      "3:4": "3:4",
+      "4:3": "4:3",
+      "9:16": "9:16",
+      "16:9": "16:9",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.5-text-to-video",
+    "name": "Seedance 2.5",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.5-image-to-video",
+    "name": "Seedance 2.5 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.5-reference-to-video",
+    "name": "Seedance 2.5 · References",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/reference-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 14
+     },
+     "video": {
+      "min": 1,
+      "max": 3
+     },
+     "audio": {
+      "min": 1,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/reference-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": true
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.5-video-edit",
+    "name": "Seedance 2.5 · Video edit",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/video-edit",
+    "studioTasks": [
+     "video-edit"
+    ],
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 14
+     },
+     "video": {
+      "min": 2,
+      "max": 3
+     },
+     "audio": {
+      "min": 1,
+      "max": 3
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/video-edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": true
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.5-video-extend",
+    "name": "Seedance 2.5 · Extend video",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.5/video-extend",
+    "studioTasks": [
+     "video-edit"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 14
+     },
+     "video": {
+      "min": 2,
+      "max": 3
+     },
+     "audio": {
+      "min": 1,
+      "max": 3
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.5/video-extend",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": true
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.0-image-to-video",
+    "name": "Seedance 2.0 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.0/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.0/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-bytedance-seedance-2.0-reference-to-video",
+    "name": "Seedance 2.0 · References",
+    "kind": "video",
+    "upstreamModelId": "bytedance/seedance-2.0/reference-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16",
+     "21:9"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 9
+     },
+     "video": {
+      "min": 1,
+      "max": 3
+     },
+     "audio": {
+      "min": 1,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "bytedance/seedance-2.0/reference-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     }
+    ],
+    "media": [
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 9,
+      "required": true
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16",
+      "21:9": "21:9"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-v3.0-pro-text-to-video",
+    "name": "Kling 3.0 Pro",
+    "kind": "video",
+    "upstreamModelId": "kling-video/v3.0/pro/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "sound",
+      "label": "Sound",
+      "type": "select",
+      "default": "on",
+      "choices": [
+       {
+        "value": "on",
+        "label": "on"
+       },
+       {
+        "value": "off",
+        "label": "off"
+       }
+      ]
+     },
+     {
+      "key": "cfg_scale",
+      "label": "Cfg scale",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.5
+     },
+     {
+      "key": "multi_shots",
+      "label": "Multi shots",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "kling-video/v3.0/pro/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "sound",
+      "field": "sound"
+     },
+     {
+      "key": "cfg_scale",
+      "field": "cfg_scale"
+     },
+     {
+      "key": "multi_shots",
+      "field": "multi_shots"
+     }
+    ],
+    "media": [
+     {
+      "field": "elements",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-v3.0-pro-image-to-video",
+    "name": "Kling 3.0 Pro · Image to video",
+    "kind": "video",
+    "upstreamModelId": "kling-video/v3.0/pro/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "sound",
+      "label": "Sound",
+      "type": "select",
+      "default": "on",
+      "choices": [
+       {
+        "value": "on",
+        "label": "on"
+       },
+       {
+        "value": "off",
+        "label": "off"
+       }
+      ]
+     },
+     {
+      "key": "cfg_scale",
+      "label": "Cfg scale",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.5
+     },
+     {
+      "key": "multi_shots",
+      "label": "Multi shots",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "kling-video/v3.0/pro/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "sound",
+      "field": "sound"
+     },
+     {
+      "key": "cfg_scale",
+      "field": "cfg_scale"
+     },
+     {
+      "key": "multi_shots",
+      "field": "multi_shots"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "last_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "elements",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-v3.0-4k-text-to-video",
+    "name": "Kling 3.0 4K",
+    "kind": "video",
+    "upstreamModelId": "kling-video/v3.0/4k/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "sound",
+      "label": "Sound",
+      "type": "select",
+      "default": "on",
+      "choices": [
+       {
+        "value": "on",
+        "label": "on"
+       },
+       {
+        "value": "off",
+        "label": "off"
+       }
+      ]
+     },
+     {
+      "key": "cfg_scale",
+      "label": "Cfg scale",
+      "type": "number",
+      "min": 0,
+      "max": 1,
+      "default": 0.5
+     },
+     {
+      "key": "multi_shots",
+      "label": "Multi shots",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "kling-video/v3.0/4k/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "sound",
+      "field": "sound"
+     },
+     {
+      "key": "cfg_scale",
+      "field": "cfg_scale"
+     },
+     {
+      "key": "multi_shots",
+      "field": "multi_shots"
+     }
+    ],
+    "media": [
+     {
+      "field": "elements",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-o3-image-reference",
+    "name": "Kling O3 · Image references",
+    "kind": "video",
+    "upstreamModelId": "kling-video/o3/image-reference",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "mode",
+      "label": "Mode",
+      "type": "select",
+      "default": "std",
+      "choices": [
+       {
+        "value": "std",
+        "label": "std"
+       },
+       {
+        "value": "pro",
+        "label": "pro"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "sound",
+      "label": "Sound",
+      "type": "select",
+      "default": "off",
+      "choices": [
+       {
+        "value": "on",
+        "label": "on"
+       },
+       {
+        "value": "off",
+        "label": "off"
+       }
+      ]
+     },
+     {
+      "key": "shot_type",
+      "label": "Shot type",
+      "type": "select",
+      "default": "customize",
+      "choices": [
+       {
+        "value": "customize",
+        "label": "customize"
+       },
+       {
+        "value": "intelligent",
+        "label": "intelligent"
+       }
+      ]
+     },
+     {
+      "key": "multi_shots",
+      "label": "Multi shots",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 14
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "kling-video/o3/image-reference",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "mode",
+      "field": "mode"
+     },
+     {
+      "key": "sound",
+      "field": "sound"
+     },
+     {
+      "key": "shot_type",
+      "field": "shot_type"
+     },
+     {
+      "key": "multi_shots",
+      "field": "multi_shots"
+     }
+    ],
+    "media": [
+     {
+      "field": "first_frame_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "last_frame_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "elements",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 14,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-o3-first-last-frame",
+    "name": "Kling O3 · First and last frame",
+    "kind": "video",
+    "upstreamModelId": "kling-video/o3/first-last-frame",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "mode",
+      "label": "Mode",
+      "type": "select",
+      "default": "pro",
+      "choices": [
+       {
+        "value": "std",
+        "label": "std"
+       },
+       {
+        "value": "pro",
+        "label": "pro"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     },
+     {
+      "key": "sound",
+      "label": "Sound",
+      "type": "select",
+      "default": "off",
+      "choices": [
+       {
+        "value": "on",
+        "label": "on"
+       },
+       {
+        "value": "off",
+        "label": "off"
+       }
+      ]
+     },
+     {
+      "key": "multi_shots",
+      "label": "Multi shots",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "kling-video/o3/first-last-frame",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "mode",
+      "field": "mode"
+     },
+     {
+      "key": "sound",
+      "field": "sound"
+     },
+     {
+      "key": "multi_shots",
+      "field": "multi_shots"
+     }
+    ],
+    "media": [
+     {
+      "field": "first_frame_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "last_frame_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-o3-video-reference",
+    "name": "Kling O3 · Video reference",
+    "kind": "video",
+    "upstreamModelId": "kling-video/o3/video-reference",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "4s",
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "mode",
+      "label": "Mode",
+      "type": "select",
+      "default": "pro",
+      "choices": [
+       {
+        "value": "std",
+        "label": "std"
+       },
+       {
+        "value": "pro",
+        "label": "pro"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 8
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "kling-video/o3/video-reference",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "mode",
+      "field": "mode"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "elements",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 4,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 4,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-o3-video-edit",
+    "name": "Kling O3 · Video edit",
+    "kind": "video",
+    "upstreamModelId": "kling-video/o3/video-edit",
+    "studioTasks": [
+     "video-edit"
+    ],
+    "controls": [
+     {
+      "key": "mode",
+      "label": "Mode",
+      "type": "select",
+      "default": "pro",
+      "choices": [
+       {
+        "value": "std",
+        "label": "std"
+       },
+       {
+        "value": "pro",
+        "label": "pro"
+       },
+       {
+        "value": "4k",
+        "label": "4k"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 8
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "kling-video/o3/video-edit",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "mode",
+      "field": "mode"
+     }
+    ],
+    "media": [
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "elements",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 4,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 4,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-kling-video-v3-motion-control-pro",
+    "name": "Kling 3 · Motion control",
+    "kind": "video",
+    "upstreamModelId": "kling-video/v3/motion-control/pro",
+    "studioTasks": [
+     "motion-control"
+    ],
+    "controls": [
+     {
+      "key": "keep_original_sound",
+      "label": "Keep original sound",
+      "type": "select",
+      "default": "yes",
+      "choices": [
+       {
+        "value": "yes",
+        "label": "yes"
+       },
+       {
+        "value": "no",
+        "label": "no"
+       }
+      ]
+     },
+     {
+      "key": "character_orientation",
+      "label": "Character orientation",
+      "description": "Generate the orientation of the characters in the video, which can be selected to match the image or the video",
+      "type": "select",
+      "default": "video",
+      "choices": [
+       {
+        "value": "image",
+        "label": "image"
+       },
+       {
+        "value": "video",
+        "label": "video"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 1,
+      "max": 1
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "kling-video/v3/motion-control/pro",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "keep_original_sound",
+      "field": "keep_original_sound"
+     },
+     {
+      "key": "character_orientation",
+      "field": "character_orientation"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "video_url",
+      "kind": "video",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-wan-3.0-text-to-video",
+    "name": "Wan 3.0",
+    "kind": "video",
+    "upstreamModelId": "alibaba/wan-3.0/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "alibaba/wan-3.0/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-wan-3.0-image-to-video",
+    "name": "Wan 3.0 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "alibaba/wan-3.0/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "alibaba/wan-3.0/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-wan-3.0-reference-to-video",
+    "name": "Wan 3.0 · References",
+    "kind": "video",
+    "upstreamModelId": "alibaba/wan-3.0/reference-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s",
+     "20s",
+     "25s",
+     "30s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "enable_thinking",
+      "label": "Enable thinking",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 10
+     },
+     "video": {
+      "min": 0,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "alibaba/wan-3.0/reference-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "enable_thinking",
+      "field": "enable_thinking"
+     }
+    ],
+    "media": [
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 10,
+      "required": false
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-minimax-h3-text-to-video",
+    "name": "MiniMax H3",
+    "kind": "video",
+    "upstreamModelId": "minimax/h3/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "2K",
+      "choices": [
+       {
+        "value": "2K",
+        "label": "2K"
+       }
+      ]
+     },
+     {
+      "key": "aigc_watermark",
+      "label": "Aigc watermark",
+      "type": "boolean",
+      "default": false
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "minimax/h3/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "aigc_watermark",
+      "field": "aigc_watermark"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-minimax-h3-image-to-video",
+    "name": "MiniMax H3 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "minimax/h3/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "2K",
+      "choices": [
+       {
+        "value": "2K",
+        "label": "2K"
+       }
+      ]
+     },
+     {
+      "key": "aigc_watermark",
+      "label": "Aigc watermark",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "minimax/h3/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "aigc_watermark",
+      "field": "aigc_watermark"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-minimax-h3-reference-to-video",
+    "name": "MiniMax H3 · References",
+    "kind": "video",
+    "upstreamModelId": "minimax/h3/reference-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "5s",
+     "6s",
+     "7s",
+     "8s",
+     "9s",
+     "10s",
+     "11s",
+     "12s",
+     "13s",
+     "14s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "auto",
+     "21:9",
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "2K",
+      "choices": [
+       {
+        "value": "2K",
+        "label": "2K"
+       }
+      ]
+     },
+     {
+      "key": "aigc_watermark",
+      "label": "Aigc watermark",
+      "type": "boolean",
+      "default": false
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 9
+     },
+     "video": {
+      "min": 1,
+      "max": 3
+     },
+     "audio": {
+      "min": 0,
+      "max": 3
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "minimax/h3/reference-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "aigc_watermark",
+      "field": "aigc_watermark"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 9,
+      "required": true
+     },
+     {
+      "field": "video_urls",
+      "kind": "video",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": true
+     },
+     {
+      "field": "audio_urls",
+      "kind": "audio",
+      "many": true,
+      "shape": "url",
+      "max": 3,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "21:9": "21:9",
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-minimax-hailuo-2.3-standard-image-to-video",
+    "name": "Hailuo 2.3 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "minimax/hailuo-2.3/standard/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "6s",
+     "10s"
+    ],
+    "defaultDuration": "6s",
+    "controls": [
+     {
+      "key": "prompt_optimizer",
+      "label": "Prompt optimizer",
+      "type": "boolean",
+      "default": true
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "minimax/hailuo-2.3/standard/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "prompt_optimizer",
+      "field": "prompt_optimizer"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-lightricks-ltx-2.5-text-to-video-pro",
+    "name": "LTX 2.5 Pro",
+    "kind": "video",
+    "upstreamModelId": "lightricks/ltx-2.5/text-to-video/pro",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "6s",
+     "8s",
+     "10s"
+    ],
+    "defaultDuration": "6s",
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "camera_movement",
+      "label": "Camera movement",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "dolly_in",
+        "label": "dolly_in"
+       },
+       {
+        "value": "dolly_out",
+        "label": "dolly_out"
+       },
+       {
+        "value": "dolly_left",
+        "label": "dolly_left"
+       },
+       {
+        "value": "dolly_right",
+        "label": "dolly_right"
+       },
+       {
+        "value": "jib_up",
+        "label": "jib_up"
+       },
+       {
+        "value": "jib_down",
+        "label": "jib_down"
+       },
+       {
+        "value": "static",
+        "label": "static"
+       },
+       {
+        "value": "focus_shift",
+        "label": "focus_shift"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "lightricks/ltx-2.5/text-to-video/pro",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "camera_movement",
+      "field": "camera_movement"
+     }
+    ],
+    "media": [],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-lightricks-ltx-2.5-image-to-video-pro",
+    "name": "LTX 2.5 Pro · Image to video",
+    "kind": "video",
+    "upstreamModelId": "lightricks/ltx-2.5/image-to-video/pro",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "6s",
+     "8s",
+     "10s"
+    ],
+    "defaultDuration": "6s",
+    "aspectRatios": [
+     "16:9",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "camera_movement",
+      "label": "Camera movement",
+      "type": "select",
+      "default": "model-default",
+      "choices": [
+       {
+        "value": "model-default",
+        "label": "Model default"
+       },
+       {
+        "value": "dolly_in",
+        "label": "dolly_in"
+       },
+       {
+        "value": "dolly_out",
+        "label": "dolly_out"
+       },
+       {
+        "value": "dolly_left",
+        "label": "dolly_left"
+       },
+       {
+        "value": "dolly_right",
+        "label": "dolly_right"
+       },
+       {
+        "value": "jib_up",
+        "label": "jib_up"
+       },
+       {
+        "value": "jib_down",
+        "label": "jib_down"
+       },
+       {
+        "value": "static",
+        "label": "static"
+       },
+       {
+        "value": "focus_shift",
+        "label": "focus_shift"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 2
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "lightricks/ltx-2.5/image-to-video/pro",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "camera_movement",
+      "field": "camera_movement"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     },
+     {
+      "field": "end_image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-happy-horse-v1.1-text-to-video",
+    "name": "HappyHorse 1.1",
+    "kind": "video",
+    "upstreamModelId": "alibaba/happy-horse/v1.1/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "3s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "9:16",
+     "1:1",
+     "4:3",
+     "3:4"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "alibaba/happy-horse/v1.1/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "1:1": "1:1",
+      "4:3": "4:3",
+      "3:4": "3:4"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-alibaba-happy-horse-v1.1-image-to-video",
+    "name": "HappyHorse 1.1 · Image to video",
+    "kind": "video",
+    "upstreamModelId": "alibaba/happy-horse/v1.1/image-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "2s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "1080p",
+      "choices": [
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 1,
+      "max": 1
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 0
+     }
+    },
+    "aspectRatios": [
+     "auto"
+    ],
+    "defaultAspectRatio": "auto"
+   },
+   "binding": {
+    "endpoint": "alibaba/happy-horse/v1.1/image-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": true
+     }
+    ],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": false,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-xai-grok-imagine-video-v1.5-reference-to-video",
+    "name": "Grok Imagine Video 1.5 · References",
+    "kind": "video",
+    "upstreamModelId": "xai/grok-imagine-video/v1.5/reference-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "auto",
+     "1:1",
+     "16:9",
+     "9:16",
+     "4:3",
+     "3:4",
+     "3:2",
+     "2:3"
+    ],
+    "defaultAspectRatio": "auto",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "480p",
+      "choices": [
+       {
+        "value": "480p",
+        "label": "480p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     }
+    ],
+    "referenceInputs": {
+     "image": {
+      "min": 0,
+      "max": 8
+     },
+     "video": {
+      "min": 0,
+      "max": 0
+     },
+     "audio": {
+      "min": 0,
+      "max": 1
+     }
+    }
+   },
+   "binding": {
+    "endpoint": "xai/grok-imagine-video/v1.5/reference-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     }
+    ],
+    "media": [
+     {
+      "field": "audio_url",
+      "kind": "audio",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "image_url",
+      "kind": "image",
+      "shape": "url",
+      "max": 1,
+      "required": false
+     },
+     {
+      "field": "image_urls",
+      "kind": "image",
+      "many": true,
+      "shape": "url",
+      "max": 7,
+      "required": false
+     }
+    ],
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 10000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "integer"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "auto": "auto",
+      "1:1": "1:1",
+      "16:9": "16:9",
+      "9:16": "9:16",
+      "4:3": "4:3",
+      "3:4": "3:4",
+      "3:2": "3:2",
+      "2:3": "2:3"
+     }
+    }
+   }
+  },
+  {
+   "model": {
+    "id": "higgsfield-pixverse-v6-text-to-video",
+    "name": "PixVerse 6",
+    "kind": "video",
+    "upstreamModelId": "pixverse/v6/text-to-video",
+    "studioTasks": [
+     "video-generate"
+    ],
+    "durations": [
+     "1s",
+     "5s",
+     "6s",
+     "8s",
+     "10s",
+     "12s",
+     "15s"
+    ],
+    "defaultDuration": "5s",
+    "aspectRatios": [
+     "16:9",
+     "4:3",
+     "1:1",
+     "3:4",
+     "9:16"
+    ],
+    "defaultAspectRatio": "16:9",
+    "controls": [
+     {
+      "key": "resolution",
+      "label": "Resolution",
+      "type": "select",
+      "default": "720p",
+      "choices": [
+       {
+        "value": "360p",
+        "label": "360p"
+       },
+       {
+        "value": "540p",
+        "label": "540p"
+       },
+       {
+        "value": "720p",
+        "label": "720p"
+       },
+       {
+        "value": "1080p",
+        "label": "1080p"
+       }
+      ]
+     },
+     {
+      "key": "generate_audio",
+      "label": "Generate audio",
+      "type": "boolean",
+      "default": true
+     },
+     {
+      "key": "negative_prompt",
+      "label": "Negative prompt",
+      "type": "string",
+      "default": "",
+      "maxLength": 2000,
+      "multiline": true
+     }
+    ]
+   },
+   "binding": {
+    "endpoint": "pixverse/v6/text-to-video",
+    "fixed": {},
+    "controls": [
+     {
+      "key": "resolution",
+      "field": "resolution"
+     },
+     {
+      "key": "generate_audio",
+      "field": "generate_audio"
+     },
+     {
+      "key": "negative_prompt",
+      "field": "negative_prompt"
+     }
+    ],
+    "media": [],
+    "seed": "seed",
+    "prompt": {
+     "field": "prompt",
+     "required": true,
+     "max": 5000
+    },
+    "duration": {
+     "field": "duration",
+     "format": "number"
+    },
+    "aspect": {
+     "field": "aspect_ratio",
+     "map": {
+      "16:9": "16:9",
+      "4:3": "4:3",
+      "1:1": "1:1",
+      "3:4": "3:4",
+      "9:16": "9:16"
+     }
+    }
+   }
+  }
+ ]
+}
