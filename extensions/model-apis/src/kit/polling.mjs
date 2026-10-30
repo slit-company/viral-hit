@@ -27,7 +27,8 @@ export function parseTaskId(prefix, value) {
 }
 
 /** Reads a key from the encrypted workspace configuration passed with each request. */
-export function credential(configuration, name, label, pattern = /^\S{8,}$/) {
+// Vendors change key formats, so only obviously broken values are rejected; pass a pattern only when the format carries meaning.
+export function credential(configuration, name, label, pattern = /^\S{16,}$/) {
   const value = configuration?.[name]?.trim();
   if (!value || !pattern.test(value)) throw Error('Connect your ' + label + ' API key in Connections');
   return value;

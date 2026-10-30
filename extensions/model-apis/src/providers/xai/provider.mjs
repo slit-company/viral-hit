@@ -16,7 +16,7 @@ export const manifest = {
   ],
 };
 const pacer = createPacer(4, 15);
-const headers = configuration => ({ Authorization: 'Bearer ' + credential(configuration, 'XAI_API_KEY', 'xAI', /^xai-[\w-]{16,}$/) });
+const headers = configuration => ({ Authorization: 'Bearer ' + credential(configuration, 'XAI_API_KEY', 'xAI') });
 const images = async (list, readMedia) => { const urls = []; for (const reference of list) urls.push({ url: dataUri(await readReference(readMedia, reference)) }); return urls; };
 
 export async function createGeneration({ model, input, configuration, signal, readMedia }) {

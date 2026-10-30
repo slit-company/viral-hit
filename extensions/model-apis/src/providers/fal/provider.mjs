@@ -7,7 +7,7 @@ import catalog from './catalog.json' with { type: 'json' };
 const QUEUE = 'https://queue.fal.run/';
 
 const client = (configuration, signal) => {
-  const key = credential(configuration, 'FAL_KEY', 'fal', /^[^\s]{16,}$/);
+  const key = credential(configuration, 'FAL_KEY', 'fal');
   const call = (url, options = {}) => sendJson('fal', url, { ...options, signal, headers: { Authorization: 'Key ' + key, ...options.headers } });
   return { call, signal };
 };

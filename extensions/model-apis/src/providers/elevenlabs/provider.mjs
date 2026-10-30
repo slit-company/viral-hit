@@ -14,7 +14,7 @@ export const manifest = {
     { id: 'elevenlabs-voice-changer', name: 'ElevenLabs voice changer', kind: 'audio', upstreamModelId: 'eleven_multilingual_sts_v2', studioTasks: ['voice-change'], controls: [VOICE, toggle('remove_background_noise', 'Remove background noise')], referenceInputs: refs([0, 0], [0, 0], [1, 1]) },
   ],
 };
-const headers = configuration => ({ 'xi-api-key': credential(configuration, 'ELEVENLABS_API_KEY', 'ElevenLabs', /^[\w-]{20,}$/) });
+const headers = configuration => ({ 'xi-api-key': credential(configuration, 'ELEVENLABS_API_KEY', 'ElevenLabs') });
 const voiceId = value => { if (!/^[A-Za-z0-9]{8,40}$/.test(value)) throw Error('Enter an ElevenLabs voice ID from your voice library'); return value; };
 
 export async function createGeneration({ model, input, configuration, signal, readMedia }) {

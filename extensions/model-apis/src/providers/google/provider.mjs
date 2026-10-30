@@ -16,7 +16,7 @@ export const manifest = {
   ],
 };
 const pacer = createPacer(5, 20);
-const headers = configuration => ({ 'x-goog-api-key': credential(configuration, 'GEMINI_API_KEY', 'Gemini', /^[\w-]{20,}$/) });
+const headers = configuration => ({ 'x-goog-api-key': credential(configuration, 'GEMINI_API_KEY', 'Gemini') });
 
 async function content(input, references, readMedia) {
   const parts = [];
