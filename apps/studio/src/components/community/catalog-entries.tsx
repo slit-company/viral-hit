@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useState } from 'react';
 import { TextField } from '@seed-design/react';
 import { Action } from '@/components/base/action';
@@ -46,16 +47,14 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
     ),
     visible = entries.slice(current * 24, (current + 1) * 24);
   return (
-    <section aria-label="Discover entries" className="scroll-mt-24 space-y-5">
+    <section aria-label={uiMessages["ui.community.discover_entries"]()} className="scroll-mt-24 space-y-5">
       <div className="space-y-2">
-        <label htmlFor="catalog-search" className="text-sm font-medium">
-          Find a workflow
-        </label>
+        <label htmlFor="catalog-search" className="text-sm font-medium"> {uiMessages["ui.community.find_a_workflow"]()} </label>
         <TextField.Root className="vh-field">
           <TextField.Input
             id="catalog-search"
-            aria-label="Find a workflow"
-            placeholder="Search titles, tags, authors or IDs"
+            aria-label={uiMessages["ui.community.find_a_workflow"]()}
+            placeholder={uiMessages["ui.community.search_titles_tags_authors_or_ids"]()}
             value={query}
             maxLength={200}
             onChange={(event) => {
@@ -67,13 +66,13 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
       </div>
       <div
         role="group"
-        aria-label="Filter by scope"
+        aria-label={uiMessages["ui.community.filter_by_scope"]()}
         className="flex flex-wrap gap-2"
       >
         {[
-          ['all', 'All uses'],
-          ['general', 'General'],
-          ['specialized', 'For a specific job'],
+          ['all', uiMessages["ui.community.all_uses"]()],
+          ['general', uiMessages["ui.creative-packs.general"]()],
+          ['specialized', uiMessages["ui.app.for_a_specific_job"]()],
         ].map(([value, label]) => (
           <Action
             key={value}
@@ -90,10 +89,10 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
       </div>
       <div
         role="group"
-        aria-label="Filter by kind"
+        aria-label={uiMessages["ui.community.filter_by_kind"]()}
         className="flex flex-wrap gap-2"
       >
-        {[['all', 'All types'], ...Object.entries(entryKindLabels)].map(
+        {[['all', uiMessages["ui.community.all_types"]()], ...Object.entries(entryKindLabels)].map(
           ([value, label]) => (
             <Action
               key={value}
@@ -112,7 +111,7 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
       <p role="status" className="text-xs text-[var(--vh-text-2)]">
         {entries.length
           ? `${current * 24 + 1}–${Math.min((current + 1) * 24, entries.length)} of ${entries.length} entries`
-          : 'No matching entries. Try another filter or add a catalog.'}
+          : uiMessages["ui.community.no_matching_entries_try_another_filter_or_add_a_catalog"]()}
       </p>
       <ul className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {visible.map(({ catalog, entry }) => (
@@ -125,7 +124,7 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
                 {entryKindLabels[entry.kind]}
               </span>
               <span className="py-1">
-                {entry.scope === 'general' ? 'General' : 'For a specific job'} ·
+                {entry.scope === 'general' ? uiMessages["ui.creative-packs.general"]() : uiMessages["ui.app.for_a_specific_job"]()} ·
                 v{entry.version}
               </span>
             </div>
@@ -136,8 +135,7 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
             <p className="break-all font-mono text-[11px] text-[var(--vh-text-2)]">
               {catalog.id}/{entry.id}
             </p>
-            <p className="break-words text-xs text-[var(--vh-text-2)]">
-              From {catalog.title} · {catalog.author}
+            <p className="break-words text-xs text-[var(--vh-text-2)]"> {uiMessages["ui.app.from"]()} {catalog.title} · {catalog.author}
             </p>
             {!!entry.tags.length && (
               <p className="break-words text-xs text-[var(--vh-text-2)]">
@@ -154,19 +152,14 @@ export function CatalogEntries({ catalogs }: { catalogs: SavedCatalog[] }) {
             className="vh-secondary"
             disabled={current === 0}
             onClick={() => setPage(current - 1)}
-          >
-            Previous
-          </Action>
-          <span className="text-xs">
-            Page {current + 1} of {Math.ceil(entries.length / 24)}
+          > {uiMessages["ui.community.previous"]()} </Action>
+          <span className="text-xs"> {uiMessages["ui.community.page"]()} {current + 1} {uiMessages["ui.community.of"]()} {Math.ceil(entries.length / 24)}
           </span>
           <Action
             className="vh-secondary"
             disabled={(current + 1) * 24 >= entries.length}
             onClick={() => setPage(current + 1)}
-          >
-            Next
-          </Action>
+          > {uiMessages["ui.community.next"]()} </Action>
         </div>
       )}
     </section>
@@ -183,11 +176,11 @@ function EntryLink({
     <Link
       href={catalogEntryHref(entry)}
       aria-label={
-        'Open ' + entry.title + ' (' + catalogId + '/' + entry.id + ')'
+        uiMessages["ui.characters.open"]() + entry.title + ' (' + catalogId + '/' + entry.id + ')'
       }
       className="vh-secondary mt-auto inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-semibold"
     >
-      Open in {entry.kind === 'skill' ? 'Skills' : entry.kind === 'runtime-package' ? 'Runtime packages' : 'Packs'}
+      {uiMessages["ui.community.open_in"]()}{entry.kind === 'skill' ? 'Skills' : entry.kind === 'runtime-package' ? 'Runtime packages' : 'Packs'}
     </Link>
   );
 }

@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useRef, useState } from 'react';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { PackInspection, PackScope } from '@/core/harness/recipe-packs';
@@ -19,7 +20,7 @@ export function usePackBuilder() {
   const [error, setError] = useState('');
   const epoch = useRef(0);
   useEffect(() => {
-    void apiJsonGet<{ recipes: Recipe[] }>('/api/app/recipes').then(result => setRecipes(result.recipes)).catch(() => setError('Recipes are unavailable'));
+    void apiJsonGet<{ recipes: Recipe[] }>('/api/app/recipes').then(result => setRecipes(result.recipes)).catch(() => setError(uiMessages["ui.app.recipes_are_unavailable"]()));
   }, []);
   function change<K extends keyof PackDraft>(key: K, value: PackDraft[K]) {
     epoch.current++; setBuilt(undefined); setError('');
@@ -36,7 +37,7 @@ export function usePackBuilder() {
       const useCases = draft.useCases.split(',').map(slug).filter(Boolean);
       const result = await apiJsonPost<Built>('/api/app/recipe-packs', { action: 'build', pack: { ...draft, useCases, recipeIds: chosen } });
       if (current === epoch.current) setBuilt(result);
-    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not build pack'); }
+    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_build_pack"]()); }
     finally { if (current === epoch.current) setBusy(false); }
   }
   function download() {

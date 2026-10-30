@@ -1,0 +1,25 @@
+import { test, expect } from '@playwright/test';
+const headers = { 'x-viral-hit-workspace-request': '1' };
+test('EN and KR switch the same project, including tool catalog, sidebar and API selection', async ({ page, request }) => {
+  const id = (await (await request.post('/api/app/projects', { headers, data: { name: 'Language verification' } })).json()).id;
+  await page.goto('/studio/' + id);
+  await expect(page.getByRole('heading', { name: 'Create image', exact: true })).toBeVisible();
+  await expect(page.getByLabel('API provider', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Switch language', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: '한국어', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp('/ko/studio/' + id + '$'));
+  await expect(page.getByRole('heading', { name: '이미지 만들기', exact: true })).toBeVisible();
+  await expect(page.getByLabel('API 제공업체', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: '언어 변경', exact: true })).toContainText('KR');
+  await expect(page.getByRole('link', { name: '새 프로젝트', exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: '이미지 만들기', exact: true })).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.getByRole('button', { name: '언어 변경', exact: true }).click();
+  await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+  await expect(page).toHaveURL(new RegExp('/studio/' + id + '$'));
+  await expect(page.getByRole('heading', { name: 'Create image', exact: true })).toBeVisible();
+  await expect(page.getByLabel('API provider', { exact: true })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});

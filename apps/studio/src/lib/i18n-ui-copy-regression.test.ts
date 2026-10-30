@@ -16,12 +16,14 @@ test('workspace shell exposes projects, Studio, Canvas, assets, and provider con
   assert.match(source, /LanguageSwitcher/);
 });
 
-test('language switcher exposes English, Chinese, and Japanese locales', () => {
+test('language switcher exposes English, Chinese, Japanese, and Korean locales', () => {
   const localeConfig = read('src/config/locale/index.ts');
   const paraglideConfig = read('src/config/paraglide.ts');
 
-  assert.match(localeConfig, /\['en', 'zh', 'ja'\]/);
+  assert.match(localeConfig, /\['en', 'zh', 'ja', 'ko'\]/);
   assert.match(localeConfig, /ja: '日本語'/);
+  assert.match(localeConfig, /ko: '한국어'/);
+  assert.match(paraglideConfig, /\['ko', '\/ko'/);
   assert.match(paraglideConfig, /\['ja', '\/ja'/);
   assert.match(paraglideConfig, /\['ja', '\/ja\/:path\(\.\*\)\?'/);
 });

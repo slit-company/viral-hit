@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import type { InstalledConnectorCatalog } from '@/core/publishing/installed/contract';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiError, apiJsonGet, apiJsonPost } from '@/lib/api-client';
@@ -33,7 +34,7 @@ export function usePublications(projectId: string) {
         const local = media.assets.filter(asset => asset.storageProvider === 'local');
         setMediaAssets(local); setVideos(local.filter(asset => ['video/mp4', 'video/webm'].includes(asset.mimeType ?? '')));
       }
-    } catch { if (mounted.current && !controller.signal.aborted && sequence.current === version) setError('Publishing could not be loaded. Refresh to try again.'); }
+    } catch { if (mounted.current && !controller.signal.aborted && sequence.current === version) setError(uiMessages["ui.publishing.publishing_could_not_be_loaded_refresh_to_try_again"]()); }
     finally { if (sequence.current === version) { reading.current = false; if (mounted.current) setLoading(false); } }
   }, [endpoint, projectId]);
   useEffect(() => {
@@ -49,7 +50,7 @@ export function usePublications(projectId: string) {
       if (mounted.current) await refresh();
       return true;
     } catch (failure) {
-      const message = failure instanceof ApiError ? failure.message : 'Publication request did not finish. Refresh before retrying.';
+      const message = failure instanceof ApiError ? failure.message : uiMessages["ui.publishing.publication_request_did_not_finish_refresh_before_retrying"]();
       if (mounted.current) { await refresh(); setError(message); }
       return false;
     } finally { busy.current = false; if (mounted.current) setPending(false); }

@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import {
   composerFieldButtonClassName,
   composerFloatingPanelClassName,
@@ -52,41 +53,41 @@ export const normalizeComposerToken = (
 ) => {
   switch (value) {
     case 'quality':
-      return labels?.tokenQualityLabel ?? 'Quality';
+      return labels?.tokenQualityLabel ?? uiMessages["ui.creative-canvas.quality"]();
     case 'fast':
-      return labels?.tokenFastLabel ?? 'Fast';
+      return labels?.tokenFastLabel ?? uiMessages["ui.creative-canvas.fast"]();
     case 'lite':
-      return labels?.tokenLiteLabel ?? 'Lite';
+      return labels?.tokenLiteLabel ?? uiMessages["ui.creative-canvas.lite"]();
     case 'low':
-      return labels?.tokenLowLabel ?? 'Low';
+      return labels?.tokenLowLabel ?? uiMessages["ui.creative-canvas.low"]();
     case 'medium':
-      return labels?.tokenMediumLabel ?? 'Medium';
+      return labels?.tokenMediumLabel ?? uiMessages["ui.creative-canvas.medium"]();
     case 'standard':
-      return labels?.tokenStandardLabel ?? 'Standard';
+      return labels?.tokenStandardLabel ?? uiMessages["ui.creative-canvas.standard"]();
     case 'high':
-      return labels?.tokenHighLabel ?? 'High';
+      return labels?.tokenHighLabel ?? uiMessages["ui.creative-canvas.high"]();
     case 'pro':
-      return labels?.tokenProLabel ?? 'Pro';
+      return labels?.tokenProLabel ?? uiMessages["ui.creative-canvas.pro"]();
     case 'adaptive':
-      return labels?.tokenAdaptiveLabel ?? 'Adaptive';
+      return labels?.tokenAdaptiveLabel ?? uiMessages["ui.creative-canvas.adaptive"]();
     case 'auto':
-      return labels?.tokenAutoLabel ?? 'Auto';
+      return labels?.tokenAutoLabel ?? uiMessages["ui.creative-canvas.auto"]();
     case 'landscape':
-      return labels?.tokenLandscapeLabel ?? 'Landscape';
+      return labels?.tokenLandscapeLabel ?? uiMessages["ui.creative-canvas.landscape"]();
     case 'portrait':
-      return labels?.tokenPortraitLabel ?? 'Portrait';
+      return labels?.tokenPortraitLabel ?? uiMessages["ui.creative-canvas.portrait"]();
     case 'zh':
-      return labels?.tokenChineseLabel ?? 'Chinese';
+      return labels?.tokenChineseLabel ?? uiMessages["product.shell.chinese"]();
     case 'en':
-      return labels?.tokenEnglishLabel ?? 'English';
+      return labels?.tokenEnglishLabel ?? uiMessages["product.shell.english"]();
     case 'image':
-      return labels?.tokenImageOrientationLabel ?? 'Image orientation';
+      return labels?.tokenImageOrientationLabel ?? uiMessages["ui.creative-canvas.image_orientation"]();
     case 'video':
-      return labels?.tokenVideoOrientationLabel ?? 'Video orientation';
+      return labels?.tokenVideoOrientationLabel ?? uiMessages["ui.creative-canvas.video_orientation"]();
     case 'input_image':
-      return labels?.tokenInputImageLabel ?? 'Image background';
+      return labels?.tokenInputImageLabel ?? uiMessages["ui.creative-canvas.image_background"]();
     case 'input_video':
-      return labels?.tokenInputVideoLabel ?? 'Video background';
+      return labels?.tokenInputVideoLabel ?? uiMessages["ui.creative-canvas.video_background"]();
     default:
       if (/^\d+(?:k|p)$/i.test(value)) {
         return value.toUpperCase();
@@ -234,13 +235,13 @@ export const getDraftStatusLabel = (
 
   switch (card.status) {
     case 'pending':
-      return labels?.queuedStatusLabel ?? 'Queued';
+      return labels?.queuedStatusLabel ?? uiMessages["ui.creative-canvas.queued"]();
     case 'processing':
-      return labels?.generatingStatusLabel ?? 'Generating';
+      return labels?.generatingStatusLabel ?? uiMessages["ui.creative-canvas.generating"]();
     case 'succeeded':
-      return labels?.readyStatusLabel ?? 'Ready';
+      return labels?.readyStatusLabel ?? uiMessages["ui.creative-canvas.ready"]();
     case 'failed':
-      return labels?.failedStatusLabel ?? 'Failed';
+      return labels?.failedStatusLabel ?? uiMessages["ui.creative-canvas.failed"]();
     default:
       return '';
   }

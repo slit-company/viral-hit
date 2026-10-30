@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { Action } from '@/components/base/action';
 import type { Recipe } from '@/core/harness/recipes';
 import type { PackSummary } from '@/core/harness/recipe-packs';
@@ -28,17 +29,10 @@ function PackImpact({ packs }: { packs: PackSummary[] }) {
   return (
     <>
       {!!packs.length && (
-        <p className="break-words">
-          Affects recipe packs:{' '}
-          {packs.map((pack) => `${pack.title} (${pack.id})`).join(', ')}. Their
-          catalog will show changed or missing recipes.
-        </p>
+        <p className="break-words"> {uiMessages["ui.app.affects_recipe_packs"]()}{' '}
+          {packs.map((pack) => `${pack.title} (${pack.id})`).join(', ')}{uiMessages["ui.app.their_catalog_will_show_changed_or_missing_recipes"]()} </p>
       )}
-      <p className="text-[var(--vh-text-2)]">
-        Saved runs keep their execution plans. Project media, timeline edits and
-        creative-pack snapshots are kept. New runs use the current library
-        definition.
-      </p>
+      <p className="text-[var(--vh-text-2)]"> {uiMessages["ui.app.saved_runs_keep_their_execution_plans_project_media_timeline_edits_and_crea"]()} </p>
     </>
   );
 }
@@ -51,20 +45,15 @@ export function RecipeUpdateReview({
     update = review.update!;
   return (
     <div className="space-y-3 border-t border-[var(--vh-border)] pt-3">
-      <h4 className="text-sm font-semibold">Review recipe update</h4>
-      <p>
-        Replace installed v{update.current.version} with v
-        {review.recipe.version} under the same ID.
-      </p>
-      <RecipeDefinition title="Installed definition" recipe={update.current} />
-      <RecipeDefinition title="Incoming definition" recipe={review.recipe} />
+      <h4 className="text-sm font-semibold">{uiMessages["ui.app.review_recipe_update"]()}</h4>
+      <p> {uiMessages["ui.app.replace_installed_v"]()}{update.current.version} {uiMessages["ui.app.with_v"]()} {review.recipe.version} {uiMessages["ui.app.under_the_same_id"]()} </p>
+      <RecipeDefinition title={uiMessages["ui.app.installed_definition"]()} recipe={update.current} />
+      <RecipeDefinition title={uiMessages["ui.app.incoming_definition"]()} recipe={review.recipe} />
       <PackImpact packs={update.packs} />
       <Action
         onClick={() => downloadRecipe(update.current)}
         className="text-xs underline"
-      >
-        Download installed JSON
-      </Action>
+      > {uiMessages["ui.app.download_installed_json"]()} </Action>
       <label className="flex items-start gap-2 leading-5">
         <input
           type="checkbox"
@@ -72,10 +61,8 @@ export function RecipeUpdateReview({
           onChange={(event) => library.setConfirmed(event.target.checked)}
           className="mt-1"
         />
-        <span>
-          I reviewed both definitions and want to update{' '}
-          <strong className="break-all">{review.recipe.id}</strong>.
-        </span>
+        <span> {uiMessages["ui.app.i_reviewed_both_definitions_and_want_to_update"]()}{' '}
+          <strong className="break-all">{review.recipe.id}</strong>{uiMessages["ui.publishing.open_editor_end"]()}</span>
       </label>
     </div>
   );
@@ -88,24 +75,21 @@ export function RecipeRemovalPanel({
   const review = library.removal!;
   return (
     <section
-      aria-label="Recipe removal review"
+      aria-label={uiMessages["ui.app.recipe_removal_review"]()}
       className="space-y-4 rounded-xl border border-[var(--vh-border)] p-4 text-xs leading-5"
     >
-      <h3 className="break-words text-base font-semibold">
-        Remove {review.recipe.title}?
+      <h3 className="break-words text-base font-semibold"> {uiMessages["ui.app.remove"]()} {review.recipe.title}?
       </h3>
       <p className="break-all">
         {review.recipe.id} · v{review.recipe.version}
       </p>
       <p className="break-words">{review.recipe.description}</p>
-      <RecipeDefinition title="Definition to remove" recipe={review.recipe} />
+      <RecipeDefinition title={uiMessages["ui.app.definition_to_remove"]()} recipe={review.recipe} />
       <PackImpact packs={review.packs} />
       <Action
         onClick={() => downloadRecipe(review.recipe)}
         className="text-xs underline"
-      >
-        Download recipe before removal
-      </Action>
+      > {uiMessages["ui.app.download_recipe_before_removal"]()} </Action>
       <label className="flex items-start gap-2">
         <input
           type="checkbox"
@@ -113,11 +97,8 @@ export function RecipeRemovalPanel({
           onChange={(event) => library.setConfirmed(event.target.checked)}
           className="mt-1"
         />
-        <span>
-          Remove the reviewed{' '}
-          <strong className="break-all">{review.recipe.id}</strong> definition
-          from the library.
-        </span>
+        <span> {uiMessages["ui.app.remove_the_reviewed"]()}{' '}
+          <strong className="break-all">{review.recipe.id}</strong> {uiMessages["ui.app.definition_from_the_library"]()} </span>
       </label>
       {library.error && (
         <p
@@ -132,15 +113,13 @@ export function RecipeRemovalPanel({
           disabled={library.busy}
           className="vh-secondary"
           onClick={library.dismissRemoval}
-        >
-          Cancel removal
-        </Action>
+        > {uiMessages["ui.app.cancel_removal"]()} </Action>
         <Action
           disabled={library.busy || !library.confirmed}
           className="vh-primary"
           onClick={() => void library.remove()}
         >
-          {library.busy ? 'Removing…' : 'Remove recipe'}
+          {library.busy ? uiMessages["ui.common.removing"]() : uiMessages["ui.app.remove_recipe"]()}
         </Action>
       </div>
     </section>

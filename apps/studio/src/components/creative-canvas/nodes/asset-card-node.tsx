@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { Action } from '@/components/base/action';
 import {
   Handle,
@@ -206,13 +207,9 @@ export function AssetCardNode({
                   onError={() => setMediaStatus('error')}
                 />
               ) : (
-                <div className="grid size-full place-items-center text-[11px] uppercase tracking-[0.18em] text-[var(--vh-text-2)]">
-                  Timeline
-                </div>
+                <div className="grid size-full place-items-center text-[11px] uppercase tracking-[0.18em] text-[var(--vh-text-2)]"> {uiMessages["ui.creative-canvas.timeline"]()} </div>
               )}
-              <span className="absolute left-3 top-3 rounded-md border border-[var(--vh-border)] bg-[var(--vh-control)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--vh-text-2)]">
-                Timeline
-              </span>
+              <span className="absolute left-3 top-3 rounded-md border border-[var(--vh-border)] bg-[var(--vh-control)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.14em] text-[var(--vh-text-2)]"> {uiMessages["ui.creative-canvas.timeline"]()} </span>
             </div>
             <div className="border-t border-[var(--vh-border)] px-3 py-2.5">
               <div className="flex items-center justify-between gap-2">

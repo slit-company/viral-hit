@@ -813,3 +813,9 @@ hr {
     backdrop-filter: blur(10px);
   }
 }
+
+/* Keep Korean word endings together; long identifiers can still wrap. */
+html:lang(ko) {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}

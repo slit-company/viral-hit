@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { ProjectBundleDialog } from '@/components/project-bundles/project-bundle-dialog';
 import { BackButton } from '@/components/base/back-button';
 import { useRouter } from '@/core/i18n/navigation';
@@ -139,7 +140,7 @@ export function ProductPageShell({
             </div>
 
             <div className="ml-auto flex min-w-0 items-center justify-end gap-2 max-sm:justify-start max-sm:overflow-x-auto max-sm:[&>*:not(nav)]:shrink-0">
-              {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs lg:hidden">Storyboards</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
+              {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs lg:hidden">{t("sidebar.storyboards")}</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
               {projectId && (workspaceMode || publishing) ? (
                 <nav
                   className="flex items-center rounded-full border border-[var(--vh-border)] bg-[var(--vh-control)] p-1 max-sm:absolute max-sm:inset-x-4 max-sm:top-14 lg:hidden"
@@ -185,8 +186,8 @@ export function ProductPageShell({
               ) : null}
               <ProjectBundleDialog key={`file-${projectId}`} projectId={projectId} />
               <LanguageSwitcher variant="workspace" />
-              {projectId && <Link href={`/publish/${projectId}`} aria-label="Publish project" title="Publish project" aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
-              <Link href="/connections" aria-label="Publishing connections" title="Publishing connections" className="inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>
+              {projectId && <Link href={`/publish/${projectId}`} aria-label={uiMessages["ui.app.publish_project"]()} title={uiMessages["ui.app.publish_project"]()} aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
+              <Link href="/connections" aria-label={uiMessages["ui.app.publishing_connections"]()} title={uiMessages["ui.app.publishing_connections"]()} className="inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>
               <WorkspaceApiConfigDialog
                 providerId={ACTIVE_GENERATION_PROVIDER_ID}
               />

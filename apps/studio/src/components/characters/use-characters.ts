@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useCallback, useEffect, useState } from 'react';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import { WORKSPACE_MUTATION_HEADER } from '@/lib/trusted-local-request';
@@ -14,7 +15,7 @@ async function upload(request: unknown, images: ImageDraft[]) {
   for (const image of images) form.append('file', image.file, image.file.name);
   const response = await fetch('/api/app/characters', { method: 'POST', body: form, headers: { [WORKSPACE_MUTATION_HEADER]: '1' } });
   const body = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(body.error || 'Character request failed');
+  if (!response.ok) throw new Error(body.error || uiMessages["ui.characters.character_request_failed"]());
   return body as Character;
 }
 
@@ -25,13 +26,13 @@ export function useCharacters() {
   const [error, setError] = useState('');
   const load = useCallback(async () => {
     try { setCharacters((await apiJsonGet<{ characters: Character[] }>('/api/app/characters')).characters); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Characters are unavailable'); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : uiMessages["ui.characters.characters_are_unavailable"]()); }
   }, []);
   useEffect(() => { void load(); }, [load]);
   async function run<T>(task: () => Promise<T>) {
     setBusy(true); setError('');
     try { const result = await task(); await load(); return result; }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Character request failed'); return undefined; }
+    catch (cause) { setError(cause instanceof Error ? cause.message : uiMessages["ui.characters.character_request_failed"]()); return undefined; }
     finally { setBusy(false); }
   }
   return {
@@ -42,7 +43,7 @@ export function useCharacters() {
     importFile: (file: File) => run(async () => {
       const response = await fetch('/api/app/characters/import', { method: 'POST', body: file, headers: { 'Content-Type': 'application/x-tar', [WORKSPACE_MUTATION_HEADER]: '1' } });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error || 'The character file could not be imported');
+      if (!response.ok) throw new Error(body.error || uiMessages["ui.characters.the_character_file_could_not_be_imported"]());
       return body as Character & { replayed: boolean };
     }),
   };

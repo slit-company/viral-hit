@@ -23,7 +23,7 @@ test('painting a mask in Studio changes only the marked area and survives reload
   await expect(page.getByRole('button', { name: 'Mark area to change', exact: true })).toBeDisabled();
   await page.getByLabel('Visual reference files', { exact: true }).setInputFiles(source);
   await expect(page.getByRole('button', { name: 'Visual sources', exact: true })).toHaveText('Sources · 1');
-  await expect(page.getByRole('button', { name: '만들기', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: "Create", exact: true })).toBeDisabled();
 
   await page.getByLabel('Change in marked area', { exact: true }).selectOption('fill');
 
@@ -39,7 +39,7 @@ test('painting a mask in Studio changes only the marked area and survives reload
   await page.getByRole('button', { name: 'Use this mask', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Edit marked area', exact: true })).toHaveText('Area marked');
 
-  await page.getByRole('button', { name: '만들기', exact: true }).click();
+  await page.getByRole('button', { name: "Create", exact: true }).click();
   await expect.poll(async () => (await (await request.get(`/api/app/projects/${projectId}/generations`)).json()).items[0]?.status).toBe('succeeded');
   expect(submitted[0].references.map(reference => reference.role)).toEqual(['source', 'mask']);
   const [item] = (await (await request.get(`/api/app/projects/${projectId}/generations`)).json()).items;

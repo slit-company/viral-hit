@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { Action } from '@/components/base/action';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import type { EditorOperation } from '@/core/commands/editor-commands';
@@ -47,7 +48,7 @@ export function OverlayInspector({ clip, time, onEdit, onSeek, locked }: {
             {(['linear', 'ease-in', 'ease-out', 'ease-in-out'] as const).map(value => <option key={value} value={value}>{t(value)}</option>)}
           </select>
         </label>
-        <p className="text-[11px] tabular-nums text-[var(--vh-text-2)]">{t('cursor')} {(cursor - clip.startTime).toFixed(2)}s · {frames.length}/32</p>
+        <p className="text-[11px] tabular-nums text-[var(--vh-text-2)]">{t('cursor')} {(cursor - clip.startTime).toFixed(2)}{uiMessages["ui.app.s"]()} {frames.length}/32</p>
       </> : null}
     </div>
     {clip.sourceType === 'video' && <label className="block text-[11px] text-[var(--vh-text-2)]">

@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useRef, useState } from 'react';
 import { apiJsonPost } from '@/lib/api-client';
 import type { Recipe } from '@/core/harness/recipes';
@@ -57,7 +58,7 @@ export function useRecipeLibrary(
     } catch (cause) {
       if (current === epoch.current)
         setError(
-          cause instanceof Error ? cause.message : 'Recipe request failed',
+          cause instanceof Error ? cause.message : uiMessages["ui.app.recipe_request_failed"](),
         );
     } finally {
       if (current === epoch.current) setBusy(false);
@@ -70,7 +71,7 @@ export function useRecipeLibrary(
     return work(
       async () => {
         if (file.size > 128_000)
-          throw new Error('Recipe files must be 128 KB or smaller.');
+          throw new Error(uiMessages["ui.app.recipe_files_must_be_128_kb_or_smaller"]());
         return file.text();
       },
       (value) => {
@@ -99,7 +100,7 @@ export function useRecipeLibrary(
     setConfirmed(false);
     return work(async () => {
       if (new TextEncoder().encode(text).byteLength > 128_000)
-        throw new Error('Recipe JSON must be 128 KB or smaller.');
+        throw new Error(uiMessages["ui.app.recipe_json_must_be_128_kb_or_smaller"]());
       return apiJsonPost<RecipeInspection>('/api/app/recipes', {
         action: 'inspect',
         manifest: JSON.parse(text),

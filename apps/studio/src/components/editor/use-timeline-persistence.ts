@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { TimelineDraftJournal, mergeTimelineDraft, type DraftRecord } from '@/core/editor/timeline-drafts';
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { TimelineDocument } from '@/core/editor/timeline-document';
@@ -49,7 +50,7 @@ export function useTimelinePersistence(options: Options) {
       } else ownDraft.current = j.write(o.savedRef.current, o.documentRef.current, o.versionRef.current ?? 0);
       backupError.current = false;
     } catch (error) {
-      if (!backupError.current) o.onError(`Local draft backup unavailable: ${error instanceof Error ? error.message : 'browser storage error'}. Keep this tab open until the timeline is saved.`);
+      if (!backupError.current) o.onError(uiMessages["ui.editor.backup_unavailable"]({ error: error instanceof Error ? error.message : uiMessages["ui.editor.browser_storage_error"]() }));
       backupError.current = true;
     }
   };
@@ -65,39 +66,39 @@ export function useTimelinePersistence(options: Options) {
     try {
       journal.current = new TimelineDraftJournal(window.localStorage, options.projectId, crypto.randomUUID());
       const records = scanDrafts(); reviewing.current = records.length > 0; setDraftReviewOpen(records.length > 0);
-    } catch { journal.current = null; latest.current.onError('Browser draft storage is unavailable. Keep this tab open until the timeline is saved.'); }
+    } catch { journal.current = null; latest.current.onError(uiMessages["ui.editor.browser_draft_storage_is_unavailable_keep_this_tab_open_until_the_timeline_"]()); }
     return () => { backup(); lifecycle.current++; };
   }, [options.projectId]);
   useEffect(() => { backup(); }, [options.document, options.hydrated, options.projectId]);
   const closeDrafts = () => { if (recovering) return; reviewing.current = false; setDraftReviewOpen(false); void saveRef.current(); };
   const openDrafts = () => {
-    if (busy.current) { latest.current.onError('Wait for the current save before reviewing local drafts.'); return; }
+    if (busy.current) { latest.current.onError(uiMessages["ui.editor.wait_for_the_current_save_before_reviewing_local_drafts"]()); return; }
     backup();
-    try { scanDrafts(); reviewing.current = true; setDraftReviewOpen(true); } catch { latest.current.onError('Local drafts could not be read.'); }
+    try { scanDrafts(); reviewing.current = true; setDraftReviewOpen(true); } catch { latest.current.onError(uiMessages["ui.editor.local_drafts_could_not_be_read"]()); }
   };
   const discardDraft = (record: DraftRecord) => {
     try {
-      if (!journal.current?.remove(record)) throw new Error('This draft changed in another tab. Reload the draft list before removing it.');
+      if (!journal.current?.remove(record)) throw new Error(uiMessages["ui.editor.this_draft_changed_in_another_tab_reload_the_draft_list_before_removing_it"]());
       scanDrafts();
-    } catch (error) { setDraftError(error instanceof Error ? error.message : 'Could not remove draft'); }
+    } catch (error) { setDraftError(error instanceof Error ? error.message : uiMessages["ui.editor.could_not_remove_draft"]()); }
   };
   const restoreDraft = async (record: DraftRecord) => {
     const o = latest.current, j = journal.current;
     if (!j || !o.hydrated || !o.savedRef.current || !o.documentRef.current) return;
-    if (!equal(o.documentRef.current, o.savedRef.current)) { setDraftError('Save or undo the current tab’s edits before restoring another draft. Continue editing to finish saving.'); return; }
+    if (!equal(o.documentRef.current, o.savedRef.current)) { setDraftError(uiMessages["ui.editor.save_or_undo_the_current_tab_s_edits_before_restoring_another_draft_continu"]()); return; }
     const current = o.documentRef.current, generation = lifecycle.current;
     setRecovering(true); setDraftError('');
     try {
       const remote = (await apiJsonGet<{ timeline: TimelineState | null }>(`/api/app/projects/${encodeURIComponent(o.projectId)}/timeline`)).timeline;
-      if (lifecycle.current !== generation || latest.current.projectId !== o.projectId || !equal(o.documentRef.current!, current)) throw new Error('The editor changed while loading. Review the draft again.');
+      if (lifecycle.current !== generation || latest.current.projectId !== o.projectId || !equal(o.documentRef.current!, current)) throw new Error(uiMessages["ui.editor.the_editor_changed_while_loading_review_the_draft_again"]());
       const merged = mergeTimelineDraft(record.draft, remote);
       if (merged.conflicts.length) {
         const clips = record.draft.document.tracks.flatMap(track => track.clips);
         const descriptions = [...new Set(merged.conflicts.map(({ path }) => {
           const clip = clips.find(clip => path.includes(`.clips[${clip.id}]`));
-          return clip ? `${clip.sourceType === 'caption' ? 'Caption' : 'Clip'} “${clip.name.slice(0, 80)}”` : 'Timeline settings';
+          return clip ? `${clip.sourceType === 'caption' ? uiMessages["ui.editor.caption"]() : uiMessages["ui.editor.clip"]()} “${clip.name.slice(0, 80)}”` : uiMessages["ui.editor.timeline_settings"]();
         }))];
-        throw new Error(`Both versions changed: ${descriptions.slice(0, 4).join(', ')}. Nothing was overwritten. Download the draft to retain its values, or continue with the saved timeline.`);
+        throw new Error(uiMessages["ui.editor.merge_conflicts"]({ fields: descriptions.slice(0, 4).join(', ') }));
       }
       // Keep a new independent recovery copy before applying/removing the old snapshot.
       ownDraft.current = j.write(merged.baseline, merged.document, merged.version);
@@ -107,7 +108,7 @@ export function useTimelinePersistence(options: Options) {
       reviewing.current = false; setDraftReviewOpen(false);
       if (equal(merged.document, merged.baseline)) { j.remove(record); retiredOnSave.current = []; backup(); }
       else void saveRef.current();
-    } catch (error) { if (lifecycle.current === generation) setDraftError(error instanceof Error ? error.message : 'Draft recovery failed'); }
+    } catch (error) { if (lifecycle.current === generation) setDraftError(error instanceof Error ? error.message : uiMessages["ui.editor.draft_recovery_failed"]()); }
     finally { if (lifecycle.current === generation) setRecovering(false); }
   };
 
@@ -138,13 +139,13 @@ export function useTimelinePersistence(options: Options) {
           const remote = (await load()).timeline;
           if (!remote) throw error;
           const merged = mergeTimelineDocuments({ base, local: candidate, remote: remote.document });
-          if (merged.conflicts.length) throw new Error(`Timeline edit conflict at ${merged.conflicts[0].path}. Your local edit is still open.`);
+          if (merged.conflicts.length) throw new Error(uiMessages["ui.editor.edit_conflict"]({ path: merged.conflicts[0].path }));
           saved = await saveTimelineThroughCommand({ projectId, document: merged.document, baseDocument: remote.document, expectedRevision: remote.version });
         }
         if (!active) return;
         const current = o.documentRef.current ?? candidate;
         const rebase = equal(current, candidate) ? { document: saved.document, conflicts: [] } : mergeTimelineDocuments({ base: candidate, local: current, remote: saved.document });
-        if (rebase.conflicts.length) throw new Error('Concurrent edits overlap. Your latest changes remain in this tab and its local draft; the saved timeline was not overwritten by those changes.');
+        if (rebase.conflicts.length) throw new Error(uiMessages["ui.editor.concurrent_edits_overlap_your_latest_changes_remain_in_this_tab_and_its_loc"]());
         const rebased = rebase.document;
         o.versionRef.current = saved.version;
         o.savedRef.current = saved.document;
@@ -153,12 +154,12 @@ export function useTimelinePersistence(options: Options) {
         o.onStatus(equal(rebased, saved.document) ? 'saved' : 'saving');
         succeeded = true;
         try { for (const draft of retiredOnSave.current) journal.current?.remove(draft); retiredOnSave.current = []; }
-        catch { o.onError('Timeline saved, but an old local draft could not be removed. It remains available for review.'); }
+        catch { o.onError(uiMessages["ui.editor.timeline_saved_but_an_old_local_draft_could_not_be_removed_it_remains_avail"]()); }
         backup();
       } catch (error) {
         if (active) {
           o.onStatus('idle');
-          o.onError(error instanceof Error ? error.message : 'The timeline could not be saved.');
+          o.onError(error instanceof Error ? error.message : uiMessages["ui.editor.save_failed"]());
         }
       } finally {
         if (lifecycle.current !== generation) return;
@@ -218,5 +219,5 @@ export function useTimelinePersistence(options: Options) {
     const timer = window.setTimeout(() => { void saveRef.current(); }, 700);
     return () => window.clearTimeout(timer);
   }, [options.document, options.hydrated, options.projectId]);
-  return { checkpoint: backup, canRestore: options.hydrated, drafts, draftReviewOpen, draftError, recovering, openDrafts, closeDrafts, restoreDraft, discardDraft, reloadDrafts: () => { try { scanDrafts(); } catch { setDraftError('Local draft storage could not be read. Existing drafts have not been deleted.'); } } };
+  return { checkpoint: backup, canRestore: options.hydrated, drafts, draftReviewOpen, draftError, recovering, openDrafts, closeDrafts, restoreDraft, discardDraft, reloadDrafts: () => { try { scanDrafts(); } catch { setDraftError(uiMessages["ui.editor.local_draft_storage_could_not_be_read_existing_drafts_have_not_been_deleted"]()); } } };
 }

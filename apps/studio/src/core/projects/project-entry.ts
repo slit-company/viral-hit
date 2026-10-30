@@ -6,7 +6,7 @@ import {
 import { formatProjectActivityDate } from './format-project-activity-date';
 
 const getLocalizedRoute = (route: string, locale?: string | null) =>
-  locale === 'zh' || locale === 'ja'
+  locale === 'zh' || locale === 'ja' || locale === 'ko'
     ? `/${locale}${route === '/' ? '' : route}`
     : route;
 

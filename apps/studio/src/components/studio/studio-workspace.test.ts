@@ -32,7 +32,7 @@ test('studio uses tool-first production panels and the existing project generati
   assert.match(studioSource, /StudioToolNavigation/);
   assert.match(studioSource, /StudioToolSelection/);
   assert.match(composerSource, /max-w-\[1138px\]/);
-  assert.match(composerSource, /ariaLabel="Media type"/);
+  assert.match(composerSource, /uiMessages\["ui.studio.media_type"\]/);
   assert.match(composerSource, /WorkspaceSelect/);
   assert.match(composerSource, /CreativeCanvasComposerParameterPicker/);
   assert.match(composerSource, /truncatePromptToMaxChars/);
@@ -44,9 +44,9 @@ test('studio uses tool-first production panels and the existing project generati
   assert.match(feedSource, /aspect-square/);
   assert.match(feedSource, /object-cover/);
   assert.match(feedSource, /item\.prompt/);
-  assert.match(studioSource, /제작 설정/);
-  assert.match(studioSource, /프로젝트 결과/);
-  assert.match(startHereSource, /Create Here/);
+  assert.match(studioSource, /studio.tools.creation_settings/);
+  assert.match(studioSource, /studio.tools.project_results/);
+  assert.match(startHereSource, /ui.studio.create_here/);
   assert.match(studioSource, /fetchProjectGenerations/);
   assert.match(composerSource, /value: 'analysis'/);
   assert.doesNotMatch(composerSource, /workflowLabel/);
@@ -59,6 +59,6 @@ test('studio uses tool-first production panels and the existing project generati
 test('studio model selector follows the selected model name width', () => {
   assert.match(
     composerSource,
-    /ariaLabel="Model"[\s\S]*?triggerClassName="w-fit max-w-full"/
+    /uiMessages\["ui.studio.model"\][\s\S]*?triggerClassName="w-fit max-w-full"/
   );
 });

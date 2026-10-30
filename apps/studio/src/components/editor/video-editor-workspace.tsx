@@ -1,5 +1,6 @@
 import { OverlayMedia } from './overlay-media';
 import { importOverlay } from './import-overlay';
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useTimelineFrame } from './use-timeline-frame';
 import { EditorInspectorPanel, useInspectorPanel } from './editor-inspector-panel';
 import { OverlayInspector } from './overlay-inspector';
@@ -1498,7 +1499,7 @@ export function VideoEditorWorkspace({
       commitDocument(next);
       selectClip(nextClip);
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Could not switch take');
+      setError(error instanceof Error ? error.message : uiMessages["ui.editor.could_not_switch_take"]());
     }
   };
 
@@ -1558,15 +1559,15 @@ export function VideoEditorWorkspace({
 
       {selectedClip && selectedClip.takes.length > 0 && (
         <div className="flex shrink-0 items-center gap-3 border-b border-[var(--vh-border)] bg-[var(--vh-surface)] px-4 py-2">
-          <label htmlFor="clip-take" className="shrink-0 text-xs font-medium">Clip take</label>
-          <select id="clip-take" aria-label="Clip take" value={selectedClip.activeTakeId ?? ''}
+          <label htmlFor="clip-take" className="shrink-0 text-xs font-medium">{uiMessages["ui.editor.clip_take"]()}</label>
+          <select id="clip-take" aria-label={uiMessages["ui.editor.clip_take"]()} value={selectedClip.activeTakeId ?? ''}
             disabled={document.tracks.some(track => track.id === selectedClip.trackId && track.locked)}
             onChange={event => activateTake(event.target.value || null)}
             className="h-9 min-w-0 max-w-sm flex-1 rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] px-2 text-xs">
-            <option value="">Original · {selectedClip.name}</option>
-            {selectedClip.takes.map((take, index) => <option key={take.id} value={take.id}>Take {index + 1} · {take.name}</option>)}
+            <option value="">{uiMessages["ui.editor.original"]()} {selectedClip.name}</option>
+            {selectedClip.takes.map((take, index) => <option key={take.id} value={take.id}>{uiMessages["ui.editor.take"]()} {index + 1} · {take.name}</option>)}
           </select>
-          <span className="hidden text-xs text-[var(--vh-text-2)] sm:inline">Timing stays unchanged</span>
+          <span className="hidden text-xs text-[var(--vh-text-2)] sm:inline">{uiMessages["ui.editor.timing_stays_unchanged"]()}</span>
         </div>
       )}
 
@@ -1746,7 +1747,7 @@ export function VideoEditorWorkspace({
                 <FileVideo2 className="size-3.5" />
               </span>
               <span>{t('status.ready')}</span>
-              <Action aria-label="Review local drafts" onClick={persistence.openDrafts} className="rounded-md px-2 py-1 text-xs hover:bg-[var(--vh-control)]">Drafts</Action>
+              <Action aria-label={uiMessages["ui.editor.review_local_drafts"]()} onClick={persistence.openDrafts} className="rounded-md px-2 py-1 text-xs hover:bg-[var(--vh-control)]">{uiMessages["ui.editor.drafts"]()}</Action>
               {saveStatus !== 'idle' ? (
                 <span className="text-[var(--vh-text-2)]">
                   {saveStatus === 'saving' ? t('status.saving') : t('status.saved')}
@@ -2055,7 +2056,7 @@ export function VideoEditorWorkspace({
                           : 'border-[var(--vh-border)] text-[var(--vh-text-2)] hover:bg-[var(--vh-control)]'
                       }`}
                     >
-                      <span className="min-w-0 truncate">Take {index + 1} · {take.prompt || take.name}</span>
+                      <span className="min-w-0 truncate">{uiMessages["ui.editor.take"]()} {index + 1} · {take.prompt || take.name}</span>
                       {selectedClip.activeTakeId === take.id ? <span>✓</span> : null}
                     </Action>
                   ))}

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react';
 
 import { normalizeLocale } from '@/config/locale';
 import { m } from '@/paraglide/messages.js';
+import { localizeHref } from '@/paraglide/runtime.js';
 import { ProductShell } from './product-shell';
 import { HomeTools } from './home-tools';
 import { HomeTemplates } from './home-templates';
@@ -37,7 +38,7 @@ function PromptComposer({ copy }: { copy: HomeCopy }) {
 
   return (
     <form
-      action="/studio"
+      action={localizeHref("/studio")}
       method="get"
       className="mx-auto mt-10 flex min-h-[168px] w-full max-w-[760px] flex-col rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4 text-left shadow-[0_12px_40px_rgba(22,22,22,0.06)] sm:p-5"
     >

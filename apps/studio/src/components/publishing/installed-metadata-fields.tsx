@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { TextField } from '@seed-design/react';
 import { NativeSelect } from '@/components/ui/native-select';
 import type { JsonValue } from '@/lib/canonical-json';
@@ -18,7 +19,7 @@ export function InstalledMetadataFields({ schema, values, onChange }: { schema: 
     const required = Array.isArray(schema.required) && schema.required.includes(id), value = values[id] ?? '';
     const number = property.type === 'number' || property.type === 'integer';
     return <div key={id} className="space-y-2"><label htmlFor={'publication-metadata-' + id} className="block text-sm font-medium">{label}{required ? ' *' : ''}</label>
-      {Array.isArray(property.enum) ? <NativeSelect id={'publication-metadata-' + id} aria-label={label} value={JSON.stringify(value)} required={required} onChange={event => onChange(id, JSON.parse(event.target.value))}><option value={JSON.stringify('')}>Choose…</option>{property.enum.map(option => <option key={JSON.stringify(option)} value={JSON.stringify(option)}>{String(option)}</option>)}</NativeSelect>
+      {Array.isArray(property.enum) ? <NativeSelect id={'publication-metadata-' + id} aria-label={label} value={JSON.stringify(value)} required={required} onChange={event => onChange(id, JSON.parse(event.target.value))}><option value={JSON.stringify('')}>{uiMessages["ui.publishing.choose"]()}</option>{property.enum.map(option => <option key={JSON.stringify(option)} value={JSON.stringify(option)}>{String(option)}</option>)}</NativeSelect>
         : property.type === 'boolean' ? <input id={'publication-metadata-' + id} type="checkbox" checked={value === true} onChange={event => onChange(id, event.target.checked)} />
         : <TextField.Root className="vh-field"><TextField.Input id={'publication-metadata-' + id} aria-label={label} type={number ? 'number' : 'text'} value={typeof value === 'string' || typeof value === 'number' ? value : ''} required={required} min={typeof property.minimum === 'number' ? property.minimum : undefined} max={typeof property.maximum === 'number' ? property.maximum : undefined} step={property.type === 'integer' ? 1 : 'any'} maxLength={typeof property.maxLength === 'number' ? property.maxLength : 16000} onChange={event => onChange(id, number && event.target.value !== '' ? Number(event.target.value) : event.target.value)} /></TextField.Root>}
       {typeof property.description === 'string' && <p className="text-xs leading-5 text-[var(--vh-text-2)]">{property.description}</p>}

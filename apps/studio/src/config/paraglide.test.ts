@@ -22,7 +22,7 @@ test('the shared Paraglide config can prepare server imports before Vite starts'
       access(join(outdir, 'server.js')),
     ]);
     const runtime = await readFile(join(outdir, 'runtime.js'), 'utf8');
-    assert.match(runtime, /\["en","zh","ja"\]/);
+    assert.match(runtime, /\["en","zh","ja","ko"\]/);
     assert.match(runtime, /\/ja/);
 
     const localeRuntime = (await import(pathToFileURL(join(outdir, 'runtime.js')).href)) as {
@@ -62,6 +62,9 @@ test('the shared Paraglide config can prepare server imports before Vite starts'
       ),
       'ja'
     );
+    assert.equal(localeRuntime.extractLocaleFromRequest(request('/packs', { 'accept-language': 'ko-KR,ko;q=0.9,en;q=0.8' })), 'ko');
+    assert.equal(localeRuntime.extractLocaleFromRequest(request('/ko/packs', { cookie: 'PARAGLIDE_LOCALE=en' })), 'ko');
+    assert.equal(localeRuntime.extractLocaleFromRequest(request('/packs', { 'accept-language': 'ko-KR', cookie: 'PARAGLIDE_LOCALE=ja' })), 'ja');
     const redirect = await localeRuntime.shouldRedirect({
       request: request('/canvas/project-1', {
         accept: 'text/html',

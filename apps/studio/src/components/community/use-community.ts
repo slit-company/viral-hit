@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import {
@@ -25,14 +26,14 @@ export function useCommunity() {
   );
   useEffect(() => {
     void load().catch(() =>
-      setError('Catalogs could not load. Reload to retry.'),
+      setError(uiMessages["ui.community.catalogs_could_not_load_reload_to_retry"]()),
     );
     return () => active.current?.abort();
   }, [load]);
   async function work<T>(
     task: (signal: AbortSignal) => Promise<T>,
     apply: (result: T) => void,
-    label = 'Reading catalog…',
+    label = uiMessages["ui.community.reading_catalog"](),
     canCancel = true,
   ) {
     active.current?.abort();
@@ -49,7 +50,7 @@ export function useCommunity() {
     } catch (cause) {
       if (!controller.signal.aborted)
         setError(
-          cause instanceof Error ? cause.message : 'Catalog request failed',
+          cause instanceof Error ? cause.message : uiMessages["ui.community.catalog_request_failed"](),
         );
     } finally {
       if (active.current === controller) {
@@ -75,12 +76,12 @@ export function useCommunity() {
     setReview(undefined);
     return work(async (signal) => {
       if (file.size > MAX_CATALOG_BYTES)
-        throw new Error('Catalogs must be 512 KB or smaller');
+        throw new Error(uiMessages["ui.community.catalogs_must_be_512_kb_or_smaller"]());
       let catalog: unknown;
       try {
         catalog = JSON.parse(await file.text());
       } catch {
-        throw new Error('This file is not valid JSON');
+        throw new Error(uiMessages["ui.community.this_file_is_not_valid_json"]());
       }
       return apiJsonPost<CatalogReview>(
         '/api/app/community',
@@ -109,9 +110,9 @@ export function useCommunity() {
       },
       (title) => {
         setReview(undefined);
-        setNotice(title + ' is ready to browse. No entries were installed.');
+        setNotice(uiMessages["ui.community.catalog_ready"]({ name: title }));
       },
-      'Saving catalog…',
+      uiMessages["ui.community.saving_catalog"](),
       false,
     );
   }
@@ -134,7 +135,7 @@ export function useCommunity() {
           item.catalog.title +
             ' was removed from discovery. Installed contents are kept.',
         ),
-      'Removing catalog…',
+      uiMessages["ui.community.removing_catalog"](),
       false,
     );
   }

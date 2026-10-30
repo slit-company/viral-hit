@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { Brush, Eraser } from 'lucide-react';
 import { Action } from '@/components/base/action';
@@ -63,36 +64,35 @@ export function StudioMaskEditor({ projectId, model, source, disabled }: { proje
   }
 
   return <>
-    <Action className="vh-secondary flex shrink-0 items-center gap-1.5" aria-label={mask ? 'Edit marked area' : 'Mark area to change'} disabled={disabled || !target} onClick={() => setOpen(true)}>
-      <Brush size={15} />{mask ? 'Area marked' : 'Mark area'}
+    <Action className="vh-secondary flex shrink-0 items-center gap-1.5" aria-label={mask ? uiMessages["studio.controls.edit_marked_area"]() : uiMessages["studio.controls.mark_area_to_change"]()} disabled={disabled || !target} onClick={() => setOpen(true)}>
+      <Brush size={15} />{mask ? uiMessages["studio.controls.area_marked"]() : uiMessages["studio.controls.mark_area"]()}
     </Action>
-    {!target && <span className="text-xs text-[var(--vh-text-2)]">Add an image to mark the area to change.</span>}
+    {!target && <span className="text-xs text-[var(--vh-text-2)]">{uiMessages["studio.media.add_an_image_to_mark_the_area_to_change_6187"]()}</span>}
     <Dialog open={open} onOpenChange={next => { if (!saving) setOpen(next); }}>
       <DialogContent className="max-h-[calc(100dvh-32px)] max-w-3xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto]">
-        <DialogTitle>Mark the area to change</DialogTitle>
-        <DialogDescription className="pr-6">Paint over the part of {target?.filename ?? 'the image'} the model may change. Unpainted areas stay as they are. The original file is kept.</DialogDescription>
+        <DialogTitle>{uiMessages["studio.media.mark_the_area_to_change_67e6"]()}</DialogTitle>
+        <DialogDescription className="pr-6">{uiMessages["studio.controls.mask_instruction"]({ name: target?.filename ?? "" })}</DialogDescription>
         <div className="flex flex-wrap items-center gap-2">
-          <Action className={(erase ? 'vh-secondary' : 'vh-primary') + ' flex items-center gap-1.5'} aria-pressed={!erase} onClick={() => setErase(false)}><Brush size={15} />Paint</Action>
-          <Action className={(erase ? 'vh-primary' : 'vh-secondary') + ' flex items-center gap-1.5'} aria-pressed={erase} onClick={() => setErase(true)}><Eraser size={15} />Erase</Action>
-          <label className="flex items-center gap-2 text-xs text-[var(--vh-text-2)]">Brush size
-            <input type="range" min={8} max={160} step={4} value={brush} aria-label="Brush size" className="accent-[var(--vh-graph)]" onChange={event => setBrush(Number(event.target.value))} />
+          <Action className={(erase ? 'vh-secondary' : 'vh-primary') + ' flex items-center gap-1.5'} aria-pressed={!erase} onClick={() => setErase(false)}><Brush size={15} />{uiMessages["studio.media.paint_56d7"]()}</Action>
+          <Action className={(erase ? 'vh-primary' : 'vh-secondary') + ' flex items-center gap-1.5'} aria-pressed={erase} onClick={() => setErase(true)}><Eraser size={15} />{uiMessages["studio.media.erase_3cef"]()}</Action>
+          <label className="flex items-center gap-2 text-xs text-[var(--vh-text-2)]">{uiMessages["studio.media.brush_size_6c0c"]()}<input type="range" min={8} max={160} step={4} value={brush} aria-label={uiMessages["studio.media.brush_size_6c0c"]()} className="accent-[var(--vh-graph)]" onChange={event => setBrush(Number(event.target.value))} />
           </label>
-          <Action className="vh-secondary" onClick={() => fill(true)}>Mark whole image</Action>
-          <Action className="vh-secondary" onClick={() => fill(false)}>Clear</Action>
+          <Action className="vh-secondary" onClick={() => fill(true)}>{uiMessages["studio.media.mark_whole_image_5d11"]()}</Action>
+          <Action className="vh-secondary" onClick={() => fill(false)}>{uiMessages["studio.media.clear_719e"]()}</Action>
         </div>
         <div className="relative min-h-0 overflow-auto rounded-xl bg-[var(--vh-control)]">
           {target && <div className="relative mx-auto w-fit">
             <img src={target.publicUrl} alt="" className="block max-h-[60dvh] w-auto max-w-full select-none" draggable={false} />
-            <canvas ref={canvas} aria-label="Mask drawing area" className="absolute inset-0 h-full w-full cursor-crosshair touch-none opacity-80 mix-blend-difference"
+            <canvas ref={canvas} aria-label={uiMessages["studio.media.mask_drawing_area_a1e4"]()} className="absolute inset-0 h-full w-full cursor-crosshair touch-none opacity-80 mix-blend-difference"
               onPointerDown={event => { event.currentTarget.setPointerCapture(event.pointerId); last.current = point(event); draw(event); }}
               onPointerMove={draw} onPointerUp={() => { last.current = null; }} onPointerCancel={() => { last.current = null; }} />
           </div>}
         </div>
         {error && <p role="alert" className="text-xs">{error}</p>}
         <DialogFooter>
-          {mask && <Action className="vh-secondary" disabled={saving} onClick={() => { source.setMask(undefined); setOpen(false); }}>Remove mask</Action>}
-          <Action className="vh-secondary" disabled={saving} onClick={() => setOpen(false)}>Cancel</Action>
-          <Action className="vh-primary" disabled={saving} onClick={() => void save()}>{saving ? 'Saving…' : 'Use this mask'}</Action>
+          {mask && <Action className="vh-secondary" disabled={saving} onClick={() => { source.setMask(undefined); setOpen(false); }}>{uiMessages["studio.media.remove_mask_7600"]()}</Action>}
+          <Action className="vh-secondary" disabled={saving} onClick={() => setOpen(false)}>{uiMessages["studio.media.cancel_77df"]()}</Action>
+          <Action className="vh-primary" disabled={saving} onClick={() => void save()}>{saving ? uiMessages["studio.controls.saving"]() : uiMessages["studio.controls.use_mask"]()}</Action>
         </DialogFooter>
       </DialogContent>
     </Dialog>

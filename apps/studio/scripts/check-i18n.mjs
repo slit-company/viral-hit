@@ -2,9 +2,11 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
+import ts from 'typescript';
 
 const root = process.cwd();
 const hanPattern = /\p{Script=Han}/u;
+const nonEnglishPattern = /[\p{Script=Han}\p{Script=Hangul}]/u;
 const placeholderPattern = /\{[A-Za-z][A-Za-z0-9_]*\}/g;
 const localeOptionalPlaceholders = new Set(['{plural}']);
 
@@ -55,7 +57,7 @@ function assertNoHanInFile(relativePath, failures) {
   });
 }
 
-const localeCodes = ['en', 'zh', 'ja'];
+const localeCodes = readJson('project.inlang/settings.json').locales;
 const messages = Object.fromEntries(
   localeCodes.map((locale) => [
     locale,
@@ -123,11 +125,11 @@ if (emptyEnglishValues.length > 0) {
 }
 
 const hanInEnglishMessages = Object.entries(en).filter(
-  ([, value]) => typeof value === 'string' && hanPattern.test(value)
+  ([, value]) => typeof value === 'string' && nonEnglishPattern.test(value)
 );
 if (hanInEnglishMessages.length > 0) {
   failures.push(
-    `Chinese characters in English messages:\n${hanInEnglishMessages
+    `Chinese or Korean characters in English messages:\n${hanInEnglishMessages
       .slice(0, 50)
       .map(([key, value]) => `${key}: ${value}`)
       .join('\n')}`
@@ -167,6 +169,31 @@ const uiSourceFiles = [
 
 for (const relativePath of uiSourceFiles) {
   assertNoHanInFile(relativePath, failures);
+  const source = ts.createSourceFile(relativePath, readFileSync(path.join(root, relativePath), 'utf8'), ts.ScriptTarget.Latest, true);
+  function checkMessageCall(node) {
+    if (ts.isCallExpression(node) && ts.isElementAccessExpression(node.expression)) {
+      const accessor = node.expression;
+      if (ts.isIdentifier(accessor.expression) && ['m', 'uiMessages'].includes(accessor.expression.text) && ts.isStringLiteral(accessor.argumentExpression)) {
+        const key = accessor.argumentExpression.text;
+        const value = en[key];
+        if (typeof value !== 'string') failures.push(`${relativePath}: unknown message key ${key}`);
+        else {
+          const required = [...value.matchAll(placeholderPattern)].map(([item]) => item.slice(1, -1)).filter(item => item !== 'plural');
+          const input = node.arguments[0];
+          if (required.length && (!input || ts.isObjectLiteralExpression(input))) {
+            const fields = input?.properties ?? [];
+            if (!fields.some(ts.isSpreadAssignment)) {
+              const provided = fields.map(field => field.name?.getText(source).replace(/^['"]|['"]$/g, ''));
+              const missing = required.filter(name => !provided.includes(name));
+              if (missing.length) failures.push(`${relativePath}: ${key} needs ${missing.join(', ')}`);
+            }
+          }
+        }
+      }
+    }
+    ts.forEachChild(node, checkMessageCall);
+  }
+  checkMessageCall(source);
 }
 
 if (failures.length > 0) {

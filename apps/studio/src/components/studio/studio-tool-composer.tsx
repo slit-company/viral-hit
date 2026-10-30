@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { Textarea } from '@/components/ui/textarea';
@@ -65,25 +66,25 @@ export function StudioToolComposer({
     modelId: model.id,
   }).required;
   const fields = [
-    { key: 'aspectRatio', label: '화면 비율', values: ratios },
-    { key: 'duration', label: '영상 길이', values: model.supportedDurations },
+    { key: 'aspectRatio', label: uiMessages["studio.tools.aspect_ratio"](), values: ratios },
+    { key: 'duration', label: uiMessages["studio.tools.video_length"](), values: model.supportedDurations },
     {
       key: 'outputQuality',
-      label: '해상도',
+      label: uiMessages["studio.tools.resolution"](),
       values: model.supportedOutputQualities,
     },
-    { key: 'quality', label: '품질', values: model.qualityOptions },
-    { key: 'mode', label: '생성 방식', values: model.modeOptions },
-    { key: 'variant', label: '모델 버전', values: model.variantOptions },
-    { key: 'language', label: '언어', values: model.supportedLanguages },
+    { key: 'quality', label: uiMessages["studio.tools.quality"](), values: model.qualityOptions },
+    { key: 'mode', label: uiMessages["studio.tools.generation_mode"](), values: model.modeOptions },
+    { key: 'variant', label: uiMessages["studio.tools.model_version"](), values: model.variantOptions },
+    { key: 'language', label: uiMessages["studio.tools.language"](), values: model.supportedLanguages },
     {
       key: 'characterOrientation',
-      label: '인물 방향',
+      label: uiMessages["studio.tools.character_orientation"](),
       values: model.characterOrientationOptions,
     },
     {
       key: 'backgroundSource',
-      label: '배경',
+      label: uiMessages["studio.tools.background"](),
       values: model.backgroundSourceOptions,
     },
   ] as const;
@@ -91,7 +92,7 @@ export function StudioToolComposer({
     <div className="space-y-5" data-vh-composer="">
       {showSources && (
         <div className="space-y-3 rounded-2xl border border-dashed border-[var(--vh-border)] p-4">
-          <p className="text-xs font-semibold">참고 자료</p>
+          <p className="text-xs font-semibold">{uiMessages["studio.tools.references"]()}</p>
           <StudioVisualSourceControls
             projectId={projectId}
             model={model}
@@ -108,15 +109,13 @@ export function StudioToolComposer({
             }}
           />
           <p className="text-[11px] leading-5 text-[var(--vh-text-3)]">
-            프로젝트 자료에서 고르거나 파일을 올려주세요. 선택한 자료는 작업에
-            함께 사용돼요.
-          </p>
+            {uiMessages["studio.tools.choose_project_media_or_upload_a_file_selected_references_will_be_used_for_this_task"]()}</p>
         </div>
       )}
       <label className="block space-y-2">
-        <span className="text-xs font-semibold">장면 설명</span>
+        <span className="text-xs font-semibold">{uiMessages["studio.tools.scene_description"]()}</span>
         <Textarea
-          aria-label="장면 설명"
+          aria-label={uiMessages["studio.tools.scene_description"]()}
           placeholder={toolCopy[tool].hint}
           disabled={disabled}
           value={draft.prompt}
@@ -151,7 +150,7 @@ export function StudioToolComposer({
               >
                 {field.values?.map((value) => (
                   <option key={value} value={value}>
-                    {value === 'auto' ? '원본에 맞춤' : value}
+                    {value === 'auto' ? uiMessages["studio.tools.match_source"]() : value}
                   </option>
                 ))}
               </NativeSelect>
@@ -166,7 +165,7 @@ export function StudioToolComposer({
         onChange={(modelOptions) => onChange({ ...draft, modelOptions })}
       />
       <Action
-        aria-label="만들기"
+        aria-label={uiMessages["studio.tools.create"]()}
         disabled={
           disabled ||
           !valid ||
@@ -179,19 +178,15 @@ export function StudioToolComposer({
         {busy ? (
           <>
             <Loader2 size={16} className="animate-spin" />
-            만드는 중…
-          </>
+            {uiMessages["studio.tools.creating"]()}</>
         ) : (
           <>
-            만들기
-            <ArrowUpRight size={16} />
+            {uiMessages["studio.tools.create"]()}<ArrowUpRight size={16} />
           </>
         )}
       </Action>
       <p className="text-[11px] leading-5 text-[var(--vh-text-3)]">
-        생성에는 선택한 제공업체의 요금이 적용돼요. 결과는 이 프로젝트에
-        저장돼요.
-      </p>
+        {uiMessages["studio.tools.your_selected_provider_charges_for_generation_results_are_saved_in_this_project"]()}</p>
     </div>
   );
 }

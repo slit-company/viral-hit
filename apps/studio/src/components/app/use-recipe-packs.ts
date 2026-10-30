@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import type { PackCatalog, PackInspection, PackSummary } from '@/core/harness/recipe-packs';
@@ -13,7 +14,7 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
   const epoch = useRef(0);
   const load = useCallback(async () => {
     try { setCatalog(await apiJsonGet<PackCatalog>('/api/app/recipe-packs')); }
-    catch (cause) { setError(cause instanceof Error ? cause.message : 'Packs are unavailable'); }
+    catch (cause) { setError(cause instanceof Error ? cause.message : uiMessages["ui.app.packs_are_unavailable"]()); }
   }, []);
   useEffect(() => { void load(); return () => { epoch.current++; }; }, [load]);
   async function inspect(manifest: unknown) {
@@ -21,7 +22,7 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     try {
       const inspection = await apiJsonPost<PackInspection>('/api/app/recipe-packs', { action: 'inspect', pack: manifest });
       if (current === epoch.current) setReview({ inspection, manifest });
-    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not review pack'); }
+    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_review_pack"]()); }
     finally { if (current === epoch.current) setBusy(false); }
   }
   async function fetchLink(url: string, expectedSha256?: string) {
@@ -29,14 +30,14 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     try {
       const result = await apiJsonPost<{ source: string; manifest: unknown; inspection: PackInspection }>('/api/app/recipe-packs', { action: 'fetch', url: url.trim(), expectedSha256 });
       if (current === epoch.current) setReview(result);
-    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not download pack'); }
+    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_download_pack"]()); }
     finally { if (current === epoch.current) setBusy(false); }
   }
   async function importFile(file?: File) {
     if (!file) return;
-    if (file.size > MAX_FILE_BYTES) { setError('Pack files must be 1 MB or smaller.'); return; }
+    if (file.size > MAX_FILE_BYTES) { setError(uiMessages["ui.app.pack_files_must_be_1_mb_or_smaller"]()); return; }
     try { await inspect(JSON.parse(await file.text())); }
-    catch (cause) { setError(cause instanceof SyntaxError ? 'This file is not valid JSON.' : cause instanceof Error ? cause.message : 'Could not read file'); }
+    catch (cause) { setError(cause instanceof SyntaxError ? uiMessages["ui.app.this_file_is_not_valid_json"]() : cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_read_file"]()); }
   }
   async function install() {
     if (!review) return;
@@ -44,7 +45,7 @@ export function useRecipePacks(onInstalled: (pack: PackSummary) => Promise<void>
     try {
       const result = await apiJsonPost<{ pack: PackSummary }>('/api/app/recipe-packs', { action: 'install', pack: review.manifest, expectedDigest: review.inspection.pack.digest });
       setReview(undefined); await load(); await onInstalled(result.pack);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : 'Could not install pack'); }
+    } catch (cause) { setError(cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_install_pack"]()); }
     finally { setBusy(false); }
   }
   return { catalog, review, busy, error, load, inspect, fetchLink, importFile, install, dismiss: () => { epoch.current++; setReview(undefined); setBusy(false); } };

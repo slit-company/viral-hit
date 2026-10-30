@@ -7,18 +7,20 @@
  * use dot notation: t('sidebar.addNode').
  */
 
-// Keep the nested legacy namespaces only. Flat product.* messages already use
-// Paraglide accessors; importing whole JSON trees duplicated those translations.
+// Paraglide compiles messages into typed accessor functions. For the shim we
+// retain only nested compatibility namespaces. Flat message keys use compiled
+// accessors directly and must not be duplicated in the browser bundle.
 import { AppShell as zhAppShell, Projects as zhProjects, Common as zhCommon } from '@/../messages/zh.json';
 import { AppShell as enAppShell, Projects as enProjects, Common as enCommon } from '@/../messages/en.json';
 import { AppShell as jaAppShell, Projects as jaProjects, Common as jaCommon } from '@/../messages/ja.json';
-import type enMessages from '@/../messages/en.json';
+import { AppShell as koAppShell, Projects as koProjects, Common as koCommon } from '@/../messages/ko.json';
 import { getLocale } from '@/paraglide/runtime.js';
 
 const MESSAGE_TREES: Record<string, Record<string, unknown>> = {
   zh: { AppShell: zhAppShell, Projects: zhProjects, Common: zhCommon },
   en: { AppShell: enAppShell, Projects: enProjects, Common: enCommon },
   ja: { AppShell: jaAppShell, Projects: jaProjects, Common: jaCommon },
+  ko: { AppShell: koAppShell, Projects: koProjects, Common: koCommon },
 };
 
 function resolveKey(tree: unknown, path: string): string | undefined {
@@ -82,9 +84,9 @@ export function useLocale(): string {
 export type Locale = string;
 
 export const DEFAULT_LOCALE = 'en';
-export const LOCALES = ['en', 'zh', 'ja'];
+export const LOCALES = ['en', 'zh', 'ja', 'ko'];
 
-export type Messages = typeof enMessages;
+export type Messages = typeof import('@/../messages/en.json');
 
 /**
  * Default (en) message tree. ViralHit code accesses nested keys such as

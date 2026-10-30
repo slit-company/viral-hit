@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useRef, useState } from 'react';
 import { TextField } from '@seed-design/react';
 import { ProductShell } from '@/components/marketing/product-shell';
@@ -19,26 +20,16 @@ export function CommunityPage({ locale }: { locale: string }) {
     <ProductShell active="extensions" locale={locale}>
       <main className="mx-auto w-full max-w-[1120px] space-y-8 px-5 pb-12 pt-14 sm:px-6">
         <header className="space-y-4">
-          <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--vh-accent)]">
-            COMMUNITY CATALOGS
-          </p>
-          <h1 className="vh-product-display text-[clamp(2.25rem,4.5vw,3.25rem)] font-semibold leading-[1.1] tracking-[-0.04em]">
-            Find another way to create.
-          </h1>
-          <p className="max-w-2xl text-[15px] leading-6 text-[var(--vh-text-2)]">
-            Browse general toolkits and workflows made for a particular job. Add
-            a catalog shared by a creator or team, then review the skills and
-            packs you want to use.
-          </p>
+          <p className="text-[11px] font-semibold tracking-[0.18em] text-[var(--vh-accent)]"> {uiMessages["ui.community.community_catalogs"]()} </p>
+          <h1 className="vh-product-display text-[clamp(2.25rem,4.5vw,3.25rem)] font-semibold leading-[1.1] tracking-[-0.04em]"> {uiMessages["ui.community.find_another_way_to_create"]()} </h1>
+          <p className="max-w-2xl text-[15px] leading-6 text-[var(--vh-text-2)]"> {uiMessages["ui.community.browse_general_toolkits_and_workflows_made_for_a_particular_job_add_a_catal"]()} </p>
           <Link
             href="/extensions"
             className="inline-block text-sm underline underline-offset-4"
-          >
-            Inspect installed extensions
-          </Link>
+          > {uiMessages["ui.community.inspect_installed_extensions"]()} </Link>
         </header>
         <form
-          aria-label="Add a community catalog"
+          aria-label={uiMessages["ui.community.add_a_community_catalog"]()}
           className="space-y-4 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5"
           onSubmit={(event) => {
             event.preventDefault();
@@ -47,13 +38,11 @@ export function CommunityPage({ locale }: { locale: string }) {
         >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="min-w-0 flex-1 space-y-2">
-              <label htmlFor="community-link" className="text-sm font-medium">
-                Catalog link
-              </label>
+              <label htmlFor="community-link" className="text-sm font-medium"> {uiMessages["ui.community.catalog_link"]()} </label>
               <TextField.Root className="vh-field">
                 <TextField.Input
                   id="community-link"
-                  aria-label="Catalog link"
+                  aria-label={uiMessages["ui.community.catalog_link"]()}
                   type="url"
                   value={url}
                   maxLength={2000}
@@ -71,27 +60,21 @@ export function CommunityPage({ locale }: { locale: string }) {
                 !/^https:\/\/\S+$/.test(url.trim())
               }
               className="vh-primary"
-            >
-              Review catalog link
-            </Action>
+            > {uiMessages["ui.community.review_catalog_link"]()} </Action>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Action
               disabled={!library.catalogs || library.busy}
               className="vh-secondary"
               onClick={() => input.current?.click()}
-            >
-              Import catalog file
-            </Action>
-            <p className="text-xs text-[var(--vh-text-2)]">
-              Public HTTPS or GitHub JSON · up to 200 entries
-            </p>
+            > {uiMessages["ui.community.import_catalog_file"]()} </Action>
+            <p className="text-xs text-[var(--vh-text-2)]"> {uiMessages["ui.community.public_https_or_github_json_up_to_200_entries"]()} </p>
           </div>
           <input
             ref={input}
             type="file"
             accept=".json,application/json"
-            aria-label="Import catalog file"
+            aria-label={uiMessages["ui.community.import_catalog_file"]()}
             className="hidden"
             onChange={(event) => {
               void library.importFile(event.target.files?.[0]);
@@ -121,9 +104,7 @@ export function CommunityPage({ locale }: { locale: string }) {
               {library.activity}
             </p>
             {library.canCancel && (
-              <Action className="vh-secondary" onClick={library.close}>
-                Cancel
-              </Action>
+              <Action className="vh-secondary" onClick={library.close}> {uiMessages["product.history.cancel"]()} </Action>
             )}
           </div>
         )}
@@ -139,8 +120,7 @@ export function CommunityPage({ locale }: { locale: string }) {
           <>
             <CatalogEntries catalogs={library.catalogs} />
             <details className="rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5">
-              <summary className="cursor-pointer font-semibold">
-                Manage catalogs ({library.catalogs.length})
+              <summary className="cursor-pointer font-semibold"> {uiMessages["ui.community.manage_catalogs"]()}{library.catalogs.length})
               </summary>
               <ul className="mt-5 space-y-5">
                 {library.catalogs.map((item) => (
@@ -153,8 +133,7 @@ export function CommunityPage({ locale }: { locale: string }) {
                         {item.catalog.title}
                       </h2>
                       <p className="break-all text-xs leading-5 text-[var(--vh-text-2)]">
-                        {item.catalog.id} · {item.catalog.entries.length}{' '}
-                        entries · {item.source ?? 'Imported from a file'}
+                        {item.catalog.id} · {item.catalog.entries.length}{' '} {uiMessages["ui.community.entries_2"]()} {item.source ?? uiMessages["ui.community.imported_from_a_file"]()}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -162,36 +141,27 @@ export function CommunityPage({ locale }: { locale: string }) {
                         <Action
                           className="vh-secondary text-xs"
                           disabled={library.busy}
-                          aria-label={'Review changes to ' + item.catalog.id}
+                          aria-label={uiMessages["ui.community.review_changes_to"]() + item.catalog.id}
                           onClick={() => void library.fetchLink(item.source!)}
-                        >
-                          Review latest
-                        </Action>
+                        > {uiMessages["ui.community.review_latest"]()} </Action>
                       )}
                       <Action
                         className="vh-secondary text-xs"
                         disabled={library.busy}
-                        aria-label={'Download catalog ' + item.catalog.id}
+                        aria-label={uiMessages["ui.community.download_catalog"]() + item.catalog.id}
                         onClick={() => library.download(item)}
-                      >
-                        Download catalog
-                      </Action>
+                      > {uiMessages["ui.community.download_catalog_2"]()} </Action>
                       <Action
                         className="vh-secondary text-xs"
                         disabled={library.busy}
-                        aria-label={'Remove catalog ' + item.catalog.id}
+                        aria-label={uiMessages["ui.community.remove_catalog"]() + item.catalog.id}
                         onClick={() => void library.remove(item)}
-                      >
-                        Remove catalog
-                      </Action>
+                      > {uiMessages["ui.community.remove_catalog_2"]()} </Action>
                     </div>
                   </li>
                 ))}
               </ul>
-              <p className="mt-4 text-xs leading-5 text-[var(--vh-text-2)]">
-                Saved lists work offline. Review latest checks only the selected
-                catalog. Removing a catalog keeps installed skills and packs.
-              </p>
+              <p className="mt-4 text-xs leading-5 text-[var(--vh-text-2)]"> {uiMessages["ui.community.saved_lists_work_offline_review_latest_checks_only_the_selected_catalog_rem"]()} </p>
             </details>
           </>
         )}

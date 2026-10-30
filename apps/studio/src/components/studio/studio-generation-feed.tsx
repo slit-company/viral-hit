@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { StudioResultActions } from './studio-result-actions';
 import { Action } from '@/components/base/action';
 import { Loader2, Music2, X } from 'lucide-react';
@@ -46,7 +47,7 @@ function StudioHistoryItem({
         </Action>
         <Action type="button" onClick={onOpen} aria-label={t('openPreview')} className="block h-full w-full text-left">
         {item.mediaType === 'audio' && previewUrl ? (
-          <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center text-[var(--vh-text-2)]"><Music2 size={28} /><span className="text-xs">Listen to generated audio</span></div>
+          <div className="flex h-full flex-col items-center justify-center gap-2 p-3 text-center text-[var(--vh-text-2)]"><Music2 size={28} /><span className="text-xs">{uiMessages["studio.media.listen_to_generated_audio_72b5"]()}</span></div>
         ) : isAnalysis ? (
           <p className="line-clamp-[9] h-full overflow-hidden whitespace-pre-wrap break-words p-4 text-[12px] leading-5 text-[var(--vh-text-2)]">{item.resultText}</p>
         ) : previewUrl ? (
@@ -54,7 +55,7 @@ function StudioHistoryItem({
             ? <video src={previewUrl} preload="metadata" muted playsInline className="h-full w-full object-cover" />
             : <img src={previewUrl} alt="" className="block h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : (
-          <div className="flex h-full items-center justify-center text-[12px] text-[var(--vh-text-3)]">{isBusy ? <Loader2 className="size-5 animate-spin" /> : item.status === 'failed' ? '생성 실패 · 상세 확인' : t('noPrompt')}</div>
+          <div className="flex h-full items-center justify-center text-[12px] text-[var(--vh-text-3)]">{isBusy ? <Loader2 className="size-5 animate-spin" /> : item.status === 'failed' ? uiMessages["studio.tools.generation_failed_view_details"]() : t('noPrompt')}</div>
         )}
         </Action>
       </div>
@@ -134,7 +135,7 @@ export function StudioGenerationFeed({
                     </p>
                   </div>
                 ) : selected.mediaType === 'audio' && selected.resultUrl ? (
-                  <div className="flex w-full max-w-lg flex-col items-center gap-5"><Music2 size={40} /><audio aria-label="Generated audio" src={selected.resultUrl} controls preload="metadata" className="w-full" /><a href={selected.resultUrl} download className="text-sm underline underline-offset-4">Download audio</a></div>
+                  <div className="flex w-full max-w-lg flex-col items-center gap-5"><Music2 size={40} /><audio aria-label={uiMessages["studio.media.generated_audio_f794"]()} src={selected.resultUrl} controls preload="metadata" className="w-full" /><a href={selected.resultUrl} download className="text-sm underline underline-offset-4">{uiMessages["studio.media.download_audio_f8c1"]()}</a></div>
                 ) : selected.mediaType === 'video' && selected.resultUrl ? (
                   <video
                     src={selected.resultUrl}
@@ -198,7 +199,7 @@ export function StudioGenerationFeed({
                       <span className="text-right text-sm text-[var(--vh-text-1)]">{selected.paramsLabel}</span>
                     </div>}
                   </div>
-                  {selected.modelOptions && <dl aria-label="Saved model options" className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] px-4 py-1">
+                  {selected.modelOptions && <dl aria-label={uiMessages["studio.media.saved_model_options_9de0"]()} className="rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] px-4 py-1">
                     {Object.entries(selected.modelOptions.values).map(([key, value]) => <div key={key} className="grid min-w-0 grid-cols-2 gap-3 border-b border-[var(--vh-border)] py-3 text-sm last:border-0"><dt className="break-words text-[var(--vh-text-3)]">{key}</dt><dd className="min-w-0 break-words text-right text-[var(--vh-text-1)]">{String(value)}</dd></div>)}
                   </dl>}
                   {selected.referenceImages.length > 0 ||
@@ -223,7 +224,7 @@ export function StudioGenerationFeed({
                             />
                           </a>
                         ))}
-                        {selected.referenceAudios.map(url => <audio key={url} aria-label="Audio reference" src={url} controls preload="metadata" className="w-full min-w-0" />)}
+                        {selected.referenceAudios.map(url => <audio key={url} aria-label={uiMessages["studio.media.audio_reference_0345"]()} src={url} controls preload="metadata" className="w-full min-w-0" />)}
                         {selected.referenceVideos.map((url) => (
                           <video
                             key={url}

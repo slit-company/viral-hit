@@ -69,7 +69,7 @@ export function LanguageSwitcher({
         }
       >
         <Globe2 className="size-3.5" aria-hidden="true" />
-        {locale.toUpperCase()}
+        {locale === 'ko' ? 'KR' : locale.toUpperCase()}
         <ChevronDown
           aria-hidden="true"
           className={`size-3 opacity-70 transition-transform ${open ? 'rotate-180' : ''}`}

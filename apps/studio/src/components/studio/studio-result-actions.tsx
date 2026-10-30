@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useState } from 'react';
 import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
@@ -27,7 +28,7 @@ export function StudioResultActions({
       );
       if (!asset)
         throw Error(
-          '이 결과의 프로젝트 파일을 찾지 못했어요. 프로젝트 자료에서 확인해주세요.',
+          uiMessages["studio.tools.could_not_find_the_project_file_for_this_result_check_your_project_media"](),
         );
       await addProjectAssetToTimeline({
         projectId,
@@ -39,7 +40,7 @@ export function StudioResultActions({
       setError(
         failure instanceof Error
           ? failure.message
-          : '편집기에 추가하지 못했어요.',
+          : uiMessages["studio.tools.could_not_add_this_result_to_the_editor"](),
       );
     } finally {
       setBusy(false);
@@ -49,8 +50,7 @@ export function StudioResultActions({
     <div className="space-y-2 border-b border-[var(--vh-border)] p-4">
       <div className="flex flex-wrap gap-2">
         <Action className="vh-secondary" onClick={onReuse}>
-          이 설정 다시 쓰기
-        </Action>
+          {uiMessages["studio.tools.use_these_settings_again"]()}</Action>
         {item.status === 'succeeded' &&
           item.resultUrl &&
           item.mediaType !== 'analysis' && (
@@ -61,24 +61,22 @@ export function StudioResultActions({
                 onClick={() => void edit()}
               >
                 {busy
-                  ? '추가하는 중…'
+                  ? uiMessages["studio.tools.adding"]()
                   : added
-                    ? '편집기에 추가됨'
-                    : '편집기에 추가'}
+                    ? uiMessages["studio.tools.added_to_editor"]()
+                    : uiMessages["studio.tools.add_to_editor"]()}
               </Action>
               <Link
                 href={'/editor/' + projectId}
                 className="inline-flex items-center text-xs font-medium underline underline-offset-4"
               >
-                편집기 열기
-              </Link>
+                {uiMessages["studio.tools.open_editor"]()}</Link>
               <a
                 href={item.resultUrl}
                 download
                 className="inline-flex items-center text-xs underline underline-offset-4"
               >
-                다운로드
-              </a>
+                {uiMessages["studio.tools.download"]()}</a>
             </>
           )}
       </div>
@@ -89,8 +87,7 @@ export function StudioResultActions({
       )}
       {added && (
         <p role="status" className="text-xs text-[var(--vh-text-2)]">
-          타임라인에 추가했어요. 편집기에서 이어서 작업하세요.
-        </p>
+          {uiMessages["studio.tools.added_to_the_timeline_continue_in_the_editor"]()}</p>
       )}
     </div>
   );

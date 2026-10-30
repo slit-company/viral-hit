@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
 import { PlugZap, ArrowUpRight } from 'lucide-react';
 import { Action } from '@/components/base/action';
@@ -17,7 +18,7 @@ export function StudioToolNavigation({
   const group = groupForTool(tools.tool);
   return (
     <nav
-      aria-label="만들기 도구"
+      aria-label={uiMessages["studio.tools.creation_tools"]()}
       className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-[var(--vh-border)] bg-[var(--vh-surface)] px-3 py-2 sm:px-5"
     >
       {toolGroups.map((item) => (
@@ -63,7 +64,7 @@ export function StudioToolSelection({
     <div className="space-y-5">
       <div
         role="group"
-        aria-label="세부 작업"
+        aria-label={uiMessages["studio.tools.task"]()}
         className="flex flex-wrap gap-1 border-b border-[var(--vh-border)] pb-3"
       >
         {group.tools.map((task) => (
@@ -85,7 +86,7 @@ export function StudioToolSelection({
       </div>
       <div>
         <p className="mb-2 text-[10px] font-semibold tracking-[.18em] text-[var(--vh-text-3)]">
-          CREATE / {group.id.toUpperCase()}
+          {uiMessages["studio.media.create_e8a5"]()}{group.label.toUpperCase()}
         </p>
         <h1 className="text-[24px] font-semibold tracking-[-.04em]">
           {toolCopy[tools.tool].title}
@@ -96,11 +97,10 @@ export function StudioToolSelection({
       </div>
       <div className="space-y-3 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-4">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs font-semibold">사용할 모델</span>
+          <span className="text-xs font-semibold">{uiMessages["studio.tools.selected_model"]()}</span>
           {tools.model?.providerId === 'cloud-api' ? (
             <span className="flex items-center gap-1 text-xs text-[var(--vh-text-2)]">
-              API 연결
-              <WorkspaceApiConfigDialog providerId="cloud-api" />
+              {uiMessages["studio.tools.connect_api"]()}<WorkspaceApiConfigDialog providerId="cloud-api" />
             </span>
           ) : (
             <Link
@@ -108,37 +108,34 @@ export function StudioToolSelection({
               className="flex items-center gap-1 text-xs text-[var(--vh-text-2)] underline-offset-4 hover:underline"
             >
               <PlugZap size={12} />
-              API 연결
-              <ArrowUpRight size={12} />
+              {uiMessages["studio.tools.connect_api"]()}<ArrowUpRight size={12} />
             </Link>
           )}
         </div>
         {tools.loading ? (
           <p role="status" className="text-sm">
-            모델을 불러오는 중…
-          </p>
+            {uiMessages["studio.tools.loading_models"]()}</p>
         ) : tools.error ? (
           <div role="alert" className="space-y-2 text-sm">
-            <p>모델 목록을 불러오지 못했어요.</p>
+            <p>{uiMessages["studio.tools.could_not_load_the_model_list"]()}</p>
             <Action
               className="vh-secondary"
               onClick={() => void tools.refresh()}
             >
-              다시 확인
-            </Action>
+              {uiMessages["studio.tools.try_again"]()}</Action>
           </div>
         ) : tools.candidates.length ? (
           <>
             <label className="block space-y-1.5 text-[11px] text-[var(--vh-text-2)]">
-              <span>API 제공업체</span>
+              <span>{uiMessages["studio.tools.api_provider"]()}</span>
               <NativeSelect
-                aria-label="API 제공업체"
+                aria-label={uiMessages["studio.tools.api_provider"]()}
                 disabled={disabled}
                 value={tools.model?.providerId ?? ''}
                 onChange={(event) => tools.selectProvider(event.target.value)}
               >
                 {!tools.model && (
-                  <option value="">제공업체를 선택해주세요</option>
+                  <option value="">{uiMessages["studio.tools.choose_a_provider"]()}</option>
                 )}
                 {providers.map(([id, label]) => (
                   <option key={id} value={id}>
@@ -148,37 +145,32 @@ export function StudioToolSelection({
               </NativeSelect>
             </label>
             <label className="block space-y-1.5 text-[11px] text-[var(--vh-text-2)]">
-              <span>모델</span>
+              <span>{uiMessages["studio.tools.model"]()}</span>
               <NativeSelect
-                aria-label="작업 모델"
+                aria-label={uiMessages["studio.tools.task_model"]()}
                 disabled={disabled}
                 value={tools.model?.id ?? tools.missingModelId ?? ''}
                 onChange={(event) => tools.selectModel(event.target.value)}
               >
                 {tools.missingModelId && (
                   <option value={tools.missingModelId}>
-                    {tools.missingModelId} · 사용할 수 없음
-                  </option>
+                    {tools.missingModelId} {uiMessages["studio.tools.unavailable"]()}</option>
                 )}
                 {filtered.map((model) => (
                   <option key={model.id} value={model.id}>
                     {model.name}
-                    {model.available === false ? ' · 연결 필요' : ''}
+                    {model.available === false ? uiMessages["studio.tools.needs_connection"]() : ''}
                   </option>
                 ))}
               </NativeSelect>
             </label>
             {tools.missingModelId && (
               <p role="status" className="text-xs leading-5 text-amber-800">
-                선택했던 모델을 찾을 수 없어요. 다른 제공업체와 모델을
-                골라주세요. 입력한 내용은 유지돼요.
-              </p>
+                {uiMessages["studio.tools.your_previous_model_is_unavailable_choose_another_provider_and_model_your_inputs_are_preserved"]()}</p>
             )}
             {tools.model?.available === false && (
               <p role="status" className="text-xs leading-5 text-amber-800">
-                이 모델의 API 연결이 필요해요. 다른 제공업체를 선택하거나 키를
-                등록하세요.
-              </p>
+                {uiMessages["studio.tools.connect_this_model_s_api_key_or_choose_another_provider"]()}</p>
             )}
           </>
         ) : (
@@ -187,15 +179,12 @@ export function StudioToolSelection({
               role="status"
               className="text-sm leading-6 text-[var(--vh-text-2)]"
             >
-              아직 이 작업을 지원하는 모델이 없어요. 사용할 API나 로컬 모델을
-              연결하면 여기에 표시돼요.
-            </p>
+              {uiMessages["studio.tools.no_installed_model_supports_this_task_yet_connect_an_api_or_local_model_to_see_it_here"]()}</p>
             <Link
               href="/runtime-packages"
               className="inline-flex text-sm font-medium underline underline-offset-4"
             >
-              제공업체 추가하기 →
-            </Link>
+              {uiMessages["studio.tools.add_a_provider_link"]()}</Link>
           </div>
         )}
         <div className="flex flex-wrap justify-between gap-3 border-t border-[var(--vh-border)] pt-3 text-[11px] text-[var(--vh-text-2)]">
@@ -203,15 +192,13 @@ export function StudioToolSelection({
             href="/runtime-packages"
             className="underline underline-offset-4"
           >
-            다른 제공업체 추가
-          </Link>
+            {uiMessages["studio.tools.add_another_provider"]()}</Link>
           <Action
             disabled={disabled}
             onClick={() => void tools.refresh()}
             className="underline underline-offset-4"
           >
-            연결 상태 새로고침
-          </Action>
+            {uiMessages["studio.tools.refresh_connections"]()}</Action>
         </div>
       </div>
     </div>

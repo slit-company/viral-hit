@@ -20,5 +20,5 @@ test('root route renders the Home surface instead of redirecting to projects', (
   assert.doesNotMatch(routeSource, /redirect/);
   assert.match(homeSource, /active="home"/);
   assert.match(toolsSource, /href="\/projects"/);
-  assert.match(homeSource, /action="\/studio"/);
+  assert.match(homeSource, /action=\{localizeHref\("\/studio"\)\}/);
 });

@@ -1,4 +1,5 @@
 import { canAttachAnalysisReference } from '@/core/creative-canvas/analysis-references';
+import { m as uiMessages } from '@/paraglide/messages.js';
 
 import {
   invalidateWorkspaceAfterAssetMutation,
@@ -1058,7 +1059,7 @@ export function CreativeCanvasShell({
     async (card: CanvasCard) => {
       const downloadUrl = resolveDownloadUrl(card);
       if (!downloadUrl) {
-        throw new Error('Missing download URL');
+        throw new Error(uiMessages["ui.creative-canvas.missing_download_url"]());
       }
 
       let response = await fetch(downloadUrl);
@@ -1067,7 +1068,7 @@ export function CreativeCanvasShell({
       }
 
       if (!response.ok) {
-        throw new Error(`Failed to download ${card.name}`);
+        throw new Error(uiMessages["ui.canvas.download_failed"]({ name: card.name }));
       }
 
       const blob = await response.blob();

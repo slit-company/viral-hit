@@ -33,7 +33,7 @@ test('Studio selects independent mixed analysis, uploads once, retains drafts an
   await expect(page.getByRole('button', { name: 'Analysis sources', exact: true })).toContainText('3');
   await expect(page.getByRole('button', { name: 'Analyze', exact: true })).toBeEnabled();
   await page.reload();
-  await expect(page.getByLabel('작업 모델', { exact: true })).toHaveValue('media-batch-review');
+  await expect(page.getByLabel("Task model", { exact: true })).toHaveValue('media-batch-review');
   await expect(page.getByLabel('Analysis prompt', { exact: true })).toHaveValue('Compare the original media files');
   await expect(page.getByRole('button', { name: 'Analysis sources', exact: true })).toContainText('3');
   await page.getByRole('button', { name: 'Analysis sources', exact: true }).click();
@@ -57,9 +57,9 @@ test('Studio selects independent mixed analysis, uploads once, retains drafts an
   expect(uploads).toHaveLength(3); expect(submissions).toHaveLength(1);
   await page.evaluate(id => sessionStorage.removeItem(`viral-hit:studio-analysis:${id}`), projectId);
   await page.reload();
-  await expect(page.getByLabel('작업 모델', { exact: true })).toHaveValue('media-batch-review');
+  await expect(page.getByLabel("Task model", { exact: true })).toHaveValue('media-batch-review');
   await page.locator('article').first().getByRole('button').first().click();
-  await expect(page.getByLabel('작업 모델', { exact: true })).toHaveValue('media-batch-review');
+  await expect(page.getByLabel("Task model", { exact: true })).toHaveValue('media-batch-review');
   await expect(page.getByRole('button', { name: 'Analysis sources', exact: true })).toContainText('3');
   await page.getByRole('button', { name: 'Analyze', exact: true }).click();
   await expect.poll(() => submissions.length).toBe(2);
@@ -95,7 +95,7 @@ test('Studio preserves an unreadable stored draft until explicit replacement and
   await expect(page.getByText('The saved draft is unreadable and retained.', { exact: false })).toHaveCount(0);
   await page.reload();
   await expect(page.getByLabel('Analysis prompt', { exact: true })).toHaveValue('New draft after recovery');
-  await expect(page.getByLabel('작업 모델', { exact: true })).toHaveValue('media-batch-review');
+  await expect(page.getByLabel("Task model", { exact: true })).toHaveValue('media-batch-review');
   expect(errors).toEqual([]);
   expect((await request.delete('/api/app/projects', { headers, data: { projectIds: [projectId] } })).ok()).toBe(true);
 });
@@ -120,7 +120,7 @@ test('Studio rejects excess files before uploading and restores declared model s
   await page.evaluate(id => sessionStorage.removeItem(`viral-hit:studio-analysis:${id}`), projectId);
   await page.reload();
   await page.locator('article').first().getByRole('button').first().click();
-  await expect(page.getByLabel('작업 모델', { exact: true })).toHaveValue('technical-video-review');
+  await expect(page.getByLabel("Task model", { exact: true })).toHaveValue('technical-video-review');
   await expect(page.getByLabel('Report name', { exact: true })).toHaveValue('Studio original audit');
   await expect(page.getByLabel('Minimum height', { exact: true })).toHaveValue('720');
   await page.keyboard.press('Escape');

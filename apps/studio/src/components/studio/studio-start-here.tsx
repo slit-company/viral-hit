@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { Action } from '@/components/base/action';
 import { useState } from 'react';
 
@@ -14,13 +15,13 @@ const STUDIO_START_HERE_IDEAS: StudioStartHereIdea[] = [
     className:
       'left-0 top-[18px] size-[90px] rotate-[-8deg] rounded-[14px] sm:left-[22px] sm:top-[14px] sm:size-[132px]',
     src: '/app/create-thumb-road.webp',
-    title: 'Cinematic landscape',
+    title: uiMessages["ui.studio.cinematic_landscape"](),
   },
   {
     className:
       'left-[82px] top-[2px] size-[102px] rotate-[3deg] rounded-[17px] sm:left-[134px] sm:top-0 sm:size-[132px]',
     src: '/app/create-thumb-portrait.webp',
-    title: 'Editorial character',
+    title: uiMessages["ui.studio.editorial_character"](),
   },
   {
     className:
@@ -42,7 +43,7 @@ export function StudioStartHere() {
   return (
     <div className="pointer-events-auto w-[min(94vw,620px)] text-center">
       <div
-        aria-label="Starting ideas"
+        aria-label={uiMessages["ui.studio.starting_ideas"]()}
         className="relative mx-auto h-[122px] w-[min(88vw,350px)] sm:h-[148px] sm:w-[500px]"
       >
 
@@ -79,11 +80,9 @@ export function StudioStartHere() {
         })}
       </div>
       <h1 className="mt-7 text-[1.7rem] font-semibold leading-none tracking-[-0.035em] text-[var(--vh-text-1)] sm:text-[2.15rem]">
-        Create Here
-      </h1>
+        {uiMessages["ui.studio.create_here"]()}</h1>
       <p className="mx-auto mt-3 max-w-[390px] text-[13px] leading-6 text-[var(--vh-text-2)] sm:text-sm">
-        Imagine the scene. Shape the mood. Bring it to life.
-      </p>
+        {uiMessages["ui.studio.imagine_the_scene_shape_the_mood_bring_it_to_life"]()}</p>
     </div>
   );
 }

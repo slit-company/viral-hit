@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useStudioTools } from './use-studio-tools';
 import { StudioToolNavigation, StudioToolSelection } from './studio-tool-navigation';
 import { StudioToolComposer } from './studio-tool-composer';
@@ -73,12 +74,12 @@ async function waitForGeneration({
     );
     if (result.status === 'succeeded') return result.output;
     if (result.status === 'failed') {
-      throw new Error(result.error || 'Generation failed');
+      throw new Error(result.error || uiMessages["ui.studio.generation_failed"]());
     }
     await wait(2500);
   }
   throw new Error(
-    'Generation is still processing. You can find it in History.'
+    uiMessages["ui.studio.generation_is_still_processing_you_can_find_it_in_history"]()
   );
 }
 
@@ -150,31 +151,31 @@ export function StudioWorkspace({
 
   const generation = useMutation({
     mutationFn: async () => {
-      if (!tools.model || tools.model.available === false) throw Error('사용할 모델의 API를 먼저 연결해주세요.');
+      if (!tools.model || tools.model.available === false) throw Error(uiMessages["studio.tools.connect_the_selected_model_s_api_first"]());
       if (visualSources.busy) throw Error('Wait for source files to finish loading.');
       const isAnalysis = media === 'analysis';
       if (!isAnalysis && media !== 'audio' && !selectedModel) {
-        throw new Error('No model is available for this media type.');
+        throw new Error(uiMessages["ui.studio.no_model_is_available_for_this_media_type"]());
       }
       let request;
       if (isAnalysis) request = analysis.request();
       else if (media === 'audio') request = audio.request();
       else {
         const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id });
-        if (promptConstraints.required && !draft.prompt.trim()) throw new Error('Describe what you want to create first.');
+        if (promptConstraints.required && !draft.prompt.trim()) throw new Error(uiMessages["ui.studio.describe_what_you_want_to_create_first"]());
         const initialInput = buildDraftModelParameters(draft, (await getEffectsMetadata([selectedModel!.id])).data.effects?.[selectedModel!.id]?.inputSchema);
         const references = visualSourceReferences(visualSources.sources, selectedModel, visualSources.mask);
         request = { version: GENERATION_REQUEST_VERSION, projectId, mode: draft.type, modelId: selectedModel!.id, prompt: draft.prompt, references, parameters: initialInput };
       }
       const precheck = await precheckEffect({ generation: request });
-      if (!precheck.ok) throw new Error(precheck.data.error || 'Generation validation failed.');
+      if (!precheck.ok) throw new Error(precheck.data.error || uiMessages["ui.studio.generation_validation_failed"]());
       const response = await generateEffect({
         generation: request, generationIntentToken: precheck.data.uploadIntentToken,
       });
-      if (!response.ok) throw new Error(response.data.error || 'Generation failed.');
+      if (!response.ok) throw new Error(response.data.error || uiMessages["ui.studio.generation_failed_2"]());
       const created = response.data;
       if (created.status === 'failed') {
-        throw new Error(created.error || 'Generation failed');
+        throw new Error(created.error || uiMessages["ui.studio.generation_failed"]());
       }
       await invalidateWorkspaceAfterGeneration(queryClient);
       const wmTaskId = resolveWmTaskId(created);
@@ -186,10 +187,10 @@ export function StudioWorkspace({
       }
       if (isAnalysis) {
         if (!resolveVideoAnalysisText(output)) {
-          throw new Error('Analysis completed without text output.');
+          throw new Error(uiMessages["ui.studio.analysis_completed_without_text_output"]());
         }
       } else if (!resolveOutputMedia(output).resultUrl) {
-        throw new Error('Generation completed without a media URL.');
+        throw new Error(uiMessages["ui.studio.generation_completed_without_a_media_url"]());
       }
     },
     onSuccess: () => {
@@ -223,20 +224,20 @@ export function StudioWorkspace({
   return <section className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--vh-bg)] text-[var(--vh-text-1)]">
     <StudioToolNavigation tools={tools} disabled={busy} />
     <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[380px_minmax(0,1fr)] lg:overflow-hidden xl:grid-cols-[400px_minmax(0,1fr)]">
-      <aside aria-label="제작 설정" className="min-w-0 space-y-5 border-b border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+      <aside aria-label={uiMessages["studio.tools.creation_settings"]()} className="min-w-0 space-y-5 border-b border-[var(--vh-border)] bg-[var(--vh-surface)] p-5 lg:overflow-y-auto lg:border-b-0 lg:border-r">
         <StudioToolSelection tools={tools} disabled={busy} />
         {(tools.model || tools.missingModelId) && (media === 'audio' ? <StudioAudioComposer panel projectId={projectId} audio={audio} isBusy={generation.isPending || Boolean(tools.model && tools.model.id !== audio.draft.modelId)} onMediaChange={changeMedia} onGenerate={start} />
           : media === 'analysis' ? <StudioAnalysisComposer panel projectId={projectId} analysis={analysis} isBusy={generation.isPending || Boolean(tools.model && tools.model.id !== analysis.draft.modelId)} onMediaChange={changeMedia} onGenerate={start} />
           : selectedModel && <StudioToolComposer projectId={projectId} tool={tools.tool} draft={draft} model={selectedModel} sources={visualSources} busy={busy} onChange={next => { if (!busy) setDraft(next); }} onGenerate={start} />)}
         {error && <p role="alert" className="break-words rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</p>}
       </aside>
-      <section aria-label="프로젝트 결과" className="min-w-0 bg-[var(--vh-bg)] lg:overflow-y-auto">
+      <section aria-label={uiMessages["studio.tools.project_results"]()} className="min-w-0 bg-[var(--vh-bg)] lg:overflow-y-auto">
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--vh-border)] px-5 py-3">
-          <div role="group" aria-label="결과 보기" className="flex gap-1 rounded-full bg-[var(--vh-control)] p-1">{(['history', 'guide'] as const).map(view => <Action key={view} aria-pressed={resultView === view} onClick={() => setResultView(view)} className={'rounded-full px-4 py-2 text-xs ' + (resultView === view ? 'bg-[var(--vh-surface)] font-semibold shadow-sm' : 'text-[var(--vh-text-2)]')}>{view === 'history' ? '작업 결과' + (feedItems.length ? ' · ' + feedItems.length : '') : '사용 방법'}</Action>)}</div>
-          <Link href={'/editor/' + projectId} className="text-xs font-semibold underline-offset-4 hover:underline">편집기 열기 ↗</Link>
+          <div role="group" aria-label={uiMessages["studio.tools.result_view"]()} className="flex gap-1 rounded-full bg-[var(--vh-control)] p-1">{(['history', 'guide'] as const).map(view => <Action key={view} aria-pressed={resultView === view} onClick={() => setResultView(view)} className={'rounded-full px-4 py-2 text-xs ' + (resultView === view ? 'bg-[var(--vh-surface)] font-semibold shadow-sm' : 'text-[var(--vh-text-2)]')}>{view === 'history' ? uiMessages["studio.tools.results"]() + (feedItems.length ? ' · ' + feedItems.length : '') : uiMessages["studio.tools.how_it_works"]()}</Action>)}</div>
+          <Link href={'/editor/' + projectId} className="text-xs font-semibold underline-offset-4 hover:underline">{uiMessages["studio.tools.open_editor_link"]()}</Link>
         </header>
         <div className="p-4 sm:p-6">
-          {generationsQuery.isError && <p role="alert" className="mb-4 text-sm text-red-700">작업 기록을 불러오지 못했어요. <Action className="underline" onClick={() => void generationsQuery.refetch()}>다시 확인</Action></p>}
+          {generationsQuery.isError && <p role="alert" className="mb-4 text-sm text-red-700">{uiMessages["studio.tools.could_not_load_your_generation_history"]()}<Action className="underline" onClick={() => void generationsQuery.refetch()}>{uiMessages["studio.tools.try_again"]()}</Action></p>}
           {resultView === 'history' && feedItems.length > 0 ? <StudioGenerationFeed projectId={projectId} items={feedItems} onReuse={reuse} /> : <StudioToolGuide tool={tools.tool} projectId={projectId} onPrompt={setPrompt} disabled={busy} />}
         </div>
       </section>

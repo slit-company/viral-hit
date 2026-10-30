@@ -58,3 +58,7 @@ test('serializes the last workspace mode so project cards resume in place', () =
 
   assert.equal(card.lastWorkspaceMode, 'studio');
 });
+
+test('Korean project creation preserves the locale and prompt', () => {
+  assert.equal(buildPostCreateProjectDetailPath({ locale: 'ko', projectId: 'project-1', mode: 'studio', prompt: '봄날의 정원' }), '/ko/studio/project-1?prompt=%EB%B4%84%EB%82%A0%EC%9D%98+%EC%A0%95%EC%9B%90');
+});

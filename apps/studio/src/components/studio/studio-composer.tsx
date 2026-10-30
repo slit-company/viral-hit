@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { StudioVisualSourceControls } from './studio-visual-source-controls';
 import { visualSourceReferences } from '@/core/studio/studio-visual-sources';
 import type { StudioVisualSourcesController } from './use-studio-visual-sources';
@@ -174,7 +175,7 @@ export function StudioComposer({
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
             {<ModelOptions modelId={draft.modelId} value={draft.modelOptions} disabled={isBusy} onChange={modelOptions => onDraftChange({ ...draft, modelOptions })} />}
             <WorkspaceSelect
-              ariaLabel="Media type"
+              ariaLabel={uiMessages["ui.studio.media_type"]()}
               triggerClassName="min-w-[96px]"
               value={media}
               options={[
@@ -209,7 +210,7 @@ export function StudioComposer({
             />
 
             <WorkspaceSelect
-              ariaLabel="Model"
+              ariaLabel={uiMessages["ui.studio.model"]()}
               triggerClassName="w-fit max-w-full"
               value={selectedModel?.id || ''}
               options={models.map((model) => ({

@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Blocks, BookOpenText, Clapperboard, Images, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Users, Workflow } from 'lucide-react';
@@ -39,7 +40,7 @@ export function WorkspaceSidebar({ projectId, current }: { projectId: string; cu
   const toggle = () => setCollapsed(value => { try { localStorage.setItem(key, value ? '0' : '1'); } catch { /* storage unavailable */ } return !value; });
   const recent = useQuery({ queryKey: ['sidebar-projects'], queryFn: () => apiJsonGet<{ projects: RecentProject[] }>('/api/app/projects'), staleTime: 30_000 });
   // Longer accessible names keep the visible word and match the header icons they replace on desktop.
-  const accessible: Partial<Record<string, string>> = { publish: 'Publish project', '/connections': 'Publishing connections' };
+  const accessible: Partial<Record<string, string>> = { publish: uiMessages["ui.app.publish_project"](), "/connections": uiMessages["ui.app.publishing_connections"]() };
   const pages: Array<[Page, string, string, ReactNode]> = [
     ['studio', '/studio/' + projectId, t('header.studio'), <LayoutPanelTop key="s" className="size-4" />],
     ['canvas', '/canvas/' + projectId, t('header.canvas'), <Workflow key="c" className="size-4" />],

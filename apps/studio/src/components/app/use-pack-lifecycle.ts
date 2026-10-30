@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useRef, useState } from 'react';
 import { apiJsonPost } from '@/lib/api-client';
 import type { PackStateReview, PackUpdateReview } from '@/core/harness/recipe-pack-lifecycle-contract';
@@ -18,7 +19,7 @@ export function usePackLifecycle(onChanged: (kind: Review['kind'], pack: PackSum
         ? { kind, manifest: value, state: await apiJsonPost<PackUpdateReview>('/api/app/recipe-packs', { action: 'review-update', pack: value }) }
         : { kind, state: await apiJsonPost<PackStateReview>('/api/app/recipe-packs', { action: 'review-remove', packId: value }) };
       if (current === epoch.current) setReview(next);
-    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not review pack change'); }
+    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_review_pack_change"]()); }
     finally { if (current === epoch.current) setBusy(false); }
   }
   function toggle(id: string) {
@@ -37,7 +38,7 @@ export function usePackLifecycle(onChanged: (kind: Review['kind'], pack: PackSum
         setReview(undefined); setConfirmed(false); setSelected([]);
         await onChanged(review.kind, review.kind === 'update' ? review.state.incoming : review.state.pack);
       }
-    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : 'Could not change pack'); }
+    } catch (cause) { if (current === epoch.current) setError(cause instanceof Error ? cause.message : uiMessages["ui.app.could_not_change_pack"]()); }
     finally { if (current === epoch.current) setBusy(false); }
   }
   function download() {
