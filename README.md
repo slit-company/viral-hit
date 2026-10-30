@@ -26,6 +26,8 @@
 
 Higgsfield promised to open-source its platform. **Viral Hit is our open answer, and it goes one step further**: Higgsfield-style generation *and* a CapCut-style editor in the same app. Image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, Sume, your own ComfyUI server, or a model you wrote yourself.
 
+**▶ [Watch the 1-minute demo](docs/readme/demo.mp4)** — Studio with Comfy, Higgsfield and Sume models, the multitrack editor, Canvas and the Korean interface.
+
 <p align="center">
   <img src="docs/readme/home.jpg" alt="Viral Hit home: prompt box with Image, Video and Audio modes and the tool gallery" width="100%" />
 </p>
