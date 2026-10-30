@@ -2178,5 +2178,9 @@
   "studio.controls.mark_area": "영역 표시",
   "studio.controls.use_mask": "이 영역 사용",
   "studio.controls.saving": "저장 중…",
-  "studio.controls.mask_instruction": "{name}에서 바꿀 부분에 칠해주세요. 칠하지 않은 부분과 원본 파일은 유지돼요."
+  "studio.controls.mask_instruction": "{name}에서 바꿀 부분에 칠해주세요. 칠하지 않은 부분과 원본 파일은 유지돼요.",
+  "studio.start.warm_light": "따뜻한 빛",
+  "studio.start.soft_shapes": "부드러운 형태",
+  "studio.start.product_glow": "제품 조명",
+  "studio.start.color_waves": "색의 물결"
 }

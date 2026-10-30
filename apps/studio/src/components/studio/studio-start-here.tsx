@@ -14,26 +14,26 @@ const STUDIO_START_HERE_IDEAS: StudioStartHereIdea[] = [
   {
     className:
       'left-0 top-[18px] size-[90px] rotate-[-8deg] rounded-[14px] sm:left-[22px] sm:top-[14px] sm:size-[132px]',
-    src: '/app/create-thumb-road.webp',
-    title: uiMessages["ui.studio.cinematic_landscape"](),
+    src: '/app/start-peach.webp',
+    get title() { return uiMessages["studio.start.warm_light"](); },
   },
   {
     className:
       'left-[82px] top-[2px] size-[102px] rotate-[3deg] rounded-[17px] sm:left-[134px] sm:top-0 sm:size-[132px]',
-    src: '/app/create-thumb-portrait.webp',
-    title: uiMessages["ui.studio.editorial_character"](),
+    src: '/app/start-mint.webp',
+    get title() { return uiMessages["studio.start.soft_shapes"](); },
   },
   {
     className:
       'left-[172px] top-[10px] size-[96px] rounded-full sm:left-[250px] sm:top-[4px] sm:size-[126px]',
-    src: '/app/create-thumb-ripple.webp',
-    title: 'Material study',
+    src: '/app/start-lilac.webp',
+    get title() { return uiMessages["studio.start.product_glow"](); },
   },
   {
     className:
       'right-0 top-[16px] size-[98px] rotate-[6deg] rounded-[14px] sm:right-[6px] sm:top-[12px] sm:size-[128px]',
-    src: '/app/create-thumb-horse.webp',
-    title: 'Surreal film',
+    src: '/app/start-lemon.webp',
+    get title() { return uiMessages["studio.start.color_waves"](); },
   },
 ];
 
@@ -56,7 +56,7 @@ export function StudioStartHere() {
               key={idea.src}
               type="button"
               title={idea.title}
-              aria-label={`Select ${idea.title}`}
+              aria-label={idea.title}
               aria-pressed={isSelected}
               onClick={() => setSelectedSrc(idea.src)}
               className={cn(

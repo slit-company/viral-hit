@@ -2178,5 +2178,9 @@
   "studio.controls.mark_area": "Mark area",
   "studio.controls.use_mask": "Use this mask",
   "studio.controls.saving": "Saving…",
-  "studio.controls.mask_instruction": "Paint over the part of {name} the model may change. Unpainted areas stay as they are. The original file is kept."
+  "studio.controls.mask_instruction": "Paint over the part of {name} the model may change. Unpainted areas stay as they are. The original file is kept.",
+  "studio.start.warm_light": "Warm light",
+  "studio.start.soft_shapes": "Soft shapes",
+  "studio.start.product_glow": "Product glow",
+  "studio.start.color_waves": "Color waves"
 }
