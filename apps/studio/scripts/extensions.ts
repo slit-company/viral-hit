@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { extensionDiagnostics } from '../src/core/extensions/diagnostics.server';
 if (process.argv.length > 2) {
   console.error('Usage: pnpm extensions');

@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
+import './default-providers.mjs';
 
 // The SQLite database, the data/project-assets store, and tsx's tsconfig.json
 // discovery (which provides the @/* path aliases) all resolve relative to the

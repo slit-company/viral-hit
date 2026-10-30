@@ -2,6 +2,7 @@ import { spawn, execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 if (existsSync('.env.local')) process.loadEnvFile('.env.local');
 if (existsSync('.env')) process.loadEnvFile('.env');
+await import('./default-providers.mjs');
 process.env.HOST ||= '127.0.0.1';
 const production = process.argv.includes('--production');
 if (!production) execFileSync(process.execPath, ['--import', 'tsx', 'scripts/prepare-paraglide.ts'], { stdio: 'inherit' });

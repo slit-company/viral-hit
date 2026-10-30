@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { analysisReport } from '../src/core/generation-providers/analysis-report';
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';

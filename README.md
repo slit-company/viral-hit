@@ -2,7 +2,9 @@
   <img src="docs/readme/hero.jpg" alt="Viral Hit — the open-source creative studio" width="100%" />
 </p>
 
-<h3 align="center">Direct images, films, voices and edits in one project. Pick any model. Own every file.</h3>
+<h2 align="center">Higgsfield + CapCut, open source.</h2>
+
+<h3 align="center">Generate with any model, then cut it on a real multitrack timeline — in one project you own.</h3>
 
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-161616?style=for-the-badge"></a>
@@ -13,6 +15,7 @@
 
 <p align="center">
   <a href="#run-it-in-two-minutes"><b>Run it</b></a> ·
+  <a href="#why-viral-hit"><b>Why Viral Hit</b></a> ·
   <a href="#what-you-get"><b>What you get</b></a> ·
   <a href="#comfy-router-models"><b>Comfy models</b></a> ·
   <a href="#how-it-fits-together"><b>Architecture</b></a> ·
@@ -21,11 +24,30 @@
 
 ---
 
-Higgsfield promised to open-source its platform. **Viral Hit is our open answer**: a creative studio you run yourself, where image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, Sume, your own ComfyUI server, or a model you wrote yourself.
+Higgsfield promised to open-source its platform. **Viral Hit is our open answer, and it goes one step further**: Higgsfield-style generation *and* a CapCut-style editor in the same app. Image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, Sume, your own ComfyUI server, or a model you wrote yourself.
 
 <p align="center">
   <img src="docs/readme/home.jpg" alt="Viral Hit home: prompt box with Image, Video and Audio modes and the tool gallery" width="100%" />
 </p>
+
+## Why Viral Hit
+
+Most open-source Higgsfield rebuilds recreate one effect, or a gallery of one-shot apps. You still download every clip and finish the video somewhere else. Viral Hit keeps the whole job in one place.
+
+| | One-effect apps | Tool galleries | **Viral Hit** |
+|---|:---:|:---:|:---:|
+| Generate image and video | One effect | ✅ | ✅ 9 tools, 4 providers, any model you add |
+| Remix: motion transfer, subject swap, restyle | Sometimes one | Some | ✅ |
+| Lip sync, voice, music, captions, dubbing | — | Some | ✅ |
+| **Multitrack timeline editor with MP4 export** | — | — | ✅ visuals, overlays, audio, captions |
+| Canvas for ideas and versions | — | — | ✅ |
+| Storyboards: plan, shoot and accept each shot | — | — | ✅ |
+| Consistent characters across projects | — | Some | ✅ |
+| Publish to YouTube and Instagram | — | — | ✅ with approval and receipts |
+| Paid jobs survive crashes without double charges | — | — | ✅ idempotent, recoverable jobs |
+| Agents can run everything (MCP and CLI) | — | Some | ✅ |
+| Add a model without touching the app | — | — | ✅ installed provider folders |
+| English and Korean interface | — | — | ✅ plus Chinese and Japanese |
 
 ## What you get
 
@@ -84,18 +106,19 @@ Requires Node 24+, pnpm 10 and FFmpeg.
 ```sh
 git clone https://github.com/slit-company/viral-hit.git
 cd viral-hit
-pnpm run setup
-
-# Add the Comfy models to Studio
-pnpm --dir extensions/comfy-router install && pnpm --dir extensions/comfy-router build
-export VIRAL_HIT_PROVIDERS_DIR="$PWD/extensions/comfy-router/dist/providers"
-
+pnpm run setup   # installs the studio and builds the Comfy, Higgsfield and Sume providers
 pnpm dev
 ```
 
-Open http://127.0.0.1:3808, then **Extensions → Connect creative APIs → Comfy**, paste your Comfy API key and press **Check connection**. Studio now lists FLUX 3, LTX 2.5 and MiniMax H3. Importing media, editing and MP4 export work without any key.
+Open http://127.0.0.1:3808 and go to **Extensions → Connect creative APIs**. Paste the keys you have and press **Check connection**:
 
-To use several providers at once, copy each `dist/providers/<name>` folder into one directory and point `VIRAL_HIT_PROVIDERS_DIR` at it. The same folders also install from **Extensions → Manage runtime packages**.
+| Provider | Key | What appears in Studio |
+|---|---|---|
+| Comfy | `COMFY_API_KEY` | FLUX 3 Image and Video, LTX 2.5 Pro and Fast, MiniMax H3 |
+| Higgsfield | `HIGGSFIELD_API_KEY` as `KEY_ID:KEY_SECRET` | Soul 2, Seedance 2.0, Genjutsu motion transfer and object swap |
+| Sume | `SUME_API_KEY` | 30 image, video, remix, lip sync, caption, voice and music operations |
+
+Keys are encrypted on your server. Models without a key stay visible and marked "Needs connection". Importing media, editing and MP4 export work with no key at all. Rebuild providers any time with `pnpm providers`, or set `VIRAL_HIT_PROVIDERS_DIR` to load your own folder instead.
 
 ## How it fits together
 

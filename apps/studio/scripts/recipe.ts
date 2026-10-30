@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { changeRecipeLibrary } from '../src/core/harness/recipe-library';
 import { sequenceSchema } from '../src/core/editor/sequence';
 import { closeSync, fstatSync, openSync, readFileSync, writeFileSync } from 'node:fs';

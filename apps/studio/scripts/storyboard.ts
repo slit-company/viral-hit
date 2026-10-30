@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { MAX_STORYBOARD_BYTES } from '../src/core/storyboards/contract';
 import { changeStoryboards } from '../src/core/storyboards/service.server';
 try {

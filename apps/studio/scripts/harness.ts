@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { attachRunResult } from '../src/core/harness/attach-result';
 import { readFileSync } from 'node:fs';
 import { openHarness } from '../src/core/harness/store';

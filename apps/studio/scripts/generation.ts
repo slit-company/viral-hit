@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { open } from 'node:fs/promises';
 import { assetGenerationRequest } from '../src/core/generation-providers/asset-generation';
 import { requestAssetGeneration } from '../src/core/generation-providers/asset-generation.server';

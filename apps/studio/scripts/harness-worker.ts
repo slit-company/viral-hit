@@ -1,3 +1,4 @@
+import './default-providers.mjs';
 import { openHarness } from '../src/core/harness/store';
 import { runtimeCapabilities, unavailableOperations } from '../src/core/harness/capabilities';
 import { createRuntimeAdapters } from '../src/core/harness/adapters';
