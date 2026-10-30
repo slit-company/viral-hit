@@ -48,6 +48,8 @@ jobs:
       - run: pnpm audit --prod --audit-level high
       - run: npm test && npm run build
         working-directory: extensions/ima2
+      - run: pnpm install --frozen-lockfile && pnpm test && pnpm build
+        working-directory: extensions/comfy-router
       - run: npm ci && npm test && npm run build
         working-directory: extensions/local-media
       - run: npm run test:live -- "$RUNNER_TEMP/viral-hit-local-media"

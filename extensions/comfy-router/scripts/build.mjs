@@ -1,0 +1,12 @@
+import { build } from 'esbuild';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { providerManifest } from '../src/profiles.mjs';
+const root = dirname(dirname(fileURLToPath(import.meta.url))), directory = join(root, 'dist/providers/comfy');
+await mkdir(directory, { recursive: true });
+await build({ entryPoints: [join(root, 'src/provider.mjs')], outfile: join(directory, 'provider.mjs'), platform: 'node', format: 'esm', bundle: true, target: 'node24' });
+const manifest = providerManifest(), source = await readFile(join(directory, 'provider.mjs'), 'utf8');
+await writeFile(join(directory, 'provider.json'), JSON.stringify(manifest, null, 2) + '\n');
+await writeFile(join(root, 'dist/comfy.runtime.json'), JSON.stringify({ schemaVersion: 1, kind: 'viral-hit-runtime-package', id: 'comfy', version: '0.1.0', title: 'Comfy Router models', description: 'FLUX 3, LTX 2.5 and MiniMax H3 through one Comfy API key.', author: 'Viral Hit contributors', license: 'Apache-2.0', scope: 'general', requirements: 'A Comfy API key with Router access. Usage is billed to your Comfy account. Selected image references are sent to Comfy when a generation is submitted. No local model download.', entries: [{ kind: 'provider', manifest, source }] }, null, 2) + '\n');
+console.log('Built Comfy Router provider with ' + manifest.models.length + ' models; no runtime dependencies.');

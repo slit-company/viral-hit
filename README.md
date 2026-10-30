@@ -1,36 +1,120 @@
-# VIRAL HIT
+<p align="center">
+  <img src="docs/readme/hero.jpg" alt="Viral Hit — the open-source creative studio" width="100%" />
+</p>
 
-An independent, general-purpose open-source creative studio. Direct images, films, animation, sound and edits from one project — with a durable agent harness underneath.
+<h3 align="center">Direct images, films, voices and edits in one project. Pick any model. Own every file.</h3>
 
-**Status: active development, not Higgsfield feature or performance parity.** See [parity plan](docs/PARITY.md) and [research](research/README.md). Do not confuse an upstream claim or a working UI with validated generation quality.
+<p align="center">
+  <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-161616?style=for-the-badge"></a>
+  <img alt="Built with Comfy Router" src="https://img.shields.io/badge/built%20with-Comfy%20Router-caff51?style=for-the-badge&labelColor=161616">
+  <img alt="FLUX 3, LTX 2.5, MiniMax H3" src="https://img.shields.io/badge/FLUX%203%20·%20LTX%202.5%20·%20MiniMax%20H3-ready-caff51?style=for-the-badge&labelColor=161616">
+  <img alt="English and Korean" src="https://img.shields.io/badge/UI-EN%20%7C%20KR-161616?style=for-the-badge">
+</p>
 
-## Scope
+<p align="center">
+  <a href="#run-it-in-two-minutes"><b>Run it</b></a> ·
+  <a href="#what-you-get"><b>What you get</b></a> ·
+  <a href="#comfy-router-models"><b>Comfy models</b></a> ·
+  <a href="#how-it-fits-together"><b>Architecture</b></a> ·
+  <a href="#extend-it"><b>Extend it</b></a>
+</p>
 
-Image/video/audio generation, cinematic direction, consistent characters, motion transfer, object replacement, editable layers, connected canvas, multitrack video editing, reference-driven edits, agent tools, templates, collaboration and publishable project provenance. Ads are one application, not the scope limit.
+---
 
-## Repository
+Higgsfield promised to open-source its platform. **Viral Hit is our open answer**: a creative studio you run yourself, where image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, Sume, your own ComfyUI server, or a model you wrote yourself.
 
-- `apps/studio/`: visual canvas, shared assets, timeline, preview and export.
-- `apps/studio/src/core/harness/`: new durable execution queue and Comfy Router adapter.
-- `research/upstream-lock.json`: inspected repositories with exact commits and source URLs.
-- `research/upstream/`: ignored, unmodified local research checkouts, including private reference pipeline material.
-- `research/evidence/`: ignored browser evidence. Logged-in browser details are never published.
-- `docs/`: architecture, benchmark protocol, and feature-by-feature acceptance criteria.
+<p align="center">
+  <img src="docs/readme/home.jpg" alt="Viral Hit home: prompt box with Image, Video and Audio modes and the tool gallery" width="100%" />
+</p>
 
-Do not copy brand assets, private data or credentials into the public product.
-`Viral Hit` is a working title.
-## Run
+## What you get
 
-Requires Node 24+, pnpm 10, and FFmpeg/ffprobe. From this directory:
+<table>
+  <tr>
+    <td width="50%"><img src="docs/readme/studio-comfy.jpg" alt="Studio with Comfy Router and LTX 2.5 Pro selected" /></td>
+    <td width="50%"><img src="docs/readme/canvas.jpg" alt="Infinite canvas" /></td>
+  </tr>
+  <tr>
+    <td><b>Studio.</b> Nine creation tools: image, video, remix (motion transfer, subject swap, restyle), lip sync, voice, music, captions and dubbing, enhance and analysis. Choose the task, then any provider and model that supports it.</td>
+    <td><b>Canvas.</b> Lay out ideas, prompts and generations on an infinite board, branch versions, and send the winners to the edit.</td>
+  </tr>
+  <tr>
+    <td><img src="docs/readme/editor.jpg" alt="Multitrack editor with player, timeline and inspector" /></td>
+    <td><img src="docs/readme/connections.jpg" alt="API connections for Comfy, Higgsfield and Sume" /></td>
+  </tr>
+  <tr>
+    <td><b>Edit.</b> A real multitrack timeline: visuals, overlays, audio and captions, reversible takes, recovered drafts and MP4 export in the browser or on the server.</td>
+    <td><b>Connections.</b> Paste a key once. Keys stay encrypted on your server, are never sent to the browser, and each job remembers the key it started with.</td>
+  </tr>
+</table>
+
+| Higgsfield-style app | In Viral Hit |
+|---|---|
+| Image and video generation | **Studio → Image / Video** with any connected provider |
+| Cinema Studio (direct the shot) | [Shot controls](docs/SHOT-CONTROLS.md) for framing, lens, camera move, light and look, plus [storyboards](docs/STORYBOARDS.md) that plan, produce and accept each shot |
+| Genjutsu / Openjutsu (swap a character in a video) | **Studio → Remix** with motion transfer, subject swap and restyle |
+| Consistent characters | [Characters](docs/CHARACTERS.md): reference images and written rules reused in every project |
+| Lip sync, voice, music | **Studio → Lip sync / Voice / Music** |
+| Publishing | [Publish](docs/PUBLISHING.md) to YouTube, Instagram or your own installed destination, with [performance readings](docs/MEASUREMENT.md) |
+| Agents | Every action is also an [MCP tool and CLI command](docs/ARCHITECTURE.md), so an AI agent can run the studio too |
+
+The interface ships in **English and Korean** (switch with EN / KR in the header), plus Chinese and Japanese.
+
+<p align="center">
+  <img src="docs/readme/studio-ko.jpg" alt="The same Studio in Korean" width="80%" />
+</p>
+
+## Comfy Router models
+
+The [Comfy provider](extensions/comfy-router/README.md) puts Comfy Router models straight into Studio. One `COMFY_API_KEY` covers all of them.
+
+| Model | Router ID | Studio task | Inputs |
+|---|---|---|---|
+| **FLUX 3 Image** | `bfl/flux-3-image` | Create image, Edit image | Prompt, up to 10 reference images, 768sq to 4K |
+| **FLUX 3 Video** | `bfl/flux-3-video` | Create video | Text-to-video or keyframes (up to 10 images), 5–20 s, HD to 4K, audio |
+| **LTX 2.5 Pro / Fast** | `ltx/ltx-2-5-pro`, `ltx/ltx-2-5-fast` | Create video | 16:9 or 9:16, 720p to 2160p, 24–50 fps, audio |
+| **MiniMax H3** | `minimax/minimax-h3` | Create video | Text, first and last frame, 768P or 2K, 4–15 s |
+
+Generations go through Comfy's request queue with a fixed idempotency key, so a lost response is collected again instead of paid for twice. Results are downloaded into your project right away, because Router links expire within hours.
+
+## Run it in two minutes
+
+Requires Node 24+, pnpm 10 and FFmpeg.
 
 ```sh
+git clone https://github.com/slit-company/viral-hit.git
+cd viral-hit
 pnpm run setup
+
+# Add the Comfy models to Studio
+pnpm --dir extensions/comfy-router install && pnpm --dir extensions/comfy-router build
+export VIRAL_HIT_PROVIDERS_DIR="$PWD/extensions/comfy-router/dist/providers"
+
 pnpm dev
 ```
 
-Open `http://127.0.0.1:3808/projects`. Local import, editing and MP4 export need no generation key. Comfy execution requires your server-side `COMFY_API_KEY` and provider credits. Built-in image, video and speech recipes separate provider generation from durable media import, then offer revision-checked timeline attachment. Actual paid Comfy Router generation has not yet been validated; the separate native ComfyUI path has a real model-free execution check.
+Open http://127.0.0.1:3808, then **Extensions → Connect creative APIs → Comfy**, paste your Comfy API key and press **Check connection**. Studio now lists FLUX 3, LTX 2.5 and MiniMax H3. Importing media, editing and MP4 export work without any key.
 
-Read [architecture and setup](docs/ARCHITECTURE.md), [reference pipeline extraction](docs/REFERENCE-PIPELINE.md), [validation evidence](docs/VALIDATION.md) and [full parity targets](docs/PARITY.md). The validation ledger records source and browser checks, including a decoded 1080p MP4 export and actual model-free native workflows. They do not establish Higgsfield generation quality or performance parity.
+To use several providers at once, copy each `dist/providers/<name>` folder into one directory and point `VIRAL_HIT_PROVIDERS_DIR` at it. The same folders also install from **Extensions → Manage runtime packages**.
+
+## How it fits together
+
+```mermaid
+flowchart LR
+  UI["Studio · Canvas · Edit<br/>EN / KR / ZH / JA"] --> CMD["Project commands<br/>revision-checked"]
+  MCP["MCP + CLI agents"] --> CMD
+  CMD --> GEN["Generation ledger<br/>idempotent jobs, receipts"]
+  GEN --> P1["Comfy Router<br/>FLUX 3 · LTX 2.5 · MiniMax H3"]
+  GEN --> P2["Higgsfield · Sume · Cloud API"]
+  GEN --> P3["Your ComfyUI server<br/>or your own provider"]
+  GEN --> ASSETS["Project assets<br/>local, hashed"]
+  ASSETS --> TL["Multitrack timeline"] --> MP4["MP4 export / Publish"]
+```
+
+- **Durable jobs.** Each paid request is recorded before it is sent. After a crash the worker collects the original job instead of submitting it again.
+- **Local media.** Originals stay on your machine. A reference is sent to a provider only when you start a generation that uses it.
+- **Replaceable parts.** Providers, adapters, recipes, skills and publishing destinations are installed folders. Nothing model-specific is wired into the core.
+- **Light by default.** No model weights or GPU are needed to run the studio; heavy engines are optional, separately installed runtimes.
 
 ## Extend it
 
@@ -93,3 +177,12 @@ Share recipes, skills and character reference images together through **Packs**.
 Discover independently authored skills and packs through [Community catalogs](docs/COMMUNITY.md). General and specialized entries use the same reviewed, checksum-pinned handoff; creators host their own JSON lists.
 
 [Video overlays](docs/VIDEO-OVERLAYS.md) add moving, editable layers with source-range trimming, keyframes and audio volume. Import an image or video through Overlay, or fork the general `picture-in-picture` recipe for tutorials, commentary and other compositions. Browser and server exports use the same timeline contract.
+
+
+## Project status
+
+Viral Hit is in active development. Source tests, browser tests and the provider contract tests run locally and in CI. Paid generation through each provider is checked by whoever runs it with their own key; this repository does not claim model quality or speed equal to Higgsfield. The [validation ledger](docs/VALIDATION.md) and [parity targets](docs/PARITY.md) record exactly what has been run.
+
+## Contributing and license
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for where each kind of change belongs. Viral Hit is released under the [Apache-2.0 license](LICENSE). Third-party components keep their own licenses, listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
