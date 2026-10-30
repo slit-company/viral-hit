@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "voiced-short",
+  "version": "1.0.0",
+  "title": "Voiced, captioned short",
+  "summary": "Turn footage and a script into a finished short: narration, timed captions, music under the voice, and a loudness and caption check before export.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_generation_models",
+      "viral_hit_asset_generation",
+      "viral_hit_editor_get",
+      "viral_hit_editor_edit",
+      "viral_hit_editor_import_srt",
+      "viral_hit_editor_render"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "script",
+      "label": "Script or goal",
+      "description": "The line-by-line script, or the message and length to write one for.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "footage",
+      "label": "Footage",
+      "description": "Clips or generated shots already in the project.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "script",
+      "title": "Script",
+      "description": "Write or confirm a script that fits the footage length.",
+      "reviewRequired": true
+    },
+    {
+      "id": "voice",
+      "title": "Voice",
+      "description": "Generate narration and check it against the script.",
+      "reviewRequired": true
+    },
+    {
+      "id": "mix",
+      "title": "Captions and mix",
+      "description": "Time captions to the voice, duck music, check loudness.",
+      "reviewRequired": true
+    },
+    {
+      "id": "export",
+      "title": "Export",
+      "description": "Render and review the full result.",
+      "reviewRequired": true
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "voice",
+      "captions",
+      "short"
+    ],
+    "featured": false
+  }
+}

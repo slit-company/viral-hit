@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "id": "hit-remake",
+  "version": "1.0.0",
+  "title": "Remake a hit",
+  "summary": "Take a video that already worked, break it into shots, remake each shot with any connected model, cut it on the timeline and export.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_asset_import",
+      "viral_hit_recipes_list",
+      "viral_hit_runs_change",
+      "viral_hit_runs_list",
+      "viral_hit_storyboard",
+      "viral_hit_generation_models",
+      "viral_hit_asset_generation",
+      "viral_hit_editor_get",
+      "viral_hit_editor_edit",
+      "viral_hit_editor_render"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "reference",
+      "label": "Reference video",
+      "description": "A file, a YouTube link or an Instagram video the user owns or may use.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "change",
+      "label": "What to change",
+      "description": "The new subject, character, product, message or language; what must stay the same.",
+      "kind": "text",
+      "required": true
+    }
+  ],
+  "stages": [
+    {
+      "id": "intake",
+      "title": "Bring in the reference",
+      "description": "Import the source, sample frames and split it at visual cuts.",
+      "reviewRequired": false
+    },
+    {
+      "id": "plan",
+      "title": "Write the remake plan",
+      "description": "One shot per beat with preserve/change notes, a model and inputs per shot.",
+      "reviewRequired": true
+    },
+    {
+      "id": "generate",
+      "title": "Generate and accept shots",
+      "description": "Generate approved shots, inspect real output, accept one take per shot.",
+      "reviewRequired": true
+    },
+    {
+      "id": "edit",
+      "title": "Cut and export",
+      "description": "Assemble accepted shots, add voice, music and captions, export and review.",
+      "reviewRequired": true
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "remake",
+      "reference",
+      "storyboard",
+      "video"
+    ],
+    "featured": true
+  }
+}

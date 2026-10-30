@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "id": "batch-variations",
+  "version": "1.0.0",
+  "title": "Make variations in parallel",
+  "summary": "Produce several independent images or videos at once: shared preparation once, every ready item submitted before waiting, and each item tracked to its own result.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_generation_models",
+      "viral_hit_asset_generation",
+      "viral_hit_generation_history",
+      "viral_hit_generation_status"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "items",
+      "label": "Items to make",
+      "description": "The exact number of outputs and how they differ (characters, hooks, languages, formats).",
+      "kind": "text",
+      "required": true
+    }
+  ],
+  "stages": [
+    {
+      "id": "plan",
+      "title": "Plan the batch",
+      "description": "List every item, its inputs and dependencies, and the total cost.",
+      "reviewRequired": true
+    },
+    {
+      "id": "submit",
+      "title": "Submit ready items",
+      "description": "Submit all approved independent items before waiting on any.",
+      "reviewRequired": true
+    },
+    {
+      "id": "report",
+      "title": "Account for every item",
+      "description": "Report each item as done, failed, running or blocked.",
+      "reviewRequired": false
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "batch",
+      "variations",
+      "ads"
+    ],
+    "featured": false
+  }
+}

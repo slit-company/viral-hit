@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "id": "character-intro",
+  "version": "1.0.0",
+  "title": "Five-second character intro",
+  "summary": "Introduce a character in exactly five seconds: five one-second keyframes that keep the character consistent, one animated plate, optional narration and captions.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_character",
+      "viral_hit_asset_generation",
+      "viral_hit_generation_models",
+      "viral_hit_storyboard",
+      "viral_hit_editor_edit",
+      "viral_hit_editor_render"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "character",
+      "label": "Character images",
+      "description": "One or more images of the character; the clearest becomes the identity reference.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "motion",
+      "label": "Motion reference",
+      "description": "An optional short clip whose camera and rhythm the intro should follow.",
+      "kind": "text",
+      "required": false
+    },
+    {
+      "id": "line",
+      "label": "Spoken line",
+      "description": "A short line to narrate, or permission to draft one.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "identity",
+      "title": "Choose the identity image",
+      "description": "Pick the canonical image and write the character rules.",
+      "reviewRequired": true
+    },
+    {
+      "id": "keyframes",
+      "title": "Five keyframes",
+      "description": "One still per second, each with a visible change of action.",
+      "reviewRequired": true
+    },
+    {
+      "id": "animate",
+      "title": "Animate",
+      "description": "One five-second plate from the approved keyframes.",
+      "reviewRequired": true
+    },
+    {
+      "id": "finish",
+      "title": "Voice and export",
+      "description": "Optional narration and captions, exact five-second export, review.",
+      "reviewRequired": true
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "character",
+      "intro",
+      "short"
+    ],
+    "featured": false
+  }
+}

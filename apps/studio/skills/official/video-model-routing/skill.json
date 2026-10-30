@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "video-model-routing",
+  "version": "1.0.0",
+  "title": "Choose a video model",
+  "summary": "Pick the right connected model for each shot from its declared inputs, length and cost, and handle failed or uncertain jobs without paying twice.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_generation_models",
+      "viral_hit_generation_model_get",
+      "viral_hit_asset_generation",
+      "viral_hit_generation_history",
+      "viral_hit_generation_status"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "shot",
+      "label": "Shot to make",
+      "description": "What the shot shows, its length, aspect ratio and which images or video it must follow.",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "budget",
+      "label": "Budget and model limits",
+      "description": "Any model or service the user pinned, excluded, or a spending cap.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "select",
+      "title": "Select a model",
+      "description": "Match the shot to models whose declared inputs and lengths fit.",
+      "reviewRequired": true
+    },
+    {
+      "id": "submit",
+      "title": "Submit",
+      "description": "Prepare, show the request and cost, then submit once.",
+      "reviewRequired": true
+    },
+    {
+      "id": "recover",
+      "title": "Recover",
+      "description": "Handle confirmed failures within the approved retry budget and reconcile unknown outcomes.",
+      "reviewRequired": false
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "models",
+      "video",
+      "routing"
+    ],
+    "featured": false
+  }
+}

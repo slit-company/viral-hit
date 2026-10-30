@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "id": "publish-and-measure",
+  "version": "1.0.0",
+  "title": "Publish and learn",
+  "summary": "Publish a finished version with explicit approval, record how it performs, and feed what worked into the next remake.",
+  "scope": "general",
+  "author": "Viral Hit contributors",
+  "license": "Apache-2.0",
+  "visibility": "showcase",
+  "compatibility": {
+    "minimumViralHitVersion": "0.2.4",
+    "requiredMcpTools": [
+      "viral_hit_publication_list",
+      "viral_hit_publication_change",
+      "viral_hit_performance_read",
+      "viral_hit_performance_change",
+      "viral_hit_editor_render"
+    ]
+  },
+  "requiredCapabilities": [],
+  "inputs": [
+    {
+      "id": "destination",
+      "label": "Destination",
+      "description": "The connected account and format (for example a YouTube Short or an Instagram Reel).",
+      "kind": "text",
+      "required": true
+    },
+    {
+      "id": "copy",
+      "label": "Caption and title",
+      "description": "Title, caption, hashtags and schedule, or permission to draft them.",
+      "kind": "text",
+      "required": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "prepare",
+      "title": "Prepare the post",
+      "description": "Pick the exported version, destination, caption and schedule.",
+      "reviewRequired": true
+    },
+    {
+      "id": "approve",
+      "title": "Approve and send",
+      "description": "Show the exact post and send only after explicit approval.",
+      "reviewRequired": true
+    },
+    {
+      "id": "measure",
+      "title": "Record performance",
+      "description": "Record readings for each published version and compare.",
+      "reviewRequired": false
+    }
+  ],
+  "showcase": {
+    "category": "workflows",
+    "tags": [
+      "publishing",
+      "analytics",
+      "loop"
+    ],
+    "featured": false
+  }
+}

@@ -5,7 +5,7 @@ A skill is know-how an AI agent follows while it works in Viral Hit through MCP:
 | | General | Specialized |
 |---|---|---|
 | Fits | Any project | One format, job, audience or brand |
-| Bundled examples | `recipe-packs`, `consistent-characters` | `product-ad-shots` in `examples/skills` |
+| Bundled examples | `hit-remake`, `video-model-routing`, `batch-variations`, `character-intro`, `voiced-short`, `publish-and-measure`, `storyboard`, `consistent-characters`, `recipe-packs` | `product-ad-shots` in `examples/skills` |
 | Label in skill.json | `"scope": "general"` | `"scope": "specialized"` |
 
 Viral Hit lists three sources. **Official** skills ship in `apps/studio/skills/official` and were evaluated with real MCP workflows. **Local** skills come from a folder you choose, so you can keep your own or your team's skills in any repository without changing the app. **Installed** skills are files you add through the studio, MCP or CLI and are stored in the local data directory.
