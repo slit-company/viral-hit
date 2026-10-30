@@ -4,7 +4,7 @@
 
 <h2 align="center">Higgsfield + CapCut, open source.</h2>
 
-<h3 align="center">Generate with any model, then cut it on a real multitrack timeline — in one project you own.</h3>
+<h3 align="center">Find a hit. Remake it with any model. Cut it. Ship it. Measure it. One open-source app, one project you own.</h3>
 
 <p align="center">
   <a href="LICENSE"><img alt="License: Apache-2.0" src="https://img.shields.io/badge/license-Apache--2.0-161616?style=for-the-badge"></a>
@@ -15,6 +15,7 @@
 
 <p align="center">
   <a href="#run-it-in-two-minutes"><b>Run it</b></a> ·
+  <a href="#the-viral-loop"><b>The viral loop</b></a> ·
   <a href="#why-viral-hit"><b>Why Viral Hit</b></a> ·
   <a href="#what-you-get"><b>What you get</b></a> ·
   <a href="#comfy-router-models"><b>Comfy models</b></a> ·
@@ -24,31 +25,44 @@
 
 ---
 
-Higgsfield promised to open-source its platform. **Viral Hit is our open answer, and it goes one step further**: Higgsfield-style generation *and* a CapCut-style editor in the same app. Image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, Sume, your own ComfyUI server, or a model you wrote yourself.
+Higgsfield promised to open-source its platform. **Viral Hit is our open answer, built around how a viral video actually gets made**: Higgsfield-style generation and a CapCut-style editor in the same app, plus the steps before and after them, from studying a reference to publishing and reading the numbers. Image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, Sume, your own ComfyUI server, or a model you wrote yourself.
 
-**▶ [Watch the 1-minute demo](docs/readme/demo.mp4)** — Studio with Comfy, Higgsfield and Sume models, the multitrack editor, Canvas and the Korean interface.
+**▶ [Watch the 1-minute demo](docs/readme/demo.mp4)** — Comfy, Higgsfield and Sume models in one Studio, the multitrack editor, publishing, storyboards and the Korean interface.
 
 <p align="center">
   <img src="docs/readme/home.jpg" alt="Viral Hit home: prompt box with Image, Video and Audio modes and the tool gallery" width="100%" />
 </p>
 
+## The viral loop
+
+| Step | What happens in Viral Hit | Docs |
+|---|---|---|
+| **1. Find** | Import a reference from a file, a YouTube link (optional intake extension) or a video shared to your Instagram inbox. Viral Hit keeps the original, samples frames and splits it at visual cuts. | [Reference intake](docs/REFERENCE-INTAKE.md), [scene detection](docs/SCENE-DETECTION.md) |
+| **2. Break it down** | Turn the reference into a storyboard: shots, timing, camera, characters. An analysis model can draft it; you edit every line. | [Storyboards](docs/STORYBOARDS.md), [structured analysis](docs/STRUCTURED-ANALYSIS.md) |
+| **3. Remake** | Produce each shot with FLUX 3, LTX 2.5, MiniMax H3, Higgsfield, Sume or your own ComfyUI. Keep characters consistent and accept the best take per shot. | [Characters](docs/CHARACTERS.md), [shot controls](docs/SHOT-CONTROLS.md) |
+| **4. Cut** | Accepted shots land on a multitrack timeline with voice, music and captions. Trim, layer, swap takes and export MP4. | [Editable sequences](docs/EDITABLE-SEQUENCES.md) |
+| **5. Ship** | Publish to YouTube or Instagram, or any destination you install, with approval, scheduling and receipts. | [Publishing](docs/PUBLISHING.md) |
+| **6. Measure** | Record views and engagement for each published version, then start the next remake from what worked. | [Measurement](docs/MEASUREMENT.md) |
+
+An AI agent can run the same loop end to end through MCP or the CLI.
+
 ## Why Viral Hit
 
-Most open-source Higgsfield rebuilds recreate one effect, or a gallery of one-shot apps. You still download every clip and finish the video somewhere else. Viral Hit keeps the whole job in one place.
+The #OpenSourceHiggsfield challenge produced close to a hundred projects. Most recreate one effect, and about two dozen are studios that generate clips. Viral Hit covers the whole job, from the reference you want to beat to the numbers after you post.
 
-| | One-effect apps | Tool galleries | **Viral Hit** |
+| | One-effect apps | Generation studios | **Viral Hit** |
 |---|:---:|:---:|:---:|
-| Generate image and video | One effect | ✅ | ✅ 9 tools, 4 providers, any model you add |
-| Remix: motion transfer, subject swap, restyle | Sometimes one | Some | ✅ |
+| Generate images and video | One effect | ✅ | ✅ 9 tools, 4 providers, any model you add |
+| Remix: motion transfer, subject swap, restyle | Often one | Some | ✅ |
 | Lip sync, voice, music, captions, dubbing | — | Some | ✅ |
-| **Multitrack timeline editor with MP4 export** | — | — | ✅ visuals, overlays, audio, captions |
-| Canvas for ideas and versions | — | — | ✅ |
-| Storyboards: plan, shoot and accept each shot | — | — | ✅ |
-| Consistent characters across projects | — | Some | ✅ |
-| Publish to YouTube and Instagram | — | — | ✅ with approval and receipts |
-| Paid jobs survive crashes without double charges | — | — | ✅ idempotent, recoverable jobs |
-| Agents can run everything (MCP and CLI) | — | Some | ✅ |
-| Add a model without touching the app | — | — | ✅ installed provider folders |
+| Import a reference and split it into shots | — | Rare | ✅ |
+| Storyboards with one accepted take per shot | — | Rare | ✅ |
+| Multitrack timeline with MP4 export | — | Rare | ✅ visuals, overlays, audio, captions |
+| Publish to YouTube and Instagram | — | — | ✅ with approval, scheduling and receipts |
+| Track how each published version performs | — | — | ✅ |
+| Paid jobs survive crashes without double charges | — | — | ✅ |
+| Agents run every step (MCP and CLI) | Rare | Some | ✅ |
+| Add a model without changing the app | — | Some | ✅ installed provider folders |
 | English and Korean interface | — | — | ✅ plus Chinese and Japanese |
 
 ## What you get
