@@ -20,7 +20,8 @@ test('home templates come from the recipe catalog and open a new project with th
   await templates.getByRole('button', { name: 'Show all ' + total, exact: true }).click();
   await page.screenshot({ path: evidence + '/e2e-home.png', fullPage: true });
 
-  await templates.getByRole('link', { name: 'Use template: Open frame', exact: true }).click();
+  // Installed packs may add a template with the same title, so pick the bundled one by its recipe.
+  await templates.locator('a[href="/studio?recipe=open-frame"]').click();
   await expect(page).toHaveURL(/\/studio\?recipe=open-frame/);
   await page.getByRole('button', { name: 'Studio', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Project runs', exact: true })).toBeVisible();

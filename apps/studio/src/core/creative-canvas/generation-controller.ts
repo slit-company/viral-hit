@@ -171,11 +171,16 @@ export const toWorkflowReferenceCard = (
   };
 };
 
+// A model that cannot run without a source image or a mask is a poor silent fallback for a new draft.
+const needsSource = (model: WorkspaceModelOption) =>
+  (model.referenceInputs?.image?.min ?? 0) > 0 || Boolean(model.maskInput?.required);
+
 export const getSelectableModel = (
   models: WorkspaceModelOption[],
   modelId: string | null | undefined
 ) =>
   findWorkspaceModelOption(models, modelId) ??
+  models.find((model) => model.available !== false && !needsSource(model)) ??
   models.find((model) => model.available !== false) ??
   null;
 

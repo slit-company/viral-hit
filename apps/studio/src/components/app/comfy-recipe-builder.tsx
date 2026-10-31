@@ -89,7 +89,7 @@ export function ComfyRecipeBuilder({ onBack, onBuilt }: { onBack: () => void; on
     <Action disabled={busy} onClick={onBack} className="inline-flex items-center gap-1.5 text-xs text-[var(--vh-text-2)]"><ArrowLeft size={14} />{uiMessages["ui.app.back_to_recipe_json"]()}</Action>
     <div><h3 className="text-sm font-semibold">{uiMessages["ui.app.build_from_a_comfyui_graph"]()}</h3><p className="mt-1 text-xs leading-relaxed text-[var(--vh-text-2)]">{uiMessages["ui.app.use_an_api_format_graph_node_ids_mapped_to_class_type_and_inputs_canvas_lay"]()}</p></div>
     <details open={!snapshot} className="rounded-xl border border-[var(--vh-border)] p-3">
-      <summary className="cursor-pointer text-xs font-medium">{uiMessages["ui.app.api_graph_source"]()}{snapshot ? uiMessages["ui.app.node_count"]({ count: snapshot.nodes.length }) : ''}</summary>
+      <summary className="cursor-pointer text-xs font-medium">{uiMessages["ui.app.api_graph_source"]()} {snapshot ? uiMessages["ui.app.node_count"]({ count: snapshot.nodes.length }) : ''}</summary>
       <div className="mt-3 space-y-2">
         <input ref={upload} type="file" accept="application/json,.json" aria-label={uiMessages["ui.app.import_comfyui_graph_file"]()} className="hidden" onChange={event => { void loadFile(event.target.files?.[0]); event.target.value = ''; }} />
         <Action disabled={busy} onClick={() => upload.current?.click()} className="inline-flex items-center gap-1.5 text-xs"><FileJson size={14} />{uiMessages["ui.app.choose_api_graph_json"]()}</Action>

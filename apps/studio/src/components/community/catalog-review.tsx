@@ -29,7 +29,7 @@ export function CatalogReviewPanel({ library }: { library: CommunityLibrary }) {
         </p>
       )}
       <p className="text-sm">
-        {review.catalog.entries.length} {uiMessages["ui.community.entries"]()} {review.changes.added.length}{' '} {uiMessages["ui.community.added"]()} {review.changes.changed.length} {uiMessages["ui.community.changed"]()}{' '}
+        {review.catalog.entries.length} {uiMessages["ui.community.entries"]()} {review.changes.added.length}{' '} {uiMessages["ui.community.added"]()} {review.changes.changed.length} {uiMessages["ui.community.changed"]()} {' '}
         {review.changes.removed.length} {uiMessages["ui.community.removed"]()} </p>
       {!!review.changes.details.length && (
         <p className="text-sm"> {uiMessages["ui.community.catalog_details_changed"]()} {review.changes.details.join(', ')}

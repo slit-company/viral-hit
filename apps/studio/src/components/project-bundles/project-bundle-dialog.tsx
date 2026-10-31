@@ -13,7 +13,7 @@ export function ProjectBundleDialog({ projectId }: { projectId?: string | null }
   const summary = state.review?.summary;
   return <>
     <Action aria-label={projectId ? uiMessages["ui.project-bundles.project_file"]() : uiMessages["ui.project-bundles.import_project_file"]()} title={uiMessages["ui.project-bundles.project_file"]()} onClick={() => setOpen(true)} className={projectId ? 'inline-flex size-9 shrink-0 items-center justify-center rounded-xl border border-border bg-muted text-muted-foreground' : 'vh-secondary inline-flex items-center gap-2 self-start'}>
-      <Archive size={17} aria-hidden="true" />{!projectId && uiMessages["ui.project-bundles.import_project"]()}
+      <Archive size={17} aria-hidden="true" />{!projectId && <span className="max-sm:sr-only">{uiMessages["ui.project-bundles.import_project"]()}</span>}
     </Action>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[calc(100dvh-32px)] overflow-y-auto">
@@ -27,7 +27,7 @@ export function ProjectBundleDialog({ projectId }: { projectId?: string | null }
           <p className="text-sm leading-relaxed text-muted-foreground">{uiMessages["ui.project-bundles.uses_saved_edits_finish_saving_before_preparing_your_file"]()}</p>
           <Action className="vh-secondary" disabled={Boolean(state.busy)} onClick={() => void state.prepare()}>{uiMessages["ui.project-bundles.prepare_project_file"]()}</Action>
           {state.prepared && <div className="space-y-2" role="status">
-            <p className="text-sm">{state.prepared.summary.assetCount} {uiMessages["ui.project-bundles.media"]()}{state.prepared.summary.clipCount} {uiMessages["ui.editor.clips"]()}{state.prepared.summary.storyboardCount} storyboards · {fileSize(state.prepared.sizeBytes)}</p>
+            <p className="text-sm">{state.prepared.summary.assetCount} {uiMessages["ui.project-bundles.media"]()} {state.prepared.summary.clipCount} {uiMessages["ui.editor.clips"]()} {state.prepared.summary.storyboardCount} storyboards · {fileSize(state.prepared.sizeBytes)}</p>
             <a className="vh-primary inline-flex items-center justify-center" href={state.prepared.downloadUrl} download>{uiMessages["ui.project-bundles.download_project_file"]()}</a>
           </div>}
         </section>}
@@ -37,7 +37,7 @@ export function ProjectBundleDialog({ projectId }: { projectId?: string | null }
           <input aria-label={uiMessages["ui.project-bundles.choose_project_file"]()} type="file" accept=".tar,application/x-tar" disabled={Boolean(state.busy)} className="block w-full min-w-0 text-sm file:mr-3 file:rounded-xl file:border-0 file:bg-muted file:px-3 file:py-2 file:text-foreground" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void state.inspect(file); }} />
           {summary && <div className="space-y-3 rounded-xl bg-muted p-3" aria-label={uiMessages["ui.project-bundles.verified_project_contents"]()}>
             <p className="flex items-start gap-2 font-semibold"><Check size={17} className="mt-0.5 shrink-0" /><span className="break-words">{summary.name}</span></p>
-            <p className="text-sm">{summary.assetCount} {uiMessages["ui.project-bundles.media"]()}{summary.cardCount} {uiMessages["ui.project-bundles.cards"]()}{summary.clipCount} {uiMessages["ui.project-bundles.clips"]()}</p>
+            <p className="text-sm">{summary.assetCount} {uiMessages["ui.project-bundles.media"]()} {summary.cardCount} {uiMessages["ui.project-bundles.cards"]()} {summary.clipCount} {uiMessages["ui.project-bundles.clips"]()}</p>
             <p className="text-sm">{summary.storyboardCount} storyboards · {summary.acceptedShotCount} accepted shots</p>
             {!!summary.recipeRequirements.length && <details className="text-xs leading-5"><summary className="cursor-pointer font-medium">Recipes to review ({summary.recipeRequirements.length})</summary><p className="mt-2">Download these definitions and review them in the recipe library before generating new attempts.</p><ul className="mt-2 space-y-2">{summary.recipeRequirements.map(recipe => <li key={recipe.digest} className="break-words">{recipe.title} · {recipe.id} · v{recipe.version}<span className="block break-all font-mono">{recipe.digest}</span><a className="inline-block underline underline-offset-4" href={`/api/app/project-bundles/${state.review!.id}/recipes/${recipe.digest}`} download>Download {recipe.title}</a></li>)}</ul></details>}
             <p className="text-xs text-muted-foreground">{summary.mediaBytes ? fileSize(summary.mediaBytes) : "No"} {uiMessages["ui.project-bundles.original_media_checksum_verified"]()}</p>

@@ -31,7 +31,8 @@ export function EditorMediaPanel({ projectId, clips, view, search, selectedAsset
   onSelect: (clip: TimelineClip) => void; onAdd: (asset: RecentAsset, kind: ProjectAssetKind) => void; onImport: () => void;
 }) {
   const assets = useQuery({ queryKey: recentAssetsKeys.lists(projectId), queryFn: () => fetchRecentAssets(projectId), staleTime: 15_000 });
-  const placed = new Set(clips.map(clip => clip.assetId)), query = search.trim().toLowerCase();
+  // Assets already used as a clip or as one of its takes are on the timeline; only the rest are offered.
+  const placed = new Set(clips.flatMap(clip => [clip.assetId, ...(clip.takes ?? []).map(take => take.assetId)])), query = search.trim().toLowerCase();
   const available = assets.data ? ([['image', assets.data.images], ['video', assets.data.videos], ['audio', assets.data.audios]] as const)
     .flatMap(([kind, list]) => list.map(asset => ({ asset, kind: kind as ProjectAssetKind })))
     .filter(({ asset }) => !placed.has(asset.id) && (asset.filename ?? '').toLowerCase().includes(query)) : [];

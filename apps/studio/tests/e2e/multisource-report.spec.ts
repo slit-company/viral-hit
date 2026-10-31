@@ -68,6 +68,9 @@ test('mixed report originals remain distinct through browser planning, editable 
   await expect(page.getByLabel('Reference start 3', { exact: true })).toHaveValue('0.2');
   await expect(page.getByLabel('Reference end 3', { exact: true })).toHaveValue('0.8');
   await page.getByRole('link', { name: 'Open project editor', exact: true }).click();
+  // The editor header renders before it hydrates; open the dialog only once the editor has loaded.
+  await expect(page).toHaveURL(/\/editor\//);
+  await page.waitForLoadState('networkidle');
   await page.getByRole('button', { name: 'Project file', exact: true }).click();
   await page.getByRole('button', { name: 'Prepare project file', exact: true }).click();
   const link = page.getByRole('link', { name: 'Download project file', exact: true });

@@ -1,10 +1,10 @@
-import { test, expect, type Page } from '@playwright/test';
+import { test, expect } from '@playwright/test';
+import { selectStudioModel } from './studio-tools';
 import { execFileSync } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 
 const headers = { 'x-viral-hit-workspace-request': '1' }, evidence = '../../research/evidence/reference-roles';
 const ffmpeg = process.env.VIRAL_HIT_FFMPEG || 'ffmpeg';
-async function choose(page: Page, name: string) { await page.getByRole('button', { name: 'Model', exact: true }).click(); await page.getByRole('option', { name, exact: true }).click(); }
 const pixel = (path: string, x: number, y: number) => [...execFileSync(ffmpeg, ['-v', 'error', '-i', path, '-vf', 'crop=4:4:' + x + ':' + y + ',scale=1:1', '-frames:v', '1', '-pix_fmt', 'rgb24', '-f', 'rawvideo', '-'])];
 
 test('Studio assigns subject and style roles that reach the model and come back from history', async ({ page, request }) => {
@@ -14,8 +14,8 @@ test('Studio assigns subject and style roles that reach the model and come back 
   const submitted: Array<{ references: Array<{ role: string }> }> = [];
   page.on('request', req => { if (req.url().endsWith('/api/effects/generate')) submitted.push(req.postDataJSON().generation); });
   await page.goto('/studio/' + projectId + '?target=image&model=subject-on-style');
-  await choose(page, 'Subject on style');
-  await page.locator('[data-vh-composer] textarea').fill('Red subject on a blue style');
+  await selectStudioModel(page, 'subject-on-style');
+  await page.getByLabel('Scene description', { exact: true }).fill('Red subject on a blue style');
   await page.getByLabel('Visual reference files', { exact: true }).setInputFiles([evidence + '/red.png', evidence + '/blue.png']);
   await expect(page.getByRole('button', { name: 'Visual sources', exact: true })).toHaveText('Sources · 2');
   await page.getByRole('button', { name: 'Visual sources', exact: true }).click();
@@ -24,7 +24,7 @@ test('Studio assigns subject and style roles that reach the model and come back 
   await page.screenshot({ path: evidence + '/roles-dialog.png', animations: 'disabled' });
   await page.getByRole('button', { name: 'Done', exact: true }).click();
   await page.waitForTimeout(600);
-  await page.getByRole('button', { name: 'Generate', exact: true }).click();
+  await page.getByRole('button', { name: 'Create', exact: true }).click();
   await expect.poll(async () => (await (await request.get('/api/app/projects/' + projectId + '/generations')).json()).items[0]?.status).toBe('succeeded');
   expect(submitted[0].references.map(reference => reference.role)).toEqual(['subject', 'style']);
   const [item] = (await (await request.get('/api/app/projects/' + projectId + '/generations')).json()).items;
@@ -35,7 +35,7 @@ test('Studio assigns subject and style roles that reach the model and come back 
 
   await page.evaluate(id => sessionStorage.removeItem('viral-hit:studio-visual-sources:' + id), projectId);
   await page.reload();
-  await choose(page, 'Subject on style');
+  await selectStudioModel(page, 'subject-on-style');
   await page.locator('article').first().getByRole('button').first().click();
   await page.getByRole('button', { name: 'Visual sources', exact: true }).click();
   await expect(page.getByLabel('Role of red.png', { exact: true })).toHaveValue('subject');

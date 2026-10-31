@@ -56,9 +56,9 @@ export function RecipeLibrary({ selected, installed = false, onInstalled, onRemo
       <p className="break-words">{inspection.recipe.id} · v{inspection.recipe.version}</p>
       <p className="break-words">{inspection.recipe.author} · {inspection.recipe.license}</p>
       <p>{inspection.nodeCount} {uiMessages["ui.app.steps"]()} {inspection.parameterCount} {uiMessages["ui.app.inputs"]()}</p>
-      <p className="break-words">{uiMessages["ui.app.operations"]()}{inspection.operations.join(', ')}</p>
+      <p className="break-words">{uiMessages["ui.app.operations"]()} {inspection.operations.join(', ')}</p>
       {inspection.modelRequirements && <RecipeRequirementsReport report={inspection.modelRequirements} />}
-      {inspection.unavailableOperations.length > 0 && <p className="text-amber-800">{uiMessages["ui.app.missing_runtime_adapters"]()}{inspection.unavailableOperations.join(', ')}{uiMessages["ui.app.you_can_keep_this_recipe_but_this_runtime_cannot_execute_it_yet"]()}</p>}
+      {inspection.unavailableOperations.length > 0 && <p className="text-amber-800">{uiMessages["ui.app.missing_runtime_adapters"]()} {inspection.unavailableOperations.join(', ')}{uiMessages["ui.app.you_can_keep_this_recipe_but_this_runtime_cannot_execute_it_yet"]()}</p>}
       {inspection.update ? <RecipeUpdateReview library={library} /> : inspection.collision === 'reserved' || inspection.collision === 'different' ? <p className="text-amber-800">{uiMessages["ui.app.this_id_already_exists_change_its_id_to_save_a_separate_copy"]()}</p> : inspection.collision === 'same' ? <p>{uiMessages["ui.app.identical_recipe_already_installed"]()}</p> : <p className="text-[var(--color-lime-text)]">{inspection.modelRequirements?.status === 'issues' ? 'Can be saved locally; resolve model requirements before running.' : uiMessages["ui.app.ready_to_install_as_a_new_local_recipe"]()}</p>}
       <p className="text-[var(--vh-text-2)]">{uiMessages["ui.app.structure_and_bindings_checked_models_installed_nodes_and_output_quality_st"]()}</p>
       <Action onClick={() => download(inspection.recipe)} className="inline-flex items-center gap-1.5 underline"><Download size={14} />{uiMessages["ui.app.download_reviewed_json"]()}</Action>

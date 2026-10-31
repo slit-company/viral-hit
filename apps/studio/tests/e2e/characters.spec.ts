@@ -129,7 +129,7 @@ test('choosing a character in the Canvas composer attaches its main image and wr
   expect(created.ok(), await created.text()).toBe(true);
   const character = await created.json();
   const projectId = (await (await request.post('/api/app/projects', { headers, data: { name: 'Nori canvas' } })).json()).id;
-  await mcp(request, 'viral_hit_canvas_apply', { projectId, operations: [{ type: 'upsert_card', card: { id: 'nori-draft', kind: 'generation', type: 'image', name: 'Nori shot', prompt: 'Nori waves at the camera.', modelId: 'gpt-image-2.5-flare' }, frame: { x: 420, y: 160, w: 360, h: 300 } }] });
+  await mcp(request, 'viral_hit_canvas_apply', { projectId, operations: [{ type: 'upsert_card', card: { id: 'nori-draft', kind: 'generation', type: 'image', name: 'Nori shot', prompt: 'Nori waves at the camera.', modelId: 'subject-on-style' }, frame: { x: 420, y: 160, w: 360, h: 300 } }] });
   const snapshot = async () => (await (await request.get('/api/app/projects/' + projectId + '/snapshot')).json()).document as { cards: { id: string; kind: string; assetId?: string; referenceCardIds?: string[] }[] };
 
   await page.goto('/canvas/' + projectId);

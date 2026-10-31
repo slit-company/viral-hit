@@ -48,7 +48,7 @@ test('phone checks distinguish changed model choices from deferred project sourc
   await page.getByRole('button',{name:'Check requirements',exact:true}).click();const check=page.getByRole('status',{name:'Server check result'});
   await expect(check.getByText('Server check: needs attention',{exact:true})).toBeVisible();
   await expect(page.getByRole('button',{name:'Queue generation',exact:true})).toBeDisabled();
-  await page.getByLabel('Aspect ratio',{exact:true}).selectOption('1:1');await page.getByRole('button',{name:'Check requirements',exact:true}).click();
+  await page.getByTestId('runs-body').getByLabel('Aspect ratio',{exact:true}).selectOption('1:1');await page.getByRole('button',{name:'Check requirements',exact:true}).click();
   await expect(check.getByText('Server check: no reported issues',{exact:true})).toBeVisible();
   await expect(check.getByText(/Project source ownership/)).toBeVisible();
   await expect(page.getByRole('button',{name:'Queue generation',exact:true})).toBeDisabled();

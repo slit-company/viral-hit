@@ -180,7 +180,7 @@ function EntryLink({
       }
       className="vh-secondary mt-auto inline-flex min-h-11 items-center justify-center rounded-full px-4 text-xs font-semibold"
     >
-      {uiMessages["ui.community.open_in"]()}{entry.kind === 'skill' ? 'Skills' : entry.kind === 'runtime-package' ? 'Runtime packages' : 'Packs'}
+      {uiMessages["ui.community.open_in"]()} {entry.kind === 'skill' ? 'Skills' : entry.kind === 'runtime-package' ? 'Runtime packages' : 'Packs'}
     </Link>
   );
 }

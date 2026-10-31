@@ -15,6 +15,7 @@ import {
   findWorkspaceModelOption,
   getWorkspaceAspectRatioOptions,
 } from '@/core/effects/workspace-models';
+import { getSelectableModel } from '@/core/creative-canvas/generation-controller';
 import { cn } from '@/lib/utils';
 import { StudioStartHere } from '@/components/studio/studio-start-here';
 import {
@@ -403,10 +404,10 @@ export function CreativeCanvasFrontLayer() {
     : activeDraftCard?.type === 'image'
       ? imageModels
       : videoModels;
-  const selectedModel =
-    findWorkspaceModelOption(modelOptions, activeDraftCard?.modelId) ??
-    (isAnalysisDraft ? null : modelOptions[0]) ??
-    null;
+  // Same fallback the generation path uses, so the composer shows the model that will actually run.
+  const selectedModel = isAnalysisDraft
+    ? findWorkspaceModelOption(modelOptions, activeDraftCard?.modelId)
+    : getSelectableModel(modelOptions, activeDraftCard?.modelId);
   const selectedModelLabel = selectedModel?.name ?? labels.modelLabel;
   const selectedModeOptions = selectedModel?.modeOptions ?? [];
   const selectedVariantOptions = selectedModel?.variantOptions ?? [];
