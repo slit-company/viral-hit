@@ -59,7 +59,8 @@
     "extensions": "tsx scripts/extensions.ts",
     "community": "tsx scripts/community.ts",
     "runtime-package": "tsx scripts/runtime-package.ts",
-    "storyboard": "tsx scripts/storyboard.ts"
+    "storyboard": "tsx scripts/storyboard.ts",
+    "skill:eval": "node scripts/skill-eval/evaluate.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1069.0",

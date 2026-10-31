@@ -6,7 +6,7 @@ Observed in Aside on 2026-10-19; no paid comparison generations submitted yet.
 
 | Area | Observed Higgsfield surface | Viral Hit acceptance | Status |
 |---|---|---|---|
-| Images | Multi-model generation, image edit, references, upscale | Import/generate/edit/save images; provider capabilities validated | Target |
+| Images | Multi-model generation, image edit, references, upscale | Import/generate/edit/save images; provider capabilities validated | Partial: nine connected services; real generations stored as project assets through Higgsfield Soul 2, xAI Grok Imagine Image 2 and Sume Seedream 5 Lite ([ledger](VALIDATION.md#model-apis-and-editor-connections--2026-10-31)). Edit, upscale and reference-guided runs are wired but not yet run against a paid account |
 | Video | Text/image/video conditioning, model and duration selection | Actual asynchronous generation, playable durable assets, aspect and fps checks | Target |
 | Cinema | Film/camera/palette/light; composable camera moves; 50 reference slots; batches | Structured shot controls, characters/elements, multi-shot sequence, per-shot regeneration | Partial: shot controls for framing, angle, lens, camera move, light and look written as an editable prompt line shared by UI and MCP ([guide](SHOT-CONTROLS.md)); characters attach on Canvas. Versioned storyboards through the browser and MCP/CLI/HTTP now connect references, explicit per-shot recipe attempts, accepted results and editable sequences ([guide](STORYBOARDS.md)); real local two-shot rendering verified. Browser planning, local recipe result review and actual two-shot MP4 export are verified; automated analysis and model adherence remain unvalidated |
 | Genjutsu | Motion transfer and object swap; 4–30 s reference; up to 30 images | Preserve motion/scene while replacing intended subject; temporal consistency benchmark | Partial: open contract only. Installed models can declare subject/style/pose [reference roles](VISUAL-REFERENCES.md#reference-roles) and receive a source video plus a subject image with their roles through Studio, MCP and recipes; verified with a local non-generative processor. No motion transfer model is bundled or evaluated |
@@ -50,15 +50,15 @@ Measure cold and warm runs separately on fixed machine/browser/model versions. R
 
 ## Submission checklist
 
-- [ ] Full acceptance matrix with evidence and honest remaining gaps
+- [x] Full acceptance matrix with evidence and honest remaining gaps (this table and the [validation ledger](VALIDATION.md))
 - [ ] Comfy Router/SDK real generation receipt
 - [x] Local install tested from a clean checkout (`29672cd`; see validation ledger)
-- [ ] Open-source license and third-party notices
-- [ ] Sanitized public release with no private brand/IP/account data
+- [x] Open-source license and third-party notices (Apache-2.0 [LICENSE](../LICENSE), [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md))
+- [x] Sanitized public release with no private brand/IP/account data (history rewritten before publishing; committed history scanned for vendor key formats with no matches)
 - [ ] ≤2 minute demo covering creation, targeted revision, timeline edit, export
-- [ ] Public social demo with required tag, then submission
+- [x] Public social demo with required tag, then submission (Threads post and Comfy submission form, 2026-10-31)
 
-Registering, social posting, and submitting are not performed by creating this repository.
+The Comfy Router receipt needs credits on the Comfy account; the connection check already passes.
 
 Image overlays now have a shared [keyframe contract](OVERLAY-MOTION.md) for position, width, opacity and rotation, with source-time split/trim semantics and portable recipe support. This is bounded image-overlay animation, not general motion graphics or completion of the editor row.
 

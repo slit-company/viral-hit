@@ -1,17 +1,19 @@
 # Official Viral Hit Skills
 
 This directory is the source of truth for portable creative Skills bundled with
-Viral Hit. Each Skill lists its evidence below; a Skill whose Viral Hit MCP
-evaluation has not run yet says so.
+Viral Hit. Each Skill lists its evidence below. `pnpm skill:eval` (in `apps/studio`)
+walks every workflow skill through the same MCP tools an agent uses, against
+local example models and a local release connector, and writes a step-by-step
+report to `research/evidence/skills/skill-eval-report.json`.
 
 | Skill | What it helps an agent do | Evidence |
 |---|---|---|
-| [hit-remake](hit-remake/SKILL.md) | Remake a proven video shot by shot with any connected model, then cut and export it | Adapted from production remake workflows; MCP evaluation pending |
-| [video-model-routing](video-model-routing/SKILL.md) | Choose a model per shot from declared inputs, length and cost; retry confirmed failures, never resubmit an uncertain paid job | Adapted from production routing rules; MCP evaluation pending |
-| [batch-variations](batch-variations/SKILL.md) | Produce several variations in parallel with one shared preparation and per-item tracking | Adapted from production batch workflows; MCP evaluation pending |
-| [character-intro](character-intro/SKILL.md) | Exact five-second character intro from five consistent keyframes, one plate and optional narration | Adapted from a production intro workflow; MCP evaluation pending |
-| [voiced-short](voiced-short/SKILL.md) | Narration, timed captions, music and a loudness check before export | Adapted from production ad finishing; MCP evaluation pending |
-| [publish-and-measure](publish-and-measure/SKILL.md) | Publish with explicit approval, record performance and write the next brief | Adapted from production publishing; MCP evaluation pending |
+| [hit-remake](hit-remake/SKILL.md) | Remake a proven video shot by shot with any connected model, then cut and export it | MCP walkthrough passes, 13 steps (`pnpm skill:eval hit-remake`) |
+| [video-model-routing](video-model-routing/SKILL.md) | Choose a model per shot from declared inputs, length and cost; retry confirmed failures, never resubmit an uncertain paid job | MCP walkthrough passes, 7 steps (`pnpm skill:eval video-model-routing`) |
+| [batch-variations](batch-variations/SKILL.md) | Produce several variations in parallel with one shared preparation and per-item tracking | MCP walkthrough passes, 7 steps (`pnpm skill:eval batch-variations`) |
+| [character-intro](character-intro/SKILL.md) | Exact five-second character intro from five consistent keyframes, one plate and optional narration | MCP walkthrough passes, 10 steps (`pnpm skill:eval character-intro`) |
+| [voiced-short](voiced-short/SKILL.md) | Narration, timed captions, music and a loudness check before export | MCP walkthrough passes, 7 steps (`pnpm skill:eval voiced-short`) |
+| [publish-and-measure](publish-and-measure/SKILL.md) | Publish with explicit approval, record performance and write the next brief | MCP walkthrough passes, 8 steps (`pnpm skill:eval publish-and-measure`) |
 | [storyboard](storyboard/SKILL.md) | Plan multi-shot work from owned references, accept one take per shot and assemble an editable sequence | Browser and MCP storyboard workflows |
 | [consistent-characters](consistent-characters/SKILL.md) | Define a character from images and keep/never rules, add it to projects and attach it to Canvas drafts without duplicates | Three-scenario evaluation recorded under research/evidence/skills; browser test `choosing a character in the Canvas composer…` |
 | [recipe-packs](recipe-packs/SKILL.md) | Find, share and maintain general or job-specific packs; review explicitly requested executable runtimes | Four-scenario evaluation under research/evidence/skills; MCP/browser pack workflows and `runtime skill flow stages reviewed code…`; lifecycle evidence under research/evidence/runtime-packages |
