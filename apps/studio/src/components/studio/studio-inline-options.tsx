@@ -2,6 +2,7 @@ import { m as uiMessages } from '@/paraglide/messages.js';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { NativeSelect } from '@/components/ui/native-select';
+import { localizeChoiceLabel, localizeControlLabel } from '@/components/generation-providers/control-label';
 import {
   resolveModelOptions,
   type ModelControl,
@@ -26,13 +27,7 @@ export function StudioInlineOptions({
     ...resolveModelOptions(controls, undefined),
     ...(value?.modelId === modelId ? value.values : {}),
   };
-  const controlLabel = (control: ModelControl) => {
-    if (control.key === 'resolution' && control.label === 'Resolution') return uiMessages["studio.tools.resolution"]();
-    if (control.key === 'generate_audio' && control.label === 'Generate audio') return uiMessages["studio.controls.generate_audio"]();
-    if (control.key === 'enhance_prompt' && control.label === 'Enhance prompt') return uiMessages["studio.controls.enhance_prompt"]();
-    if (control.key === 'quality' && control.label === 'Quality') return uiMessages["studio.tools.quality"]();
-    return control.label;
-  };
+  const controlLabel = (control: ModelControl) => localizeControlLabel(control.label);
   const update = (key: string, next: string | number | boolean) =>
     onChange({ modelId, values: { ...values, [key]: next } });
   return (
@@ -56,7 +51,7 @@ export function StudioInlineOptions({
             >
               {control.choices.map((choice) => (
                 <option key={choice.value} value={choice.value}>
-                  {choice.label}
+                  {localizeChoiceLabel(choice.label)}
                 </option>
               ))}
             </NativeSelect>

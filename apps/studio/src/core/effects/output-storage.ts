@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import { resolveOutputMedia } from './output-media';
 import { isCloudApiMediaUrl } from './cloud-api-media-url';
+import { generatedAssetFilename } from './generated-asset-filename';
 import { getGenerationById } from './record-generation';
 import {
   LOCAL_PROJECT_ASSET_BUCKET,
@@ -34,18 +35,6 @@ export const createLocalProviderAssetId = (
   createHash('sha256')
     .update(`${projectId}\0${providerUrl}`)
     .digest('hex');
-
-const filenameFromUrl = (url: string, type: AssetType) => {
-  try {
-    const filename = decodeURIComponent(
-      new URL(url).pathname.split('/').pop() || ''
-    );
-    if (filename) return filename;
-  } catch {
-    // Fall through to a stable local filename.
-  }
-  return type === 'video' ? 'generated-video.mp4' : type === 'audio' ? 'generated-audio.wav' : 'generated-image.png';
-};
 
 const replaceMediaUrls = (
   value: unknown,
@@ -141,7 +130,7 @@ export async function persistEffectOutputIfNeeded({
   const assetIds: string[] = [];
   const localUrlByProviderUrl = new Map<string, string>();
 
-  for (const { url, type, role } of providerEntries) {
+  for (const [index, { url, type, role }] of providerEntries.entries()) {
     const signal = AbortSignal.timeout(LOCAL_MEDIA_DOWNLOAD_TIMEOUT_MS);
     if (!readMedia && !isCloudApiMediaUrl(url)) {
       throw new Error('Generated media URL is not an approved Cloud API asset');
@@ -171,7 +160,7 @@ export async function persistEffectOutputIfNeeded({
     const persisted = await persistLocalProjectAsset({
       projectId: generation.projectId,
       assetId: createLocalProviderAssetId(generation.projectId, url),
-      filename: filenameFromUrl(url, type),
+      filename: generatedAssetFilename({ url, type, prompt: generation.submittedPrompt, index }),
       mimeType,
       bytes,
     });

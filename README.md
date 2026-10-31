@@ -70,18 +70,18 @@ The #OpenSourceHiggsfield challenge produced close to a hundred projects. Most r
 <table>
   <tr>
     <td width="50%"><img src="docs/readme/studio-comfy.jpg" alt="Studio with Comfy Router and LTX 2.5 Pro selected" /></td>
-    <td width="50%"><img src="docs/readme/canvas.jpg" alt="Infinite canvas" /></td>
+    <td width="50%"><img src="docs/readme/canvas.jpg" alt="Canvas with three project images, one linked into a new generation node and its prompt composer" /></td>
   </tr>
   <tr>
     <td><b>Studio.</b> Nine creation tools: image, video, remix (motion transfer, subject swap, restyle), lip sync, voice, music, captions and dubbing, enhance and analysis. Choose the task, then any provider and model that supports it.</td>
-    <td><b>Canvas.</b> Lay out ideas, prompts and generations on an infinite board, branch versions, and send the winners to the edit.</td>
+    <td><b>Canvas.</b> Lay out ideas, prompts and generations on an infinite board, wire any result into the next generation as a reference, and send the winners to the edit.</td>
   </tr>
   <tr>
-    <td><img src="docs/readme/editor.jpg" alt="Multitrack editor with player, timeline and inspector" /></td>
+    <td><img src="docs/readme/editor.jpg" alt="Multitrack editor with the project media bin, player, timeline and inspector" /></td>
     <td><img src="docs/readme/connections.jpg" alt="Connections: model API keys for nine services with a Get a key link each, plus publishing channels" /></td>
   </tr>
   <tr>
-    <td><b>Edit.</b> A real multitrack timeline: visuals, overlays, audio and captions, reversible takes, recovered drafts and MP4 export in the browser or on the server.</td>
+    <td><b>Edit.</b> A real multitrack timeline: drop generated results in from the media bin, then cut visuals, overlays, audio and captions with reversible takes, recovered drafts and MP4 export in the browser or on the server.</td>
     <td><b>Connections.</b> Model API keys and publishing channels on one page. <b>Get a key</b> opens each service's official key page; keys stay encrypted on your server and each job remembers the key it started with.</td>
   </tr>
 </table>
