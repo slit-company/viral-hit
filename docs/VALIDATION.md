@@ -10,10 +10,13 @@ Live checks through the Connections page and the shared generation service, with
 |---|---|---|
 | Higgsfield | Passed | Soul 2, 1:1 720p setting → 1536×1536 PNG stored as a project asset; vendor estimate $0.004 |
 | xAI | Passed | Grok Imagine Image 2, 1K → 1024×1024 JPEG stored as a project asset |
+| Sume | Passed | Seedream 5 Lite → 2048×2048 JPEG stored as a project asset |
+| ElevenLabs | Passed (restricted key: speech, voice changer, sound effects, music, voices/models/user read) | Multilingual v2 speech → 1.9 s, 44.1 kHz MP3 stored as a project asset |
 | OpenAI | Passed | Rejected by OpenAI: HTTP 429, no API credits; the vendor message is shown in Studio |
 | Google Gemini | Passed | Rejected by Google: HTTP 402, prepaid credits depleted |
-| Comfy | Passed | Not run: Comfy workspace balance is 0 credits |
-| fal, Runway, Sume, ElevenLabs | Not connected | Need a new account or a captcha in the vendor console |
+| Comfy | Passed | Not run: workspace balance is 0 credits |
+| fal | Passed | Not run: account balance is $0 |
+| Runway | Passed | Not run: credit balance is 0 |
 
 The Soul 2 output did not draw the requested play icon. These runs prove the request, polling, download and asset path, not prompt adherence or model quality.
 
