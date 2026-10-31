@@ -27,7 +27,7 @@
 
 Higgsfield promised to open-source its platform. **Viral Hit is our open answer, built around how a viral video actually gets made**: Higgsfield-style generation and a CapCut-style editor in the same app, plus the steps before and after them, from studying a reference to publishing and reading the numbers. Image, video, audio, editing and an agent harness share one project. Results land as real files in your project, go straight onto a multitrack timeline, and export as MP4. No lock-in to one model vendor: connect Comfy Router, Higgsfield, fal, Runway, Gemini, OpenAI, xAI, ElevenLabs, Sume, your own ComfyUI server, or a model you wrote yourself.
 
-**▶ [Watch the 1-minute demo](docs/readme/demo.mp4)** — Comfy, Higgsfield and Sume models in one Studio, the multitrack editor, publishing, storyboards and the Korean interface.
+**▶ [Watch the 97-second demo](docs/readme/demo.mp4)**: one prompt becomes a real Higgsfield image, a targeted xAI edit changes only the jacket, ElevenLabs adds the voice-over, the editor cuts and exports the MP4, then publishing, connections and the Korean interface. Only the generation waits are trimmed, and each cut is labelled.
 
 <p align="center">
   <img src="docs/readme/home.jpg" alt="Viral Hit home: prompt box with Image, Video and Audio modes and the tool gallery" width="100%" />

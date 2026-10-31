@@ -55,7 +55,7 @@ Measure cold and warm runs separately on fixed machine/browser/model versions. R
 - [x] Local install tested from a clean checkout (`29672cd`; see validation ledger)
 - [x] Open-source license and third-party notices (Apache-2.0 [LICENSE](../LICENSE), [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md))
 - [x] Sanitized public release with no private brand/IP/account data (history rewritten before publishing; committed history scanned for vendor key formats with no matches)
-- [ ] ≤2 minute demo covering creation, targeted revision, timeline edit, export
+- [x] ≤2 minute demo covering creation, targeted revision, timeline edit, export (`docs/readme/demo.mp4`, 97 s, real Higgsfield, xAI and ElevenLabs calls; reproducible with `scripts/demo`)
 - [x] Public social demo with required tag, then submission (Threads post and Comfy submission form, 2026-10-31)
 
 The Comfy Router receipt needs credits on the Comfy account; the connection check already passes.
