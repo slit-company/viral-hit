@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertCircleIcon, Loader2Icon } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -59,20 +59,24 @@ export function CreateProjectRoutePage({
 }: {
   data: CreateProjectRouteData;
 }) {
-  const { locale, target, model, prompt, recipe, projectName } = data;
+  const { locale, target, model, prompt, recipe, projectName, workspaceMode } = data;
   const copy = getCopy(locale);
-  const [creating, setCreating] = useState(false);
+  // A submitted prompt or recipe already says what to make, so start right away.
+  // A bare visit still asks, because loading this page alone must not create a project.
+  const hasIntent = Boolean(prompt?.trim() || recipe);
+  const [creating, setCreating] = useState(hasIntent);
   const [error, setError] = useState<string | null>(null);
+  const autoStarted = useRef(false);
 
-  async function createProject(workspaceMode: WorkspaceMode) {
-    if (creating) return;
+  async function createProject(mode: WorkspaceMode, automatic = false) {
+    if (creating && !automatic) return;
     setCreating(true);
     setError(null);
 
     try {
       const payload = await apiJsonPost<CreateProjectResponse>(
         '/api/app/projects',
-        { name: projectName, workspaceMode }
+        { name: projectName, workspaceMode: mode }
       );
 
       if (!payload?.id) {
@@ -87,7 +91,7 @@ export function CreateProjectRoutePage({
           model: model ?? undefined,
           prompt: prompt ?? undefined,
           recipe: recipe ?? undefined,
-          mode: workspaceMode,
+          mode,
         })
       );
     } catch (createError) {
@@ -98,6 +102,14 @@ export function CreateProjectRoutePage({
     }
   }
 
+  useEffect(() => {
+    if (!hasIntent || autoStarted.current) return;
+    autoStarted.current = true;
+    void createProject(workspaceMode, true);
+    // Runs once per page load; createProject reads the loader data captured above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[var(--vh-bg)] px-6 py-16 text-[var(--vh-text-1)]">
       <section className="w-full max-w-[520px] rounded-[var(--vh-radius)] border border-[var(--vh-border)] bg-[var(--vh-surface)] px-8 py-9 text-center shadow-none">
@@ -106,7 +118,7 @@ export function CreateProjectRoutePage({
             <AlertCircleIcon className="size-6" />
           </div>
         ) : creating ? (
-          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[rgba(255,122,51,0.12)] text-[var(--vh-accent)]">
+          <div className="mx-auto flex size-12 items-center justify-center rounded-full bg-[var(--vh-control)] text-[var(--vh-text-1)]">
             <Loader2Icon className="size-6 animate-spin" />
           </div>
         ) : (

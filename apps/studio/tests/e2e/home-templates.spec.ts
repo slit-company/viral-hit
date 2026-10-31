@@ -22,9 +22,9 @@ test('home templates come from the recipe catalog and open a new project with th
 
   // Installed packs may add a template with the same title, so pick the bundled one by its recipe.
   await templates.locator('a[href="/studio?recipe=open-frame"]').click();
-  await expect(page).toHaveURL(/\/studio\?recipe=open-frame/);
-  await page.getByRole('button', { name: 'Studio', exact: true }).click();
+  // A chosen template already says what to make, so the project opens without a second choice.
   await expect(page.getByRole('heading', { name: 'Project runs', exact: true })).toBeVisible();
+  await expect(page).toHaveURL(/\/studio\/[0-9a-f-]{36}/);
   await expect(page.locator('#run-recipe')).toHaveValue('open-frame');
   expect(new URL(page.url()).searchParams.has('recipe')).toBe(false);
   await page.reload();
@@ -43,9 +43,9 @@ test('an uninstalled template link explains itself and the composer carries the 
   await expect(page.getByRole('radio', { name: 'Video', exact: true })).toBeChecked();
   await page.getByRole('textbox', { name: /Describe the image or video/ }).fill('A night train in the rain');
   await page.getByRole('button', { name: 'Create', exact: true }).click();
-  await expect(page).toHaveURL(/\/studio\?/);
-  const created = new URL(page.url()).searchParams;
-  expect([created.get('target'), created.get('prompt')]).toEqual(['video', 'A night train in the rain']);
+  await expect(page).toHaveURL(/\/studio\/[0-9a-f-]{36}/);
+  await expect(page.getByRole('textbox', { name: 'Scene description', exact: true })).toHaveValue('A night train in the rain');
+  await expect(page.getByRole('heading', { name: 'Create video', exact: true })).toBeVisible();
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
