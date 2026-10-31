@@ -1,5 +1,25 @@
 # Validation ledger — 2026-10-19
 
+## Model APIs and editor connections — 2026-10-31
+
+The model-apis extension builds OpenAI, Google Gemini, xAI, ElevenLabs, fal, Runway and Higgsfield providers. fal (47), Runway (33) and Higgsfield (42) models are generated from each vendor's published input schemas; every required upstream field is bound to Studio input or the model is dropped. Ten provider tests cover request shapes, reference upload paths, queue polling, result download, reported cost and an unknown outcome after a lost submission. Every built provider passes `provider check`.
+
+Live checks through the Connections page and the shared generation service, with keys created in each vendor console and stored encrypted (no key in the repository or logs):
+
+| Service | Connection check | Real generation |
+|---|---|---|
+| Higgsfield | Passed | Soul 2, 1:1 720p setting → 1536×1536 PNG stored as a project asset; vendor estimate $0.004 |
+| xAI | Passed | Grok Imagine Image 2, 1K → 1024×1024 JPEG stored as a project asset |
+| OpenAI | Passed | Rejected by OpenAI: HTTP 429, no API credits; the vendor message is shown in Studio |
+| Google Gemini | Passed | Rejected by Google: HTTP 402, prepaid credits depleted |
+| Comfy | Passed | Not run: Comfy workspace balance is 0 credits |
+| fal, Runway, Sume, ElevenLabs | Not connected | Need a new account or a captcha in the vendor console |
+
+The Soul 2 output did not draw the requested play icon. These runs prove the request, polling, download and asset path, not prompt adherence or model quality.
+
+The editor media bin now lists project assets beside timeline clips and places one on the saved timeline with one click; assets used as clips or takes are not offered again. Studio and Canvas fall back to a runnable model that does not require a source image or mask, and a model without its key is blocked before any request. All 933 source tests and all 106 browser tests pass with an FFmpeg build that includes drawtext.
+
+
 ## Portable editable sequences — 2026-10-20
 
 The built-in `editor.sequence` operation prepares versioned edit intent from verified project media or complete materializer bindings. UI, HTTP, MCP and CLI explicitly accept the result through the same revision-checked service. It appends independently editable visual, image-overlay, audio and caption clips after the existing timeline. Empty visible unlocked tracks are reused; existing clips and locked/hidden/muted rows are preserved. The two initial manifests and published schema are documented in [editable sequences](EDITABLE-SEQUENCES.md).
