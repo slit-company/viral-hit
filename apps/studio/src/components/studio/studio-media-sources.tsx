@@ -18,7 +18,7 @@ export function StudioMediaSources({ projectId, sources, limits, onAdd, onRemove
   const counts = studioSourceCounts(sources);
   const candidates = (library.data?.sources ?? []).filter(source => limits[source.type].max > 0 && !selected.has(source.id) && `${source.filename} ${source.id}`.toLowerCase().includes(search.toLowerCase()));
   return <>
-    <Action className="vh-secondary shrink-0" aria-label={uiMessages["studio.controls.sources_label"]({ label })} disabled={disabled} onClick={() => setOpen(true)}>{uiMessages["studio.media.sources_cdc0"]()} {selected.size}</Action>
+    <Action className="vh-secondary shrink-0" aria-label={uiMessages["studio.controls.sources_label"]({ label })} disabled={disabled} onClick={() => setOpen(true)}>{uiMessages["studio.media.sources_cdc0"]()}{" "}{selected.size}</Action>
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="max-h-[calc(100dvh-32px)] grid-rows-[auto_auto_auto_minmax(0,1fr)_auto]">
         <DialogTitle>{label} {uiMessages["studio.media.sources_bce1"]()}</DialogTitle>
