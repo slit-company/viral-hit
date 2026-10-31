@@ -682,7 +682,8 @@
         "caption_out_of_video": "字幕が動画の範囲外にあるため、書き出しできません。",
         "overlay_out_of_video": "オーバーレイがベース動画の範囲外にあるため、書き出しできません。",
         "tiny_clip": "Clipが短すぎるため、安定して書き出せません。",
-        "empty_track": "空のトラックは無視されます。"
+        "empty_track": "空のトラックは無視されます。",
+        "holdLastImage": "Hold the last image until the audio ends"
       },
       "errors": {
         "videoOnly": "動画ファイルを選択してください。",
@@ -2328,5 +2329,9 @@
   "studio.model_options.description": "{name}. These settings apply to this model's next generation.",
   "studio.model_options.reset": "Reset defaults",
   "studio.model_options.apply": "Apply options",
-  "studio.model_options.invalid": "Check model options"
+  "studio.model_options.invalid": "Check model options",
+  "studio.tools.continue_with_result": "Continue with this result",
+  "studio.tools.continue_edit_image": "Edit this image",
+  "studio.tools.continue_animate": "Animate",
+  "studio.tools.continue_edit_video": "Edit this video"
 }

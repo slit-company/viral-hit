@@ -46,6 +46,10 @@ test('an uninstalled template link explains itself and the composer carries the 
   await expect(page).toHaveURL(/\/studio\/[0-9a-f-]{36}/);
   await expect(page.getByRole('textbox', { name: 'Scene description', exact: true })).toHaveValue('A night train in the rain');
   await expect(page.getByRole('heading', { name: 'Create video', exact: true })).toBeVisible();
+  // The prompt was written for video; other composers start empty.
+  await page.getByRole('button', { name: 'Voice', exact: true }).first().click();
+  await page.getByRole('button', { name: 'Create audio', exact: true }).click();
+  await expect(page.getByLabel('Audio prompt', { exact: true })).toHaveValue('');
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

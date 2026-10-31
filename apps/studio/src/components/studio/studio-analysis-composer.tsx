@@ -1,5 +1,6 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { StudioInlineOptions } from './studio-inline-options';
+import { StudioPromptField } from './studio-prompt-field';
 import { useRef } from 'react';
 import { ArrowUp, Loader2, Upload } from 'lucide-react';
 import { Action } from '@/components/base/action';
@@ -27,7 +28,7 @@ export function StudioAnalysisComposer({ projectId, analysis, isBusy, onMediaCha
         <span>{uiMessages["studio.media.the_saved_draft_is_unreadable_and_retained_new_edits_are_not_saved_yet_fe0b"]()}</span>
         <Action className="vh-secondary" disabled={disabled} onClick={analysis.replaceUnreadableDraft}>{uiMessages["studio.media.replace_unreadable_draft_1e57"]()}</Action>
       </div>}
-      <textarea aria-label={uiMessages["studio.media.analysis_prompt_48f9"]()} placeholder={uiMessages["studio.media.describe_what_to_review_across_the_selected_media_7db8"]()} value={draft.prompt} disabled={disabled} onChange={event => analysis.update({ prompt: truncatePromptToMaxChars(event.target.value, 12_000) })} className="h-20 w-full resize-none bg-transparent text-sm leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-2)]" />
+      <StudioPromptField panel={panel} label={uiMessages["studio.media.analysis_prompt_48f9"]()} placeholder={uiMessages["studio.media.describe_what_to_review_across_the_selected_media_7db8"]()} value={draft.prompt} disabled={disabled} onChange={prompt => analysis.update({ prompt: truncatePromptToMaxChars(prompt, 12_000) })} />
       {panel && model && <StudioInlineOptions modelId={model.id} controls={model.controls} value={draft.modelOptions} disabled={disabled} onChange={modelOptions => analysis.update({ modelOptions })} />}
       <div className="flex min-w-0 flex-wrap items-center gap-2">
         {!panel && <WorkspaceSelect ariaLabel={uiMessages["ui.studio.media_type"]()} value="analysis" options={[{ value: 'image', label: uiMessages["studio.tools.image"]() }, { value: 'video', label: uiMessages["studio.tools.video"]() }, { value: 'audio', label: uiMessages["studio.media.audio_acda"]() }, { value: 'analysis', label: uiMessages["studio.tools.analysis"]() }]} onChange={value => { if (!disabled) onMediaChange(value as StudioMedia); }} />}

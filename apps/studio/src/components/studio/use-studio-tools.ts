@@ -67,12 +67,15 @@ export function useStudioTools(
       /* Session storage can be unavailable. */
     }
   }, [initialized, storageKey, tool, modelId]);
-  function selectTool(next: StudioToolId) {
+  /** `needs` prefers a model that accepts that kind of source, so a handed-over result is used. */
+  function selectTool(next: StudioToolId, options: { needs?: 'image' | 'video' | 'audio' } = {}) {
     setTool(next);
     const cached = models.find((item) => item.id === choices.current.get(next));
+    const all = toolModels(models, next);
+    const accepting = options.needs ? all.filter((item) => (item.referenceInputs?.[options.needs!]?.max ?? 0) > 0) : [];
     setModelId(
       chooseToolModel(
-        toolModels(models, next),
+        accepting.length ? accepting : all,
         cached?.providerId ?? model?.providerId,
         cached?.id,
       )?.id ?? '',

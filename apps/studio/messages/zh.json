@@ -682,7 +682,8 @@
         "caption_out_of_video": "有字幕超出视频范围，已阻止导出。",
         "overlay_out_of_video": "有叠加图片超出主视频范围，已阻止导出。",
         "tiny_clip": "有片段过短，可能无法稳定导出。",
-        "empty_track": "空轨道将在导出时忽略。"
+        "empty_track": "空轨道将在导出时忽略。",
+        "holdLastImage": "Hold the last image until the audio ends"
       },
       "errors": {
         "videoOnly": "请选择视频文件。",
@@ -2328,5 +2329,9 @@
   "studio.model_options.description": "{name}. These settings apply to this model's next generation.",
   "studio.model_options.reset": "Reset defaults",
   "studio.model_options.apply": "Apply options",
-  "studio.model_options.invalid": "Check model options"
+  "studio.model_options.invalid": "Check model options",
+  "studio.tools.continue_with_result": "Continue with this result",
+  "studio.tools.continue_edit_image": "Edit this image",
+  "studio.tools.continue_animate": "Animate",
+  "studio.tools.continue_edit_video": "Edit this video"
 }

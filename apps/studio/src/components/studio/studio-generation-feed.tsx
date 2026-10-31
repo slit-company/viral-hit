@@ -12,6 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import type { ProjectGenerationItem } from '@/core/effects/project-generations';
+import type { StudioToolId } from '@/core/studio/tools';
 import { formatStudioHistoryDateTime } from '@/core/studio/studio-history';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import { cn } from '@/lib/utils';
@@ -68,11 +69,13 @@ function StudioHistoryItem({
 export function StudioGenerationFeed({
   items,
   onReuse,
+  onContinue,
   projectId,
 }: {
   items: ProjectGenerationItem[];
   projectId?: string;
   onReuse: (item: ProjectGenerationItem) => void;
+  onContinue?: (item: ProjectGenerationItem, tool: StudioToolId) => void;
 }) {
   const t = useTranslations('AppShell.studio.feed');
   const endRef = useRef<HTMLDivElement | null>(null);
@@ -172,7 +175,7 @@ export function StudioGenerationFeed({
                     </span>
                   ) : null}
                 </div>
-                {projectId && <StudioResultActions key={selected.id} item={selected} projectId={projectId} onReuse={() => { onReuse(selected); setSelectedId(null); }} />}
+                {projectId && <StudioResultActions key={selected.id} item={selected} projectId={projectId} onReuse={() => { onReuse(selected); setSelectedId(null); }} onContinue={onContinue && (tool => { onContinue(selected, tool); setSelectedId(null); })} />}
                 <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
                   {selected.error && <p role="alert" className="break-words text-sm text-red-700">{selected.error}</p>}
                   <div className={cn("flex flex-col rounded-[var(--vh-radius-sm)] border border-[var(--vh-border)] bg-[var(--vh-control)] p-4", selected.mediaType === 'audio' ? "max-h-44 min-h-24" : "h-[min(260px,34vh)] min-h-[180px]")}>

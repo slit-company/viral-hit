@@ -689,7 +689,8 @@
         "caption_out_of_video": "자막이 영상 구간을 벗어나 내보낼 수 없어요.",
         "overlay_out_of_video": "오버레이가 기본 영상 구간을 벗어나 내보낼 수 없어요.",
         "tiny_clip": "클립이 너무 짧아 안정적으로 내보내기 어려워요.",
-        "empty_track": "빈 트랙은 건너뛰어요."
+        "empty_track": "빈 트랙은 건너뛰어요.",
+        "holdLastImage": "마지막 이미지를 오디오 끝까지 늘리기"
       },
       "errors": {
         "videoOnly": "영상 파일을 선택해 주세요.",
@@ -2328,5 +2329,9 @@
   "studio.model_options.description": "{name}. 이 모델의 다음 생성에 적용돼요.",
   "studio.model_options.reset": "기본값으로",
   "studio.model_options.apply": "적용",
-  "studio.model_options.invalid": "모델 설정을 확인해주세요"
+  "studio.model_options.invalid": "모델 설정을 확인해주세요",
+  "studio.tools.continue_with_result": "이 결과로 이어서 작업",
+  "studio.tools.continue_edit_image": "이 이미지 수정",
+  "studio.tools.continue_animate": "영상으로 만들기",
+  "studio.tools.continue_edit_video": "이 영상 수정"
 }

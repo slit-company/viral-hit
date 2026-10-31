@@ -5,14 +5,24 @@ import { Link } from '@/core/i18n/navigation';
 import type { ProjectGenerationItem } from '@/core/effects/project-generations';
 import { fetchRecentAssets } from '@/core/workspace-lib/app/workspace-client-api';
 import { addProjectAssetToTimeline } from '@/core/editor/timeline-client';
+import type { StudioToolId } from '@/core/studio/tools';
+import { continueTools } from './use-studio-continue';
+
+const continueLabel = (tool: StudioToolId) =>
+  tool === 'image-edit' ? uiMessages["studio.tools.continue_edit_image"]()
+    : tool === 'video-generate' ? uiMessages["studio.tools.continue_animate"]()
+      : uiMessages["studio.tools.continue_edit_video"]();
+
 export function StudioResultActions({
   item,
   projectId,
   onReuse,
+  onContinue,
 }: {
   item: ProjectGenerationItem;
   projectId: string;
   onReuse: () => void;
+  onContinue?: (tool: StudioToolId) => void;
 }) {
   const [busy, setBusy] = useState(false),
     [added, setAdded] = useState(false),
@@ -48,6 +58,11 @@ export function StudioResultActions({
   }
   return (
     <div className="space-y-2 border-b border-[var(--vh-border)] p-4">
+      {onContinue && continueTools(item).length > 0 && (
+        <div role="group" aria-label={uiMessages["studio.tools.continue_with_result"]()} className="flex flex-wrap gap-2">
+          {continueTools(item).map(tool => <Action key={tool} className="vh-secondary" onClick={() => onContinue(tool)}>{continueLabel(tool)}</Action>)}
+        </div>
+      )}
       <div className="flex flex-wrap gap-2">
         <Action className="vh-secondary" onClick={onReuse}>
           {uiMessages["studio.tools.use_these_settings_again"]()}</Action>

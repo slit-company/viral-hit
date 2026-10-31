@@ -26,6 +26,8 @@ export function useStudioVisualSources(projectId: string, model: WorkspaceModelO
   return { ...actions, sources: draft.sources, mask: draft.mask, unreadable, replaceUnreadable,
     // Removing the image a mask was painted for also drops that mask.
     remove: (id: string) => { if (!actions.locked.current) setDraft(current => ({ sources: current.sources.filter(source => source.id !== id), ...(current.mask && current.mask.targetId !== id ? { mask: current.mask } : {}) })); },
+    /** Starts over from the given files; the model's limits are checked again before generating. */
+    replace: (sources: StudioMediaSource[]) => { if (!actions.locked.current) setDraft({ sources }); },
     setRole: (id: string, role: StudioMediaSource['role']) => { if (!actions.locked.current) setDraft(current => ({ ...current, sources: current.sources.map(source => source.id === id ? { ...source, role } : source) })); },
     setMask: (mask: StudioMask | undefined) => { if (!actions.locked.current) setDraft(current => ({ sources: current.sources, ...(mask ? { mask } : {}) })); } };
 }

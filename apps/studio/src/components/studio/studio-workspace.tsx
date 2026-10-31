@@ -7,6 +7,7 @@ import { defaultStudioTool, STUDIO_TOOL_KINDS } from '@/core/studio/tools';
 import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
 import { useStudioVisualSources } from './use-studio-visual-sources';
+import { useStudioContinue } from './use-studio-continue';
 import { visualSourceReferences } from '@/core/studio/studio-visual-sources';
 import { StudioAudioComposer } from './studio-audio-composer';
 import { useStudioAudio } from './use-studio-audio';
@@ -122,10 +123,12 @@ export function StudioWorkspace({
   });
   const [media, setMedia] = useState<StudioMedia>(initialMedia);
   const [error, setError] = useState('');
-  const analysis = useStudioAnalysis({ projectId, initialModelId: initialMedia === 'analysis' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
-  const audio = useStudioAudio({ projectId, initialModelId: initialMedia === 'audio' ? initialModelId ?? undefined : undefined, initialPrompt: initialPrompt ?? undefined, onError: setError });
+  // A prompt from the home box belongs to the tool it was written for, not to every composer.
+  const analysis = useStudioAnalysis({ projectId, initialModelId: initialMedia === 'analysis' ? initialModelId ?? undefined : undefined, initialPrompt: initialMedia === 'analysis' ? initialPrompt ?? undefined : undefined, onError: setError });
+  const audio = useStudioAudio({ projectId, initialModelId: initialMedia === 'audio' ? initialModelId ?? undefined : undefined, initialPrompt: initialMedia === 'audio' ? initialPrompt ?? undefined : undefined, onError: setError });
   const selectedModel = tools.model && ['ai-image', 'ai-video'].includes(tools.model.workspaceType) ? tools.model : null;
   const visualSources = useStudioVisualSources(projectId, selectedModel, setError);
+  const continueWith = useStudioContinue({ projectId, tools, sources: visualSources, onReady: () => setDraft(current => ({ ...current, prompt: '' })), onError: setError });
 
   const generationsQuery = useQuery({
     queryKey: projectGenerationsKeys.list(projectId),
@@ -238,7 +241,7 @@ export function StudioWorkspace({
         </header>
         <div className="p-4 sm:p-6">
           {generationsQuery.isError && <p role="alert" className="mb-4 text-sm text-red-700">{uiMessages["studio.tools.could_not_load_your_generation_history"]()}<Action className="underline" onClick={() => void generationsQuery.refetch()}>{uiMessages["studio.tools.try_again"]()}</Action></p>}
-          {resultView === 'history' && feedItems.length > 0 ? <StudioGenerationFeed projectId={projectId} items={feedItems} onReuse={reuse} /> : <StudioToolGuide tool={tools.tool} projectId={projectId} onPrompt={setPrompt} disabled={busy} />}
+          {resultView === 'history' && feedItems.length > 0 ? <StudioGenerationFeed projectId={projectId} items={feedItems} onReuse={reuse} onContinue={(item, tool) => { if (!busy) void continueWith(item, tool); }} /> : <StudioToolGuide tool={tools.tool} projectId={projectId} onPrompt={setPrompt} disabled={busy} />}
         </div>
       </section>
     </div>

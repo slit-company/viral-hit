@@ -82,6 +82,7 @@ import {
   type LocalMediaMetadata,
 } from '@/core/editor/media-export';
 import { diagnoseTimeline } from '@/core/editor/timeline-diagnostics';
+import { EditorIssueBanner } from './editor-issue-banner';
 import { mergeTimelineDocuments } from '@/core/editor/timeline-merge';
 import {
   buildTimelineDragPreview,
@@ -2713,11 +2714,7 @@ export function VideoEditorWorkspace({
         </EditorInspectorPanel>
       </div>
 
-      {error ? (
-        <div className="absolute bottom-4 left-1/2 z-50 max-w-lg -translate-x-1/2 rounded-xl border border-red-400/25 bg-red-950/90 px-4 py-3 text-xs text-red-800 shadow-lg backdrop-blur">
-          {error}
-        </div>
-      ) : null}
+      <EditorIssueBanner error={error} document={document} fixLabel={t('diagnostics.holdLastImage')} onFix={operation => { commitDocument(applyEditorOperations(document, [operation]).document); setError(null); }} />
     </div>
   );
 }
