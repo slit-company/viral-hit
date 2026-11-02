@@ -28,7 +28,7 @@ test('video layers import, seek, animate, retain audio and export through browse
  await page.reload();await page.getByRole('button',{name:'overlay-source.mp4 2.00s',exact:true}).click();
  const video=page.getByRole('button',{name:'Move video overlay: overlay-source.mp4',exact:true}).locator('video');
  await expect.poll(()=>video.evaluate(el=>(el as HTMLVideoElement).currentTime)).toBeCloseTo(1,2);
- await page.getByRole('button',{name:'Play selection',exact:true}).click();
+ await page.getByRole('button',{name:'Play',exact:true}).click();
  await expect.poll(()=>video.evaluate(el=>(el as HTMLVideoElement).currentTime)).toBeGreaterThan(1.15);
  await page.getByRole('button',{name:'Pause',exact:true}).click();await expect.poll(()=>video.evaluate(el=>(el as HTMLVideoElement).paused)).toBe(true);
  await page.getByRole('button',{name:'Keyframe 0.00s',exact:true}).click();

@@ -11,7 +11,7 @@ A transition decides how a clip on a base visual track enters. Select an image o
 | Circle open | The new clip opens from the centre with a soft edge |
 | Zoom in | The previous picture zooms in, then gives way to the new clip |
 
-Transitions never change timing. A transition plays during the first `duration` seconds of the incoming clip, over the last visible frame of the clip that ends exactly where it starts. After a gap, or for the first clip, it starts from black. The duration is 0.1–3 s and cannot exceed the incoming clip. Splitting a clip keeps the transition on the left part.
+Transitions never change timing. A transition plays during the first `duration` seconds of the incoming clip, over the last visible frame of the clip that ends exactly where it starts. After a gap, or for the first clip, it starts from black. The duration is 0.1–3 s and cannot exceed the incoming clip. Splitting a clip keeps the transition on the left part. **Play** previews transitions in motion: playback continues from one clip into the next.
 
 ## Commands
 

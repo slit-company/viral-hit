@@ -520,7 +520,7 @@
       "actions": {
         "import": "Import image or video",
         "importAudio": "Import audio",
-        "play": "Play selection",
+        "play": "Play",
         "pause": "Pause",
         "skipBack": "Skip back 5 seconds",
         "skipForward": "Skip forward 5 seconds",
@@ -2091,6 +2091,7 @@
   "ui.editor.caption_highlight_pink": "Pink",
   "ui.editor.caption_words_measured": "This caption uses measured word timing.",
   "ui.editor.caption_words_estimated": "Word timing is estimated from word length. Voice or speech alignment can replace it.",
+  "ui.editor.playhead_time": "Playhead time",
   "ui.cinema.shot_label": "Shot {position}",
   "ui.cinema.attempt_label": "attempt {attempt}",
   "ui.cinema.render_again": "Render again",

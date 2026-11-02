@@ -520,7 +520,7 @@
       "actions": {
         "import": "画像または動画を読み込む",
         "importAudio": "音声を読み込む",
-        "play": "選択範囲を再生",
+        "play": "再生",
         "pause": "一時停止",
         "skipBack": "5秒戻る",
         "skipForward": "5秒進む",
@@ -2091,6 +2091,7 @@
   "ui.editor.caption_highlight_pink": "ピンク",
   "ui.editor.caption_words_measured": "この字幕は計測された単語タイミングを使います。",
   "ui.editor.caption_words_estimated": "単語の長さからタイミングを推定しています。音声の整列結果で置き換えられます。",
+  "ui.editor.playhead_time": "再生位置",
   "ui.cinema.shot_label": "ショット {position}",
   "ui.cinema.attempt_label": "{attempt} 回目",
   "ui.cinema.render_again": "再生成",

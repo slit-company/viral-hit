@@ -6,6 +6,7 @@ import { EditorInspectorPanel, useInspectorPanel } from './editor-inspector-pane
 import { OverlayInspector } from './overlay-inspector';
 import { TransitionInspector } from './transition-inspector';
 import { transitionPreview } from './transition-preview';
+import { useTimelineClock } from './use-timeline-clock';
 import { CaptionPreviewText } from './caption-preview-text';
 import { CaptionHighlightPicker } from './caption-highlight-picker';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
@@ -298,6 +299,8 @@ export function VideoEditorWorkspace({
   );
   const previewClip = activeVisualClip ?? primaryVisualClip;
   const transition = transitionPreview(document, activeVisualClip?.id, timelineCurrentTime);
+  const inGap = !activeVisualClip && document.duration > 0 && timelineCurrentTime < document.duration;
+  const mediaStyle = inGap ? { visibility: 'hidden' as const } : transition.incomingStyle;
   const previewSource = previewClip ? getTimelineClipSource(previewClip) : null;
   const previewOffset = previewClip
     ? Math.max(
@@ -677,6 +680,7 @@ export function VideoEditorWorkspace({
   ]);
 
   const stopImagePlayback = () => {
+    if (clock.running()) clock.stop();
     if (imagePlaybackFrameRef.current !== null) {
       cancelAnimationFrame(imagePlaybackFrameRef.current);
       imagePlaybackFrameRef.current = null;
@@ -720,6 +724,38 @@ export function VideoEditorWorkspace({
       if (shouldPlay && audio.paused) void audio.play().catch(() => undefined);
     }
   };
+
+  // Playback follows one clock across cuts, gaps and transitions; a loading video holds it.
+  const clock = useTimelineClock({
+    duration: document.duration,
+    onTick: (time) => {
+      setTimelineCursorTime(time);
+      const active = findVisualClipAtTimelineTime(documentRef.current ?? document, time);
+      const video = videoRef.current;
+      let ready = true;
+      if (active?.sourceType === 'video') {
+        const source = getTimelineClipSource(active);
+        const expected = source.inPoint + (time - active.startTime);
+        if (!video || video.src !== new URL(source.sourceUrl, window.location.href).href || video.readyState < 2) ready = false;
+        else {
+          if (Math.abs(video.currentTime - expected) > 0.25) video.currentTime = expected;
+          if (video.paused) void video.play().catch(() => undefined);
+        }
+        setCurrentTime(expected);
+      } else {
+        if (video && !video.paused) video.pause();
+        if (active) setCurrentTime(time - active.startTime);
+      }
+      syncAudioTracks(time, true);
+      return ready;
+    },
+    onStop: (time) => {
+      videoRef.current?.pause();
+      syncAudioTracks(time, false);
+      setIsPlaying(false);
+      setTimelineCursorTime(time);
+    },
+  });
 
   const selectClip = (clip: TimelineClip, timelineTime = clip.startTime) => {
     stopImagePlayback();
@@ -976,55 +1012,13 @@ export function VideoEditorWorkspace({
   };
 
   const togglePlayback = async () => {
-    if (!previewClip || !previewSource) {
+    if (!previewClip || !previewSource) return;
+    if (clock.running()) {
+      clock.stop();
       return;
     }
-    if (previewClip.sourceType === 'image') {
-      if (isPlaying) {
-        stopImagePlayback();
-        syncAudioTracks(timelineCurrentTime, false);
-        return;
-      }
-      const initialOffset =
-        previewOffset >= previewClip.duration - MIN_CLIP_DURATION
-          ? 0
-          : Math.max(0, previewOffset);
-      const startedAt = performance.now() - initialOffset * 1000;
-      setIsPlaying(true);
-      const tick = (now: number) => {
-        const offset = Math.min(
-          previewClip.duration,
-          Math.max(0, (now - startedAt) / 1000)
-        );
-        setCurrentTime(offset);
-        const nextTimelineTime = previewClip.startTime + offset;
-        setTimelineCursorTime(nextTimelineTime);
-        syncAudioTracks(nextTimelineTime, true);
-        if (offset >= previewClip.duration) {
-          imagePlaybackFrameRef.current = null;
-          setIsPlaying(false);
-          syncAudioTracks(nextTimelineTime, false);
-          return;
-        }
-        imagePlaybackFrameRef.current = requestAnimationFrame(tick);
-      };
-      imagePlaybackFrameRef.current = requestAnimationFrame(tick);
-      return;
-    }
-
-    const video = videoRef.current;
-    if (!video) return;
-    if (!video.paused) {
-      video.pause();
-      return;
-    }
-    if (
-      video.currentTime < previewSource.inPoint ||
-      video.currentTime >= previewSource.outPoint
-    ) {
-      seek(previewSource.inPoint, previewClip.startTime);
-    }
-    await video.play();
+    setIsPlaying(true);
+    clock.start(timelineCurrentTime >= document.duration - 0.01 ? 0 : timelineCurrentTime);
   };
 
   const updateTrim = (edge: 'in' | 'out', value: number) => {
@@ -1790,16 +1784,17 @@ export function VideoEditorWorkspace({
                   src={sourceUrl}
                   alt={previewClip.name}
                   className="size-full object-contain"
-                  style={transition.incomingStyle}
+                  style={mediaStyle}
 
                 />
               ) : (
                 <video
                 ref={videoRef}
                 src={sourceUrl}
+                aria-label={previewClip.name}
                 playsInline
                 className="size-full object-contain"
-                style={transition.incomingStyle}
+                style={mediaStyle}
                 onLoadedMetadata={(event) => {
                   if (!previewClip || !previewSource) return;
 
@@ -1810,6 +1805,7 @@ export function VideoEditorWorkspace({
                   event.currentTarget.currentTime = target;
                 }}
                 onPlay={(event) => {
+                  if (clock.running()) return;
                   setIsPlaying(true);
                   if (!previewClip || !previewSource) return;
                   syncAudioTracks(
@@ -1819,6 +1815,7 @@ export function VideoEditorWorkspace({
                   );
                 }}
                 onPause={(event) => {
+                  if (clock.running()) return;
                   setIsPlaying(false);
                   if (!previewClip || !previewSource) return;
                   syncAudioTracks(
@@ -1828,6 +1825,7 @@ export function VideoEditorWorkspace({
                   );
                 }}
                 onTimeUpdate={(event) => {
+                  if (clock.running()) return;
                   const time = event.currentTarget.currentTime;
                   if (previewClip && previewSource && time >= previewSource.outPoint) {
                     event.currentTarget.pause();
@@ -2034,7 +2032,7 @@ export function VideoEditorWorkspace({
 
           <div className="shrink-0 border-t border-[var(--vh-border)] bg-[var(--vh-surface)]">
             <div className="flex h-12 items-center justify-center gap-3 border-b border-[var(--vh-border)] px-4">
-              <span className="w-16 text-right text-[11px] font-[520] tabular-nums tracking-[-0.01em] text-[var(--vh-text-2)]">
+              <span role="timer" aria-label={uiMessages['ui.editor.playhead_time']()} className="w-16 text-right text-[11px] font-[520] tabular-nums tracking-[-0.01em] text-[var(--vh-text-2)]">
                 {formatTime(timelineCurrentTime)}
               </span>
               <Action

@@ -520,7 +520,7 @@
       "actions": {
         "import": "导入图片或视频",
         "importAudio": "导入音频",
-        "play": "播放选区",
+        "play": "播放",
         "pause": "暂停",
         "skipBack": "后退 5 秒",
         "skipForward": "前进 5 秒",
@@ -2091,6 +2091,7 @@
   "ui.editor.caption_highlight_pink": "粉色",
   "ui.editor.caption_words_measured": "此字幕使用实测的单词时间。",
   "ui.editor.caption_words_estimated": "单词时间按长度估算，可用语音对齐结果替换。",
+  "ui.editor.playhead_time": "播放头时间",
   "ui.cinema.shot_label": "镜头 {position}",
   "ui.cinema.attempt_label": "第 {attempt} 次",
   "ui.cinema.render_again": "重新生成",

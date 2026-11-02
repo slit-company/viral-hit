@@ -527,7 +527,7 @@
       "actions": {
         "import": "이미지·영상 가져오기",
         "importAudio": "오디오 가져오기",
-        "play": "선택 구간 재생",
+        "play": "재생",
         "pause": "일시 정지",
         "skipBack": "5초 뒤로",
         "skipForward": "5초 앞으로",
@@ -2055,6 +2055,7 @@
   "ui.editor.caption_highlight_pink": "핑크",
   "ui.editor.caption_words_measured": "이 자막은 측정된 단어 타이밍을 써요.",
   "ui.editor.caption_words_estimated": "단어 길이로 타이밍을 추정했어요. 음성 정렬 결과가 있으면 그걸로 바꿀 수 있어요.",
+  "ui.editor.playhead_time": "재생 위치",
   "ui.cinema.shot_label": "{position}번 샷",
   "ui.cinema.attempt_label": "{attempt}번째 시도",
   "ui.cinema.render_again": "다시 만들기",
