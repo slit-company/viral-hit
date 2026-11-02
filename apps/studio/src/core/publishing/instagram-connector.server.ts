@@ -1,6 +1,9 @@
 import { instagramNotBefore } from './instagram-schedule';
 import { PublicationInspectionPaused, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation, type RemoteObservation } from './contracts';
-import { instagramCheckpointSchema, instagramIdSchema, instagramMetadataSchema, instagramReceiptSchema, type InstagramCheckpoint, type InstagramContainer } from './instagram-contract';
+import { instagramCheckpointSchema, instagramIdSchema, instagramReceiptSchema, type InstagramCheckpoint, type InstagramContainer } from './instagram-contract';
+import { instagramFormat } from './instagram-format';
+import { createInstagramPostFlow } from './instagram-post.server';
+import { openPublicImageHost, type PublicImageHost } from './public-image-host.server';
 import { createInstagramTransport, type InstagramCredential } from './instagram-transport.server';
 import { InstagramTransportError } from './instagram-http.server';
 import type { JsonValue } from '../../lib/canonical-json';
@@ -8,15 +11,21 @@ import { instagramInsightRequest, instagramMeasurement } from './platform-metric
 import { MeasurementUnavailable } from '../measurement/contract';
 
 export const INSTAGRAM_CONNECTOR_VERSION = '1';
-type Options = { credential: (accountId: string, signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch; invalidateCredential?: (accountId: string, token: string, revision?: number) => Promise<void> };
+type Options = { credential: (accountId: string, signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch; invalidateCredential?: (accountId: string, token: string, revision?: number) => Promise<void>; imageHost?: PublicImageHost; carouselWaitMs?: number };
 export function validateInstagramPublication(spec: PublicationSpec) {
-  if (spec.connector !== 'instagram' || spec.connectorVersion !== INSTAGRAM_CONNECTOR_VERSION || spec.assets.length !== 1 || spec.assets[0].contentType !== 'video/mp4') throw new Error('Instagram requires one MP4 video and a supported connector');
-  return { instagramId: instagramIdSchema.parse(spec.destinationId), sizeBytes: spec.assets[0].sizeBytes, metadata: instagramMetadataSchema.parse(spec.metadata) };
+  const format = spec.connector === 'instagram' && spec.connectorVersion === INSTAGRAM_CONNECTOR_VERSION ? instagramFormat(spec) : null;
+  if (!format) throw new Error('Instagram media does not match the selected format or connector');
+  return { instagramId: instagramIdSchema.parse(spec.destinationId), sizeBytes: spec.assets[0].sizeBytes, metadata: format.metadata, post: format.post };
 }
 
-/** Facebook Login for Business, local Reels/Stories videos. No public media hosting required. */
+/**
+ * Facebook Login for Business. Reels and video Stories upload local bytes; image posts, image Stories and
+ * carousels need the workspace's public image storage because Meta downloads images itself.
+ */
 export function createInstagramConnector(options: Options): PublicationConnector {
   const transport = (spec: PublicationSpec) => createInstagramTransport({ credential: signal => options.credential(spec.accountId, signal), fetch: options.fetch, invalidateCredential: credential => options.invalidateCredential?.(spec.accountId, credential.accessToken, credential.revision) ?? Promise.resolve() });
+  const posts = createInstagramPostFlow({ transport, host: options.imageHost ?? openPublicImageHost({ fetch: options.fetch }), carouselWaitMs: options.carouselWaitMs });
+  const isPost = (spec: PublicationSpec) => validateInstagramPublication(spec).post;
   function target(spec: PublicationSpec, raw: JsonValue, receipt = false) {
     const input = validateInstagramPublication(spec);
     const identity = receipt ? instagramReceiptSchema.parse(raw) : instagramCheckpointSchema.parse(raw);
@@ -39,22 +48,27 @@ export function createInstagramConnector(options: Options): PublicationConnector
   return {
     id: 'instagram', version: INSTAGRAM_CONNECTOR_VERSION,
     notBefore: (spec, phase) => instagramNotBefore(validateInstagramPublication(spec).metadata, phase),
+    prepare: async (spec, read, signal) => { if (isPost(spec)) await posts.prepare(spec, read, signal); },
     async start(spec, signal) {
       let input: ReturnType<typeof validateInstagramPublication>;
       try { input = validateInstagramPublication(spec); } catch { throw new PublicationStartError('rejected'); }
+      if (input.post) return posts.start(spec, signal);
       try { return await transport(spec).create(input.instagramId, input.metadata, signal); }
       catch (error) { if (error instanceof InstagramTransportError && error.outcome === 'unavailable') throw new PublicationStartError('unavailable'); throw error; }
     },
     async transfer(spec, raw, read, signal) {
+      if (isPost(spec)) return posts.transfer(spec, raw, read, signal);
       const identity = target(spec, raw);
       const result = await transport(spec).upload(identity, (offset, length) => read(0, offset, length), signal);
       return transferred(instagramCheckpointSchema.parse(raw), result);
     },
     async reconcile(spec, raw, signal) {
+      if (isPost(spec)) return posts.reconcile(spec, raw, signal);
       const identity = target(spec, raw);
       return transferred(instagramCheckpointSchema.parse(raw), await transport(spec).status(identity, signal));
     },
     async inspect(spec, raw, signal) {
+      if (isPost(spec)) return posts.inspect(spec, raw, signal);
       const identity = target(spec, raw, true), prior = instagramReceiptSchema.parse(raw);
       const result = await transport(spec).status(identity, signal);
       const observation = observed(identity, result, prior.mediaId);
@@ -64,6 +78,7 @@ export function createInstagramConnector(options: Options): PublicationConnector
       return observation;
     },
     async publish(spec, raw, signal) {
+      if (isPost(spec)) return posts.publish(spec, raw, signal);
       const identity = target(spec, raw, true);
       try {
         const result = await transport(spec).publish(identity, signal);
@@ -74,11 +89,13 @@ export function createInstagramConnector(options: Options): PublicationConnector
       }
     },
     async measure(spec, raw, signal) {
-      const identity = target(spec, raw, true), prior = instagramReceiptSchema.parse(raw), kind = validateInstagramPublication(spec).metadata.kind;
-      if (!prior.mediaId) throw new MeasurementUnavailable('not-found');
+      const kind = validateInstagramPublication(spec).metadata.kind;
+      const identity = isPost(spec) ? posts.target(spec, raw) : target(spec, raw, true);
+      const mediaId = isPost(spec) ? posts.mediaId(spec, raw) : instagramReceiptSchema.parse(raw).mediaId;
+      if (!mediaId) throw new MeasurementUnavailable('not-found');
       let response: unknown;
       // Graph does not return a safe reason; a missing insights permission and an outage look alike here.
-      try { response = await transport(spec).insights(identity, prior.mediaId, instagramInsightRequest(kind), signal); }
+      try { response = await transport(spec).insights(identity, mediaId, instagramInsightRequest(kind), signal); }
       catch { throw new MeasurementUnavailable('unavailable'); }
       return instagramMeasurement(kind, response);
     },

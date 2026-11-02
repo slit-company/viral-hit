@@ -18,7 +18,7 @@ export const publicationSpecSchema = z.object({
 }).strict();
 export type PublicationSpec = z.infer<typeof publicationSpecSchema>;
 export type PublicationState = 'draft' | 'approved' | 'starting' | 'uploading' | 'accepted' | 'processing' | 'staged' | 'publishing' | 'ready' | 'scheduled' | 'published' | 'reconciling' | 'uncertain' | 'failed' | 'canceled';
-export type PublicationIssue = 'start-unknown' | 'upload-unknown' | 'publish-unknown' | 'session-expired' | 'remote-rejected' | 'runtime-unavailable' | 'asset-unavailable' | 'upload-incomplete' | 'stopped' | 'processing-timeout' | null;
+export type PublicationIssue = 'start-unknown' | 'upload-unknown' | 'publish-unknown' | 'session-expired' | 'remote-rejected' | 'runtime-unavailable' | 'asset-unavailable' | 'upload-incomplete' | 'stopped' | 'processing-timeout' | 'hosting-unavailable' | null;
 export type PublicationApproval = { digest: string; revision: number; actor: string; at: number };
 export type PublicationRecord = {
   id: string; spec: PublicationSpec; digest: string; revision: number; state: PublicationState;
@@ -54,14 +54,23 @@ export class PublicationStartError extends Error {
 export class PublicationAssetError extends Error {
   constructor() { super('Approved publication media is unavailable or changed'); }
 }
-/** Use only when final publication is known not to have happened. All other errors are ambiguous. */
+/**
+ * Use only when final publication is known not to have happened. All other errors are ambiguous.
+ * receipt replaces the stored receipt, for example to keep an intermediate container for the next attempt.
+ */
 export class PublicationPublishError extends Error {
-  constructor(readonly outcome: 'rejected' | 'unavailable', readonly retryAfterMs = 60000) { super('Publication could not proceed'); }
+  constructor(readonly outcome: 'rejected' | 'unavailable', readonly retryAfterMs = 60000, readonly receipt?: JsonValue) { super('Publication could not proceed'); }
+}
+/** An idempotent pre-start step, such as public image hosting, could not finish; nothing remote was created. */
+export class PublicationPrepareError extends Error {
+  constructor() { super('Publication media could not be prepared'); }
 }
 export interface PublicationConnector {
   id: string; version: string;
   /** Pure UTC millisecond gate. Provider-specific preparation policy stays in the connector. */
   notBefore?(spec: PublicationSpec, phase: 'start' | 'publish'): number | null;
+  /** Optional idempotent work before the start fence (never creates provider state); safe to repeat after any failure. */
+  prepare?(spec: PublicationSpec, read: (asset: number, offset: number, length: number) => Promise<Uint8Array>, signal: AbortSignal): Promise<void>;
   start(spec: PublicationSpec, signal: AbortSignal): Promise<JsonValue>;
   transfer(spec: PublicationSpec, checkpoint: JsonValue, read: (asset: number, offset: number, length: number) => Promise<Uint8Array>, signal: AbortSignal): Promise<TransferObservation>;
   reconcile(spec: PublicationSpec, checkpoint: JsonValue, signal: AbortSignal): Promise<TransferObservation>;

@@ -140,3 +140,11 @@ export async function getConfig(name: string): Promise<string | undefined> {
   const configs = await getDbConfigs();
   return configs[name] || undefined;
 }
+
+/** Uncached read for long-lived workers: a setting saved by another process applies to the next attempt. */
+export async function getFreshConfigs<T extends string>(names: readonly T[]): Promise<Partial<Record<T, string>>> {
+  cachedConfigs = null;
+  cacheTime = 0;
+  const configs = await getDbConfigs();
+  return Object.fromEntries(names.filter(name => configs[name]).map(name => [name, configs[name]])) as Partial<Record<T, string>>;
+}

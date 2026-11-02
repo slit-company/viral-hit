@@ -1,6 +1,9 @@
-/** Errors never contain provider bodies, signed URLs, tokens or raw network messages. */
+/**
+ * Errors never contain provider bodies, signed URLs, tokens or raw network messages.
+ * rejected: Meta answered a write with a definitive client error, so that request created nothing.
+ */
 export class InstagramTransportError extends Error {
-  constructor(readonly outcome: 'unavailable' | 'unknown', readonly credentialRejected = false) { super('Instagram request could not be verified'); }
+  constructor(readonly outcome: 'unavailable' | 'unknown' | 'rejected', readonly credentialRejected = false, readonly httpStatus?: number, readonly graphCode?: number) { super('Instagram request could not be verified'); }
 }
 
 export async function instagramJson(response: Response, signal: AbortSignal): Promise<unknown> {
@@ -24,7 +27,8 @@ export async function instagramJson(response: Response, signal: AbortSignal): Pr
     try { value = JSON.parse(new TextDecoder().decode(bytes)); } catch { throw new InstagramTransportError('unknown'); }
     if (!response.ok) {
       const error = value && typeof value === 'object' && 'error' in value ? value.error : null;
-      throw new InstagramTransportError('unknown', Boolean(error && typeof error === 'object' && 'code' in error && error.code === 190));
+      const code = error && typeof error === 'object' && 'code' in error && typeof error.code === 'number' ? error.code : undefined;
+      throw new InstagramTransportError('unknown', code === 190, error ? response.status : undefined, code);
     }
     return value;
   } finally { signal.removeEventListener('abort', abort); await reader.cancel().catch(() => undefined); reader.releaseLock(); }

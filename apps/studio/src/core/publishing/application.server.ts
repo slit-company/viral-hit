@@ -6,13 +6,16 @@ import { getActiveProject } from '../projects/projects';
 import { openPublications } from './publication-files.server';
 import { openProjectPublicationMedia } from './project-media.server';
 import { instagramMetadataSchema } from './instagram-contract';
+import { admitInstagramMedia, requireInstagramImageHosting } from './instagram-admission.server';
+import { InstagramImageError } from './instagram-image.server';
+import { openPublicImageHost } from './public-image-host.server';
 import { validateInstagramSchedule } from './instagram-schedule';
 import { youtubeResource } from './youtube-contract';
 import { publicationView } from './public-view';
 import { publicationProjectId, publicationRequest, PublicationRequestError, type PublicationDraftRequest } from './requests';
 import type { PublicationSpec, PublicationRecord } from './contracts';
 import { publicationDestination, publishingConfigured, validateSupportedPublication } from './publication-destination.server';
-import { InstagramVideoError, validateInstagramVideo } from './instagram-video.server';
+import { InstagramVideoError } from './instagram-video.server';
 export { publishingConfigured } from './publication-destination.server';
 
 const view = (record: PublicationRecord, entries?: InstalledConnector[]) => publicationView(record, installedPublicationReview(record.spec, entries, record.receipt));
@@ -27,20 +30,20 @@ async function prepare(projectId: string, input: PublicationDraftRequest, signal
   validateSchedule(input.metadata, input.connector);
   const destination = publicationDestination(input.connector, input.accountId), media = openProjectPublicationMedia();
   try {
-    const assets = [];
-    for (const id of 'assetIds' in input ? input.assetIds : [input.assetId]) assets.push(await media.pin(projectId, id, signal));
-    const asset = assets[0];
+    const ids = 'assetIds' in input ? input.assetIds : [input.assetId];
+    // Instagram converts images to the exact JPEG Meta downloads and checks every format rule before review.
+    const assets = input.connector === 'instagram' ? await admitInstagramMedia(projectId, ids, input.metadata, media, signal) : [];
+    if (input.connector !== 'instagram') for (const id of ids) assets.push(await media.pin(projectId, id, signal));
     const spec: PublicationSpec = { schemaVersion: 1, projectId, connector: input.connector, connectorVersion: destination.connectorVersion,
       accountId: destination.id, destinationId: destination.destinationId, assets, metadata: input.metadata };
     validateSupportedPublication(spec);
-    if (input.connector === 'instagram') validateInstagramVideo(await media.inspectVideo(spec, signal), asset.sizeBytes, instagramMetadataSchema.parse(input.metadata));
     const current = publicationDestination(input.connector, destination.id);
     if (current.destinationId !== destination.destinationId || current.pageId !== destination.pageId || current.connectorVersion !== destination.connectorVersion) throw new PublicationRequestError('account-unavailable', 'The destination changed while preparing this publication');
     await requireProject(projectId, signal); validateSchedule(input.metadata, input.connector);
     return spec;
   } catch (error) {
     if (error instanceof PublicationRequestError) throw error;
-    if (error instanceof InstagramVideoError) throw new PublicationRequestError('media-unavailable', error.message);
+    if (error instanceof InstagramVideoError || error instanceof InstagramImageError) throw new PublicationRequestError('media-unavailable', error.message);
     throw new PublicationRequestError('media-unavailable', 'Select unchanged local media in this project');
   } finally { media.close(); }
 }
@@ -56,7 +59,8 @@ function validateSchedule(metadata: unknown, connector: string) {
 export async function listPublications(projectId: string, signal = AbortSignal.timeout(30000)) {
   const project = await requireProject(projectId, signal);
   const store = openPublications(), installed = readInstalledConnectors();
-  try { return { project: { id: project.id, name: project.name }, configured: publishingConfigured(), connectors: { youtube: publishingConfigured(), instagram: publishingConfigured('instagram') }, installedConnectors: { connectors: installed.entries.map(entry => entry.descriptor), problems: installed.problems }, publications: store.list(projectId).map(record => view(record, installed.entries)) }; }
+  const imageHosting = await openPublicImageHost().configured().catch(() => false);
+  try { return { project: { id: project.id, name: project.name }, configured: publishingConfigured(), connectors: { youtube: publishingConfigured(), instagram: publishingConfigured('instagram') }, imageHosting, installedConnectors: { connectors: installed.entries.map(entry => entry.descriptor), problems: installed.problems }, publications: store.list(projectId).map(record => view(record, installed.entries)) }; }
   finally { store.close(); }
 }
 /** All transports share project/media/account admission and revision-bound approval. No provider POST occurs here. */
@@ -84,6 +88,7 @@ export async function changePublication(projectId: string, raw: unknown, actor: 
     if (input.action === 'approve' || input.action === 'resume') {
       if (!publishingConfigured(prior.spec.connector)) throw new PublicationRequestError('runtime-unavailable', 'Configure the selected publishing connector before approving delivery');
       validateSupportedPublication(prior.spec);
+      if (prior.spec.connector === 'instagram') await requireInstagramImageHosting(prior.spec.assets.map(asset => asset.contentType));
       const target = publicationDestination(prior.spec.connector, prior.spec.accountId);
       if (target.destinationId !== prior.spec.destinationId) throw new PublicationRequestError('account-unavailable', 'The original channel no longer matches this publication');
       const media = openProjectPublicationMedia();

@@ -16,18 +16,20 @@ export function youtubeMeasurement(statistics: YouTubeStatistics): MeasurementRe
   return { metrics, missing };
 }
 
-// Graph insight names per media kind; saved is normalized to the shared saves name.
+// Graph insight names per media kind; saved is normalized to the shared saves name. Feed posts and Reels share one set.
+const feed = [['views', 'views'], ['reach', 'reach'], ['likes', 'likes'], ['comments', 'comments'], ['shares', 'shares'], ['saved', 'saves'], ['total_interactions', 'total_interactions']] as const;
 const instagramNames = {
-  reel: [['views', 'views'], ['reach', 'reach'], ['likes', 'likes'], ['comments', 'comments'], ['shares', 'shares'], ['saved', 'saves'], ['total_interactions', 'total_interactions']],
+  reel: feed, image: feed, carousel: feed,
   story: [['views', 'views'], ['reach', 'reach'], ['replies', 'replies'], ['shares', 'shares'], ['total_interactions', 'total_interactions']],
 } as const;
-export const instagramMetricNames = (kind: 'reel' | 'story') => instagramNames[kind].map(([, name]) => name);
-export const instagramInsightRequest = (kind: 'reel' | 'story') => instagramNames[kind].map(([remote]) => remote);
+type InstagramInsightKind = keyof typeof instagramNames;
+export const instagramMetricNames = (kind: InstagramInsightKind) => instagramNames[kind].map(([, name]) => name);
+export const instagramInsightRequest = (kind: InstagramInsightKind) => instagramNames[kind].map(([remote]) => remote);
 export const instagramInsightsSchema = z.object({ data: z.array(z.object({ name: z.string().max(80),
   values: z.array(z.object({ value: z.number().finite().nonnegative() }).passthrough()).max(4).optional(),
   total_value: z.object({ value: z.number().finite().nonnegative() }).passthrough().optional() }).passthrough()).max(40) }).passthrough();
 
-export function instagramMeasurement(kind: 'reel' | 'story', raw: unknown): MeasurementResult {
+export function instagramMeasurement(kind: InstagramInsightKind, raw: unknown): MeasurementResult {
   const data = instagramInsightsSchema.parse(raw).data, metrics: Record<string, number> = {}, missing: string[] = [];
   for (const [remote, name] of instagramNames[kind]) {
     const item = data.find(entry => entry.name === remote), value = item?.total_value?.value ?? item?.values?.[0]?.value;

@@ -5,6 +5,11 @@ import { instagramIdSchema, type InstagramContainer, type InstagramMetadata } fr
 import { instagramJson, InstagramTransportError } from './instagram-http.server';
 
 export type InstagramCredential = { pageId: string; instagramId: string; accessToken: string; revision?: number };
+/** Image posts, image Stories and carousels. Videos appear only as resumable carousel items. */
+export type InstagramPostRequest = {
+  kind: 'image' | 'story' | 'carousel'; caption?: string; isAiGenerated: boolean; publishAt?: string;
+  items: ({ type: 'image'; url: string; altText?: string } | { type: 'video' })[];
+};
 type Options = { credential: (signal: AbortSignal) => Promise<InstagramCredential>; fetch?: typeof fetch; invalidateCredential?: (credential: InstagramCredential) => Promise<void> };
 // Pinned protocol revision, not an implicit latest version. Changes require a connector version bump.
 export const INSTAGRAM_GRAPH_VERSION = 'v26.0';
@@ -20,6 +25,8 @@ const containerSchema = z.object({
 const idResponse = z.object({ id: instagramIdSchema });
 const graph = (path: string) => `https://graph.facebook.com/${INSTAGRAM_GRAPH_VERSION}/${path}`;
 const uploadUrl = (id: string) => `https://rupload.facebook.com/ig-api-upload/${INSTAGRAM_GRAPH_VERSION}/${instagramIdSchema.parse(id)}`;
+// Throttling answers create nothing but remain retryable; token errors wait for a reconnect.
+const RATE_LIMIT_CODES = new Set([4, 17, 32, 613]);
 
 function enforceTime(metadata: { publishAt?: string }, phase: 'start' | 'publish') {
   const until = instagramNotBefore(metadata, phase);
@@ -37,7 +44,16 @@ export function createInstagramTransport(options: Options) {
       }), signal);
     } catch (error) {
       if (error instanceof InstagramTransportError && error.credentialRejected) await options.invalidateCredential?.(credential);
-      throw new InstagramTransportError('unknown');
+      throw new InstagramTransportError('unknown', false, error instanceof InstagramTransportError ? error.httpStatus : undefined, error instanceof InstagramTransportError ? error.graphCode : undefined);
+    }
+  }
+  /** A definitive client error to a write means Meta created nothing for that request. */
+  async function write(url: string, credential: InstagramCredential, signal: AbortSignal, body: Record<string, unknown>) {
+    try { return await json(url, credential, signal, body); }
+    catch (error) {
+      const status = error instanceof InstagramTransportError ? error.httpStatus : undefined, code = error instanceof InstagramTransportError ? error.graphCode : undefined;
+      if (code === 190 || status === 429 || (code !== undefined && RATE_LIMIT_CODES.has(code))) throw new InstagramTransportError('unavailable');
+      throw new InstagramTransportError(status !== undefined && status >= 400 && status < 500 ? 'rejected' : 'unknown');
     }
   }
   /** Pin one credential across the identity check and its subsequent write. */
@@ -50,8 +66,8 @@ export function createInstagramTransport(options: Options) {
       signal.throwIfAborted(); return credential;
     } catch { throw new InstagramTransportError('unavailable'); }
   }
-  async function statusWith(credential: InstagramCredential, id: string, sizeBytes: number, signal: AbortSignal): Promise<InstagramContainer> {
-    const result = containerSchema.parse(await json(graph(`${instagramIdSchema.parse(id)}?fields=id,status_code,video_status`), credential, signal));
+  async function statusWith(credential: InstagramCredential, id: string, sizeBytes: number, signal: AbortSignal, video = true): Promise<InstagramContainer> {
+    const result = containerSchema.parse(await json(graph(`${instagramIdSchema.parse(id)}?fields=id,status_code${video ? ',video_status' : ''}`), credential, signal));
     if (result.id !== id) throw new InstagramTransportError('unknown');
     const upload = result.video_status?.uploading_phase;
     if (upload && (upload.bytes_transferred > sizeBytes || (upload.status === 'complete' && upload.bytes_transferred !== sizeBytes))) throw new InstagramTransportError('unknown');
@@ -73,6 +89,48 @@ export function createInstagramTransport(options: Options) {
       // Never forward a bearer token to a provider-controlled response URL.
       if (result.uri !== uploadUrl(result.id)) throw new InstagramTransportError('unknown');
       return { containerId: result.id, instagramId, pageId: credential.pageId, nextByte: 0 };
+    },
+    /**
+     * Every item container under one pinned credential, inside the caller's start fence. Captions and AI
+     * disclosure belong to the carousel container, never to its items. A later failure after earlier
+     * items exist is never reported as retryable, so a retry cannot multiply containers.
+     */
+    async createPost(instagramId: string, post: InstagramPostRequest, signal: AbortSignal) {
+      enforceTime(post, 'start');
+      const credential = await authorize(instagramId, undefined, signal);
+      enforceTime(post, 'start');
+      const items: { containerId: string; nextByte?: number }[] = [];
+      for (const item of post.items) {
+        const body = item.type === 'video' ? { media_type: 'VIDEO', is_carousel_item: true, upload_type: 'resumable' } : {
+          image_url: item.url,
+          ...(post.kind === 'carousel' ? { is_carousel_item: true } : post.kind === 'story' ? { media_type: 'STORIES', is_ai_generated: post.isAiGenerated } : { caption: post.caption ?? '', is_ai_generated: post.isAiGenerated }),
+          ...(item.altText && post.kind !== 'story' ? { alt_text: item.altText } : {}),
+        };
+        let raw: unknown;
+        try { raw = await write(graph(`${instagramIdSchema.parse(instagramId)}/media`), credential, signal, body); }
+        catch (error) { throw error instanceof InstagramTransportError && error.outcome === 'unavailable' && items.length ? new InstagramTransportError('unknown') : error; }
+        if (item.type === 'video') {
+          const result = idResponse.extend({ uri: z.string() }).parse(raw);
+          if (result.uri !== uploadUrl(result.id)) throw new InstagramTransportError('unknown');
+          items.push({ containerId: result.id, nextByte: 0 });
+        } else items.push({ containerId: idResponse.parse(raw).id });
+      }
+      return { post: 1 as const, instagramId, pageId: credential.pageId, items };
+    },
+    /** Read-only probes under one credential; sizeBytes marks a resumable video item. */
+    async statuses(target: { instagramId: string; pageId: string }, items: { containerId: string; sizeBytes?: number }[], signal: AbortSignal) {
+      const credential = await authorize(target.instagramId, target.pageId, signal), result: InstagramContainer[] = [];
+      for (const item of items) result.push(await statusWith(credential, item.containerId, item.sizeBytes ?? 0, signal, item.sizeBytes !== undefined));
+      return result;
+    },
+    /** Called only inside the publishing fence, after every item finished processing. */
+    async createCarousel(target: { instagramId: string; pageId: string; publishAt?: string }, children: string[], fields: { caption: string; isAiGenerated: boolean }, signal: AbortSignal) {
+      enforceTime(target, 'publish');
+      const credential = await authorize(target.instagramId, target.pageId, signal);
+      const raw = await write(graph(`${instagramIdSchema.parse(target.instagramId)}/media`), credential, signal, {
+        media_type: 'CAROUSEL', children: children.map(id => instagramIdSchema.parse(id)).join(','), caption: fields.caption, is_ai_generated: fields.isAiGenerated,
+      });
+      return idResponse.parse(raw).id;
     },
     async status(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number }, signal: AbortSignal) {
       return statusWith(await authorize(target.instagramId, target.pageId, signal), target.containerId, target.sizeBytes, signal);
@@ -119,10 +177,10 @@ export function createInstagramTransport(options: Options) {
       const credential = await authorize(target.instagramId, target.pageId, signal);
       return json(graph(`${instagramIdSchema.parse(mediaId)}/insights?metric=${metrics.map(name => encodeURIComponent(name)).join(',')}`), credential, signal);
     },
-    async publish(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number; publishAt?: string }, signal: AbortSignal) {
+    async publish(target: { containerId: string; instagramId: string; pageId: string; sizeBytes: number; publishAt?: string; video?: boolean }, signal: AbortSignal) {
       const credential = await authorize(target.instagramId, target.pageId, signal);
       let before: InstagramContainer;
-      try { before = await statusWith(credential, target.containerId, target.sizeBytes, signal); }
+      try { before = await statusWith(credential, target.containerId, target.sizeBytes, signal, target.video ?? true); }
       catch { throw new InstagramTransportError('unavailable'); }
       if (before.status !== 'FINISHED') return { container: before };
       enforceTime(target, 'publish');

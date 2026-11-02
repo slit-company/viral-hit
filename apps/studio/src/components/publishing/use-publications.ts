@@ -9,7 +9,7 @@ import type { InstagramAccount } from '@/core/publishing/instagram-accounts-cont
 import type { AccountSnapshot } from '@/core/publishing/account-requests';
 
 export type PublicationVideo = { id: string; filename: string | null; mimeType: string | null; storageProvider: string | null; sizeBytes: number | null };
-type Snapshot = { project: { id: string; name: string }; configured: boolean; connectors: { youtube: boolean; instagram: boolean }; publications: PublicationView[]; installedConnectors: InstalledConnectorCatalog };
+type Snapshot = { project: { id: string; name: string }; configured: boolean; connectors: { youtube: boolean; instagram: boolean }; imageHosting: boolean; publications: PublicationView[]; installedConnectors: InstalledConnectorCatalog };
 const headers = { [WORKSPACE_MUTATION_HEADER]: WORKSPACE_MUTATION_HEADER_VALUE };
 export function usePublications(projectId: string) {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null), [accounts, setAccounts] = useState<AccountSnapshot | null>(null), [videos, setVideos] = useState<PublicationVideo[]>([]);

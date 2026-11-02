@@ -252,3 +252,7 @@ Summed script gzip: **751,599 bytes**, **7,630 bytes** more than layer export; p
 ## Canvas branches and runs — 2026-11-03
 
 Summed script gzip: **755,964 bytes**, **3,966 bytes** more than the ComfyUI canvas import (751,998); public files **9,288,464 bytes**. The script budget changed from 752,000 to **756,000** in this reviewed decision: Branch and Run changed with the plan list load as their own 2.09 KB chunk only when a generation card is selected, 17 short messages in four languages add about 1.3 KB to the shared message chunk, and the canvas shell gains a small poller that refreshes takes while a canvas run is active. Planning and caching run on the server and in the existing worker. No dependency or service was added.
+
+## Instagram images and carousels — 2026-11-03
+
+Summed script gzip: **761,744 bytes**, **5,780 bytes** more than canvas branches and runs (755,964); public files **9,305,433 bytes**. The script budget changed from 756,000 to **762,000** in this reviewed decision. 29 new messages in four languages (about 6 KB of text before compression) go into the shared message chunk. The Publish page chunk, loaded only on `/publish`, gains the format choice, the ordered carousel picker and the swipeable review strip. Two duplicate labels and a hint were removed before raising the budget. Image conversion (FFmpeg), public hosting (the existing `s3mini` dependency) and container handling run on the server and in the existing publication worker. No dependency, service or background process was added.

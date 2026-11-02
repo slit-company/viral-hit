@@ -8,7 +8,7 @@ import type { InstagramAccount } from '@/core/publishing/instagram-accounts-cont
 import { YouTubePublicationForm } from './youtube-publication-form';
 import { InstagramPublicationForm } from './instagram-publication-form';
 
-export function PublicationForm(props: ComponentProps<typeof YouTubePublicationForm> & { instagramAccounts: InstagramAccount[]; installedConnectors: InstalledConnectorDescriptor[]; mediaAssets: PublicationVideo[]; connector: string; onConnector: (value: string) => void }) {
+export function PublicationForm(props: ComponentProps<typeof YouTubePublicationForm> & { instagramAccounts: InstagramAccount[]; installedConnectors: InstalledConnectorDescriptor[]; mediaAssets: PublicationVideo[]; imageHosting: boolean; connector: string; onConnector: (value: string) => void }) {
   const connector = props.editing?.connector ?? props.connector;
   const installed = props.installedConnectors.find(item => item.id === connector);
   return <div className="space-y-4">

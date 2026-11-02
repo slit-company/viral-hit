@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFile, mkdir } from 'node:fs/promises';
+import { execFileSync } from 'node:child_process';
 import { createDemoMedia } from '../../scripts/demo-media.mjs';
 const headers = { 'x-viral-hit-workspace-request': '1' };
 
@@ -115,4 +116,61 @@ test('scheduled Instagram review preserves local time, invalidates changed appro
   await expect(card.locator('time')).toHaveAttribute('datetime', times.instant);
   const waiting = (await (await request.get(endpoint, { headers })).json()).publications[0]; expect(waiting.state).toBe('approved'); expect(waiting.instagramDelivery).toBeNull();
   await card.getByRole('button', { name: 'Cancel delivery', exact: true }).click(); await expect(card.getByText('Canceled', { exact: true })).toBeVisible();
+});
+
+test('Instagram carousel orders images and a video, reviews the exact JPEG files and approves that revision', async ({ page, request }) => {
+  await page.route('https://www.facebook.com/**', route => route.fulfill({ contentType: 'text/html', body: '<h1>Meta consent fixture</h1>' }));
+  await page.goto('/connections'); await page.getByRole('button', { name: 'Connect Instagram', exact: true }).click();
+  await expect(page).toHaveURL(/^https:\/\/www.facebook.com\//);
+  const state = new URL(page.url()).searchParams.get('state')!;
+  await page.goto(`http://127.0.0.1:3042/api/app/publishing/instagram/callback?state=${state}&code=fixture-code`);
+  await page.getByLabel('Page and Instagram account', { exact: true }).selectOption('112');
+  await page.getByRole('button', { name: 'Connect this account', exact: true }).click();
+  await expect(page).toHaveURL('http://127.0.0.1:3042/connections');
+  const account = (await (await request.get('/api/app/publishing/instagram/accounts', { headers })).json()).accounts.find((value: { instagramId: string; status: string }) => value.instagramId === '223' && value.status === 'connected');
+  // Public storage is only checked at draft time here; no upload happens without the publication worker.
+  expect((await request.post('/api/config/storage', { headers, data: { mode: 's3', region: 'auto', endpoint: 'https://storage.example.com', bucketName: 'studio-media', publicUrl: 'https://media.example.com', accessKeyId: 'e2e-access', secretAccessKey: 'e2e-secret', forcePathStyle: true } })).ok()).toBe(true);
+  try {
+    await mkdir('test-results', { recursive: true }); createDemoMedia('test-results/instagram-carousel-clip.mp4');
+    execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'testsrc2=s=1080x1920', '-frames:v', '1', 'test-results/tall-study.png']);
+    execFileSync('ffmpeg', ['-v', 'error', '-y', '-f', 'lavfi', '-i', 'mandelbrot=s=1024x1024', '-frames:v', '1', 'test-results/square-study.png']);
+    const created = await request.post('/api/app/projects', { headers, data: { name: 'Field Notes · Carousel' } }); expect(created.ok()).toBe(true); const { id } = await created.json();
+    const upload = async (name: string, mimeType: string, file: string) => (await (await request.post(`/api/app/projects/${id}/assets`, { headers, multipart: { file: { name, mimeType, buffer: await readFile(file) } } })).json()).asset as { id: string };
+    const tall = await upload('tall-study.png', 'image/png', 'test-results/tall-study.png'), clip = await upload('light-and-motion.mp4', 'video/mp4', 'test-results/instagram-carousel-clip.mp4'), square = await upload('square-study.png', 'image/png', 'test-results/square-study.png');
+    await page.setViewportSize({ width: 1440, height: 1000 }); await page.goto(`/publish/${id}`);
+    await page.getByRole('combobox', { name: 'Destination', exact: true }).selectOption('instagram');
+    await page.getByRole('combobox', { name: 'Instagram account', exact: true }).selectOption(account.id);
+    await page.getByRole('combobox', { name: 'Instagram format', exact: true }).selectOption('carousel');
+    for (const item of [tall, clip, square]) await page.getByRole('combobox', { name: 'Add an image or video', exact: true }).selectOption(item.id);
+    await expect(page.getByText('3 of 20', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Move square-study.png up', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'Move tall-study.png up', exact: true })).toBeDisabled();
+    await page.getByRole('textbox', { name: 'Alt text for tall-study.png', exact: true }).fill('A tall study of color bars');
+    await expect(page.getByRole('textbox', { name: 'Alt text for light-and-motion.mp4', exact: true })).toHaveCount(0);
+    await expect(page.getByRole('combobox', { name: 'Image framing', exact: true })).toHaveValue('fill');
+    await page.getByRole('textbox', { name: 'Caption', exact: true }).fill('Three studies in one swipe. #process');
+    await page.getByRole('combobox', { name: 'AI-generated content?', exact: true }).selectOption('true');
+    await page.screenshot({ path: 'test-results/instagram-carousel-form.png' });
+    await page.getByRole('button', { name: 'Save draft', exact: true }).click();
+    const card = page.getByRole('article', { name: 'Publication Instagram Carousel', exact: true });
+    await expect(card.getByText('Draft', { exact: true })).toBeVisible();
+    const endpoint = `/api/app/projects/${id}/publications`, draft = (await (await request.get(endpoint, { headers })).json()).publications[0];
+    expect(draft.assets.map((asset: { assetId: string; contentType: string }) => [asset.assetId, asset.contentType])).toEqual([[tall.id, 'image/jpeg'], [square.id, 'image/jpeg'], [clip.id, 'video/mp4']]);
+    expect(draft.instagramMetadata).toEqual({ kind: 'carousel', caption: 'Three studies in one swipe. #process', frame: 'fill', altTexts: ['A tall study of color bars', '', ''], isAiGenerated: true });
+    // The review shows the retained 4:5 JPEGs Meta will download, not the original PNGs.
+    await expect.poll(() => card.locator('img').evaluateAll((images: HTMLImageElement[]) => images.map(image => [image.naturalWidth, image.naturalHeight]))).toEqual([[1080, 1350], [818, 1022]]);
+    await card.getByRole('checkbox').check();
+    const approve = card.getByRole('button', { name: 'Approve & publish', exact: true }); await expect(approve).toBeEnabled();
+    await card.evaluate(node => node.scrollIntoView({ block: 'start' }));
+    await page.screenshot({ path: 'test-results/instagram-carousel-review-desktop.png' });
+    await page.setViewportSize({ width: 390, height: 844 }); await card.evaluate(node => node.scrollIntoView({ block: 'start' }));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await card.locator('img').evaluateAll((images: HTMLImageElement[]) => Promise.all(images.map(image => image.decode())));
+    await page.screenshot({ path: 'test-results/instagram-carousel-review-mobile.png' });
+    await approve.click(); await expect(card.getByText('Queued for upload', { exact: true })).toBeVisible();
+    const queued = (await (await request.get(endpoint, { headers })).json()).publications[0]; expect(queued.state).toBe('approved'); expect(queued.digest).toBe(draft.digest);
+    await card.getByRole('button', { name: 'Cancel delivery', exact: true }).click(); await expect(card.getByText('Canceled', { exact: true })).toBeVisible();
+  } finally {
+    await request.post('/api/config/storage', { headers, data: { mode: 'cloud-api' } });
+  }
 });

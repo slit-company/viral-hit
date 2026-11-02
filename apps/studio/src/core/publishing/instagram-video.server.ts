@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { z } from 'zod';
-import type { InstagramMetadata } from './instagram-contract';
+import type { InstagramKind, InstagramMetadata } from './instagram-contract';
 
 const numeric = z.coerce.number().finite();
 const stream = z.object({
@@ -38,13 +38,20 @@ export async function probePublicationVideo(fd: number, parent: AbortSignal): Pr
   try { return probeSchema.parse(JSON.parse(stdout)); }
   catch { throw new InstagramVideoError('The retained video has no supported duration or stream information.'); }
 }
+// Carousel items follow Meta's feed video limits (60 seconds, 100 MB); Meta remains authoritative.
+const limits = {
+  reel: { seconds: 900, megabytes: 300, minAspect: 0.01, name: 'Reels' },
+  story: { seconds: 60, megabytes: 100, minAspect: 0.1, name: 'Stories' },
+  carousel: { seconds: 60, megabytes: 100, minAspect: 0.01, name: 'Carousel videos' },
+} as const;
 /** Measurable admission checks. Meta remains authoritative for closed GOP/VBR and container compatibility. */
-export function validateInstagramVideo(probe: PublicationVideoProbe, bytes: number, metadata: InstagramMetadata) {
+export function validateInstagramVideo(probe: PublicationVideoProbe, bytes: number, metadata: InstagramMetadata | { kind: InstagramKind }) {
   const fail = (message: string): never => { throw new InstagramVideoError(message); };
-  const story = metadata.kind === 'story', limit = story ? 60 : 900;
+  if (metadata.kind === 'image') fail('Image posts cannot contain video.');
+  const rule = limits[metadata.kind as keyof typeof limits];
   if (!probe.format.format_name.split(',').includes('mp4')) fail('Instagram requires an MP4 container.');
-  if (probe.format.duration < 3 || probe.format.duration > limit) fail(`Instagram ${story ? 'Stories require 3–60' : 'Reels require 3–900'} seconds of video.`);
-  if (bytes > (story ? 100 : 300) * 1000000) fail(`Instagram ${story ? 'Stories are limited to 100' : 'Reels are limited to 300'} MB.`);
+  if (probe.format.duration < 3 || probe.format.duration > rule.seconds) fail(`Instagram ${rule.name} require 3–${rule.seconds} seconds of video.`);
+  if (bytes > rule.megabytes * 1000000) fail(`Instagram ${rule.name} are limited to ${rule.megabytes} MB.`);
   const videos = probe.streams.filter(item => item.codec_type === 'video'), audio = probe.streams.filter(item => item.codec_type === 'audio');
   if (videos.length !== 1 || audio.length > 1 || probe.streams.length !== videos.length + audio.length) fail('Export one video stream and at most one audio stream.');
   const video = videos[0];
@@ -53,7 +60,7 @@ export function validateInstagramVideo(probe: PublicationVideoProbe, bytes: numb
   const [numerator, denominator] = (video.avg_frame_rate ?? '').split('/').map(Number), fps = numerator / denominator;
   if (!Number.isFinite(fps) || fps < 23 || fps > 60) fail('Instagram requires a frame rate between 23 and 60 FPS.');
   const width = video.width ?? 0, height = video.height ?? 0, aspect = width / height;
-  if (width < 1 || width > 1920 || height < 1 || aspect < (story ? 0.1 : 0.01) || aspect > 10) fail('Export a video up to 1920 pixels wide with an Instagram-compatible aspect ratio; 9:16 is recommended.');
+  if (width < 1 || width > 1920 || height < 1 || aspect < rule.minAspect || aspect > 10) fail('Export a video up to 1920 pixels wide with an Instagram-compatible aspect ratio; 9:16 is recommended.');
   if (video.bit_rate !== undefined && video.bit_rate > 25000000) fail('Export video at no more than 25 Mbps.');
   if (audio.some(item => item.codec_name !== 'aac' || !item.sample_rate || item.sample_rate > 48000 || ![1, 2].includes(item.channels ?? 0))) fail('Use AAC audio, mono or stereo, at no more than 48 kHz.');
 }

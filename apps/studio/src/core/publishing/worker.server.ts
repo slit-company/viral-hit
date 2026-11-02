@@ -1,4 +1,4 @@
-import { PublicationDeferred, PublicationInspectionPaused, PublicationAssetError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
+import { PublicationDeferred, PublicationInspectionPaused, PublicationAssetError, PublicationPrepareError, PublicationStartError, PublicationPublishError, type PublicationConnector, type PublicationSpec, type TransferObservation } from './contracts';
 import type { PublicationStore } from './store.server';
 
 export type PublicationRuntime = {
@@ -35,6 +35,11 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
     return store.get(claim.spec.projectId, claim.id);
   }
   let starting = false, publishing = false;
+  const read = async (asset: number, offset: number, length: number) => {
+    signal.throwIfAborted();
+    try { return await runtime.read(claim.spec, asset, offset, length, signal); }
+    catch { throw new PublicationAssetError(); }
+  };
   const transferred = (observation: TransferObservation, readOnly = false) => {
     if (observation.kind === 'accepted') finish(claim, readOnly && connector.publish ? 'reconciling' : 'accepted', { receipt: observation.receipt });
     else if (observation.kind === 'uncertain') finish(claim, 'uncertain', { issue: observation.issue });
@@ -53,6 +58,11 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
       try { await runtime.validateAssets(claim.spec, signal); }
       catch { throw new PublicationAssetError(); }
       signal.throwIfAborted();
+      if (connector.prepare) {
+        try { await connector.prepare(claim.spec, read, signal); }
+        catch (error) { if (error instanceof PublicationDeferred || error instanceof PublicationAssetError) throw error; throw new PublicationPrepareError(); }
+        signal.throwIfAborted();
+      }
       if (!store.begin(claim)) return store.get(claim.spec.projectId, claim.id);
       starting = true;
       const checkpoint = await connector.start(claim.spec, signal);
@@ -79,11 +89,6 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
     } else if (claim.checkpoint !== null && claim.state === 'reconciling') {
       transferred(await connector.reconcile(claim.spec, claim.checkpoint, signal), true);
     } else if (claim.checkpoint !== null && claim.state === 'uploading') {
-      const read = async (asset: number, offset: number, length: number) => {
-        signal.throwIfAborted();
-        try { return await runtime.read(claim.spec, asset, offset, length, signal); }
-        catch { throw new PublicationAssetError(); }
-      };
       transferred(await connector.transfer(claim.spec, claim.checkpoint, read, signal));
     } else finish(claim, 'uncertain', { issue: 'upload-unknown' });
   } catch (error) {
@@ -91,10 +96,13 @@ export async function runPublicationStep(store: PublicationStore, runtime: Publi
     else if (error instanceof PublicationInspectionPaused && !publishing && !starting) finish(claim, 'uncertain', { issue: 'processing-timeout', receipt: error.receipt });
     else if (publishing) {
       if (error instanceof PublicationPublishError) finish(claim, error.outcome === 'rejected' ? 'failed' : 'staged', {
-        issue: error.outcome === 'rejected' ? 'remote-rejected' : 'runtime-unavailable', delayMs: error.retryAfterMs,
+        // A deferral with an updated receipt is expected remote processing, not an outage.
+        issue: error.outcome === 'rejected' ? 'remote-rejected' : error.receipt !== undefined ? null : 'runtime-unavailable', delayMs: error.retryAfterMs,
+        ...(error.receipt !== undefined ? { receipt: error.receipt } : {}),
       });
       else finish(claim, 'uncertain', { issue: 'publish-unknown' });
-    } else if (error instanceof PublicationAssetError) finish(claim, claim.state === 'approved' && !starting ? 'approved' : 'uncertain', { issue: 'asset-unavailable', delayMs: 30000 });
+    } else if (error instanceof PublicationPrepareError) finish(claim, 'approved', { issue: 'hosting-unavailable', delayMs: 60000 });
+    else if (error instanceof PublicationAssetError) finish(claim, claim.state === 'approved' && !starting ? 'approved' : 'uncertain', { issue: 'asset-unavailable', delayMs: 30000 });
     else if (starting) {
       if (error instanceof PublicationStartError) finish(claim, error.outcome === 'rejected' ? 'failed' : 'approved', {
         issue: error.outcome === 'rejected' ? 'remote-rejected' : 'runtime-unavailable', delayMs: error.retryAfterMs,
