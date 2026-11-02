@@ -1,5 +1,7 @@
 import type { OverlaySource } from './overlay-schema';
 import type { OverlayMotion } from '@/core/editor/overlay-motion';
+import type { TimelineTransition } from '@/core/editor/transition-contract';
+import { setTimelineTransition, setTimelineTransitionsAtCuts } from '@/core/editor/transitions';
 import {
   applySrtToTimeline,
   setCaptionStyle,
@@ -32,6 +34,8 @@ import { ViralHitCommandError } from './contracts';
 
 export type EditorOperation =
   | { type: 'set_overlay_motion'; clipId: string; motion: OverlayMotion | null }
+  | { type: 'set_transition'; clipId: string; transition: TimelineTransition | null }
+  | { type: 'set_transitions_at_cuts'; transition: TimelineTransition | null }
   | {
       type: 'add_clip';
       assetId: string;
@@ -229,6 +233,14 @@ export function applyEditorOperations(
       next = updateTimelineAudioClip(document, operation.clipId, operation.patch);
     } else if (operation.type === 'set_overlay_motion') {
       next = setTimelineOverlayMotion(document, operation.clipId, operation.motion);
+    } else if (operation.type === 'set_transition') {
+      const clip = findTimelineClip(document, operation.clipId);
+      if (!clip || (clip.sourceType !== 'image' && clip.sourceType !== 'video')) {
+        throw new ViralHitCommandError('NOT_FOUND', `Visual clip ${operation.clipId} was not found.`);
+      }
+      next = setTimelineTransition(document, operation.clipId, operation.transition);
+    } else if (operation.type === 'set_transitions_at_cuts') {
+      next = setTimelineTransitionsAtCuts(document, operation.transition);
     } else if (operation.type === 'update_overlay') {
       const clip = findTimelineClip(document, operation.clipId);
       if (!clip?.overlay) {

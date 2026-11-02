@@ -4,6 +4,8 @@ import { m as uiMessages } from '@/paraglide/messages.js';
 import { useTimelineFrame } from './use-timeline-frame';
 import { EditorInspectorPanel, useInspectorPanel } from './editor-inspector-panel';
 import { OverlayInspector } from './overlay-inspector';
+import { TransitionInspector } from './transition-inspector';
+import { transitionPreview } from './transition-preview';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
@@ -293,6 +295,7 @@ export function VideoEditorWorkspace({
     timelineCurrentTime
   );
   const previewClip = activeVisualClip ?? primaryVisualClip;
+  const transition = transitionPreview(document, activeVisualClip?.id, timelineCurrentTime);
   const previewSource = previewClip ? getTimelineClipSource(previewClip) : null;
   const previewOffset = previewClip
     ? Math.max(
@@ -1779,11 +1782,13 @@ export function VideoEditorWorkspace({
                   width: `min(100cqw, calc(100cqh * ${previewDimensions.width / previewDimensions.height}))`,
                 }}
               >
+              {transition.outgoing}
               {previewClip.sourceType === 'image' ? (
                 <img
                   src={sourceUrl}
                   alt={previewClip.name}
                   className="size-full object-contain"
+                  style={transition.incomingStyle}
 
                 />
               ) : (
@@ -1792,6 +1797,7 @@ export function VideoEditorWorkspace({
                 src={sourceUrl}
                 playsInline
                 className="size-full object-contain"
+                style={transition.incomingStyle}
                 onLoadedMetadata={(event) => {
                   if (!previewClip || !previewSource) return;
 
@@ -1843,6 +1849,7 @@ export function VideoEditorWorkspace({
                 }}
               />
               )}
+              {transition.veil}
               {activeOverlays.map((overlay) => {
                 const pose = overlayTransformAt(overlay, timelineCurrentTime)!;
                 const position =
@@ -2617,6 +2624,8 @@ export function VideoEditorWorkspace({
                       {t('panel.exactHint')}
                     </p>
                   )}
+                  <TransitionInspector document={document} clip={selectedClip} locked={document.tracks.some(track => track.id === selectedClip.trackId && track.locked)}
+                    onEdit={operation => commitDocument(current => applyEditorOperations(current, [operation]).document)} />
                 </div>
 
                 <div className="border-t border-[var(--vh-border)] pt-4">

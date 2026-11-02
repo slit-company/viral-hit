@@ -105,6 +105,13 @@ export function TimelineClipBlock({
           </span>
         </span>
       </Action>
+      {clip.transition ? (
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 z-20 border-r border-dashed border-[var(--vh-graph)]/70 bg-[var(--vh-graph)]/18"
+          style={{ width: `${Math.min(100, (Math.min(clip.transition.duration, clip.duration) / clip.duration) * 100)}%` }}
+        />
+      ) : null}
       <Action
         type="button"
         aria-label={trimStartLabel}

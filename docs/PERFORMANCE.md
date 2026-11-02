@@ -212,3 +212,7 @@ Summed script gzip: **610,824 bytes**, **1,839 bytes** more than the results gri
 ## Creative performance readings — 2026-10-23
 
 Summed script gzip: **613,977 bytes**, **2,576 bytes** more than source roles. The script budget changed from 612,000 to **614,000** in this reviewed decision. The added code is the Performance section, its manual entry dialog and number formatting in the publishing route chunk; other routes' first load is unchanged and the dialog, input and action components were already shared. Readings run only when someone asks for one, through the existing publication runtime. There is no background poller, new dependency, worker or service; observations go to one append-only SQLite file beside publications.
+
+## Editor transitions — 2026-11-02
+
+Summed script gzip: **728,029 bytes**, **5,220 bytes** more than the Cinema/worker build; public files **9,203,088 bytes**. The script budget changed from 725,000 to **729,000** in this reviewed decision. The added code is the transition contract, canvas compositor, preview layers and inspector in the editor route chunk, plus 21 messages in four languages; kind labels use literal message keys so unused messages stay out. No dependency, worker or service was added; server export reuses FFmpeg `xfade`.

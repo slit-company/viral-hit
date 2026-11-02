@@ -1,5 +1,6 @@
 import { modelOptionsDraftSchema } from '@/core/generation-providers/model-controls';
 import { addOverlaySchema, setOverlayMotionSchema, updateOverlaySchema } from './overlay-schema';
+import { setTransitionSchema, setTransitionsAtCutsSchema } from './transition-schema';
 import { z } from 'zod';
 
 import type { CanvasCard } from '@/core/creative-canvas/canvas-types';
@@ -329,6 +330,8 @@ export const editorOperationSchema = z.discriminatedUnion('type', [
     .strict(),
   updateOverlaySchema,
   setOverlayMotionSchema,
+  setTransitionSchema,
+  setTransitionsAtCutsSchema,
   z
     .object({
       type: z.literal('replace_overlay_asset'),

@@ -8,10 +8,11 @@ import type { OverlaySource } from '../commands/overlay-schema';
  * Copyright (c) 2024-2026 Augustus Otu and Contributors
  */
 
-import { z } from 'zod';
-import { overlayMotionSchema, overlayTransformSchema, overlayTransformAt, patchOverlayClip, type OverlayMotion, type OverlayPatch } from './overlay-motion';
+import { TIMELINE_SCHEMA_VERSION, timelineDocumentSchema } from './timeline-schema';
+import type { TimelineTransition } from './transition-contract';
+import { overlayMotionSchema, overlayTransformAt, patchOverlayClip, type OverlayMotion, type OverlayPatch } from './overlay-motion';
 
-export const TIMELINE_SCHEMA_VERSION = 6 as const;
+export { TIMELINE_SCHEMA_VERSION };
 
 export type TimelineTrackKind = 'video' | 'overlay' | 'audio' | 'caption';
 export type TimelineAudioRole = 'music' | 'voice' | 'sfx' | 'source';
@@ -78,6 +79,8 @@ export type TimelineClip = {
   audioRole?: TimelineAudioRole;
   overlay: TimelineOverlayTransform | null;
   motion?: OverlayMotion;
+  /** How this base-track visual enters; see transition-contract.ts. */
+  transition?: TimelineTransition;
   caption: TimelineCaptionTransform | null;
   takes: TimelineTake[];
   activeTakeId: string | null;
@@ -116,79 +119,6 @@ export class TimelineDocumentValidationError extends Error {
   }
 }
 
-const timelineClipSchema = z.object({
-  id: z.string().min(1).max(160),
-  assetId: z.string().min(1).max(160),
-  sourceUrl: z.string().max(4096),
-  trackId: z.string().min(1).max(160),
-  name: z.string().min(1).max(240),
-  sourceType: z.enum(['image', 'video', 'audio', 'caption']),
-  startTime: z.number().finite().min(0).max(86_400),
-  duration: z.number().finite().positive().max(86_400),
-  inPoint: z.number().finite().min(0).max(86_400),
-  outPoint: z.number().finite().positive().max(86_400),
-  sourceDuration: z.number().finite().positive().max(86_400),
-  volume: z.number().finite().min(0).max(4),
-  muted: z.boolean(),
-  fadeIn: z.number().finite().min(0).max(86_400).default(0),
-  fadeOut: z.number().finite().min(0).max(86_400).default(0),
-  text: z.string().max(4_000).default(''),
-  audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(),
-  overlay: overlayTransformSchema.nullable().default(null),
-  motion: overlayMotionSchema.optional(),
-  caption: z
-    .object({
-      fontScale: z.number().finite().min(0.015).max(0.12),
-      maxWidth: z.number().finite().min(0.25).max(0.98),
-      bottomOffset: z.number().finite().min(0.02).max(0.9),
-    })
-    .strict()
-    .nullable()
-    .default(null),
-  takes: z
-    .array(
-      z.object({
-        id: z.string().min(1).max(160),
-        assetId: z.string().min(1).max(160),
-        sourceUrl: z.string().max(4096),
-        name: z.string().min(1).max(240),
-        sourceDuration: z.number().finite().positive().max(86_400),
-        sourceType: z.enum(['image', 'video', 'audio']).optional(),
-        sourceGenerationId: z.string().min(1).max(200).nullable(),
-        prompt: z.string().max(20_000),
-        createdAt: z.string().min(1).max(80),
-      })
-    )
-    .max(100)
-    .default([]),
-  activeTakeId: z.string().min(1).max(160).nullable().default(null),
-});
-
-const timelineTrackSchema = z.object({
-  id: z.string().min(1).max(160),
-  kind: z.enum(['video', 'overlay', 'audio', 'caption']),
-  name: z.string().min(1).max(120),
-  locked: z.boolean(),
-  hidden: z.boolean(),
-  muted: z.boolean(),
-  clips: z.array(timelineClipSchema).max(1_000),
-});
-
-const timelineDocumentSchema = z.object({
-  schemaVersion: z.literal(TIMELINE_SCHEMA_VERSION),
-  id: z.string().min(1).max(160),
-  projectId: z.string().min(1).max(160),
-  name: z.string().min(1).max(240),
-  createdAt: z.string().min(1).max(80),
-  updatedAt: z.string().min(1).max(80),
-  duration: z.number().finite().min(0).max(86_400),
-  lastRenderAssetId: z.string().min(1).max(160).nullable().default(null),
-  lastRenderUrl: z.string().min(1).max(4096).nullable().default(null),
-  captionStyle: z
-    .enum(['classic', 'bold', 'boxed', 'minimal'])
-    .default('classic'),
-  tracks: z.array(timelineTrackSchema).min(1).max(64),
-});
 
 const createId = (prefix: string) => `${prefix}-${crypto.randomUUID()}`;
 
@@ -483,6 +413,7 @@ export function normalizeTimelineDocument(
   }
   for (const track of parsed.tracks) {
     for (const clip of track.clips) {
+      if (clip.transition && (track.kind !== 'video' || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Transitions belong to visual clips on a base track.');
       if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Motion needs a visual overlay.');
       if (clip.trackId !== track.id) {
         throw new TimelineDocumentValidationError(
@@ -877,8 +808,9 @@ export function splitTimelineClip(
     outPoint: splitPoint,
     duration: roundTime(splitPoint - clip.inPoint),
   };
+  const { transition: _entry, ...rightSource } = clip;
   const right: TimelineClip = {
-    ...clip,
+    ...rightSource,
     id: rightClipId?.trim() || createId('clip'),
     startTime: roundTime(clip.startTime + left.duration),
     inPoint: splitPoint,

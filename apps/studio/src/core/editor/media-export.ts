@@ -9,6 +9,7 @@ import {
   type TimelineTrackKind,
 } from './timeline-document';
 import { diagnoseTimeline } from './timeline-diagnostics';
+import { createBaseVisualPainter } from './timeline-frame-export';
 
 export type LocalMediaMetadata = {
   duration: number;
@@ -192,26 +193,6 @@ function disposeTimelineMediaRecords(records: TimelineMediaRecord[]) {
     record.input?.dispose();
     record.imageBitmap?.close();
   }
-}
-
-function drawImageWithContain(
-  context: CanvasRenderingContext2D,
-  image: CanvasImageSource,
-  imageWidth: number,
-  imageHeight: number,
-  width: number,
-  height: number
-) {
-  const scale = Math.min(width / imageWidth, height / imageHeight);
-  const drawWidth = imageWidth * scale;
-  const drawHeight = imageHeight * scale;
-  context.drawImage(
-    image,
-    (width - drawWidth) / 2,
-    (height - drawHeight) / 2,
-    drawWidth,
-    drawHeight
-  );
 }
 
 export function wrapCaptionText(
@@ -460,6 +441,7 @@ export async function exportTimelineMp4({
         new VideoSampleSink(record.videoTrack!),
       ])
     );
+    const paintBaseVisual = createBaseVisualPainter({ records: baseVisualRecords, sinks, width, height });
     const frameCount = Math.max(1, Math.ceil(document.duration * frameRate));
     const audioPromise = audioSource?.add(mixedAudio!);
 
@@ -468,33 +450,7 @@ export async function exportTimelineMp4({
       const timelineTime = Math.min(document.duration, frame * frameDuration);
       context.fillStyle = '#000';
       context.fillRect(0, 0, width, height);
-      const active = [...baseVisualRecords]
-        .reverse()
-        .find(
-          (record) =>
-            timelineTime >= record.clip.startTime &&
-            timelineTime < record.clip.startTime + record.clip.duration
-        );
-      if (active?.imageBitmap) {
-        drawImageWithContain(
-          context,
-          active.imageBitmap,
-          active.imageBitmap.width,
-          active.imageBitmap.height,
-          width,
-          height
-        );
-      } else if (active?.videoTrack) {
-        const sourceTime = Math.min(
-          active.source.outPoint - 0.000_001,
-          active.source.inPoint + (timelineTime - active.clip.startTime)
-        );
-        const sample = await sinks.get(active.clip.id)!.getSample(sourceTime);
-        if (sample) {
-          sample.drawWithFit(context, { fit: 'contain' });
-          sample.close();
-        }
-      }
+      await paintBaseVisual(context, timelineTime);
       for (const overlay of overlayRecords) {
         if (
           timelineTime < overlay.clip.startTime ||

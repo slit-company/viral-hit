@@ -1,5 +1,6 @@
 import { timelineOutputFrame } from './output-frame';
 import { buildOverlayFilters } from './overlay-render.server';
+import { buildTransitionFilters } from './transition-render.server';
 import { spawn } from 'node:child_process';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -250,6 +251,15 @@ async function buildFfmpegArgs({
     );
     visualLabel = nextLabel;
   }
+
+  const transitions = buildTransitionFilters({
+    document, width, height, visualLabel, firstInputIndex: inputs.length + 1,
+    sources: new Map(inputs.filter((input) => input.trackKind === 'video' && input.clip.sourceType !== 'audio').map((input) => [input.clip.id,
+      { filePath: input.filePath, sourceType: input.clip.sourceType === 'image' ? 'image' as const : 'video' as const, inPoint: input.source.inPoint, outPoint: input.source.outPoint }])),
+  });
+  args.push(...transitions.inputArgs);
+  filters.push(...transitions.filters);
+  visualLabel = transitions.output;
 
   let overlayIndex = 0;
   for (const input of inputs.filter((item) => item.trackKind === 'overlay')) {

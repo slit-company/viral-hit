@@ -19,9 +19,9 @@
     "src/core/commands/schema.ts": 468,
     "src/core/creative-canvas/composer.ts": 424,
     "src/core/creative-canvas/generation-controller.ts": 749,
-    "src/core/editor/media-export.ts": 591,
+    "src/core/editor/media-export.ts": 515,
     "src/core/editor/render-project-timeline.ts": 491,
-    "src/core/editor/timeline-document.ts": 1009,
+    "src/core/editor/timeline-document.ts": 889,
     "src/core/effects/generation-upload-intent.ts": 524,
     "src/mcp/server.ts": 1353
   },
