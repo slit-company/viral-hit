@@ -6,6 +6,11 @@ import { readInstalledPacks, RecipeConflictError } from '@/core/harness/recipe-s
 import { validateTrustedWorkspaceJsonMutation } from '@/lib/trusted-local-request';
 import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/request-body-limit';
 
+const MAX_REQUEST_BYTES = 132_000;
+/** A saved ComfyUI canvas workflow is mostly layout, so workflow imports may be larger; the server drops the layout. */
+const MAX_WORKFLOW_IMPORT_BYTES = 2_100_000;
+const isWorkflowImport = (body: unknown) => ['inspect_graph', 'convert_graph'].includes(String((body as { action?: unknown } | null)?.action));
+
 export const Route = createFileRoute('/api/app/recipes')({ server: { handlers: {
   GET: async () => {
     try { return Response.json({ ...(await loadRecipeCatalog()), packs: readInstalledPacks(), capabilities: runtimeCapabilities() }, { headers: { 'Cache-Control': 'no-store' } }); }
@@ -15,7 +20,9 @@ export const Route = createFileRoute('/api/app/recipes')({ server: { handlers: {
     const trust = validateTrustedWorkspaceJsonMutation(request);
     if (!trust.ok) return Response.json({ error: trust.message }, { status: trust.status });
     try {
-      const body = recipeLibraryRequest.parse(await readRequestJsonWithLimit(request, 132_000));
+      const raw = await readRequestJsonWithLimit(request, MAX_WORKFLOW_IMPORT_BYTES);
+      if (!isWorkflowImport(raw) && Buffer.byteLength(JSON.stringify(raw)) > MAX_REQUEST_BYTES) throw new RequestBodyTooLargeError(MAX_REQUEST_BYTES);
+      const body = recipeLibraryRequest.parse(raw);
       return Response.json(await changeRecipeLibrary(body));
     } catch (error) {
       return Response.json({ error: error instanceof Error ? error.message.slice(0, 1500) : 'Invalid recipe manifest' }, { status: error instanceof RequestBodyTooLargeError ? 413 : error instanceof RecipeConflictError ? 409 : 400 });

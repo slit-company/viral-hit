@@ -541,11 +541,11 @@ test('ComfyUI graph builder exposes image and numeric controls while preserving 
   await page.getByRole('button', { name: 'Generation runs', exact: true }).click();
   await page.getByRole('button', { name: 'Recipe library', exact: true }).click();
   await page.getByRole('button', { name: /Import ComfyUI workflow/ }).click();
-  await page.getByLabel('ComfyUI API graph JSON', { exact: true }).fill('{"nodes":[],"links":[]}');
-  await page.getByRole('button', { name: 'Inspect API graph', exact: true }).click();
+  await page.getByLabel('ComfyUI workflow JSON', { exact: true }).fill('{"nodes":[],"links":[]}');
+  await page.getByRole('button', { name: 'Inspect workflow', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('API-format');
-  await page.getByLabel('Import ComfyUI graph file').setInputFiles({ name: 'resize-api.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(graph)) });
-  await page.getByRole('button', { name: 'Inspect API graph', exact: true }).click();
+  await page.getByLabel('Import ComfyUI workflow file').setInputFiles({ name: 'resize-api.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(graph)) });
+  await page.getByRole('button', { name: 'Inspect workflow', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Build recipe for review', exact: true })).toBeDisabled();
   await page.getByLabel('Recipe name', { exact: true }).fill('Portable image workshop');
   await page.getByLabel('Recipe ID', { exact: true }).fill('builder-image-workshop');

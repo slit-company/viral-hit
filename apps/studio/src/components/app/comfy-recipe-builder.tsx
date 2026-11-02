@@ -7,7 +7,7 @@ import type { Recipe } from '@/core/harness/recipes';
 import type { inspectComfyGraph } from '@/core/harness/import-comfy-recipe';
 import type { RecipeInspection } from './recipe-library';
 
-type GraphSnapshot = { graph: unknown; graphDigest: string; nodes: ReturnType<typeof inspectComfyGraph> };
+type GraphSnapshot = { graph: unknown; graphDigest: string; nodes: ReturnType<typeof inspectComfyGraph>; conversion?: { target: 'server' | 'cloud'; warnings: string[] } };
 type Exposure = { nodeId: string; input: string; value: string | number | boolean; id: string; label: string; mode: 'string' | 'number' | 'boolean' | 'enum' | 'asset'; min: string; max: string; integer: boolean; multiline: boolean; options: string };
 const keyOf = (nodeId: string, input: string) => JSON.stringify([nodeId, input]);
 const controlClass = 'h-10 w-full min-w-0 rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] px-3 text-xs text-[var(--vh-text-1)]';
@@ -44,18 +44,19 @@ export function ComfyRecipeBuilder({ onBack, onBuilt }: { onBack: () => void; on
     if (!file) return;
     const current = ++epoch.current; setError('');
     try {
-      if (file.size > 128_000) throw new Error(uiMessages["ui.app.api_graph_files_must_be_128_kb_or_smaller"]());
+      if (file.size > 2_000_000) throw new Error(uiMessages["ui.app.api_graph_files_must_be_128_kb_or_smaller"]());
       const value = await file.text(); if (current === epoch.current) editGraph(value);
     } catch (error) { if (current === epoch.current) setError(error instanceof Error ? error.message : uiMessages["ui.app.could_not_read_graph"]()); }
   }
   async function inspect() {
     const current = ++epoch.current; setBusy(true); setError('');
     try {
-      if (new TextEncoder().encode(text).byteLength > 128_000) throw new Error(uiMessages["ui.app.api_graph_json_must_be_128_kb_or_smaller"]());
-      const graph = JSON.parse(text);
-      const result = await apiJsonPost<Omit<GraphSnapshot, 'graph'>>('/api/app/recipes', { action: 'inspect_graph', graph });
+      if (new TextEncoder().encode(text).byteLength > 2_000_000) throw new Error(uiMessages["ui.app.api_graph_files_must_be_128_kb_or_smaller"]());
+      // The server converts canvas workflows and drops their layout data.
+      const graph = JSON.parse(text) as unknown;
+      const result = await apiJsonPost<GraphSnapshot>('/api/app/recipes', { action: 'inspect_graph', graph });
       if (current !== epoch.current) return;
-      setSnapshot({ ...result, graph }); setActiveNode(result.nodes[0].nodeId); setSearch(''); setVisibleInputs(40); setExposures({});
+      setSnapshot(result); setActiveNode(result.nodes[0].nodeId); setSearch(''); setVisibleInputs(40); setExposures({});
     } catch (error) { if (current === epoch.current) setError(error instanceof Error ? error.message : uiMessages["ui.app.could_not_inspect_graph"]()); }
     finally { setBusy(false); }
   }
@@ -96,6 +97,10 @@ export function ComfyRecipeBuilder({ onBack, onBuilt }: { onBack: () => void; on
         <textarea aria-label={uiMessages["ui.app.comfyui_api_graph_json"]()} value={text} disabled={busy} onChange={event => editGraph(event.target.value)} spellCheck={false} className="h-44 w-full rounded-lg border border-[var(--vh-border)] bg-[var(--vh-control)] p-3 font-mono text-xs leading-5" />
       </div>
     </details>
+    {snapshot?.conversion && <div role="status" className="rounded-xl bg-[var(--vh-control)] p-3 text-xs leading-relaxed">
+      {snapshot.conversion.target === 'cloud' ? uiMessages['ui.app.canvas_converted_cloud']() : uiMessages['ui.app.canvas_converted_server']()}
+      {snapshot.conversion.warnings.length > 0 && <><b className="mt-1 block">{uiMessages['ui.app.canvas_check']()}</b><ul className="list-disc pl-4 break-words">{snapshot.conversion.warnings.slice(0, 12).map((warning) => <li key={warning}>{warning}</li>)}</ul></>}
+    </div>}
     {snapshot && <div ref={definitionPanel} className="space-y-5">
       <section className="space-y-3">
         <h4 className="text-sm font-semibold">{uiMessages["ui.app.1_name_and_attribution"]()}</h4>

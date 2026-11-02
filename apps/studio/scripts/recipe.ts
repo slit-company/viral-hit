@@ -4,7 +4,8 @@ import { sequenceSchema } from '../src/core/editor/sequence';
 import { closeSync, fstatSync, openSync, readFileSync, writeFileSync } from 'node:fs';
 import { z } from 'zod';
 import { compileRecipe, compileRecipeForCheck, recipeSchema } from '../src/core/harness/recipes';
-import { comfyRecipeDefinitionSchema, importComfyRecipe, inspectComfyGraph } from '../src/core/harness/import-comfy-recipe';
+import { comfyRecipeDefinitionSchema, importComfyRecipe } from '../src/core/harness/import-comfy-recipe';
+import { inspectRecipeGraph } from '../src/core/harness/recipe-library';
 import { preflightRecipePlan } from '../src/core/harness/recipe-preflight.server';
 import { changeRecipePacks } from '../src/core/harness/recipe-pack-library';
 import { MAX_PACK_BYTES, MAX_PACK_RECIPES, packManifestSchema } from '../src/core/harness/recipe-packs';
@@ -55,9 +56,10 @@ try {
     writeFileSync(values, JSON.stringify(result.manifest, null, 2) + '\n', { flag: 'wx' });
     console.log(JSON.stringify({ id: result.manifest.id, file: values }));
   }
-  else if (command === 'inspect-comfy' && file) console.log(JSON.stringify(inspectComfyGraph(readJson(file)), null, 2));
+  // Canvas workflows (the layout ComfyUI saves) convert with the connected server's or Comfy Cloud's node definitions.
+  else if (command === 'inspect-comfy' && file) { const { graph: _graph, ...inspected } = await inspectRecipeGraph(readJson(file, 4_000_000)); console.log(JSON.stringify(inspected, null, 2)); }
   else if (command === 'import-comfy' && file && values && projectId) {
-    const recipe = importComfyRecipe(readJson(file), readJson(values));
+    const recipe = importComfyRecipe((await inspectRecipeGraph(readJson(file, 4_000_000))).graph, readJson(values));
     // Never overwrite the source graph, definition, or an existing installed recipe.
     writeFileSync(projectId, JSON.stringify(recipe, null, 2) + '\n', { flag: 'wx' });
     console.log(JSON.stringify({ id: recipe.id, version: recipe.version, file: projectId }));

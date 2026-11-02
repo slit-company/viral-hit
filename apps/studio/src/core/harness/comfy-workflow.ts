@@ -5,7 +5,8 @@ import { binaryReceiptOutput, readBinaryReceipt, saveBinaryReceipt, ReceiptInteg
 import { MAX_REMOTE_MEDIA_BYTES } from './download-media';
 import { fingerprint, RejectedSubmission, type Adapter, type Json } from './durable';
 
-const nodeId = z.string().regex(/^[a-zA-Z0-9_-]{1,100}$/);
+// Colons separate subgraph levels in the execution IDs ComfyUI gives nested nodes (for example 141:136).
+const nodeId = z.string().regex(/^[a-zA-Z0-9_:-]{1,100}$/);
 export const workflowInput = z.object({
   connection: z.string().regex(/^[a-f0-9]{64}$/).nullable().optional(),
   workflow: z.record(nodeId, z.object({ class_type: z.string().min(1).max(200), inputs: z.record(z.string(), z.json()), _meta: z.object({ title: z.string().max(500) }).optional() }).strict()).refine(graph => Object.keys(graph).length > 0 && Object.keys(graph).length <= 256, 'A workflow requires 1–256 nodes'),

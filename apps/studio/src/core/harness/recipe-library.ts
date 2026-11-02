@@ -9,13 +9,16 @@ import { loadRecipeDirectory, loadRecipes } from './recipe-registry';
 import { recipeDigest, storeInstalledRecipe, readInstalledPacks, readInstalledRecipes, RecipeConflictError } from './recipe-storage';
 import { fingerprint, type Json } from './durable';
 import { inspectComfyGraph, importComfyRecipe, comfyRecipeDefinitionSchema } from './import-comfy-recipe';
+import { canvasToApi, isCanvasWorkflow } from './comfy-canvas';
+import { slimCanvasWorkflow } from './comfy-canvas-slim';
+import { loadComfyDefinitions } from './comfy-definitions.server';
 import { supportedOperations } from './capabilities';
 
 export const recipeLibraryRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('model_catalog') }).strict(),
   z.object({ action: z.literal('build_model'), definition: modelRecipeDefinition, expectedModelDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
-  z.object({ action: z.literal('inspect_graph'), graph: z.unknown() }).strict(),
-  z.object({ action: z.literal('convert_graph'), graph: z.unknown(), definition: comfyRecipeDefinitionSchema, expectedGraphDigest: z.string().regex(/^[a-f0-9]{64}$/) }).strict(),
+  z.object({ action: z.literal('inspect_graph'), graph: z.unknown(), target: z.enum(['server', 'cloud']).optional() }).strict(),
+  z.object({ action: z.literal('convert_graph'), graph: z.unknown(), definition: comfyRecipeDefinitionSchema, expectedGraphDigest: z.string().regex(/^[a-f0-9]{64}$/), target: z.enum(['server', 'cloud']).optional() }).strict(),
   z.object({ action: z.literal('inspect'), manifest: z.unknown() }).strict(),
   z.object({ action: z.literal('get'), recipeId: recipeSchema.shape.id }).strict(),
   z.object({ action: z.literal('review-remove'), recipeId: recipeSchema.shape.id }).strict(),
@@ -56,11 +59,26 @@ export async function installRecipe(raw: unknown, expectedDigest: string) {
   return storeInstalledRecipe(recipe);
 }
 
-export function inspectRecipeGraph(graph: unknown) {
+/**
+ * Inspects an API graph, or first converts a canvas workflow (the layout ComfyUI saves by default) with the
+ * node definitions of the server that will run it. The returned graph is what later steps must use.
+ */
+export async function inspectRecipeGraph(raw: unknown, target?: 'server' | 'cloud') {
+  let graph = raw, conversion: { target: 'server' | 'cloud'; warnings: string[] } | undefined;
+  if (isCanvasWorkflow(raw)) {
+    const canvas = slimCanvasWorkflow(raw as unknown as Record<string, unknown>) as unknown as Parameters<typeof canvasToApi>[0];
+    if (Buffer.byteLength(JSON.stringify(canvas)) > 512_000) throw new Error('Canvas workflows must be 512 KB or smaller after layout data is removed.');
+    let loaded: Awaited<ReturnType<typeof loadComfyDefinitions>>;
+    try { loaded = await loadComfyDefinitions(target); }
+    catch (error) { throw new Error(`This is a ComfyUI canvas workflow, which needs node definitions to convert. ${error instanceof Error ? error.message : ''} You can also export the API-format graph from ComfyUI.`.replace(/\s+/g, ' ')); }
+    const converted = canvasToApi(canvas, loaded.definitions);
+    graph = converted.graph;
+    conversion = { target: loaded.target, warnings: converted.warnings };
+  }
   const bytes = JSON.stringify(graph);
   if (!bytes || Buffer.byteLength(bytes) > 128_000) throw new Error('API graph exceeds 128 KB');
   const nodes = inspectComfyGraph(graph);
-  return { nodes, graphDigest: fingerprint(graph as Json) };
+  return { nodes, graphDigest: fingerprint(graph as Json), graph, ...(conversion ? { conversion } : {}) };
 }
 
 /** Shared offline authoring boundary for HTTP and MCP; conversion never installs or executes. */
@@ -83,11 +101,11 @@ export async function changeRecipeLibrary(raw: z.infer<typeof recipeLibraryReque
       return { updated: changeInstalledRecipe(recipe.id, request.expectedInstalledDigest, recipe).changed, recipe, digest: request.expectedDigest };
     }
     case 'install': return installRecipe(request.manifest, request.expectedDigest);
-    case 'inspect_graph': return inspectRecipeGraph(request.graph);
+    case 'inspect_graph': return inspectRecipeGraph(request.graph, request.target);
     case 'convert_graph': {
-      const inspected = inspectRecipeGraph(request.graph);
+      const inspected = await inspectRecipeGraph(request.graph, request.target);
       if (inspected.graphDigest !== request.expectedGraphDigest) throw new RecipeConflictError('API graph changed after inspection. Inspect it again.');
-      return inspectRecipe(importComfyRecipe(request.graph, request.definition));
+      return inspectRecipe(importComfyRecipe(inspected.graph, request.definition));
     }
   }
 }
