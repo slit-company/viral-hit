@@ -46,4 +46,6 @@ export type ShotModel = {
   supportedAspectRatios?: string[];
   controls?: Array<{ key: string; type: string; default?: unknown; choices?: Array<{ value: string | number | boolean }> }>;
   available?: boolean;
+  /** Recent outcomes on this workspace's account; see health.ts. */
+  health?: { score: number; reason: string };
 };

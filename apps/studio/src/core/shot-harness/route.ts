@@ -29,6 +29,7 @@ export function rankModels(models: readonly ShotModel[], need: RouteNeed): Ranke
     if (image.min > need.images || image.max < need.images) continue;
     const family = familyFor(model), id = model.id.toLowerCase(), reasons = [family.id];
     let score = family.rank + version(id);
+    if (model.health) { score += model.health.score; reasons.push(model.health.reason); }
     if (need.kind === 'video' && need.images > 0) {
       if (/image-to-video|first-last|i2v/.test(id)) { score += 3; reasons.push('made for animating a frame'); }
       if (need.firstLast && /first-last/.test(id)) { score += 4; reasons.push('first and last frame'); }

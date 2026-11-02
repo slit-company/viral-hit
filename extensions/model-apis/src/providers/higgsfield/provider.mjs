@@ -35,7 +35,9 @@ async function poll(api, id) {
   const data = await api.call('/requests/' + encodeURIComponent(id) + '/status');
   if (['queued', 'in_progress'].includes(data.status)) return { state: 'processing' };
   if (data.status === 'completed') return { state: 'succeeded', output: { images: data.images, video: data.video, audio: data.audio } };
-  return { state: 'failed', error: 'request ' + data.status };
+  // Higgsfield explains failures (for example a low credit balance) in `error`; pass it on so people can act on it.
+  const reason = typeof data.error === 'string' && data.error.trim() ? data.error.trim().slice(0, 300).replace(/\.$/, '') : 'request ' + data.status;
+  return { state: 'failed', error: reason };
 }
 
 export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'hf', label: 'Higgsfield', catalog, client, upload, submit, poll, test: api => api.call('/v1/custom-references/list?page=1&page_size=1') });

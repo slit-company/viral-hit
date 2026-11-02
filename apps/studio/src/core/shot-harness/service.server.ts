@@ -58,7 +58,7 @@ export async function changeShots(projectId: string, raw: unknown) {
   if (!await getActiveProject({ projectId })) throw Error('Project not found');
   if (request.action === 'list') return { shots: await listShots(projectId) };
   if (request.action === 'quality') return { quality: await inspectTake(projectId, request.assetId, { durationSec: request.durationSec, audio: request.audio }) };
-  const production = prepareShot(request.spec, listShotModels());
+  const production = prepareShot(request.spec, await listShotModels());
   if (request.action === 'preview') return { production: publicProduction(production) };
   const plan = shotPlan(projectId, production);
   assertRuntimeConfigured(plan.nodes);
