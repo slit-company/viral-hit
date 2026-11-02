@@ -135,6 +135,8 @@ Open http://127.0.0.1:3808, go to **Connections**, paste the keys you have and p
 
 ## How it fits together
 
+For the code map, agent instructions and development checks, see the [agent guide](docs/AGENT-GUIDE.md) and [contributing guide](CONTRIBUTING.md).
+
 ```mermaid
 flowchart LR
   UI["Studio · Canvas · Edit<br/>EN / KR / ZH / JA"] --> CMD["Project commands<br/>revision-checked"]

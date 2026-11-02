@@ -2,6 +2,8 @@
 
 These rules govern new work and changes to existing code. Read them before implementing a feature. The product remains a general creative workspace; brand-specific marketing workflows are optional extensions. `docs/PARITY.md` records acceptance scope, not a claim of completion.
 
+In the ownership table, `src/` paths are relative to `apps/studio/`; other paths are relative to the repository root.
+
 ## Ownership and dependency direction
 
 | Area | Owns | Must not own |
