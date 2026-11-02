@@ -86,6 +86,8 @@ export type CanvasGenerationSnapshot = Pick<
 > & {
   type: CanvasCardMediaType;
   capturedAt: string;
+  /** Asset IDs the generation used as inputs, in reference order; absent on results made before this was recorded. */
+  referenceAssetIds?: string[];
 };
 
 export type CanvasAssetCard = CanvasCardBase & {

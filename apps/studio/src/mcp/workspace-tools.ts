@@ -14,6 +14,7 @@ import { registerCreditTools } from './credit-tools';
 import { registerRemixTools } from './remix-tools';
 import { registerLayerTools } from './layer-tools';
 import { registerAgentTools } from './agent-tools';
+import { registerCanvasRunTools } from './canvas-run-tools';
 /** Registration seam for project transfer, recipe pack, character and delivery tools. */
 export function registerWorkspaceTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   registerAssetGenerationTools(server);
@@ -31,4 +32,5 @@ export function registerWorkspaceTools(server: McpServer, project: (projectId?: 
   registerRemixTools(server, project);
   registerLayerTools(server, project);
   registerAgentTools(server, project);
+  registerCanvasRunTools(server, project);
 }

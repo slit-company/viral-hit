@@ -2567,5 +2567,22 @@
   "ui.agent.kind_image": "Image",
   "ui.agent.kind_video": "Video",
   "ui.agent.kind_audio": "Audio",
-  "ui.agent.kind_analysis": "Analysis"
+  "ui.agent.kind_analysis": "Analysis",
+  "ui.canvas_run.label": "Branch and run",
+  "ui.canvas_run.branch": "Branch",
+  "ui.canvas_run.branch_hint": "Copy this card and the cards after it.",
+  "ui.canvas_run.branched": "Branch added below.",
+  "ui.canvas_run.run_changed": "Run changed",
+  "ui.canvas_run.run_hint": "Reuse current results; run only what changed.",
+  "ui.canvas_run.running": "Running…",
+  "ui.canvas_run.plan_title": "What will run",
+  "ui.canvas_run.reuses": "Reuses result",
+  "ui.canvas_run.reason_no_result": "No result yet",
+  "ui.canvas_run.reason_settings": "Settings changed",
+  "ui.canvas_run.reason_inputs": "Inputs changed",
+  "ui.canvas_run.reason_upstream": "Input runs first",
+  "ui.canvas_run.up_to_date": "Everything is up to date.",
+  "ui.canvas_run.confirm": "Run changed steps ({count})",
+  "ui.canvas_run.cancel": "Cancel",
+  "ui.canvas_run.failed": "Canvas run failed."
 }

@@ -2567,5 +2567,22 @@
   "ui.agent.kind_image": "이미지",
   "ui.agent.kind_video": "영상",
   "ui.agent.kind_audio": "오디오",
-  "ui.agent.kind_analysis": "분석"
+  "ui.agent.kind_analysis": "분석",
+  "ui.canvas_run.label": "분기와 실행",
+  "ui.canvas_run.branch": "분기",
+  "ui.canvas_run.branch_hint": "이 카드와 뒤 카드를 복사해요.",
+  "ui.canvas_run.branched": "아래에 분기를 만들었어요.",
+  "ui.canvas_run.run_changed": "바뀐 것만 실행",
+  "ui.canvas_run.run_hint": "그대로인 결과는 쓰고 바뀐 것만 실행해요.",
+  "ui.canvas_run.running": "실행 중…",
+  "ui.canvas_run.plan_title": "실행할 단계",
+  "ui.canvas_run.reuses": "결과 재사용",
+  "ui.canvas_run.reason_no_result": "결과 없음",
+  "ui.canvas_run.reason_settings": "설정 변경",
+  "ui.canvas_run.reason_inputs": "입력 변경",
+  "ui.canvas_run.reason_upstream": "앞 단계부터 실행",
+  "ui.canvas_run.up_to_date": "모두 최신이에요.",
+  "ui.canvas_run.confirm": "{count}단계 실행",
+  "ui.canvas_run.cancel": "취소",
+  "ui.canvas_run.failed": "캔버스 실행에 실패했어요."
 }

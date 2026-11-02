@@ -2567,5 +2567,22 @@
   "ui.agent.kind_image": "图像",
   "ui.agent.kind_video": "视频",
   "ui.agent.kind_audio": "音频",
-  "ui.agent.kind_analysis": "分析"
+  "ui.agent.kind_analysis": "分析",
+  "ui.canvas_run.label": "分支与运行",
+  "ui.canvas_run.branch": "分支",
+  "ui.canvas_run.branch_hint": "复制此卡片及后续卡片。",
+  "ui.canvas_run.branched": "已在下方添加分支。",
+  "ui.canvas_run.run_changed": "运行变更",
+  "ui.canvas_run.run_hint": "只运行变更的部分。",
+  "ui.canvas_run.running": "运行中…",
+  "ui.canvas_run.plan_title": "将运行的步骤",
+  "ui.canvas_run.reuses": "复用结果",
+  "ui.canvas_run.reason_no_result": "尚无结果",
+  "ui.canvas_run.reason_settings": "设置已更改",
+  "ui.canvas_run.reason_inputs": "输入已更改",
+  "ui.canvas_run.reason_upstream": "先运行上游",
+  "ui.canvas_run.up_to_date": "全部是最新的。",
+  "ui.canvas_run.confirm": "运行 {count} 个步骤",
+  "ui.canvas_run.cancel": "取消",
+  "ui.canvas_run.failed": "画布运行失败。"
 }

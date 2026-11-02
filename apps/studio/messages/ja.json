@@ -2567,5 +2567,22 @@
   "ui.agent.kind_image": "画像",
   "ui.agent.kind_video": "動画",
   "ui.agent.kind_audio": "音声",
-  "ui.agent.kind_analysis": "分析"
+  "ui.agent.kind_analysis": "分析",
+  "ui.canvas_run.label": "分岐と実行",
+  "ui.canvas_run.branch": "分岐",
+  "ui.canvas_run.branch_hint": "このカードと後続カードをコピーします。",
+  "ui.canvas_run.branched": "下に分岐を追加しました。",
+  "ui.canvas_run.run_changed": "変更分を実行",
+  "ui.canvas_run.run_hint": "変わった部分だけを実行します。",
+  "ui.canvas_run.running": "実行中…",
+  "ui.canvas_run.plan_title": "実行するステップ",
+  "ui.canvas_run.reuses": "結果を再利用",
+  "ui.canvas_run.reason_no_result": "結果なし",
+  "ui.canvas_run.reason_settings": "設定を変更",
+  "ui.canvas_run.reason_inputs": "入力を変更",
+  "ui.canvas_run.reason_upstream": "前の段階から実行",
+  "ui.canvas_run.up_to_date": "すべて最新です。",
+  "ui.canvas_run.confirm": "{count} ステップを実行",
+  "ui.canvas_run.cancel": "キャンセル",
+  "ui.canvas_run.failed": "キャンバスの実行に失敗しました。"
 }

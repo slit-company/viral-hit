@@ -14,12 +14,12 @@ import { listGenerationModelDescriptors } from '@/core/generation-providers';
 
 import { VIRAL_HIT_MCP_TOOL_NAMES } from './tools';
 
-test('MCP tool catalog is exactly 58 named tools', () => {
-  const source = ['./server.ts', './asset-generation-tools.ts', './publishing-tools.ts', './performance-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts', './character-tools.ts', './creative-pack-tools.ts', './extension-tools.ts', './community-tools.ts', './storyboard-tools.ts', './shot-tools.ts', './credit-tools.ts', './remix-tools.ts', './layer-tools.ts', './agent-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
+test('MCP tool catalog is exactly 59 named tools', () => {
+  const source = ['./server.ts', './asset-generation-tools.ts', './publishing-tools.ts', './performance-tools.ts', './project-bundle-tools.ts', './recipe-pack-tools.ts', './character-tools.ts', './creative-pack-tools.ts', './extension-tools.ts', './community-tools.ts', './storyboard-tools.ts', './shot-tools.ts', './credit-tools.ts', './remix-tools.ts', './layer-tools.ts', './agent-tools.ts', './canvas-run-tools.ts'].map(file => readFileSync(new URL(file, import.meta.url), 'utf8')).join('\n');
   const registered = [...source.matchAll(/server\.registerTool\(\s*'([^']+)'/g)].map(
     (match) => match[1]
   );
-  assert.equal(VIRAL_HIT_MCP_TOOL_NAMES.length, 58);
+  assert.equal(VIRAL_HIT_MCP_TOOL_NAMES.length, 59);
   assert.deepEqual(registered, [...VIRAL_HIT_MCP_TOOL_NAMES]);
 });
 

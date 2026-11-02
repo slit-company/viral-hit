@@ -248,3 +248,7 @@ Summed script gzip: **743,969 bytes**, **854 bytes** more than Remix; public fil
 ## Agent memory and approvals — 2026-11-02
 
 Summed script gzip: **751,599 bytes**, **7,630 bytes** more than layer export; public files **9,277,200 bytes**. The script budget changed from 744,000 to **752,000** in this reviewed decision: the new Agent route (3.15 KB gzip for the mode switch, approval cards and memory list), 41 messages in four languages in the shared message chunk, and the header badge that polls the waiting count every 15 seconds. Approvals and memory are stored in the existing harness database. No dependency or service was added.
+
+## Canvas branches and runs — 2026-11-03
+
+Summed script gzip: **755,964 bytes**, **3,966 bytes** more than the ComfyUI canvas import (751,998); public files **9,288,464 bytes**. The script budget changed from 752,000 to **756,000** in this reviewed decision: Branch and Run changed with the plan list load as their own 2.09 KB chunk only when a generation card is selected, 17 short messages in four languages add about 1.3 KB to the shared message chunk, and the canvas shell gains a small poller that refreshes takes while a canvas run is active. Planning and caching run on the server and in the existing worker. No dependency or service was added.

@@ -10,6 +10,7 @@ import {
   type AssetFirstGenerationRequest,
 } from '@/core/commands/generation-contract';
 import type { CanvasOperation } from '@/core/commands/canvas-commands';
+import { resolveCanvasReferenceAssetIds } from '@/core/creative-canvas/canvas-run-plan';
 import { resolveWorkspaceEffectProviderModelVariant } from '@/core/effects/effect-registry';
 import type { GenerationModelDescriptor } from '@/core/generation-providers';
 
@@ -240,6 +241,7 @@ export function prepareCanvasGenerationSubmission({
       backgroundSource: sourceCard.backgroundSource,
       resultText: sourceCard.resultText ?? null,
       capturedAt,
+      ...(() => { const ids = resolveCanvasReferenceAssetIds(cardsById, sourceCard); return ids ? { referenceAssetIds: ids } : {}; })(),
     },
   };
 

@@ -1,7 +1,7 @@
 import type { CanvasGenerationCard, CanvasGenerationSnapshot } from './canvas-types';
 
 /** Capture the settings used by an output independently of future draft edits. */
-export function captureGenerationSnapshot(draft: CanvasGenerationCard, resolvedAspectRatio: CanvasGenerationCard['aspectRatio']): CanvasGenerationSnapshot {
+export function captureGenerationSnapshot(draft: CanvasGenerationCard, resolvedAspectRatio: CanvasGenerationCard['aspectRatio'], referenceAssetIds?: string[] | null): CanvasGenerationSnapshot {
   return {
     type: draft.type,
     generationMode: draft.generationMode,
@@ -26,5 +26,6 @@ export function captureGenerationSnapshot(draft: CanvasGenerationCard, resolvedA
       : {}),
     resultText: draft.resultText ?? null,
     capturedAt: new Date().toISOString(),
+    ...(referenceAssetIds ? { referenceAssetIds: [...referenceAssetIds] } : {}),
   };
 }

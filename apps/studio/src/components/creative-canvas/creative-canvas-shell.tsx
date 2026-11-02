@@ -82,6 +82,8 @@ const CreativeCanvasContextToolbar = lazy(() =>
     default: mod.CreativeCanvasContextToolbar,
   }))
 );
+const CanvasRunActions = lazy(() => import('./canvas-run-actions').then((mod) => ({ default: mod.CanvasRunActions })));
+const CanvasRunSync = lazy(() => import('./canvas-run-actions').then((mod) => ({ default: mod.CanvasRunSync })));
 const CreativeCanvasMediaPreviewOverlay = lazy(() =>
   import('./creative-canvas-media-preview-overlay').then((mod) => ({
     default: mod.CreativeCanvasMediaPreviewOverlay,
@@ -1527,6 +1529,10 @@ export function CreativeCanvasShell({
             uploadIntent={uploadIntent as UploadIntent | null}
           />
 
+          <Suspense fallback={null}>
+            <CanvasRunSync projectId={projectId} />
+            {selectedSingleCard?.kind === 'generation' && !isGroupSelected ? <CanvasRunActions projectId={projectId} cardId={selectedSingleCard.id} lowered={showContextToolbar} /> : null}
+          </Suspense>
           {showContextToolbar ? (
             <Suspense fallback={null}>
               <CreativeCanvasContextToolbar

@@ -1,4 +1,5 @@
 import { captureGenerationSnapshot } from '@/core/creative-canvas/generation-snapshot';
+import { resolveCanvasReferenceAssetIds } from '@/core/creative-canvas/canvas-run-plan';
 import type {
   WorkspaceAspectRatio,
   WorkspaceModelOption,
@@ -1126,7 +1127,7 @@ export function useCreativeCanvasReactFlowAdapter({
         sourceGenerationId: null,
         sourceConfigCardId: draftCard.id,
         generationRunId: `run:${makeId()}`,
-        generationSnapshot: captureGenerationSnapshot(draftCard, resolvedAspectRatio),
+        generationSnapshot: captureGenerationSnapshot(draftCard, resolvedAspectRatio, resolveCanvasReferenceAssetIds(canvasCardsRef.current, draftCard)),
       };
       setCanvasCard(nextCard);
 
