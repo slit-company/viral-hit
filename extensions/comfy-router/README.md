@@ -1,16 +1,25 @@
 # Comfy Router provider
 
-Adds [Comfy Router](https://docs.comfy.org) models to Studio, Canvas and MCP with one Comfy API key. It is an installed provider: no studio code changes, no runtime dependencies and no model downloads.
+28 models (18 video, 10 image) through one [Comfy API key](https://platform.comfy.org/profile/api-keys). Uses the shared generation ledger, project assets and timeline in Studio, Cinema, Canvas and MCP. No runtime dependencies or model downloads.
 
-| Studio model | Router ID | Studio task |
+| Family | Models | Inputs |
 | --- | --- | --- |
-| FLUX 3 Image | `bfl/flux-3-image` | Create image, Edit image (up to 10 references) |
-| FLUX 3 Video | `bfl/flux-3-video` | Create video (text, or 1–10 keyframes) |
-| LTX 2.5 Pro | `ltx/ltx-2-5-pro` | Create video (720p or 1080p) |
-| LTX 2.5 Fast | `ltx/ltx-2-5-fast` | Create video (720p to 2160p) |
-| MiniMax H3 | `minimax/minimax-h3` | Create video (text, first and last frame) |
+| Seedance | 2.5, 2.0, 2.0 Fast, 2.0 Mini | Text, first/last frame or image references; WAV/MP3 reference |
+| Veo | 3.1, 3.1 Fast, 3.1 Lite | Text or first/last frame |
+| Kling | V3 Omni, O1, V3 | Omni/O1: text, frames or references; V3: text |
+| Wan | 3.0, 3.0 Prime | Text, first/last frame or image references |
+| Grok Video | Imagine Video 1.5, 1.5 Lite | Text, one start frame or image references |
+| FLUX | 3 Image, 3 Video | Text and project images |
+| LTX | 2.5 Pro, 2.5 Fast | Text |
+| MiniMax | H3 | Text or first/last frame |
+| Nano Banana | Pro, 2.1 | Text or image edit |
+| GPT Image | 2.5 Sunburst, 2.5 Flare | Text or image edit |
+| Seedream | 5.0 Pro | Text or image edit |
+| Grok Image | Imagine Image 2.0 | Text |
+| Ideogram | V4 | Text |
+| Bria | Relight, Remove Background | One project image |
 
-Request fields follow the per-model schemas published at `docs.comfy.org/router-schemas`, checked on 2026-10-30.
+Native fields follow the [official per-model schemas](https://docs.comfy.org/router-schemas/veo/veo-3.1-generate-001.json), checked 2026-11-02. Unsupported video references, masks and combinations are rejected before submission. **Use images as** selects ordered frames or reference images. Seedance 2.5 frames use adaptive aspect; Seedance 2.0 excludes 1080p; Veo 1080p/4k needs 8 seconds.
 
 ## Install
 
@@ -21,18 +30,13 @@ pnpm --dir extensions/comfy-router test
 pnpm --dir apps/studio provider check ../../extensions/comfy-router/dist/providers/comfy
 ```
 
-Copy `dist/providers/comfy` into the server's `VIRAL_HIT_PROVIDERS_DIR`, or import `dist/comfy.runtime.json` in **Extensions → Manage runtime packages**, then restart the studio and worker. Save `COMFY_API_KEY` in **Connections → Model APIs → Comfy** and press **Check**, which reads one page of the model catalog and starts nothing. A server environment variable with the same name takes precedence over the saved key.
+Run `pnpm providers` at the repository root to build bundled providers, then restart Studio and its worker. Or import `dist/comfy.runtime.json` through **Extensions → Manage runtime packages**. Save `COMFY_API_KEY` in **Connections → Model APIs → Comfy**. **Check** reads the catalog without generating anything. A server environment variable takes precedence.
 
-## How a generation runs
+## Execution and limits
 
-1. Inputs are checked against the model's options before any media is read or credit is used.
-2. Selected project images are read once and sent inline: base64 for FLUX, data URIs for MiniMax. Each must be PNG, JPEG or WebP and at most 20 MiB.
-3. The request goes to the Router queue (`POST /v2/models/{provider}/{model}/requests`) with an `Idempotency-Key` derived from the studio's durable generation ID. An uncertain submission is reported as unknown; it is never submitted again under a new key.
-4. The studio polls `.../status`, honouring `Retry-After`. On `COMPLETED` it reads the native result, takes the documented media field (`result.sample` for FLUX, `result.video_url` for LTX, `task.content.url` for MiniMax) and downloads the file into the project immediately, because Router links expire within hours. Only public HTTPS URLs are fetched; credentials are never sent to the media host.
-5. Failures reported by Router (`content_policy_violation`, `insufficient_credits`, `result_expired` and similar) end the job with that reason. Transient errors keep the job waiting.
-
-If the queue is not enabled for an account (`403 not_enabled`), the provider uses the synchronous route and collects a timed-out run with the same key, as the Router contract describes. That fallback keeps the request body in memory, so a restart during it ends the job and points to Comfy usage history.
-
-## Evidence and limits
-
-Six contract tests cover request bodies for every model, key reuse, queued polling and download, Router error mapping, private media URLs, the synchronous fallback and the read-only connection check. They use mocked HTTP. No paid Comfy generation has been run from this repository yet, so output quality, latency and cost are unverified. Costs are reported as unknown rather than estimated.
+- The queued [Router API](https://docs.comfy.org/router-openapi.yaml) receives native JSON and a stable idempotency key from the durable generation ID. Polling honours retry delays. Uncertain submissions never become a new paid request.
+- Results are downloaded immediately into project assets, or decoded from inline image/video bytes. Credentials only go to the API host. Media signatures are checked; private/unsupported download URLs are rejected.
+- Inputs: 20 MiB per image (Kling: 10 MB, PNG/JPEG), 15 MiB per WAV/MP3, 40 MiB total references, 64 MiB serialized JSON. Veo needs PNG/JPEG. Reference audio is currently a Seedance-only subset.
+- Results: 64 MiB image, 512 MiB downloaded video or 96 MiB inline video. Catalog/status JSON stays capped at 4 MB; only result reads allow larger inline media.
+- Accounts without queue access use the synchronous route and recover timeouts under the same key. Its in-memory fallback is capped at eight requests/64 MiB; restarting it requires checking Comfy usage history. It never evicts live work.
+- Costs stay unknown unless reported. Real paid Comfy generation, quality and latency remain unverified. Fourteen mocked contract tests cover native bodies, admission, media, idempotency, polling and recovery.

@@ -11,7 +11,7 @@ async function mock(handler, run) { const original = globalThis.fetch; globalThi
 const json = (data, status = 200, headers = {}) => Response.json(data, { status, headers });
 
 test('every model builds the documented native Router body', () => {
-  assert.equal(providerManifest().models.length, 5);
+  assert.equal(providerManifest().models.length, 28);
   const body = id => { const profile = profileFor(id); return buildBody(profile, checkInput(profile, { prompt: 'Neon street', aspectRatio: '9:16' }), []); };
   assert.deepEqual(body('comfy-flux-3-image'), { prompt: 'Neon street', aspect_ratio: '9:16', resolution: '1k', grounding: false });
   assert.equal(body('comfy-flux-3-video').mode, 't2v');

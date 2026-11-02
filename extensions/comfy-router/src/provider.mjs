@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
-import { client, downloadMedia, modelPath, RouterError } from './client.mjs';
-import { buildBody, checkInput, outputUrl, profileFor } from './profiles.mjs';
+import { client, downloadMedia, inlineMedia, modelPath, resultJsonLimit, RouterError } from './client.mjs';
+import { buildBody, checkInput, profileFor } from './profiles.mjs';
+import { outputSource } from './results.mjs';
 const nextPoll = new Map(), pending = new Map();
 const QUEUE = 'q:', SYNC = 's:';
 const requestIdOk = value => typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,180}$/.test(value);
@@ -14,7 +15,8 @@ function failed(taskId, why) {
   return { status: 'failed', taskId, error: 'Comfy Router ' + why + '. See your Comfy usage history for details.' };
 }
 async function finish(profile, data, taskId, signal) {
-  const media = await downloadMedia(outputUrl(profile, data), profile.kind, signal);
+  const source = outputSource(profile, data);
+  const media = source.base64 ? inlineMedia(source.base64, profile.kind, source.mimeType) : await downloadMedia(source.url, profile.kind, signal);
   nextPoll.delete(taskId); pending.delete(taskId);
   return { status: 'succeeded', taskId, media: [media] };
 }
@@ -25,14 +27,26 @@ export async function testConnection({ configuration, signal }) {
 export async function createGeneration({ model, input, configuration, signal, readMedia, requestKey }) {
   const profile = profileFor(model.id), checked = checkInput(profile, input);
   if (typeof requestKey !== 'string' || !requestKey || requestKey.length > 200) throw Error('Comfy Router requires a durable generation ID');
-  const images = [];
+  const images = [], audios = []; let totalBytes = 0;
   for (const reference of checked.images) {
     if (typeof readMedia !== 'function') throw Error('Use an imported project image as the reference');
     const media = await readMedia(reference);
     if (!(media.bytes instanceof Uint8Array) || !media.bytes.length || media.bytes.length > 20 * 1048576 || !/^image\/(png|jpeg|webp)$/.test(media.mimeType)) throw Error('Use PNG, JPEG or WebP references of at most 20 MiB');
+    if ((profile.upstreamModelId.startsWith('kling/') || profile.upstreamModelId.startsWith('veo/')) && media.mimeType === 'image/webp') throw Error(profile.name + ' needs PNG or JPEG reference images');
+    if (profile.upstreamModelId.startsWith('kling/') && media.bytes.length > 10_000_000) throw Error('Kling reference images must be at most 10 MB');
+    totalBytes += media.bytes.length;
+    if (totalBytes > 40 * 1048576) throw Error('Use at most 40 MiB of total Comfy reference media');
     images.push({ base64: Buffer.from(media.bytes).toString('base64'), mimeType: media.mimeType });
   }
-  const body = buildBody(profile, checked, images);
+  for (const reference of checked.audios) {
+    if (typeof readMedia !== 'function') throw Error('Use an imported project audio reference');
+    const media = await readMedia(reference);
+    if (!(media.bytes instanceof Uint8Array) || !media.bytes.length || media.bytes.length > 15 * 1048576 || !/^audio\/(wav|x-wav|mpeg|mp3)$/.test(media.mimeType)) throw Error('Use a WAV or MP3 audio reference of at most 15 MiB');
+    totalBytes += media.bytes.length;
+    if (totalBytes > 40 * 1048576) throw Error('Use at most 40 MiB of total Comfy reference media');
+    audios.push({ base64: Buffer.from(media.bytes).toString('base64'), mimeType: media.mimeType === 'audio/x-wav' ? 'audio/wav' : media.mimeType });
+  }
+  const body = buildBody(profile, checked, images, audios);
   const key = 'vh-' + createHash('sha256').update(requestKey + '\0' + model.id).digest('hex').slice(0, 48);
   const api = client(configuration, signal), path = modelPath(profile.upstreamModelId);
   try {
@@ -51,8 +65,10 @@ export async function createGeneration({ model, input, configuration, signal, re
   }
   // The queue is not enabled for this account. Use the synchronous route; a timeout is collected later with the same key.
   const taskId = SYNC + key;
-  if (pending.size >= 64) pending.delete(pending.keys().next().value);
-  pending.set(taskId, body);
+  const bytes = Buffer.byteLength(JSON.stringify(body));
+  const held = [...pending].filter(([id]) => id !== taskId).reduce((sum, [, item]) => sum + item.bytes, 0);
+  if ((!pending.has(taskId) && pending.size >= 8) || held + bytes > 64 * 1048576) throw Error('Wait for the current synchronous Comfy requests to finish before starting another');
+  pending.set(taskId, { body, bytes });
   const result = await checkStatus({ model, taskId, configuration, signal });
   return result.status === 'processing' ? { ...result, cost: { state: 'unknown', final: false } } : result;
 }
@@ -63,16 +79,16 @@ export async function checkStatus({ model, taskId, configuration, signal }) {
   const api = client(configuration, signal), path = modelPath(profile.upstreamModelId);
   try {
     if (taskId.startsWith(SYNC)) {
-      const body = pending.get(taskId);
-      if (!body) return failed(taskId, 'lost the synchronous request after a restart; its original run may still appear in usage history');
-      const { data } = await api.request('POST', path, body, taskId.slice(2), 50_000);
+      const item = pending.get(taskId);
+      if (!item) return failed(taskId, 'lost the synchronous request after a restart; its original run may still appear in usage history');
+      const { data } = await api.request('POST', path, item.body, taskId.slice(2), 50_000, resultJsonLimit(profile.kind));
       return await finish(profile, data, taskId, signal);
     }
     const id = encodeURIComponent(taskId.slice(2));
     const { data: status, headers } = await api.request('GET', path + '/requests/' + id + '/status');
     if (status?.status !== 'COMPLETED') { defer(taskId, Number(headers.get('retry-after')) || 3); return { status: 'processing', taskId }; }
     if (status.error_type) return failed(taskId, 'finished with ' + String(status.error_type).slice(0, 40));
-    const { data, status: code } = await api.request('GET', path + '/requests/' + id, undefined, undefined, 60_000);
+    const { data, status: code } = await api.request('GET', path + '/requests/' + id, undefined, undefined, 60_000, resultJsonLimit(profile.kind));
     if (code === 202) { defer(taskId); return { status: 'processing', taskId }; }
     if (data?.error_type) return failed(taskId, 'finished with ' + String(data.error_type).slice(0, 40));
     return await finish(profile, data, taskId, signal);
