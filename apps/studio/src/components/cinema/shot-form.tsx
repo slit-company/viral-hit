@@ -19,8 +19,8 @@ const DRAFT_KEY: Record<string, 'framing' | 'angle' | 'lens' | 'light' | 'look'>
 const chip = (selected: boolean) => cn('rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors',
   selected ? 'border-[var(--color-ink)] bg-[var(--color-ink)] text-white' : 'border-[var(--vh-border)] bg-[var(--vh-surface)] text-[var(--vh-text-2)] hover:text-[var(--vh-text-1)]');
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return <div className="space-y-1.5"><div className="text-xs font-semibold">{label}</div>{children}{hint && <p className="text-[11px] leading-4 text-[var(--vh-text-3)]">{hint}</p>}</div>;
+function Field({ label, hint, className, children }: { label: string; hint?: string; className?: string; children: ReactNode }) {
+  return <div className={cn('space-y-1.5', className)}><div className="text-xs font-semibold">{label}</div>{children}{hint && <p className="text-[11px] leading-4 text-[var(--vh-text-3)]">{hint}</p>}</div>;
 }
 
 function CameraMoves({ value, disabled, onChange }: { value: string[]; disabled: boolean; onChange: (moves: string[]) => void }) {
@@ -96,9 +96,10 @@ export function ShotForm({ projectId, draft, disabled, onChange }: { projectId: 
         <option value="any">{t('anyProvider')}</option>{providers.map(([id, label]) => <option key={id} value={id}>{label}</option>)}</NativeSelect></Field>
       <Field label={t('takes')}><NativeSelect aria-label={t('takes')} value={String(draft.variations)} disabled={disabled} onChange={event => onChange({ variations: Number(event.target.value) })}>
         {[1, 2, 3, 4].map(value => <option key={value} value={value}>{value}</option>)}</NativeSelect></Field>
-      <Field label={t('videoModel')}><NativeSelect aria-label={t('videoModel')} value={draft.videoModel} disabled={disabled} onChange={event => onChange({ videoModel: event.target.value })}>
+      {/* Model names are long ("Grok Imagine Video 1.5 Lite"); a full row keeps them readable on phones. */}
+      <Field label={t('videoModel')} className="col-span-2"><NativeSelect aria-label={t('videoModel')} value={draft.videoModel} disabled={disabled} onChange={event => onChange({ videoModel: event.target.value })}>
         <option value="auto">{t('auto')}</option>{inProvider('ai-video').map(model => <option key={model.id} value={model.id}>{model.name}</option>)}</NativeSelect></Field>
-      <Field label={t('imageModel')}><NativeSelect aria-label={t('imageModel')} value={draft.imageModel} disabled={disabled || draft.startFrame === 'none' || Boolean(draft.startAssetId)} onChange={event => onChange({ imageModel: event.target.value })}>
+      <Field label={t('imageModel')} className="col-span-2"><NativeSelect aria-label={t('imageModel')} value={draft.imageModel} disabled={disabled || draft.startFrame === 'none' || Boolean(draft.startAssetId)} onChange={event => onChange({ imageModel: event.target.value })}>
         <option value="auto">{t('auto')}</option>{inProvider('ai-image').map(model => <option key={model.id} value={model.id}>{model.name}</option>)}</NativeSelect></Field>
     </div>
   </div>;

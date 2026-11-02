@@ -881,6 +881,7 @@
       "credits": "연결된 서비스의 크레딧을 사용해요.",
       "runs": "샷",
       "emptyRuns": "렌더링한 샷이 여기에 나와요. 테이크를 나란히 비교할 수 있어요.",
+      "loadingRuns": "샷을 불러오는 중…",
       "queued": "대기 중",
       "running": "렌더링 중",
       "succeeded": "완료",

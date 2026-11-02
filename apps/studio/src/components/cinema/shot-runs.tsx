@@ -32,7 +32,7 @@ function Take({ projectId, shot, take, label }: { projectId: string; shot: ShotR
 }
 
 /** Every shot with its keyframe and takes side by side, newest first. */
-export function ShotRuns({ projectId, shots }: { projectId: string; shots: ShotRunView[] }) {
+export function ShotRuns({ projectId, shots, loading }: { projectId: string; shots: ShotRunView[]; loading: boolean }) {
   const t = useTranslations('AppShell.cinema');
   const assemble = useAssembleBest(projectId);
   const ready = shots.filter(shot => shot.takes.some(take => take.assetId));
@@ -48,7 +48,9 @@ export function ShotRuns({ projectId, shots }: { projectId: string; shots: ShotR
     </header>
     {assemble.isSuccess && <p role="status" className="text-xs text-emerald-800">{t('assembled', { count: assemble.data })}</p>}
     {assemble.isError && <p role="alert" className="text-xs text-red-700">{assemble.error.message}</p>}
-    {!shots.length && <div className="rounded-2xl border border-dashed border-[var(--vh-border)] p-10 text-center text-sm text-[var(--vh-text-2)]">{t('emptyRuns')}</div>}
+    {!shots.length && (loading
+      ? <p role="status" className="inline-flex items-center gap-2 p-4 text-sm text-[var(--vh-text-2)]"><Loader2 className="size-4 animate-spin" />{t('loadingRuns')}</p>
+      : <div className="rounded-2xl border border-dashed border-[var(--vh-border)] p-10 text-center text-sm text-[var(--vh-text-2)]">{t('emptyRuns')}</div>)}
     {shots.map(shot => <article key={shot.runId} className="space-y-3 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-4">
       <p className="line-clamp-2 text-sm leading-6">{shot.prompt}</p>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

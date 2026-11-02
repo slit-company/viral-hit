@@ -37,9 +37,8 @@ export function rankModels(models: readonly ShotModel[], need: RouteNeed): Ranke
     let score = family.rank + version(id);
     if (model.health) { score += model.health.score; reasons.push(model.health.reason); }
     if (need.kind === 'video' && need.images > 0) {
-      if (/image-to-video|first-last|i2v/.test(id)) { score += 3; reasons.push('made for animating a frame'); }
-      if (need.firstLast && /first-last/.test(id)) { score += 4; reasons.push('first and last frame'); }
-      if (/reference-to-video|video-edit|extend/.test(id)) score -= 6;
+      // The capability filter above already proved the declared mode; rank by family and fit, not endpoint naming.
+      reasons.push((need.imageMode ?? 'frames') === 'frames' ? (need.firstLast ? 'first and last frame' : 'animates the start frame') : 'uses the reference images');
     }
     if (need.kind === 'video' && need.images === 0 && /image-to-video|first-last/.test(id)) score -= 8;
     if (need.kind === 'image' && need.images > 0 && family.identity) { score += 3; reasons.push('keeps identity from references'); }

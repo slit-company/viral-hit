@@ -26,8 +26,8 @@ function Step({ label, step }: { label: string; step: ShotStepView }) {
 }
 
 /** What the harness will do for this shot, before anything is sent. */
-export function ShotPlan({ production, loading, error, describeFirst, busy, onProduce }: {
-  production: ProductionView | undefined; loading: boolean; error: string | null; describeFirst: boolean; busy: boolean; onProduce: () => void;
+export function ShotPlan({ production, variations, loading, error, describeFirst, busy, onProduce }: {
+  production: ProductionView | undefined; variations: number; loading: boolean; error: string | null; describeFirst: boolean; busy: boolean; onProduce: () => void;
 }) {
   const t = useTranslations('AppShell.cinema');
   return <section aria-label={t('plan')} className="space-y-3 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-control)]/40 p-4">
@@ -43,7 +43,7 @@ export function ShotPlan({ production, loading, error, describeFirst, busy, onPr
       </>}
     <Action type="button" className="vh-primary flex w-full items-center justify-center gap-2" disabled={busy || loading || describeFirst || Boolean(error) || !production} onClick={onProduce}>
       {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
-      {busy ? t('producing') : t('produce', { count: production?.variations ?? 0 })}
+      {busy ? t('producing') : t('produce', { count: variations })}
     </Action>
     <p className="text-center text-[11px] text-[var(--vh-text-3)]">{t('credits')}</p>
   </section>;

@@ -20,9 +20,9 @@ export function CinemaPage({ projectId }: { projectId: string }) {
         <ShotForm projectId={projectId} draft={draft} disabled={!loaded || produce.isPending} onChange={update} />
       </aside>
       <div className="min-w-0 space-y-6 p-5 lg:overflow-y-auto sm:p-6">
-        <ShotPlan production={preview.data} loading={preview.isFetching} error={preview.error?.message ?? (produce.error?.message || null)}
+        <ShotPlan production={preview.data} variations={draft.variations ?? 2} loading={preview.isFetching} error={preview.error?.message ?? (produce.error?.message || null)}
           describeFirst={!draft.subject.trim()} busy={!loaded || produce.isPending} onProduce={() => produce.mutate(draft)} />
-        <ShotRuns projectId={projectId} shots={runs.data ?? []} />
+        <ShotRuns projectId={projectId} shots={runs.data ?? []} loading={runs.isPending} />
       </div>
     </div>
   </ProductPageShell>;

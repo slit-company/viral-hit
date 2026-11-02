@@ -874,6 +874,7 @@
       "credits": "Uses credits on the connected service.",
       "runs": "Shots",
       "emptyRuns": "Rendered shots appear here with every take side by side.",
+      "loadingRuns": "Loading shots…",
       "queued": "Waiting",
       "running": "Rendering",
       "succeeded": "Ready",
