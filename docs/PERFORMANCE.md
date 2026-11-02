@@ -232,3 +232,7 @@ Summed script gzip: **735,995 bytes**, **880 bytes** more than Cinema sequences 
 ## Continuous playback — 2026-11-02
 
 Summed script gzip: **736,392 bytes**, **397 bytes** more than service credits; public files **9,230,188 bytes**. The script budget changed from 736,000 to **737,000** in this reviewed decision: the playback clock hook in the editor route chunk and one message in four languages. The clock replaced the per-clip image ticker; no dependency or service was added.
+
+## Captions from voice — 2026-11-02
+
+Summed script gzip: **737,198 bytes**, **806 bytes** more than continuous playback; public files **9,232,478 bytes**. The script budget changed from 737,000 to **738,000** in this reviewed decision: the voice caption action, its timeline mapping, the orphan rule in cue grouping and two messages in four languages, in the editor route chunk. Speech timing is read on the server from the existing generation record; no dependency or service was added.

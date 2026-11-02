@@ -36,6 +36,7 @@ import {
   renderProjectTimelineToAsset,
 } from '@/core/editor/render-project-timeline';
 import { loadProjectTimeline } from '@/core/editor/timeline-state';
+import { voiceCaptionOperation } from '@/core/editor/voice-captions.server';
 import { syncGeneration } from '@/core/effects/generation-sync';
 import { resolveOutputMedia } from '@/core/effects/output-media';
 import { listProjectGenerations } from '@/core/effects/project-generations';
@@ -1076,6 +1077,22 @@ export function createViralHitMcpServer() {
         ...metadata,
         command: { type: 'editor.apply', operations },
       });
+    })
+  );
+
+  server.registerTool(
+    'viral_hit_captions_from_voice',
+    {
+      description: 'Build timed captions from a voice clip on the timeline whose audio came with word timing from its provider (ElevenLabs speech returns it). Words become caption cues with measured word timing for spoken-word highlighting; replace swaps out existing captions. Fails clearly when the audio has no timing.',
+      inputSchema: commandMetadataSchema.extend({ projectId: idSchema.optional(), clipId: idSchema, replace: z.boolean().optional() }),
+      annotations: { destructiveHint: true, idempotentHint: false },
+    },
+    withToolErrors(async ({ projectId, clipId, replace, ...metadata }) => {
+      const project = await resolveScopedProject(projectId);
+      const timeline = await loadProjectTimeline(project.id);
+      if (!timeline) throw new Error('This project has no timeline yet.');
+      const operation = await voiceCaptionOperation({ projectId: project.id, document: timeline.document, clipId, replace });
+      return executeExternalCommand({ projectId: project.id, ...metadata, command: { type: 'editor.apply', operations: [operation] } });
     })
   );
 

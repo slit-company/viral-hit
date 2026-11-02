@@ -9,6 +9,7 @@ import { transitionPreview } from './transition-preview';
 import { useTimelineClock } from './use-timeline-clock';
 import { CaptionPreviewText } from './caption-preview-text';
 import { CaptionHighlightPicker } from './caption-highlight-picker';
+import { VoiceCaptionsAction } from './voice-captions-action';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
@@ -2562,6 +2563,8 @@ export function VideoEditorWorkspace({
                           ? t('audio.mutedHint')
                           : t('audio.activeHint')}
                       </p>
+                      <VoiceCaptionsAction projectId={projectId} clip={selectedClip} locked={document.tracks.some(track => track.id === selectedClip.trackId && track.locked)}
+                        onEdit={operation => commitDocument(current => applyEditorOperations(current, [operation]).document)} />
                     </div>
                   ) : exactControlsOpen ? (
                     <div className="space-y-3 rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-3.5">

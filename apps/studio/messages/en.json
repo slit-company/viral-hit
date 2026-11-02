@@ -2092,6 +2092,8 @@
   "ui.editor.caption_words_measured": "This caption uses measured word timing.",
   "ui.editor.caption_words_estimated": "Word timing is estimated from word length. Voice or speech alignment can replace it.",
   "ui.editor.playhead_time": "Playhead time",
+  "ui.editor.voice_captions": "Captions from voice ({count} words)",
+  "ui.editor.voice_captions_hint": "Uses the word timing the voice service returned, so each word lights up when it is spoken.",
   "ui.cinema.shot_label": "Shot {position}",
   "ui.cinema.attempt_label": "attempt {attempt}",
   "ui.cinema.render_again": "Render again",

@@ -6,6 +6,12 @@ Captions can light up the word being spoken, the style short-form videos use for
 
 Each caption can carry measured word timings. Without them, the editor estimates timing from word length across the cue, and the inspector says so. Measured timings come from an agent or tool that knows when each word is spoken, such as a voice provider's alignment or a speech recogniser.
 
+## Captions from a voice
+
+ElevenLabs speech now returns word timing with the audio. Select the voice clip in the editor and choose **Captions from voice**: the words heard inside the clip (respecting its trim and position) become caption cues with measured timing, ready for spoken-word highlighting. Agents do the same with `viral_hit_captions_from_voice` (`clipId`, optional `replace`). Any installed audio provider can return `speechWords` (`{ text, start, end }` in seconds from the start of its audio) to join in; the timing is kept with the generation and read back through `GET /api/app/projects/:projectId/assets/:assetId/speech-words`.
+
+Cues break after sentence punctuation, pauses longer than 0.6 s, six words, 3.2 s or 32 characters. When a limit would leave a single word alone, the cue before it hands over its last word.
+
 Editing the text keeps the timing of words that did not change. A replaced word takes the time of the word it replaced; a new word takes the time between its neighbours and, when that gap is too short, borrows half of the previous word. Moving a cue keeps its words aligned because timings are stored relative to the caption.
 
 Words split on spaces. Chinese and Japanese text without spaces is timed per character, with punctuation kept on the preceding character. Korean is timed per space-separated word.

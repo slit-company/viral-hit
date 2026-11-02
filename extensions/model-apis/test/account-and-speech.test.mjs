@@ -39,3 +39,16 @@ test('Runway reports organization credits; ElevenLabs reports remaining characte
   for (const provider of [falProvider, runwayProvider, elevenlabsProvider]) assert.equal(provider.manifest.balanceCheck, true);
   assert.equal(higgsfieldProvider.manifest.balanceCheck, undefined);
 });
+
+test('ElevenLabs speech returns the audio and word timing from character timestamps', async () => {
+  const text = 'Find the hit.';
+  const characters = [...text];
+  const starts = characters.map((_, index) => index * 0.1), ends = characters.map((_, index) => index * 0.1 + 0.08);
+  const calls = serve({ 'POST https://api.elevenlabs.io/v1/text-to-speech/JBFqnCBsd6RMkjVDRZzb/with-timestamps?output_format=mp3_44100_128': json({ audio_base64: Buffer.from('ID3fake-mp3').toString('base64'), alignment: { characters, character_start_times_seconds: starts, character_end_times_seconds: ends } }) });
+  const result = await elevenlabsProvider.createGeneration({ model: { id: 'elevenlabs-speech', kind: 'audio' }, input: { prompt: text }, configuration: { ELEVENLABS_API_KEY: 'sk_test_value_for_fixture_only' } });
+  assert.equal(result.media[0].mimeType, 'audio/mpeg');
+  assert.equal(Buffer.from(result.media[0].data).toString(), 'ID3fake-mp3');
+  assert.deepEqual(result.speechWords, [{ text: 'Find', start: 0, end: 0.38 }, { text: 'the', start: 0.5, end: 0.78 }, { text: 'hit.', start: 0.9, end: 1.28 }]);
+  assert.equal(JSON.parse(calls[0].init.body).text, text);
+  assert.deepEqual(elevenlabsProvider.wordsFromAlignment({ characters: ['a'], character_start_times_seconds: [], character_end_times_seconds: [] }), []);
+});

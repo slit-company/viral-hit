@@ -16,6 +16,31 @@ export const manifest = {
 };
 const headers = configuration => ({ 'xi-api-key': credential(configuration, 'ELEVENLABS_API_KEY', 'ElevenLabs') });
 const voiceId = value => { if (!/^[A-Za-z0-9]{8,40}$/.test(value)) throw Error('Enter an ElevenLabs voice ID from your voice library'); return value; };
+const round = value => Math.round(value * 1000) / 1000;
+
+/** Character timestamps from /with-timestamps grouped into words (whitespace separates words). */
+export function wordsFromAlignment(alignment) {
+  const characters = alignment?.characters, starts = alignment?.character_start_times_seconds, ends = alignment?.character_end_times_seconds;
+  if (!Array.isArray(characters) || !Array.isArray(starts) || !Array.isArray(ends) || characters.length !== starts.length || characters.length !== ends.length) return [];
+  const words = [];
+  let current = null;
+  characters.forEach((character, index) => {
+    if (typeof character !== 'string' || /\s/.test(character)) {
+      if (current) words.push(current);
+      current = null;
+      return;
+    }
+    current ??= { text: '', start: starts[index], end: ends[index] };
+    current.text += character;
+    current.end = ends[index];
+  });
+  if (current) words.push(current);
+  let previous = 0;
+  return words
+    .filter(word => Number.isFinite(word.start) && Number.isFinite(word.end) && word.end >= word.start && word.start >= previous - 0.001 && (previous = word.end, true))
+    .slice(0, 10_000)
+    .map(word => ({ text: word.text.slice(0, 80), start: round(word.start), end: round(word.end) }));
+}
 
 export async function createGeneration({ model, input, configuration, signal, readMedia }) {
   const profile = manifest.models.find(item => item.id === model.id);
@@ -24,7 +49,14 @@ export async function createGeneration({ model, input, configuration, signal, re
   const call = (path, body) => send('ElevenLabs', API + path, { method: 'POST', body, headers: auth, signal, timeout: 600_000, maxBytes: 128 * 1048576 });
   let result;
   if (profile.id === 'elevenlabs-speech') {
-    result = await call('/text-to-speech/' + voiceId(options.voice_id) + '?output_format=mp3_44100_128', { text: promptOf(input, { max: 5_000 }), model_id: options.model_id, voice_settings: { stability: options.stability, similarity_boost: options.similarity_boost, style: options.style, speed: options.speed } });
+    // The timestamped endpoint returns the same audio plus character timing, which becomes word timing for captions.
+    const data = await sendJson('ElevenLabs', API + '/text-to-speech/' + voiceId(options.voice_id) + '/with-timestamps?output_format=mp3_44100_128', {
+      method: 'POST', headers: auth, signal, timeout: 600_000, maxBytes: 192 * 1048576,
+      body: { text: promptOf(input, { max: 5_000 }), model_id: options.model_id, voice_settings: { stability: options.stability, similarity_boost: options.similarity_boost, style: options.style, speed: options.speed } },
+    });
+    if (typeof data.audio_base64 !== 'string' || !data.audio_base64) throw Error('ElevenLabs returned empty audio');
+    const speechWords = wordsFromAlignment(data.alignment);
+    return { status: 'succeeded', media: [{ data: new Uint8Array(Buffer.from(data.audio_base64, 'base64')), mimeType: 'audio/mpeg' }], ...(speechWords.length ? { speechWords } : {}) };
   } else if (profile.id === 'elevenlabs-music') {
     result = await call('/music', { prompt: promptOf(input, { max: 4_100 }), model_id: profile.upstreamModelId, music_length_ms: Math.round(options.seconds * 1000), force_instrumental: options.force_instrumental });
   } else if (profile.id === 'elevenlabs-sound-effects') {

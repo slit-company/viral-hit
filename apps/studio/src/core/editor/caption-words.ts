@@ -195,22 +195,28 @@ export function captionCuesFromWords(words: readonly TimedWord[], { maxWords = 6
       atoms[atoms.length - 1] = { ...atoms[atoms.length - 1], text: atoms[atoms.length - 1].text + word.text.trim(), end: Math.max(atoms[atoms.length - 1].end, word.end) };
     } else atoms.push(...(parts.length === 1 ? [{ text: parts[0].text, start: word.start, end: word.end }] : spread(parts, word.start, word.end)));
   }
-  const cues: { startTime: number; endTime: number; text: string; words: CaptionWord[] }[] = [];
+  const groups: { words: TimedWord[]; forced: boolean }[] = [];
   let current: TimedWord[] = [];
-  const flush = () => {
-    if (!current.length) return;
-    const startTime = current[0].start, endTime = Math.max(current[current.length - 1].end, startTime + 0.04);
-    const tokens = current.map((word, index) => ({ text: word.text, leading: (index && !(IDEOGRAPHIC.test(word.text) && IDEOGRAPHIC.test(current[index - 1].text)) ? ' ' : '') as CaptionToken['leading'] }));
-    cues.push({ startTime: round(startTime), endTime: round(endTime), text: joinCaptionTokens(tokens), words: current.map((word) => ({ text: word.text, start: round(word.start - startTime), end: round(word.end - startTime) })) });
+  const flush = (forced: boolean) => {
+    if (current.length) groups.push({ words: current, forced });
     current = [];
   };
   for (const word of atoms) {
     const previous = current[current.length - 1];
     const characters = current.reduce((sum, item) => sum + item.text.length + 1, 0) + word.text.length;
-    if (previous && (current.length >= maxWords || word.end - current[0].start > maxSeconds || characters > maxCharacters ||
-      /[.!?。！？…]$/.test(previous.text) || word.start - previous.end > 0.6)) flush();
+    const natural = Boolean(previous) && (/[.!?。！？…]$/.test(previous.text) || word.start - previous.end > 0.6);
+    if (previous && (natural || current.length >= maxWords || word.end - current[0].start > maxSeconds || characters > maxCharacters)) flush(!natural);
     current.push(word);
   }
-  flush();
-  return cues;
+  flush(false);
+  // A limit that leaves one word alone at the end of a phrase takes a word from the cue before instead.
+  for (let index = 1; index < groups.length; index += 1) {
+    const before = groups[index - 1], orphan = groups[index];
+    if (before.forced && orphan.words.length === 1 && before.words.length >= 3) orphan.words.unshift(before.words.pop()!);
+  }
+  return groups.map(({ words: group }) => {
+    const startTime = group[0].start, endTime = Math.max(group[group.length - 1].end, startTime + 0.04);
+    const tokens = group.map((word, index) => ({ text: word.text, leading: (index && !(IDEOGRAPHIC.test(word.text) && IDEOGRAPHIC.test(group[index - 1].text)) ? ' ' : '') as CaptionToken['leading'] }));
+    return { startTime: round(startTime), endTime: round(endTime), text: joinCaptionTokens(tokens), words: group.map((word) => ({ text: word.text, start: round(word.start - startTime), end: round(word.end - startTime) })) };
+  });
 }

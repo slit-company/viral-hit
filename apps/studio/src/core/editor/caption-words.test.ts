@@ -55,6 +55,8 @@ test('caption commands store measured words, re-time them on text edits and buil
   assert.deepEqual(cues.map((cue) => cue.text), ['Ship it.', 'Then measure it。']);
   assert.deepEqual(cues[1].words[0], { text: 'Then', start: 0, end: 0.3 });
   assert.deepEqual(captionCuesFromWords(words([['你好', 0, 1]]))[0].words.map((word) => word.text), ['你', '好']);
+  const live = words([['Find', 0, 0.32], ['the', 0.4, 0.48], ['hit', 0.56, 0.8], ['before', 0.88, 1.28], ['everyone', 1.36, 1.76], ['else.', 1.84, 2.48]]);
+  assert.deepEqual(captionCuesFromWords(live).map((cue) => cue.text), ['Find the hit before', 'everyone else.'], 'no single word is left alone by the length limit');
   document = applyEditorOperations(document, [{ type: 'captions_from_words', words: voice, replace: true }]).document;
   const track = document.tracks.find((candidate) => candidate.kind === 'caption')!;
   assert.deepEqual(track.clips.map((clip) => [clip.startTime, clip.text]), [[0.2, 'Ship it.'], [1.8, 'Then measure it。']]);

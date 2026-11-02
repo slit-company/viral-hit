@@ -109,10 +109,18 @@ export const providerResultSchema = z.object({
   ])).max(8).optional(),
   report: analysisReport.optional(),
   text: z.string().trim().min(1).max(128_000).optional(),
+  /** Word timing of generated speech in seconds from the start of the audio; becomes caption timing. */
+  speechWords: z.array(z.object({ text: z.string().trim().min(1).max(80), start: z.number().finite().min(0).max(86_400), end: z.number().finite().min(0).max(86_400) }).strict()).max(10_000).optional(),
   error: z.string().max(1000).optional(),
 }).strict().superRefine((result, ctx) => {
   if (result.status === 'succeeded' && !result.media?.length && !result.text && !result.report) ctx.addIssue({ code: 'custom', message: 'A succeeded result needs media or analysis text' });
   if (result.report && result.status !== 'succeeded') ctx.addIssue({ code: 'custom', message: 'Structured reports require succeeded status' });
   if ((result.status === 'processing' || result.status === 'pending') && !result.taskId) ctx.addIssue({ code: 'custom', message: 'An unfinished result needs a taskId to check later' });
+  if (result.speechWords && (result.status !== 'succeeded' || !result.media?.length)) ctx.addIssue({ code: 'custom', message: 'Speech word timing accompanies finished audio' });
+  let previous = 0;
+  for (const word of result.speechWords ?? []) {
+    if (word.end < word.start || word.start < previous - 0.001) { ctx.addIssue({ code: 'custom', message: 'Speech words must be ordered and non-overlapping' }); break; }
+    previous = word.end;
+  }
 });
 export type ProviderResult = z.infer<typeof providerResultSchema>;

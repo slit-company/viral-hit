@@ -2092,6 +2092,8 @@
   "ui.editor.caption_words_measured": "この字幕は計測された単語タイミングを使います。",
   "ui.editor.caption_words_estimated": "単語の長さからタイミングを推定しています。音声の整列結果で置き換えられます。",
   "ui.editor.playhead_time": "再生位置",
+  "ui.editor.voice_captions": "音声から字幕を作成（{count} 語）",
+  "ui.editor.voice_captions_hint": "音声サービスが返した単語タイミングを使うので、話した瞬間に単語が強調されます。",
   "ui.cinema.shot_label": "ショット {position}",
   "ui.cinema.attempt_label": "{attempt} 回目",
   "ui.cinema.render_again": "再生成",

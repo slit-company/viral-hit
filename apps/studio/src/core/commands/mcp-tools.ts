@@ -24,6 +24,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_generation_history',
   'viral_hit_editor_get',
   'viral_hit_editor_edit',
+  'viral_hit_captions_from_voice',
   'viral_hit_editor_import_srt',
   'viral_hit_editor_render',
   'viral_hit_editor_snapshot',

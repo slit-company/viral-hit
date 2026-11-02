@@ -135,6 +135,7 @@ export class InstalledProviderRuntime {
       if (result.media?.length) throw new Error('Analysis models return text, not media');
       if (result.status === 'succeeded' && !result.text && !result.report) throw new Error('A succeeded analysis needs text or a structured report');
     } else if (result.text || result.report || (result.status === 'succeeded' && !result.media?.length)) throw new Error('Image/video/audio models return media, not analysis text');
+    if (result.speechWords && model.kind !== 'audio') throw new Error('Only audio models return speech word timing');
     const urls: string[] = [];
     for (const item of result.media ?? []) {
       if ('url' in item) { this.checkMediaUrl(item.url); urls.push(item.url); continue; }
@@ -143,7 +144,7 @@ export class InstalledProviderRuntime {
     }
     return {
       status: result.status,
-      output: { ...(result.cost ? { providerCost: result.cost } : {}), ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text || result.report ? { analysis_text: result.text ?? result.report!.summary } : {}), ...(result.report ? { analysis_report: result.report } : {}) },
+      output: { ...(result.cost ? { providerCost: result.cost } : {}), ...(result.taskId ? { taskId: runtime ? pinProviderTask(result.taskId,runtime,model.id) : result.taskId, ...(runtime ? {upstreamTaskId:result.taskId} : {}) } : {}), ...(urls.length ? { resultUrls: urls } : {}), ...(result.text || result.report ? { analysis_text: result.text ?? result.report!.summary } : {}), ...(result.report ? { analysis_report: result.report } : {}), ...(result.speechWords?.length ? { speech_words: result.speechWords } : {}) },
       ...(result.error ? { error: redactProviderError(new Error(result.error), configuration) } : {}),
     };
   }
