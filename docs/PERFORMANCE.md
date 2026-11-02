@@ -236,3 +236,7 @@ Summed script gzip: **736,392 bytes**, **397 bytes** more than service credits; 
 ## Captions from voice — 2026-11-02
 
 Summed script gzip: **737,198 bytes**, **806 bytes** more than continuous playback; public files **9,232,478 bytes**. The script budget changed from 737,000 to **738,000** in this reviewed decision: the voice caption action, its timeline mapping, the orphan rule in cue grouping and two messages in four languages, in the editor route chunk. Speech timing is read on the server from the existing generation record; no dependency or service was added.
+
+## Remix — 2026-11-02
+
+Summed script gzip: **743,115 bytes**, **5,917 bytes** more than captions from voice; public files **9,250,604 bytes**. The script budget changed from 738,000 to **744,000** in this reviewed decision: the new Remix route (asset picker, rhythm and shot list) and 20 messages in four languages. Detection reuses the existing scene detector and worker; soundtrack extraction runs FFmpeg on the server. No dependency or service was added.

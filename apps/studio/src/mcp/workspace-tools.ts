@@ -11,6 +11,7 @@ import { registerCharacterTools } from './character-tools';
 import { registerStoryboardTools } from './storyboard-tools';
 import { registerShotTools } from './shot-tools';
 import { registerCreditTools } from './credit-tools';
+import { registerRemixTools } from './remix-tools';
 /** Registration seam for project transfer, recipe pack, character and delivery tools. */
 export function registerWorkspaceTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   registerAssetGenerationTools(server);
@@ -25,4 +26,5 @@ export function registerWorkspaceTools(server: McpServer, project: (projectId?: 
   registerStoryboardTools(server, project);
   registerShotTools(server, project);
   registerCreditTools(server);
+  registerRemixTools(server, project);
 }

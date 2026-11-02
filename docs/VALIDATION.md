@@ -1103,3 +1103,9 @@ An integration test builds a recipe from `subject-on-style` with `image-1` as su
 - **Browser (1 test, local voice fixture):** a fixture audio provider returns WAV bytes and word timing like ElevenLabs; Studio generated it, the speech-words endpoint returned four words, the editor action created one cue with measured timing at the clip's position, and after moving the clip MCP `viral_hit_captions_from_voice` with replace rebuilt it at the new position; an unknown clip is an error.
 - **Source tests:** ElevenLabs alignment grouping and request (mocked), provider-result validation (order, audio only, finished results), the runtime storing `speech_words`, trim-aware timeline mapping and the orphan rule.
 - 973 source tests, 15 extension tests, typecheck, i18n, architecture and the production build pass; see [performance](PERFORMANCE.md#captions-from-voice--2026-11-02).
+
+## Remix — 2026-11-02
+
+- **Browser (1 test, real FFmpeg detection through the worker):** a 3 s reference with hard cuts at 1 s and 2 s and a 440 Hz tone was analysed from the Remix page ("3 shots · 1.0s average · 40 cuts per minute"); with a still and a 2 s video picked, **Build** placed still/video/still at 0, 1 and 2 s (the video trimmed to its shot), crossfades on the second and third shots and the extracted soundtrack (3 s, music) on the audio track. MCP `list` returned the same cut times and a second `build` appended at 3 s. The phone layout has no horizontal overflow. Uploaded videos without a recorded duration are measured with FFprobe before assignment.
+- **Source tests (3):** grammar pace, material cycling with too-short videos and the longest-video fallback, and operations at the reference cut times with transitions and soundtrack applied through the editor commands.
+- 976 source tests, typecheck, i18n, architecture and the production build pass; see [performance](PERFORMANCE.md#remix--2026-11-02).
