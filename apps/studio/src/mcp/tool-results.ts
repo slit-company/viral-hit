@@ -19,7 +19,17 @@ export class ViralHitMcpToolError extends Error {
   }
 }
 
-export const errorResult = (error: unknown) => ({
+/** An agent generation waiting for, or refused by, a person; see core/agent. */
+const approvalOf = (error: unknown) =>
+  error instanceof Error && error.name === 'AgentApprovalRequired' && 'approval' in error
+    ? (error.approval as { id: string; state: string })
+    : null;
+
+export const errorResult = (error: unknown) => approvalOf(error) ? ({
+  content: [{ type: 'text' as const, text: (error as Error).message }],
+  isError: true,
+  structuredContent: { error: { message: (error as Error).message, status: 409, details: { approvalId: approvalOf(error)!.id, approvalState: approvalOf(error)!.state } } },
+}) : ({
   content: [
     {
       type: 'text' as const,

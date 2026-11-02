@@ -1,4 +1,6 @@
 import { jsonResult, errorResult, withToolErrors, ViralHitMcpToolError } from './tool-results';
+import { requireAgentApproval } from '@/core/agent/agent.server';
+import { runAsAgent } from '@/core/agent/request-origin.server';
 import { registerWorkspaceTools } from './workspace-tools';
 import { changeComfyConnection, connectionRequest } from '@/core/harness/comfy-connection';
 import { readFile, stat } from 'node:fs/promises';
@@ -267,6 +269,10 @@ function semanticTimelineSnapshot(
 
 export function createViralHitMcpServer() {
   const server = new McpServer({ name: 'viral-hit', version: VERSION });
+  // Every tool call runs as the agent, so generation it starts follows the workspace's approval setting.
+  const registerTool = server.registerTool.bind(server) as (...args: unknown[]) => unknown;
+  server.registerTool = ((name: string, config: unknown, handler: (...args: unknown[]) => unknown) =>
+    registerTool(name, config, (...args: unknown[]) => runAsAgent({ channel: 'mcp', tool: name }, () => handler(...args)))) as typeof server.registerTool;
   let targetedProjectId: string | null = null;
 
   server.registerResource(
@@ -878,6 +884,11 @@ export function createViralHitMcpServer() {
     },
     withToolErrors(async (input) => {
       const project = await resolveScopedProject(input.projectId);
+      requireAgentApproval({
+        projectId: project.id, gate: 'canvas-generation', key: input.idempotencyKey ?? input.commandId ?? null,
+        request: { sourceCardId: input.sourceCardId, mode: input.mode, modelId: input.modelId, prompt: input.prompt, references: input.references, parameters: input.parameters },
+        steps: [{ label: 'Canvas generation', mode: input.mode, model: input.modelId, prompt: input.prompt.slice(0, 240) || undefined }],
+      });
       const commandId = input.commandId ?? input.idempotencyKey ?? createCommandId();
       const stableRequestKey = input.idempotencyKey ?? commandId;
       return runCanvasGenerationSubmissionOnce({

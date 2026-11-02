@@ -92,7 +92,8 @@ export function createWorkerPool(h: DurableHarness, adapters: Record<string, Ada
   return {
     get active() { return slots.size; },
     tick(paused: readonly string[], onError: (error: unknown) => void) {
-      const runs = h.db.prepare("SELECT DISTINCT run_id FROM vh_jobs WHERE state IN ('queued','submitting','running') ORDER BY rowid").all();
+      // Held runs wait for a person; they are skipped until released.
+      const runs = h.db.prepare("SELECT j.run_id FROM vh_jobs j JOIN vh_runs r ON r.id=j.run_id WHERE j.state IN ('queued','submitting','running') AND r.held=0 GROUP BY j.run_id ORDER BY MIN(j.rowid)").all();
       for (const row of runs) {
         while (slots.size < limits.total && start(String(row.run_id), paused, onError)) { /* claim this run's next job */ }
         if (slots.size >= limits.total) break;

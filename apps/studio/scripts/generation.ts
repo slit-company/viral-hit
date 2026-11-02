@@ -4,6 +4,7 @@ import { assetGenerationRequest } from '../src/core/generation-providers/asset-g
 import { requestAssetGeneration } from '../src/core/generation-providers/asset-generation.server';
 import { listGenerationModelDescriptors } from '../src/core/generation-providers/model-catalog';
 import { installGenerationProviders } from '../src/core/generation-providers/installed/install.server';
+import { runAsAgent } from '../src/core/agent/request-origin.server';
 
 const [action, file] = process.argv.slice(2);
 try {
@@ -19,6 +20,7 @@ try {
       if (result.bytesRead > 256_000) throw Error('Request exceeds 256 KB');
       text = bytes.subarray(0, result.bytesRead).toString('utf8');
     } finally { await handle.close(); }
-    console.log(JSON.stringify(await requestAssetGeneration(assetGenerationRequest.parse(JSON.parse(text)), 'cli'), null, 2));
+    const request = assetGenerationRequest.parse(JSON.parse(text));
+    console.log(JSON.stringify(await runAsAgent({ channel: 'cli', tool: 'generation request' }, () => requestAssetGeneration(request, 'cli')), null, 2));
   } else throw Error('Usage: generation models | request <request.json>');
 } catch (error) { console.error(error instanceof Error ? error.message : 'Generation request failed'); process.exitCode = 1; }

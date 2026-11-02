@@ -7,6 +7,7 @@ import { createRuntimeAdapters } from '../src/core/harness/adapters';
 import { assertRuntimeConfigured, unavailableOperations, reconciliableOperations } from '../src/core/harness/capabilities';
 import { runtimeNodeSchema } from '../src/core/harness/requests';
 import { pinRuntimePlan } from '../src/core/harness/runtime-plan';
+import { runAsAgent } from '../src/core/agent/request-origin.server';
 
 
 const [command, first, second, third, fourth] = process.argv.slice(2);
@@ -18,7 +19,9 @@ try {
     const plan = JSON.parse(readFileSync(first, 'utf8')) as Plan;
     plan.nodes = plan.nodes.map(node => runtimeNodeSchema.parse(node));
     assertRuntimeConfigured(plan.nodes);
-    console.log(JSON.stringify({ runId: h.enqueue(await pinRuntimePlan(plan), second) }));
+    const pinned = await pinRuntimePlan(plan);
+    // The CLI is how agents script Viral Hit, so runs it queues follow the ask-before-generating setting.
+    console.log(JSON.stringify({ runId: runAsAgent({ channel: 'cli', tool: 'harness enqueue' }, () => h.enqueue(pinned, second)) }));
   } else if (command === 'attach') {
     const revision = Number(fourth);
     if (!first || !second || !third || fourth === undefined || !Number.isSafeInteger(revision) || revision < 0) throw new Error('Usage: harness attach <project-id> <run-id> <job-id> <expected-revision>');

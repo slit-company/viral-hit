@@ -1,6 +1,7 @@
 import { inspectAssetGeneration } from './generation-receipt.server';
 import { createHash } from 'node:crypto';
 import { canonicalJson } from '@/lib/canonical-json';
+import { requireAgentApproval } from '../agent/agent.server';
 import { assetGenerationRequest } from './asset-generation';
 import { createAssetFirstGenerationIntent, submitAssetFirstGeneration } from './submit';
 
@@ -15,6 +16,10 @@ export async function requestAssetGeneration(raw: unknown, origin: 'mcp' | 'cli'
     return { generation, generationIntentToken, digest };
   }
   if (digest !== request.expectedDigest) throw Error('Generation request changed after preparation. Review and prepare the new request.');
+  requireAgentApproval({
+    projectId: generation.projectId, gate: 'asset-generation', request: generation, key: request.generationIntentToken,
+    steps: [{ label: 'Asset generation', mode: generation.mode, model: generation.modelId, prompt: typeof generation.prompt === 'string' ? generation.prompt.slice(0, 240) : undefined }],
+  });
   const result = await submitAssetFirstGeneration({ generation, generationIntentId: request.generationIntentToken, origin, refreshExpiredIntent: false });
   if (result.status >= 400) throw Error(String(result.body.error ?? 'Generation failed'));
   return result.body;

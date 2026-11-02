@@ -8,6 +8,7 @@ import { Images, LayoutPanelTop, Link2, Scissors, Send, Workflow } from 'lucide-
 
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
 import { HarnessDialog } from '@/components/app/harness-dialog';
+import { ApprovalBadge } from '@/components/agent/approval-badge';
 import { WorkspaceSidebar } from '@/components/app/workspace-sidebar';
 import { LanguageSwitcher } from '@/components/app/language-switcher';
 import { GitHubIcon } from '@/components/icons/github';
@@ -140,6 +141,7 @@ export function ProductPageShell({
             </div>
 
             <div className="ml-auto flex min-w-0 items-center justify-end gap-2 max-sm:justify-start max-sm:overflow-x-auto max-sm:[&>*:not(nav)]:shrink-0">
+              <ApprovalBadge />
               {projectId && <><Link href={'/storyboards/' + projectId} className="inline-flex h-8 items-center rounded-lg border border-[var(--vh-border)] px-2.5 text-xs lg:hidden">{t("sidebar.storyboards")}</Link><HarnessDialog key={projectId} projectId={projectId} /></>}
               {projectId && (workspaceMode || publishing) ? (
                 <nav

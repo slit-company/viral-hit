@@ -244,3 +244,7 @@ Summed script gzip: **743,115 bytes**, **5,917 bytes** more than captions from v
 ## Layer export — 2026-11-02
 
 Summed script gzip: **743,969 bytes**, **854 bytes** more than Remix; public files **9,252,899 bytes**, within the unchanged 744,000-byte budget. The browser gains one toolbar button and three messages in four languages; it reuses the existing layers icon, and a spinner replaces a busy label. Rendering runs FFmpeg on the server, and the ZIP uses JSZip, which the server already depended on. No dependency or service was added.
+
+## Agent memory and approvals — 2026-11-02
+
+Summed script gzip: **751,599 bytes**, **7,630 bytes** more than layer export; public files **9,277,200 bytes**. The script budget changed from 744,000 to **752,000** in this reviewed decision: the new Agent route (3.15 KB gzip for the mode switch, approval cards and memory list), 41 messages in four languages in the shared message chunk, and the header badge that polls the waiting count every 15 seconds. Approvals and memory are stored in the existing harness database. No dependency or service was added.

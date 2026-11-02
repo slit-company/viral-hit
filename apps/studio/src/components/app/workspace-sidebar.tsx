@@ -1,7 +1,7 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Blocks, BookOpenText, Camera, Clapperboard, Repeat2, Images, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Workflow } from 'lucide-react';
+import { Blocks, BookOpenText, Bot, Camera, Clapperboard, Repeat2, Images, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Workflow } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
@@ -60,6 +60,7 @@ export function WorkspaceSidebar({ projectId, current }: { projectId: string; cu
   const setup: Array<[string, string, ReactNode]> = [
     ['/connections', t('sidebar.connections'), <Link2 key="cn" className="size-4" />],
     ['/extensions', t('sidebar.extensions'), <Puzzle key="ex" className="size-4" />],
+    ['/agent', uiMessages['ui.agent.nav'](), <Bot key="ag" className="size-4" />],
   ];
   return (
     <aside aria-label={t('sidebar.navigation')} className={cn('hidden shrink-0 flex-col border-r border-[var(--vh-border)] bg-[var(--vh-surface)] transition-[width] duration-200 lg:flex', collapsed ? 'w-[64px]' : 'w-[232px]')}>

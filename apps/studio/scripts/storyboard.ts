@@ -1,6 +1,7 @@
 import './default-providers.mjs';
 import { MAX_STORYBOARD_BYTES } from '../src/core/storyboards/contract';
 import { changeStoryboards } from '../src/core/storyboards/service.server';
+import { runAsAgent } from '../src/core/agent/request-origin.server';
 try {
   const projectId = process.argv[2];
   if (!projectId || process.argv.length !== 3) throw Error('Usage: pnpm storyboard <projectId> < request.json');
@@ -10,5 +11,6 @@ try {
     if (size > MAX_STORYBOARD_BYTES) throw Error('Storyboard request exceeds 256 KB');
     chunks.push(bytes);
   }
-  console.log(JSON.stringify(await changeStoryboards(projectId, JSON.parse(Buffer.concat(chunks).toString('utf8'))), null, 2));
+  const body = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+  console.log(JSON.stringify(await runAsAgent({ channel: 'cli', tool: 'storyboard' }, () => changeStoryboards(projectId, body)), null, 2));
 } catch (error) { console.error(error instanceof Error ? error.message : 'Storyboard command failed'); process.exitCode = 1; }

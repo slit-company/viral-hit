@@ -76,8 +76,15 @@ export class DurableHarness {
       const columns = this.db.prepare('PRAGMA table_info(vh_jobs)').all().map(column => column.name);
       if (!columns.includes('bindings_json')) this.db.exec("ALTER TABLE vh_jobs ADD COLUMN bindings_json TEXT NOT NULL DEFAULT '[]'");
       if (!columns.includes('execution_input_json')) this.db.exec('ALTER TABLE vh_jobs ADD COLUMN execution_input_json TEXT');
+      const runColumns = this.db.prepare('PRAGMA table_info(vh_runs)').all().map(column => column.name);
+      if (!runColumns.includes('held')) this.db.exec('ALTER TABLE vh_runs ADD COLUMN held INTEGER NOT NULL DEFAULT 0');
     });
   }
+  /**
+   * Decides whether a new run waits for a person before any job starts. It returns a recorder for the
+   * approval, called inside the enqueue transaction, or null to queue the run normally.
+   */
+  admission?: (plan: Plan) => ((runId: string) => void) | null;
   close() { this.db.close(); }
   private transaction<T>(fn: () => T): T {
     this.db.exec('BEGIN IMMEDIATE');
@@ -91,6 +98,7 @@ export class DurableHarness {
     if (!requestKey.trim() || requestKey.length > 200) throw new Error('A stable request key is required');
     const hashes = compilePlan(plan);
     const planHash = fingerprint(plan as unknown as Json);
+    const hold = this.admission?.(plan) ?? null;
     return this.transaction(() => {
       const existing = this.db.prepare('SELECT id,plan_hash FROM vh_runs WHERE project_id=? AND request_key=?').get(plan.projectId, requestKey) as { id: string; plan_hash: string } | undefined;
       if (existing) {
@@ -98,7 +106,8 @@ export class DurableHarness {
         return existing.id;
       }
       const runId = randomUUID();
-      this.db.prepare('INSERT INTO vh_runs VALUES(?,?,?,?,?)').run(runId, plan.projectId, requestKey, planHash, this.now());
+      this.db.prepare('INSERT INTO vh_runs(id,project_id,request_key,plan_hash,created_at,held) VALUES(?,?,?,?,?,?)').run(runId, plan.projectId, requestKey, planHash, this.now(), hold ? 1 : 0);
+      hold?.(runId);
       const nodeMap = new Map(plan.nodes.map(n => [n.id, n]));
       const cacheFlags = new Map<string, boolean>();
       const cacheable = (node: NodeSpec): boolean => {
@@ -118,6 +127,8 @@ export class DurableHarness {
       return runId;
     });
   }
+  /** Lets a held run start; false when the run was not waiting. */
+  release(runId: string) { return Number(this.db.prepare('UPDATE vh_runs SET held=0 WHERE id=? AND held=1').run(runId).changes) === 1; }
   jobs(runId: string): Job[] { return this.db.prepare('SELECT * FROM vh_jobs WHERE run_id=? ORDER BY rowid').all(runId) as unknown as Job[]; }
   runs(projectId: string) { return this.db.prepare('SELECT * FROM vh_runs WHERE project_id=? ORDER BY created_at DESC').all(projectId); }
   events(runId: string) { return this.db.prepare('SELECT * FROM vh_events WHERE run_id=? ORDER BY sequence').all(runId); }
@@ -162,6 +173,7 @@ export class DurableHarness {
   }
   private claim(runId: string, pausedOperations: readonly string[], adapters: Record<string, Adapter>, admit?: (job: Job) => boolean): Job | undefined {
     return this.transaction(() => {
+      if ((this.db.prepare('SELECT held FROM vh_runs WHERE id=?').get(runId) as { held: number } | undefined)?.held) return undefined;
       const jobs = this.jobs(runId), byId = new Map(jobs.map(j => [j.node_id, j]));
       for (const job of jobs) {
         if (pausedOperations.includes(job.operation)) continue;
