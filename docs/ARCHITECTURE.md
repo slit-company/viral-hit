@@ -30,7 +30,7 @@ Cancellation is a request until a provider poll confirms the outcome. A late suc
 
 Only explicit cacheable nodes with entirely cacheable ancestry can reuse outputs. Comfy native receipts have caching disabled because their media URLs can expire. Durable cache eligibility must eventually require verified local content hashes. A versioned prompt without a fixed model/seed is insufficient evidence of deterministic output.
 
-The default runner serializes provider calls. Parallel workers are fenced by leases but there is not yet a shared global concurrency or spending limit. The current local service is not a multi-tenant deployment. Poll failures retain the existing provider ID and retry; per-provider terminal timeout policies and operator reconciliation tools remain to implement.
+The worker starts every claimable step its limits allow: eight at once, three per model service, three generation submissions per project, and one to four local media steps sized from the host's CPUs and memory. `VIRAL_HIT_WORKER_CONCURRENCY`, `VIRAL_HIT_PROVIDER_CONCURRENCY` and `VIRAL_HIT_LOCAL_CONCURRENCY` override the defaults. Slots are reserved before a job is leased, and leases still fence each job to one step. There is no spending limit yet. The current local service is not a multi-tenant deployment. Poll failures retain the existing provider ID and retry; per-provider terminal timeout policies and operator reconciliation tools remain to implement.
 
 ## Provider contracts
 

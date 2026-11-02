@@ -160,7 +160,7 @@ export class DurableHarness {
       }
     });
   }
-  private claim(runId: string, pausedOperations: readonly string[], adapters: Record<string, Adapter>): Job | undefined {
+  private claim(runId: string, pausedOperations: readonly string[], adapters: Record<string, Adapter>, admit?: (job: Job) => boolean): Job | undefined {
     return this.transaction(() => {
       const jobs = this.jobs(runId), byId = new Map(jobs.map(j => [j.node_id, j]));
       for (const job of jobs) {
@@ -172,6 +172,7 @@ export class DurableHarness {
           this.event(job, 'blocked'); continue;
         }
         if (deps.some(d => d.state !== 'succeeded')) continue;
+        if (admit && !admit(job)) continue;
         const token = randomUUID();
         const until = this.now() + executionTimeout(adapters[job.operation]?.execution) + 60_000;
         this.db.prepare('UPDATE vh_jobs SET lease_token=?,lease_until=? WHERE id=?').run(token, until, job.id);
@@ -187,8 +188,9 @@ export class DurableHarness {
       return Number(result.changes) === 1;
     });
   }
-  async step(runId: string, adapters: Record<string, Adapter>, pausedOperations: readonly string[] = []): Promise<boolean> {
-    const job = this.claim(runId, pausedOperations, adapters); if (!job) return false;
+  /** admit lets a scheduler reserve capacity for the exact job before it is leased; claiming is synchronous. */
+  async step(runId: string, adapters: Record<string, Adapter>, pausedOperations: readonly string[] = [], admit?: (job: Job) => boolean): Promise<boolean> {
+    const job = this.claim(runId, pausedOperations, adapters, admit); if (!job) return false;
     const adapter = adapters[job.operation];
     if (!adapter) { this.transition(job, 'failed', { error: `No adapter for ${job.operation}` }); return true; }
     let input = JSON.parse(job.execution_input_json ?? job.input_json) as Json;
