@@ -7,6 +7,8 @@ import { fetchRecentAssets } from '@/core/workspace-lib/app/workspace-client-api
 import type { ShotRunView, ShotSequenceInput } from '@/core/shot-harness/contract';
 import type { TakeQuality } from '@/core/shot-harness/quality';
 import { readyTakes, type ShotSequenceView } from '@/core/shot-harness/sequence';
+import { pickBestTake, type TakeChoice } from '@/core/shot-harness/best-take';
+import type { FaceMatchReport } from '@/core/characters/face-match';
 import type { ShotSpecInput } from '@/core/shot-harness/spec';
 
 export type ShotStepView = { modelId: string; modelName: string; provider: string; prompt: string; dropped: string[]; parameters: Record<string, unknown> };
@@ -102,6 +104,29 @@ export function useTakeQuality(projectId: string, assetId: string | undefined, e
   return useQuery({ ...qualityQuery(projectId, assetId, expect), enabled: Boolean(assetId) });
 }
 
+/** The person a take is compared with: the shot's character images, or else its generated or chosen keyframe. */
+export const faceReferences = (shot: ShotRunView) => shot.spec?.characterAssetIds.length ? shot.spec.characterAssetIds
+  : shot.still?.assetId ? [shot.still.assetId] : shot.spec?.startAssetId ? [shot.spec.startAssetId] : [];
+
+const faceQuery = (projectId: string, assetId: string | undefined, references: readonly string[]) => ({
+  queryKey: ['cinema-face', projectId, assetId, ...references],
+  queryFn: () => apiJsonPost<{ faceMatch: FaceMatchReport }>(url(projectId), { action: 'face', assetIds: [assetId], referenceAssetIds: references }).then(result => result.faceMatch.results[0]),
+  staleTime: Infinity, retry: false,
+});
+
+/** Compares a finished take with the shot's person on this computer; the same files give the same result. */
+export function useTakeFace(projectId: string, assetId: string | undefined, shot: ShotRunView) {
+  const references = faceReferences(shot);
+  return useQuery({ ...faceQuery(projectId, assetId, references), enabled: Boolean(assetId) && references.length > 0 });
+}
+
+/** Quality score plus face status for choosing a take; a face check that cannot run counts as unknown. */
+async function takeChoice(client: ReturnType<typeof useQueryClient>, projectId: string, assetId: string, shot: ShotRunView): Promise<TakeChoice> {
+  const quality = await client.fetchQuery(qualityQuery(projectId, assetId, shot)), references = faceReferences(shot);
+  const face = references.length ? await client.fetchQuery(faceQuery(projectId, assetId, references)).then(result => result.status, () => null) : null;
+  return { assetId, score: quality.score, face };
+}
+
 /** Adds project videos to the end of the timeline in the given order. */
 async function addVideos(projectId: string, assetIds: string[]) {
   const recent = await fetchRecentAssets(projectId);
@@ -122,11 +147,9 @@ export function useSendSequence(projectId: string) {
     mutationFn: async ({ sequence, transition }: { sequence: ShotSequenceView; transition: TimelineTransition | null }) => {
       const chosen: string[] = [];
       for (const slot of sequence.positions) {
-        let best: { assetId: string; score: number } | null = null;
-        for (const { attempt, take } of readyTakes(slot)) {
-          const quality = await client.fetchQuery(qualityQuery(projectId, take.assetId, attempt));
-          if (!best || quality.score > best.score) best = { assetId: take.assetId!, score: quality.score };
-        }
+        const choices: TakeChoice[] = [];
+        for (const { attempt, take } of readyTakes(slot)) choices.push(await takeChoice(client, projectId, take.assetId!, attempt));
+        const best = pickBestTake(choices);
         if (best) chosen.push(best.assetId);
       }
       const recent = await fetchRecentAssets(projectId);
@@ -138,19 +161,16 @@ export function useSendSequence(projectId: string) {
   });
 }
 
-/** For every shot, oldest first, the finished take with the best quality score goes onto the timeline. */
+/** For every shot, oldest first, the best finished take goes onto the timeline: quality first, a different face ruled out. */
 export function useAssembleBest(projectId: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: async (shots: ShotRunView[]) => {
       const chosen: string[] = [];
       for (const shot of [...shots].sort((left, right) => left.createdAt - right.createdAt)) {
-        let best: { assetId: string; score: number } | null = null;
-        for (const take of shot.takes) {
-          if (!take.assetId) continue;
-          const quality = await client.fetchQuery(qualityQuery(projectId, take.assetId, shot));
-          if (!best || quality.score > best.score) best = { assetId: take.assetId, score: quality.score };
-        }
+        const choices: TakeChoice[] = [];
+        for (const take of shot.takes) if (take.assetId) choices.push(await takeChoice(client, projectId, take.assetId, shot));
+        const best = pickBestTake(choices);
         if (best) chosen.push(best.assetId);
       }
       return addVideos(projectId, chosen);

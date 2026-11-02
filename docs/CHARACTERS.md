@@ -41,10 +41,24 @@ MCP and CLI can create characters from project images or absolute local image pa
 
 The bundled agent skill `consistent-characters` (`viral_hit_skill_get`) walks an agent through finding or defining a character, adding it to a project and Canvas draft, and revising it after a version conflict.
 
+## Check a face
+
+Face match tells you whether generated images and video takes still show the same person. It runs on this computer at no cost. It finds faces with OpenCV's YuNet detector and compares them with OpenCV's SFace recognizer. Each image, and up to eight evenly spaced frames of each video, gets a cosine similarity against the closest reference face. OpenCV's published threshold for the same person is **0.363**. A file reads as **same face** when most of its frames reach the threshold, **face drifts** when only some do, **different face** when none do, and **no face found** when no frame shows a face.
+
+Set it up once with `pnpm character face-setup`. This downloads the two models (about 39 MB, MIT and Apache 2.0 licensed, pinned by SHA-256) into the data directory and checks for Python with OpenCV 4.8 or newer (`pip install opencv-python-headless`). Set `VIRAL_HIT_PYTHON` to choose a Python and `VIRAL_HIT_FACE_MODELS` to keep the models elsewhere. Until both are ready, the check says it needs setup and nothing else changes.
+
+| Surface | How |
+|---|---|
+| Cinema | Each finished take is compared with the shot's character images, or with its keyframe when the shot has none |
+| MCP and HTTP | `viral_hit_shot` or `POST /api/app/projects/<id>/shots` with `{ "action": "face", "assetIds": [...], "characterId": "..." }` or `referenceAssetIds` instead of `characterId` |
+| CLI | `pnpm character match <project-id> <character-id> <asset-id...>` |
+
+Turning the head, strong shadows and motion blur lower the score of the same person, so treat values near 0.363 as uncertain. The check measures human faces only. Mascots, illustrations and products are reported as having no face.
+
 ## Storage
 
 Character records live in `character-library.sqlite` inside the data directory. Images are stored once by content hash under `characters/`, so the same image used by several characters takes space once.
 
 ## Limits
 
-Characters do not start generation. Only the main image is attached on Canvas; other angles stay in the project assets to attach by hand. Viral Hit does not create Soul IDs, and it does not measure face or product similarity in generated media.
+Characters do not start generation. Only the main image is attached on Canvas; other angles stay in the project assets to attach by hand. Viral Hit does not create Soul IDs. Face match compares human faces only and does not measure product or outfit similarity.

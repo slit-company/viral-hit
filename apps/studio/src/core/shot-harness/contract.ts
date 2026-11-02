@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { shotSpec, type ShotSpec } from './spec';
+import { characterId } from '../characters/contract';
 
 export const SHOT_REQUEST_PREFIX = 'shot:';
 const assetId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
@@ -13,6 +14,8 @@ export const shotRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('quality'), assetId, durationSec: z.number().min(0).max(120).optional(), audio: z.boolean().optional() }).strict(),
   /** Extract a take's last frame as a project image so the next shot can start where it ended. */
   z.object({ action: z.literal('continue'), assetId }).strict(),
+  /** Compare the faces in project images or takes with a character or with reference images, locally. */
+  z.object({ action: z.literal('face'), assetIds: z.array(assetId).min(1).max(12), referenceAssetIds: z.array(assetId).min(1).max(8).optional(), characterId: characterId.optional() }).strict(),
 ]);
 export type ShotRequest = z.infer<typeof shotRequest>;
 

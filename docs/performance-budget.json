@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "client": {
     "totalBytes": 10000000,
-    "allScriptsGzipBytes": 771000
+    "allScriptsGzipBytes": 773000
   },
   "separateRuntimePackages": [
     "music2-gen",

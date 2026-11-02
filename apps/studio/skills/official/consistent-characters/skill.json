@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "consistent-characters",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "title": "Consistent characters",
   "summary": "Keep a person, mascot or product looking the same across shots: build a character from reference images and written rules, add it to a project and attach it to Canvas drafts.",
   "scope": "general",
@@ -13,7 +13,8 @@
     "requiredMcpTools": [
       "viral_hit_character",
       "viral_hit_canvas_get",
-      "viral_hit_canvas_apply"
+      "viral_hit_canvas_apply",
+      "viral_hit_shot"
     ]
   },
   "requiredCapabilities": [],

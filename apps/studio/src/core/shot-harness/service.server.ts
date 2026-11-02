@@ -9,6 +9,7 @@ import { listShotModels } from './catalog.server';
 import { SHOT_REQUEST_PREFIX, shotRequest, type ShotRunView, type ShotTakeView } from './contract';
 import { prepareShot, shotPlan, type ShotProduction } from './plan';
 import { inspectTake } from './quality.server';
+import { checkFaceMatch } from '../characters/face-match.server';
 import { placeShot, readShotRecords } from './records.server';
 import { shotSpec, type ShotSpec } from './spec';
 
@@ -78,6 +79,7 @@ export async function changeShots(projectId: string, raw: unknown) {
   if (request.action === 'list') return { shots: await listShots(projectId) };
   if (request.action === 'quality') return { quality: await inspectTake(projectId, request.assetId, { durationSec: request.durationSec, audio: request.audio }) };
   if (request.action === 'continue') return continueFrom(projectId, request.assetId);
+  if (request.action === 'face') return { faceMatch: await checkFaceMatch(projectId, request) };
   const production = prepareShot(request.spec, await listShotModels({ freshBalances: request.action === 'produce' }));
   if (request.action === 'preview') return { production: publicProduction(production) };
   const plan = shotPlan(projectId, production);

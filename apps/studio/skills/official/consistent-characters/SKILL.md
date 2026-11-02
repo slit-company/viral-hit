@@ -18,6 +18,13 @@ Use this skill when someone wants the same person, mascot or product to look the
 3. For an existing draft, send `set_references` with the draft's current `referenceCardIds` plus the character card, and `upsert_card` for the draft with its fields unchanged except the prompt, which gains the brief once. For a new draft, create it with `referenceCardIds` set and the brief in the prompt, then `place_card` it beside the reference.
 4. Attach other angles only when the shot needs that view and the draft model accepts more references. In the Canvas UI the user can do the same from the draft's image reference menu under **Characters**.
 
+## Check a result
+
+1. After images or takes exist, call `viral_hit_shot` with `{ "request": { "action": "face", "assetIds": [...], "characterId": "<id>" } }`. Use `referenceAssetIds` with project images instead when there is no library character. Up to 12 files per call; each video is sampled at up to eight frames.
+2. Read `status` for each file. `match` means most frames reach the same-person threshold of 0.363, `mixed` means the face drifts in some frames (see `lowest` for when), `different` means no frame matches, and `no-face` means no human face was found.
+3. For `mixed` or `different`, offer a re-render with a clearer front view as the reference or a calmer camera move. Do not delete takes.
+4. If the reply says setup is needed, tell the user to run `pnpm character face-setup` (and install `opencv-python-headless` if asked). Never try to install it yourself.
+
 ## Revise
 
 1. Every change (`update`, `add_references`, `remove_reference`, `set_canonical`, `archive`) needs `expectedVersion` equal to the current `version`. On a version conflict, call `get`, reapply only the user's change to the new version and tell them it had changed.
@@ -27,5 +34,5 @@ Use this skill when someone wants the same person, mascot or product to look the
 ## Boundaries
 
 - Characters change the library and project assets only. Generating, rendering and publishing are separate requests; paid generation needs the user's approval for that run.
-- Report what was attached and the brief you added. Do not claim a generated result matches the character unless the user has compared it.
+- Report what was attached and the brief you added. Claim a generated result keeps the character only when the face check says `match` or the user has compared it. The check covers human faces only, so mascots and products still need the user's eye.
 - The same steps exist in the UI (**Characters**, **Assets → Characters**, Canvas reference menu) and the CLI (`pnpm character list | get | use | request`).

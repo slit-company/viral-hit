@@ -268,3 +268,7 @@ Summed script gzip: **767,093 bytes**, **2,048 bytes** more than Instagram DM co
 ## Audio screens — 2026-11-03
 
 Summed script gzip: **769,836 bytes**, **2,743 bytes** more than Edit analysis (767,093); public files **9,328,774 bytes**. The script budget changed from 768,000 to **771,000** in this reviewed decision. 15 messages in four languages join the shared message chunk: file requirements, prompt names for each audio job, the no-prompt note and the voice picker. The Studio route gains three small components (`source-requirements`, `studio-prompt-field` additions and `suggested-text-input`). Prompt rules reuse the existing validation module, and voice names arrive as provider catalog data. No dependency was added, and browser-reachable modules went from 358 to 360.
+
+## Face match — 2026-11-03
+
+Summed script gzip: **771,269 bytes**, **1,433 bytes** more than Audio screens (769,836); public files **9,332,882 bytes**. The script budget changed from 771,000 to **773,000** in this reviewed decision: 7 face messages in four languages join the shared message chunk, and the Cinema take card gains its face chip, query and best-take rule (`best-take.ts`, `face-match.ts`; browser-reachable modules 360 → 362). Detection and recognition run in a short-lived Python process from server-only modules; the 39 MB of models stay in the data directory, outside the app and its install, and are downloaded only by `pnpm character face-setup`.
