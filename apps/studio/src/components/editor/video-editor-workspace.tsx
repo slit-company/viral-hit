@@ -6,6 +6,8 @@ import { EditorInspectorPanel, useInspectorPanel } from './editor-inspector-pane
 import { OverlayInspector } from './overlay-inspector';
 import { TransitionInspector } from './transition-inspector';
 import { transitionPreview } from './transition-preview';
+import { CaptionPreviewText } from './caption-preview-text';
+import { CaptionHighlightPicker } from './caption-highlight-picker';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
@@ -1917,7 +1919,7 @@ export function VideoEditorWorkspace({
                       fontSize: `clamp(10px, ${activeCaptionStyle.fontScale * 100}cqh, 80px)`,
                     }}
                   >
-                    {activeCaption.text}
+                    <CaptionPreviewText clip={activeCaption} time={timelineCurrentTime} highlight={document.captionHighlight} uppercase={activeCaptionStyle.uppercase} />
                   </p>
                 </div>
               ) : null}
@@ -2389,6 +2391,8 @@ export function VideoEditorWorkspace({
                           ))}
                         </div>
                       </div>
+                      <CaptionHighlightPicker document={document} clip={selectedClip}
+                        onEdit={operation => commitDocument(current => applyEditorOperations(current, [operation]).document)} />
                       {selectedCaptionStyle ? (
                         <div className="space-y-3 border-t border-[var(--vh-border)] pt-3">
                           <div className="flex items-center justify-between gap-3">

@@ -216,3 +216,7 @@ Summed script gzip: **613,977 bytes**, **2,576 bytes** more than source roles. T
 ## Editor transitions — 2026-11-02
 
 Summed script gzip: **728,029 bytes**, **5,220 bytes** more than the Cinema/worker build; public files **9,203,088 bytes**. The script budget changed from 725,000 to **729,000** in this reviewed decision. The added code is the transition contract, canvas compositor, preview layers and inspector in the editor route chunk, plus 21 messages in four languages; kind labels use literal message keys so unused messages stay out. No dependency, worker or service was added; server export reuses FFmpeg `xfade`.
+
+## Spoken-word captions — 2026-11-02
+
+Summed script gzip: **731,790 bytes**, **3,761 bytes** more than editor transitions; public files **9,213,805 bytes**. The script budget changed from 729,000 to **732,000** in this reviewed decision. The added code is the caption tokenizer, re-timing and cue grouping (applied in the browser by the shared editor commands), the canvas highlight path, preview text, the highlight picker and eight messages in four languages. Moving caption drawing out of the media exporter brought that module and the server renderer under 400 lines. No dependency, worker or service was added; the server export uses FFmpeg's libass filter.

@@ -9,7 +9,9 @@ import type { OverlaySource } from '../commands/overlay-schema';
  */
 
 import { TIMELINE_SCHEMA_VERSION, timelineDocumentSchema } from './timeline-schema';
+import { migrateLegacyTimeline } from './timeline-migration';
 import type { TimelineTransition } from './transition-contract';
+import { validateCaptionWords, type CaptionWord } from './caption-words';
 import { overlayMotionSchema, overlayTransformAt, patchOverlayClip, type OverlayMotion, type OverlayPatch } from './overlay-motion';
 
 export { TIMELINE_SCHEMA_VERSION };
@@ -81,6 +83,8 @@ export type TimelineClip = {
   motion?: OverlayMotion;
   /** How this base-track visual enters; see transition-contract.ts. */
   transition?: TimelineTransition;
+  /** Caption word timing in source seconds; see caption-words.ts. */
+  words?: CaptionWord[];
   caption: TimelineCaptionTransform | null;
   takes: TimelineTake[];
   activeTakeId: string | null;
@@ -107,6 +111,8 @@ export type TimelineDocument = {
   lastRenderAssetId: string | null;
   lastRenderUrl: string | null;
   captionStyle: CaptionStylePreset;
+  /** #RRGGBB colour for the word being spoken, or none. */
+  captionHighlight?: string | null;
   tracks: TimelineTrack[];
 };
 
@@ -344,61 +350,7 @@ export function normalizeTimelineDocument(
   value: unknown,
   expectedProjectId?: string
 ): TimelineDocument {
-  const version =
-    value && typeof value === 'object'
-      ? (value as { schemaVersion?: unknown }).schemaVersion
-      : null;
-  const legacyDocument = value as Record<string, unknown>;
-  const migrated =
-    version === 1 || version === 2 || version === 3 || version === 4 || version === 5
-      ? {
-          ...legacyDocument,
-          schemaVersion: TIMELINE_SCHEMA_VERSION,
-          lastRenderAssetId:
-            version === 1 ? null : (legacyDocument.lastRenderAssetId ?? null),
-          lastRenderUrl:
-            version === 1 ? null : (legacyDocument.lastRenderUrl ?? null),
-          tracks: Array.isArray((value as { tracks?: unknown }).tracks)
-            ? ((value as { tracks: unknown[] }).tracks).map((track) =>
-                track && typeof track === 'object'
-                  ? {
-                      ...(track as Record<string, unknown>),
-                      name:
-                        (track as { name?: unknown }).name === 'Video 1'
-                          ? 'Visual 1'
-                          : (track as { name?: unknown }).name,
-                      clips: Array.isArray(
-                        (track as { clips?: unknown }).clips
-                      )
-                        ? ((track as { clips: unknown[] }).clips).map((clip) =>
-                            clip && typeof clip === 'object'
-                              ? {
-                                  ...(clip as Record<string, unknown>),
-                                  takes:
-                                    version === 1
-                                      ? []
-                                      : ((clip as { takes?: unknown }).takes ?? []),
-                                  activeTakeId:
-                                    version === 1
-                                      ? null
-                                      : ((clip as { activeTakeId?: unknown })
-                                          .activeTakeId ?? null),
-                                  overlay:
-                                    (version === 4 || version === 5)
-                                      ? ((clip as { overlay?: unknown }).overlay ?? null)
-                                      : null,
-                                  caption: version === 5 ? ((clip as { caption?: unknown }).caption ?? null) : null,
-                                  motion: undefined,
-                                }
-                              : clip
-                          )
-                        : [],
-                    }
-                  : track
-              )
-            : [],
-        }
-      : value;
+  const migrated = migrateLegacyTimeline(value);
   const parsedResult = timelineDocumentSchema.safeParse(migrated);
   if (!parsedResult.success) {
     throw new TimelineDocumentValidationError(
@@ -413,6 +365,7 @@ export function normalizeTimelineDocument(
   }
   for (const track of parsed.tracks) {
     for (const clip of track.clips) {
+      if (clip.words && (track.kind !== 'caption' || !validateCaptionWords(clip.words, clip.sourceDuration))) throw new TimelineDocumentValidationError('Caption word timings must be ordered and fit their caption.');
       if (clip.transition && (track.kind !== 'video' || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Transitions belong to visual clips on a base track.');
       if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Motion needs a visual overlay.');
       if (clip.trackId !== track.id) {

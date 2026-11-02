@@ -2,6 +2,8 @@ import type { OverlaySource } from './overlay-schema';
 import type { OverlayMotion } from '@/core/editor/overlay-motion';
 import type { TimelineTransition } from '@/core/editor/transition-contract';
 import { setTimelineTransition, setTimelineTransitionsAtCuts } from '@/core/editor/transitions';
+import type { CaptionWord } from '@/core/editor/caption-words';
+import { addCaptionsFromWords, setCaptionHighlight, setCaptionWords } from '@/core/editor/caption-word-ops';
 import {
   applySrtToTimeline,
   setCaptionStyle,
@@ -36,6 +38,9 @@ export type EditorOperation =
   | { type: 'set_overlay_motion'; clipId: string; motion: OverlayMotion | null }
   | { type: 'set_transition'; clipId: string; transition: TimelineTransition | null }
   | { type: 'set_transitions_at_cuts'; transition: TimelineTransition | null }
+  | { type: 'set_caption_highlight'; color: string | null }
+  | { type: 'set_caption_words'; clipId: string; words: CaptionWord[] | null }
+  | { type: 'captions_from_words'; words: CaptionWord[]; replace?: boolean; maxWords?: number; maxSeconds?: number }
   | {
       type: 'add_clip';
       assetId: string;
@@ -241,6 +246,21 @@ export function applyEditorOperations(
       next = setTimelineTransition(document, operation.clipId, operation.transition);
     } else if (operation.type === 'set_transitions_at_cuts') {
       next = setTimelineTransitionsAtCuts(document, operation.transition);
+    } else if (operation.type === 'set_caption_highlight') {
+      next = setCaptionHighlight(document, operation.color);
+      changedIds.add(next.id);
+    } else if (operation.type === 'set_caption_words') {
+      const clip = findTimelineClip(document, operation.clipId);
+      if (!clip || clip.sourceType !== 'caption') {
+        throw new ViralHitCommandError('NOT_FOUND', `Caption clip ${operation.clipId} was not found.`);
+      }
+      try {
+        next = setCaptionWords(document, operation.clipId, operation.words);
+      } catch (error) {
+        throw new ViralHitCommandError('INVALID_COMMAND', error instanceof Error ? error.message : 'Caption words are invalid.');
+      }
+    } else if (operation.type === 'captions_from_words') {
+      next = addCaptionsFromWords(document, operation.words, { replace: operation.replace, maxWords: operation.maxWords, maxSeconds: operation.maxSeconds });
     } else if (operation.type === 'update_overlay') {
       const clip = findTimelineClip(document, operation.clipId);
       if (!clip?.overlay) {

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { overlayMotionSchema, overlayTransformSchema } from './overlay-motion';
 import { timelineTransitionSchema } from './transition-contract';
+import { captionHighlightSchema, captionWordsSchema } from './caption-words';
 
 export const TIMELINE_SCHEMA_VERSION = 6 as const;
 
@@ -26,6 +27,7 @@ const timelineClipSchema = z.object({
   overlay: overlayTransformSchema.nullable().default(null),
   motion: overlayMotionSchema.optional(),
   transition: timelineTransitionSchema.optional(),
+  words: captionWordsSchema.optional(),
   caption: z
     .object({
       fontScale: z.number().finite().min(0.015).max(0.12),
@@ -77,5 +79,6 @@ export const timelineDocumentSchema = z.object({
   captionStyle: z
     .enum(['classic', 'bold', 'boxed', 'minimal'])
     .default('classic'),
+  captionHighlight: captionHighlightSchema.nullable().optional(),
   tracks: z.array(timelineTrackSchema).min(1).max(64),
 });

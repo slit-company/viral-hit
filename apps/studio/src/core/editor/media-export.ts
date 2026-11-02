@@ -1,7 +1,8 @@
 import { timelineOutputFrame } from './output-frame';
 import { drawImageOverlay } from './overlay-export';
 export { drawImageOverlay } from './overlay-export';
-import { findCaptionAtTime, getResolvedCaptionStyle } from './captions';
+import { drawTimelineCaption } from './caption-canvas';
+export { wrapCaptionText } from './caption-canvas';
 import {
   getTimelineClipSource,
   type TimelineClip,
@@ -193,78 +194,6 @@ function disposeTimelineMediaRecords(records: TimelineMediaRecord[]) {
     record.input?.dispose();
     record.imageBitmap?.close();
   }
-}
-
-export function wrapCaptionText(
-  text: string,
-  maxWidth: number,
-  measure: (value: string) => number
-) {
-  const wrapped: string[] = [];
-  const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' });
-
-  const pushParagraph = (paragraph: string) => {
-    if (!paragraph) {
-      wrapped.push('');
-      return;
-    }
-    const tokens = Array.from(segmenter.segment(paragraph), ({ segment }) => segment);
-    let line = '';
-    for (const token of tokens) {
-      const candidate = `${line}${token}`;
-      if (!line || measure(candidate) <= maxWidth) {
-        line = candidate;
-        continue;
-      }
-      wrapped.push(line.trimEnd());
-      if (measure(token) <= maxWidth) {
-        line = token.trimStart();
-        continue;
-      }
-      line = '';
-      for (const character of Array.from(token)) {
-        const characterCandidate = `${line}${character}`;
-        if (line && measure(characterCandidate) > maxWidth) {
-          wrapped.push(line);
-          line = character;
-        } else {
-          line = characterCandidate;
-        }
-      }
-    }
-    if (line) wrapped.push(line.trimEnd());
-  };
-
-  for (const paragraph of text.split('\n')) pushParagraph(paragraph);
-  return wrapped;
-}
-
-function drawRoundedCaptionBackground(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number
-) {
-  const safeRadius = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.moveTo(x + safeRadius, y);
-  context.lineTo(x + width - safeRadius, y);
-  context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
-  context.lineTo(x + width, y + height - safeRadius);
-  context.quadraticCurveTo(
-    x + width,
-    y + height,
-    x + width - safeRadius,
-    y + height
-  );
-  context.lineTo(x + safeRadius, y + height);
-  context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
-  context.lineTo(x, y + safeRadius);
-  context.quadraticCurveTo(x, y, x + safeRadius, y);
-  context.closePath();
-  context.fill();
 }
 
 function gainAt(clip: TimelineClip, clipOffset: number) {
@@ -466,58 +395,7 @@ export async function exportTimelineMp4({
             overlay.imageBitmap?.height ?? overlay.videoTrack!.displayHeight, overlay.clip, timelineTime, width, height);
         } finally { sample?.close(); }
       }
-      const caption = findCaptionAtTime(document, timelineTime);
-      if (caption?.text) {
-        const style = getResolvedCaptionStyle(document, caption);
-        const fontSize = Math.max(24, Math.round(height * style.fontScale));
-        context.font = `${style.fontWeight} ${fontSize}px sans-serif`;
-        context.textAlign = 'center';
-        context.textBaseline = 'bottom';
-        const captionText = style.uppercase
-          ? caption.text.toLocaleUpperCase()
-          : caption.text;
-        const lines = wrapCaptionText(
-          captionText,
-          width * style.maxWidth,
-          (value) => context.measureText(value).width
-        );
-        const lineHeight = fontSize * style.lineHeight;
-        const baseY = height - Math.round(height * style.bottomOffset);
-        if (style.backgroundStyle) {
-          const textWidth = Math.max(
-            ...lines.map((line) => context.measureText(line).width),
-            fontSize
-          );
-          const horizontalPadding = fontSize * style.horizontalPaddingScale;
-          const verticalPadding = fontSize * style.verticalPaddingScale;
-          const backgroundWidth = textWidth + horizontalPadding * 2;
-          const backgroundHeight =
-            lineHeight * lines.length + verticalPadding * 2;
-          context.fillStyle = style.backgroundStyle;
-          drawRoundedCaptionBackground(
-            context,
-            (width - backgroundWidth) / 2,
-            baseY - lineHeight * lines.length - verticalPadding,
-            backgroundWidth,
-            backgroundHeight,
-            fontSize * 0.24
-          );
-        }
-        lines.forEach((line, index) => {
-          const y = baseY - (lines.length - 1 - index) * lineHeight;
-          if (style.strokeStyle) {
-            context.lineWidth = Math.max(
-              2,
-              Math.round(fontSize * style.strokeScale)
-            );
-            context.strokeStyle = style.strokeStyle;
-            context.lineJoin = 'round';
-            context.strokeText(line, width / 2, y);
-          }
-          context.fillStyle = style.fillStyle;
-          context.fillText(line, width / 2, y);
-        });
-      }
+      drawTimelineCaption(context, document, timelineTime, width, height);
       await videoSource.add(timelineTime, frameDuration, {
         keyFrame: frame % frameRate === 0,
       });

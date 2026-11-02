@@ -6,6 +6,7 @@ import {
   type TimelineDocument,
   type TimelineTrack,
 } from './timeline-document';
+import { captionWordsAfterEdit } from './caption-words';
 
 export const MAX_CAPTION_TEXT = 4_000;
 export const MAX_SRT_CHARS = 200_000;
@@ -331,6 +332,8 @@ export function upsertCaptionCue(
     clipId: cue.clipId,
     caption: existing?.caption,
   });
+  const words = captionWordsAfterEdit(existing, clip);
+  if (words) clip.words = words;
   const tracks = next.tracks.map((item) =>
     item.id !== track.id
       ? item

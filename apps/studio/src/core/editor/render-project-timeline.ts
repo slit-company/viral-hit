@@ -2,11 +2,12 @@ import { timelineOutputFrame } from './output-frame';
 import { buildOverlayFilters } from './overlay-render.server';
 import { buildTransitionFilters } from './transition-render.server';
 import { spawn } from 'node:child_process';
-import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { getResolvedCaptionStyle } from './captions';
+import { buildCaptionFilters, captionFilterRequirement } from './caption-render.server';
+export { wrapCaptionForFfmpeg } from './caption-render.server';
 import {
   getTimelineClipSource,
   type TimelineClip,
@@ -110,39 +111,6 @@ async function probeMedia(filePath: string): Promise<MediaProbe> {
 }
 
 const time = (value: number) => Math.max(0, value).toFixed(3);
-
-const escapeFilterPath = (value: string) =>
-  value.replaceAll('\\', '\\\\').replaceAll(':', '\\:').replaceAll("'", "\\'");
-
-export function wrapCaptionForFfmpeg({
-  text,
-  maxCharacters,
-}: {
-  text: string;
-  maxCharacters: number;
-}) {
-  const width = Math.max(4, Math.floor(maxCharacters));
-  return text
-    .split('\n')
-    .flatMap((paragraph) => {
-      const words = paragraph.trim().split(/\s+/).filter(Boolean);
-      if (words.length === 0) return [''];
-      const lines: string[] = [];
-      let line = '';
-      for (const word of words) {
-        const candidate = line ? `${line} ${word}` : word;
-        if (!line || candidate.length <= width) {
-          line = candidate;
-          continue;
-        }
-        lines.push(line);
-        line = word;
-      }
-      if (line) lines.push(line);
-      return lines;
-    })
-    .join('\n');
-}
 
 async function resolveRenderInputs({
   projectId,
@@ -272,53 +240,9 @@ async function buildFfmpegArgs({
     visualLabel = overlay.output;
   }
 
-  const captionClips = document.tracks.filter(track => track.kind === 'caption' && !track.hidden && !track.muted).flatMap(track => track.clips);
-  if (captionClips.length) {
-    let captionIndex = 0;
-    for (const clip of captionClips) {
-      if (clip.muted || !clip.text?.trim()) continue;
-      captionIndex += 1;
-      const style = getResolvedCaptionStyle(document, clip);
-      const fontSize = Math.max(24, Math.round(height * style.fontScale));
-      const maxCharacters = (width * style.maxWidth) / (fontSize * 0.56);
-      const captionText = style.uppercase
-        ? clip.text.toLocaleUpperCase()
-        : clip.text;
-      const textPath = join(directory, `caption-${captionIndex}.txt`);
-      await writeFile(
-        textPath,
-        wrapCaptionForFfmpeg({ text: captionText, maxCharacters }),
-        'utf8'
-      );
-      const nextLabel = `withcaption${captionIndex}`;
-      const options = [
-        `font=${style.fontWeight >= 700 ? 'Arial Bold' : 'Arial'}`,
-        `textfile='${escapeFilterPath(textPath)}'`,
-        'expansion=none',
-        `fontsize=${fontSize}`,
-        `fontcolor=${style.fillStyle}`,
-        `line_spacing=${Math.round(fontSize * (style.lineHeight - 1))}`,
-        'x=(w-text_w)/2',
-        `y=h-${Math.round(height * style.bottomOffset)}-text_h`,
-        `enable='between(t,${time(clip.startTime)},${time(clip.startTime + clip.duration)})'`,
-      ];
-      if (style.strokeStyle) {
-        options.push(
-          `borderw=${Math.max(2, Math.round(fontSize * style.strokeScale))}`,
-          'bordercolor=black@0.9'
-        );
-      }
-      if (style.backgroundStyle) {
-        options.push(
-          'box=1',
-          'boxcolor=black@0.82',
-          `boxborderw=${Math.max(4, Math.round(fontSize * style.horizontalPaddingScale))}`
-        );
-      }
-      filters.push(`[${visualLabel}]drawtext=${options.join(':')}[${nextLabel}]`);
-      visualLabel = nextLabel;
-    }
-  }
+  const captions = await buildCaptionFilters({ document, directory, width, height, visualLabel });
+  filters.push(...captions.filters);
+  visualLabel = captions.output;
   filters.push(`[${visualLabel}]format=yuv420p[vout]`);
 
   const audioLabels: string[] = [];
@@ -392,10 +316,10 @@ export async function renderProjectTimelineToAsset({
     throw new Error(`Timeline diagnostics failed: ${blocking.code}`);
   }
   const inputs = await resolveRenderInputs({ projectId, document });
-  const needsCaptions = document.tracks.some(track => track.kind === 'caption' && !track.hidden && !track.muted && track.clips.some(clip => !clip.muted && clip.text?.trim()));
-  if (needsCaptions) {
+  const captionFilter = captionFilterRequirement(document);
+  if (captionFilter) {
     const availableFilters = await runProcess(ffmpegBin(), ['-hide_banner', '-filters'], { captureStdout: true });
-    if (!/\bdrawtext\s/.test(availableFilters)) throw new Error('This FFmpeg build cannot render captions: drawtext is missing. Install a full FFmpeg build with libfreetype/libharfbuzz and set VIRAL_HIT_FFMPEG to its executable, then retry. Your timeline is preserved.');
+    if (!new RegExp(`\\b${captionFilter}\\s`).test(availableFilters)) throw new Error(`This FFmpeg build cannot render captions: ${captionFilter} is missing. Install a full FFmpeg build with libfreetype, libharfbuzz and libass and set VIRAL_HIT_FFMPEG to its executable, then retry. Your timeline is preserved.`);
   }
   const directory = await mkdtemp(join(tmpdir(), 'viral-hit-render-'));
   const outputPath = join(directory, 'timeline.mp4');
