@@ -272,3 +272,7 @@ Summed script gzip: **769,836 bytes**, **2,743 bytes** more than Edit analysis (
 ## Face match — 2026-11-03
 
 Summed script gzip: **771,269 bytes**, **1,433 bytes** more than Audio screens (769,836); public files **9,332,882 bytes**. The script budget changed from 771,000 to **773,000** in this reviewed decision: 7 face messages in four languages join the shared message chunk, and the Cinema take card gains its face chip, query and best-take rule (`best-take.ts`, `face-match.ts`; browser-reachable modules 360 → 362). Detection and recognition run in a short-lived Python process from server-only modules; the 39 MB of models stay in the data directory, outside the app and its install, and are downloaded only by `pnpm character face-setup`.
+
+## Collaboration — 2026-11-03
+
+Summed script gzip: **780,021 bytes**, **8,752 bytes** more than Face match (771,269); public files **9,358,446 bytes**. The script budget changed from 773,000 to **781,000** in this reviewed decision. About half is 40 messages in four languages in the shared message chunk (now 118,834 bytes): the review page, the share dialog and the comments dialog. The rest is code split by route: the review page loads only at `/shared/<token>` (1,793 bytes), the comments dialog loads with the editor (1,523), the share dialog sits in the project header (about 1,000), and the shared hooks take 418. No dependency was added. Tokens, hashing, storage and the role check are server-only, and browser-reachable modules went from 362 to 366.

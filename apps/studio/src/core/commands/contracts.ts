@@ -1,4 +1,5 @@
-export type ViralHitCommandOrigin = 'ui' | 'mcp' | 'cli' | 'system';
+/** 'guest' is a person using a share link; the link's role decides which commands it may run. */
+export type ViralHitCommandOrigin = 'ui' | 'mcp' | 'cli' | 'system' | 'guest';
 
 export type ViralHitCommandEnvelope<TCommand> = {
   commandId: string;
@@ -33,6 +34,7 @@ export type ViralHitCommandFailure = {
     | 'INVALID_COMMAND'
     | 'NOT_FOUND'
     | 'REVISION_CONFLICT'
+    | 'FORBIDDEN'
     | 'COMMAND_FAILED';
   message: string;
   revision?: number;

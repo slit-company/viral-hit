@@ -8,6 +8,7 @@ import {
 } from '@/core/projects/projects';
 
 import { normalizeCommandAssetReferences } from './asset-boundary';
+import { commandDenial, type CollaborationActor } from '../collaboration/access';
 import { timelineCanvasCardId } from './canvas-commands';
 import {
   ViralHitCommandError,
@@ -127,7 +128,7 @@ export function validateExternalCommandAssetReferences({
   origin: ViralHitCommandOrigin;
   command: ViralHitCommand;
 }) {
-  if (origin !== 'mcp' && origin !== 'cli') return;
+  if (origin !== 'mcp' && origin !== 'cli' && origin !== 'guest') return;
   if (command.type !== 'canvas.apply') return;
 
   for (const operation of command.operations) {
@@ -351,6 +352,7 @@ export function persistViralHitCommand({
   expectedRevision,
   idempotencyKey,
   command,
+  actor = { kind: 'owner' },
 }: {
   projectId: string;
   origin: ViralHitCommandOrigin;
@@ -358,22 +360,13 @@ export function persistViralHitCommand({
   expectedRevision?: number | null;
   idempotencyKey?: string | null;
   command: ViralHitCommand;
+  /** Who asked; a share link may run only what its role allows, checked before anything is read or saved. */
+  actor?: CollaborationActor;
 }): Promise<ViralHitCommandResult<ViralHitCommandData>> {
-  if (
-    command.type === 'editor.replace_document' &&
-    origin !== 'ui' &&
-    origin !== 'system'
-  ) {
-    return Promise.resolve(
-      createCommandFailure({
-        commandId,
-        projectId,
-        origin,
-        code: 'INVALID_COMMAND',
-        message:
-          'External agents must use editor.apply operations instead of replacing the timeline document.',
-      })
-    );
+  const denial = origin === 'guest' && actor.kind !== 'guest' ? 'A shared link must say which link it uses.' : commandDenial(actor, projectId, command.type);
+  if (denial) return Promise.resolve(createCommandFailure({ commandId, projectId, origin, code: 'FORBIDDEN', message: denial }));
+  if (command.type === 'editor.replace_document' && origin !== 'ui' && origin !== 'system') {
+    return Promise.resolve(createCommandFailure({ commandId, projectId, origin, code: 'INVALID_COMMAND', message: 'External agents must use editor.apply operations instead of replacing the timeline document.' }));
   }
   try {
     validateExternalCommandAssetReferences({ origin, command });

@@ -15,7 +15,7 @@
     "src/components/editor/video-editor-workspace.tsx": 2762,
     "src/components/studio/studio-composer.tsx": 419,
     "src/core/adapters/cloud-api-adapter.ts": 736,
-    "src/core/commands/persist.ts": 416,
+    "src/core/commands/persist.ts": 409,
     "src/core/commands/schema.ts": 468,
     "src/core/creative-canvas/composer.ts": 424,
     "src/core/creative-canvas/generation-controller.ts": 749,

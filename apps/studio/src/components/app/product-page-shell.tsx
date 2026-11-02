@@ -1,5 +1,6 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { ProjectBundleDialog } from '@/components/project-bundles/project-bundle-dialog';
+import { ShareDialog } from '@/components/collaboration/share-dialog';
 import { BackButton } from '@/components/base/back-button';
 import { useRouter } from '@/core/i18n/navigation';
 import type { ReactNode } from 'react';
@@ -187,6 +188,7 @@ export function ProductPageShell({
                 </nav>
               ) : null}
               <ProjectBundleDialog key={`file-${projectId}`} projectId={projectId} />
+              {projectId && <ShareDialog key={`share-${projectId}`} projectId={projectId} />}
               <LanguageSwitcher variant="workspace" />
               {projectId && <Link href={`/publish/${projectId}`} aria-label={uiMessages["ui.app.publish_project"]()} title={uiMessages["ui.app.publish_project"]()} aria-current={publishing ? 'page' : undefined} className={`inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70 ${publishing ? 'bg-[var(--color-brand-lime-soft)] text-[var(--color-lime-text)]' : 'bg-[var(--vh-control)] text-[var(--vh-text-2)]'}`}><Send className="size-[17px]" aria-hidden="true" /></Link>}
               <Link href="/connections" aria-label={uiMessages["ui.app.publishing_connections"]()} title={uiMessages["ui.app.publishing_connections"]()} className="inline-flex size-9 shrink-0 lg:hidden items-center justify-center rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--vh-graph)]/70"><Link2 className="size-[17px]" aria-hidden="true" /></Link>

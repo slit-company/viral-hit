@@ -11,6 +11,7 @@ import { CaptionPreviewText } from './caption-preview-text';
 import { CaptionHighlightPicker } from './caption-highlight-picker';
 import { VoiceCaptionsAction } from './voice-captions-action';
 import { LayerExportAction } from './layer-export-action';
+import { EditorComments } from '@/components/collaboration/editor-comments';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
@@ -1740,6 +1741,7 @@ export function VideoEditorWorkspace({
               >
                 <SlidersHorizontal className="size-3.5" />
               </Action>
+              <EditorComments projectId={projectId} currentTime={currentTime} selectedClipId={selectedClipId} onSeek={seekTimeline} />
               <LayerExportAction projectId={projectId} name={document.name} disabled={isExporting || !clips.some((clip) => clip.sourceType !== 'audio')} onError={setError} />
               <Action
                 type="button"
