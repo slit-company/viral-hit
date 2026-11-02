@@ -240,3 +240,7 @@ Summed script gzip: **737,198 bytes**, **806 bytes** more than continuous playba
 ## Remix — 2026-11-02
 
 Summed script gzip: **743,115 bytes**, **5,917 bytes** more than captions from voice; public files **9,250,604 bytes**. The script budget changed from 738,000 to **744,000** in this reviewed decision: the new Remix route (asset picker, rhythm and shot list) and 20 messages in four languages. Detection reuses the existing scene detector and worker; soundtrack extraction runs FFmpeg on the server. No dependency or service was added.
+
+## Layer export — 2026-11-02
+
+Summed script gzip: **743,969 bytes**, **854 bytes** more than Remix; public files **9,252,899 bytes**, within the unchanged 744,000-byte budget. The browser gains one toolbar button and three messages in four languages; it reuses the existing layers icon, and a spinner replaces a busy label. Rendering runs FFmpeg on the server, and the ZIP uses JSZip, which the server already depended on. No dependency or service was added.

@@ -55,6 +55,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_shot',
   'viral_hit_service_credits',
   'viral_hit_remix',
+  'viral_hit_editor_render_layers',
 ] as const;
 
 export type ViralHitMcpToolName = (typeof VIRAL_HIT_MCP_TOOL_NAMES)[number];

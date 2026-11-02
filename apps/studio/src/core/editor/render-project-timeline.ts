@@ -1,19 +1,15 @@
 import { timelineOutputFrame } from './output-frame';
 import { buildOverlayFilters } from './overlay-render.server';
 import { buildTransitionFilters } from './transition-render.server';
-import { spawn } from 'node:child_process';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { buildCaptionFilters, captionFilterRequirement } from './caption-render.server';
+import { buildAudioMix } from './audio-mix.server';
 export { wrapCaptionForFfmpeg } from './caption-render.server';
-import {
-  getTimelineClipSource,
-  type TimelineClip,
-  type TimelineDocument,
-  type TimelineTrackKind,
-} from './timeline-document';
+import type { TimelineDocument } from './timeline-document';
+import { ffmpegBin, resolveRenderInputs, runProcess, time, type RenderInput } from './timeline-render-inputs.server';
 import { diagnoseTimeline } from './timeline-diagnostics';
 import {
   LOCAL_PROJECT_ASSET_BUCKET,
@@ -29,144 +25,24 @@ import {
   recordUserAsset,
 } from '@/core/workspace-lib/assets/user-assets';
 
-type MediaProbe = {
-  width: number | null;
-  height: number | null;
-  hasVideo: boolean;
-  hasAudio: boolean;
-};
+/** composite is the finished video; the other layers render one part each, overlays and captions on transparency. */
+export type TimelineLayer = 'composite' | 'picture' | 'overlays' | 'captions';
 
-type RenderInput = {
-  clip: TimelineClip;
-  trackKind: TimelineTrackKind;
-  inputIndex: number;
-  filePath: string;
-  source: ReturnType<typeof getTimelineClipSource>;
-  probe: MediaProbe;
-};
-
-const ffmpegBin = () => process.env.VIRAL_HIT_FFMPEG?.trim() || 'ffmpeg';
-const ffprobeBin = () => process.env.VIRAL_HIT_FFPROBE?.trim() || 'ffprobe';
-
-const runProcess = (
-  command: string,
-  args: string[],
-  { captureStdout = false }: { captureStdout?: boolean } = {}
-) =>
-  new Promise<string>((resolve, reject) => {
-    const child = spawn(command, args, { stdio: ['ignore', 'pipe', 'pipe'] });
-    let stdout = '';
-    let stderr = '';
-    child.stdout?.on('data', (chunk) => {
-      if (captureStdout) stdout += chunk.toString('utf8');
-    });
-    child.stderr?.on('data', (chunk) => {
-      if (stderr.length < 24_000) stderr += chunk.toString('utf8');
-    });
-    child.on('error', (error) => {
-      reject(
-        new Error(
-          `Unable to start ${command}. Ensure ffmpeg and ffprobe are on PATH or set VIRAL_HIT_FFMPEG and VIRAL_HIT_FFPROBE. ${error.message}`
-        )
-      );
-    });
-    child.on('close', (code) => {
-      if (code === 0) {
-        resolve(stdout);
-        return;
-      }
-      reject(
-        new Error(
-          stderr.trim() || `${command} failed with exit code ${code ?? 'unknown'}.`
-        )
-      );
-    });
-  });
-
-async function probeMedia(filePath: string): Promise<MediaProbe> {
-  const output = await runProcess(
-    ffprobeBin(),
-    [
-      '-v',
-      'error',
-      '-show_entries',
-      'stream=codec_type,width,height',
-      '-of',
-      'json',
-      filePath,
-    ],
-    { captureStdout: true }
-  );
-  const parsed = JSON.parse(output) as {
-    streams?: Array<{ codec_type?: string; width?: number; height?: number }>;
-  };
-  const streams = parsed.streams ?? [];
-  const visual = streams.find((stream) => stream.codec_type === 'video');
-  return {
-    width: typeof visual?.width === 'number' ? visual.width : null,
-    height: typeof visual?.height === 'number' ? visual.height : null,
-    hasVideo: Boolean(visual),
-    hasAudio: streams.some((stream) => stream.codec_type === 'audio'),
-  };
-}
-
-const time = (value: number) => Math.max(0, value).toFixed(3);
-
-async function resolveRenderInputs({
-  projectId,
-  document,
-}: {
-  projectId: string;
-  document: TimelineDocument;
-}) {
-  const inputs: RenderInput[] = [];
-  for (const track of document.tracks) {
-    if (track.hidden || track.muted || track.kind === 'caption') continue;
-    for (const clip of track.clips) {
-      if (clip.muted && track.kind !== 'video') continue;
-      const source = getTimelineClipSource(clip);
-      const asset = await getProjectAssetById({
-        projectId,
-        assetId: source.assetId,
-      });
-      if (!asset) {
-        throw new Error(`Timeline asset ${source.assetId} is unavailable.`);
-      }
-      if (asset.bucket !== LOCAL_PROJECT_ASSET_BUCKET || !asset.objectKey) {
-        throw new Error('MCP timeline rendering requires project-owned local assets.');
-      }
-      const filePath = resolveLocalProjectAssetPath({ objectKey: asset.objectKey });
-      const probe = await probeMedia(filePath);
-      if (clip.sourceType === 'audio' && !probe.hasAudio) {
-        throw new Error(`Timeline audio is unreadable: ${source.name}`);
-      }
-      if (clip.sourceType !== 'audio' && !probe.hasVideo) {
-        throw new Error(`Timeline visual is unreadable: ${source.name}`);
-      }
-      inputs.push({
-        clip,
-        trackKind: track.kind,
-        inputIndex: inputs.length + 1,
-        filePath,
-        source,
-        probe,
-      });
-    }
-  }
-  return inputs;
-}
-
-async function buildFfmpegArgs({
+export async function buildFfmpegArgs({
   document,
   inputs,
   directory,
   outputPath,
+  layer = 'composite',
 }: {
   document: TimelineDocument;
   inputs: RenderInput[];
   directory: string;
   outputPath: string;
+  layer?: TimelineLayer;
 }) {
+  const transparent = layer === 'overlays' || layer === 'captions';
+  const includes = (part: Exclude<TimelineLayer, 'composite'>) => layer === 'composite' || layer === part;
   const firstVisual = inputs.find(
     (input) => input.trackKind === 'video' && input.probe.hasVideo
   );
@@ -180,7 +56,8 @@ async function buildFfmpegArgs({
     '-f',
     'lavfi',
     '-i',
-    `color=c=black:s=${width}x${height}:r=30:d=${time(document.duration)}`,
+    // The lavfi input negotiates its own pixel format, so a transparent canvas must ask for RGBA there.
+    `color=c=black${transparent ? '@0.0' : ''}:s=${width}x${height}:r=30:d=${time(document.duration)}${transparent ? ',format=rgba' : ''}`,
   ];
   for (const input of inputs) {
     if (input.clip.sourceType === 'image') {
@@ -201,9 +78,9 @@ async function buildFfmpegArgs({
 
   const filters: string[] = [];
   let visualLabel = 'canvas0';
-  filters.push(`[0:v]setpts=PTS-STARTPTS[${visualLabel}]`);
+  filters.push(`[0:v]${transparent ? 'format=rgba,' : ''}setpts=PTS-STARTPTS[${visualLabel}]`);
   let visualIndex = 0;
-  for (const input of inputs.filter((item) => item.trackKind === 'video')) {
+  for (const input of inputs.filter((item) => item.trackKind === 'video' && includes('picture'))) {
     visualIndex += 1;
     const sourceLabel = `visual${visualIndex}`;
     const nextLabel = `canvas${visualIndex}`;
@@ -221,7 +98,7 @@ async function buildFfmpegArgs({
   }
 
   const transitions = buildTransitionFilters({
-    document, width, height, visualLabel, firstInputIndex: inputs.length + 1,
+    document: includes('picture') ? document : { ...document, tracks: [] }, width, height, visualLabel, firstInputIndex: inputs.length + 1,
     sources: new Map(inputs.filter((input) => input.trackKind === 'video' && input.clip.sourceType !== 'audio').map((input) => [input.clip.id,
       { filePath: input.filePath, sourceType: input.clip.sourceType === 'image' ? 'image' as const : 'video' as const, inPoint: input.source.inPoint, outPoint: input.source.outPoint }])),
   });
@@ -230,7 +107,7 @@ async function buildFfmpegArgs({
   visualLabel = transitions.output;
 
   let overlayIndex = 0;
-  for (const input of inputs.filter((item) => item.trackKind === 'overlay')) {
+  for (const input of inputs.filter((item) => item.trackKind === 'overlay' && includes('overlays'))) {
     if (!input.clip.overlay) continue;
     overlayIndex += 1;
     const overlay = buildOverlayFilters({ clip: input.clip, inputIndex: input.inputIndex,
@@ -240,63 +117,23 @@ async function buildFfmpegArgs({
     visualLabel = overlay.output;
   }
 
-  const captions = await buildCaptionFilters({ document, directory, width, height, visualLabel });
+  const captions = includes('captions') ? await buildCaptionFilters({ document, directory, width, height, visualLabel, transparent }) : { filters: [], output: visualLabel };
   filters.push(...captions.filters);
   visualLabel = captions.output;
-  filters.push(`[${visualLabel}]format=yuv420p[vout]`);
+  filters.push(`[${visualLabel}]format=${transparent ? 'argb' : 'yuv420p'}[vout]`);
 
-  const audioLabels: string[] = [];
-  let audioIndex = 0;
-  for (const input of inputs.filter((item) => item.probe.hasAudio && !item.clip.muted)) {
-    audioIndex += 1;
-    const label = `audio${audioIndex}`;
-    const steps = [
-      `atrim=start=${time(input.source.inPoint)}:end=${time(input.source.outPoint)}`,
-      'asetpts=PTS-STARTPTS',
-      `volume=${Math.max(0, input.clip.volume).toFixed(3)}`,
-    ];
-    if (input.clip.fadeIn > 0) {
-      steps.push(`afade=t=in:st=0:d=${time(input.clip.fadeIn)}`);
-    }
-    if (input.clip.fadeOut > 0) {
-      steps.push(
-        `afade=t=out:st=${time(input.clip.duration - input.clip.fadeOut)}:d=${time(input.clip.fadeOut)}`
-      );
-    }
-    steps.push(`adelay=${Math.round(input.clip.startTime * 1000)}:all=1`);
-    filters.push(`[${input.inputIndex}:a]${steps.join(',')}[${label}]`);
-    audioLabels.push(`[${label}]`);
-  }
-  if (audioLabels.length > 0) {
-    filters.push(
-      `${audioLabels.join('')}amix=inputs=${audioLabels.length}:duration=longest:dropout_transition=0,` +
-        `atrim=duration=${time(document.duration)},apad=whole_dur=${time(document.duration)}[aout]`
-    );
-  }
+  const audio = layer === 'composite' ? buildAudioMix({ inputs, document }) : null;
+  if (audio) filters.push(...audio.filters);
 
   args.push('-filter_complex', filters.join(';'), '-map', '[vout]');
-  if (audioLabels.length > 0) {
-    args.push('-map', '[aout]', '-c:a', 'aac', '-b:a', '192k');
+  if (audio) {
+    args.push('-map', `[${audio.label}]`, '-c:a', 'aac', '-b:a', '192k');
   } else {
     args.push('-an');
   }
-  args.push(
-    '-t',
-    time(document.duration),
-    '-r',
-    '30',
-    '-c:v',
-    'libx264',
-    '-preset',
-    'medium',
-    '-crf',
-    '18',
-    '-pix_fmt',
-    'yuv420p',
-    '-movflags',
-    '+faststart',
-    outputPath
-  );
+  // Transparent layers use QuickTime Animation (lossless RGBA), which editing apps import with alpha.
+  const codec = transparent ? ['-c:v', 'qtrle', '-pix_fmt', 'argb'] : ['-c:v', 'libx264', '-preset', 'medium', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart'];
+  args.push('-t', time(document.duration), '-r', '30', ...codec, outputPath);
   return { args, width, height };
 }
 

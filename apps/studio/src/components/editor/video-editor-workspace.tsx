@@ -10,6 +10,7 @@ import { useTimelineClock } from './use-timeline-clock';
 import { CaptionPreviewText } from './caption-preview-text';
 import { CaptionHighlightPicker } from './caption-highlight-picker';
 import { VoiceCaptionsAction } from './voice-captions-action';
+import { LayerExportAction } from './layer-export-action';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
 import { Action } from '@/components/base/action';
@@ -1690,19 +1691,19 @@ export function VideoEditorWorkspace({
 
         <section className="flex min-w-0 flex-1 flex-col">
           <div className="flex h-12 shrink-0 items-center justify-between border-b border-[var(--vh-border)] px-3 sm:px-4">
-            <div className="flex items-center gap-2 text-xs text-[var(--vh-text-2)]">
-              <span className="inline-flex size-7 items-center justify-center rounded-md border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)]">
+            <div className="flex min-w-0 items-center gap-2 overflow-hidden text-xs text-[var(--vh-text-2)]">
+              <span className="hidden size-7 shrink-0 items-center justify-center rounded-md border border-[var(--vh-border)] bg-[var(--vh-control)] text-[var(--vh-text-2)] xl:inline-flex">
                 <FileVideo2 className="size-3.5" />
               </span>
-              <span>{t('status.ready')}</span>
+              <span className="hidden xl:inline">{t('status.ready')}</span>
               <Action aria-label={uiMessages["ui.editor.review_local_drafts"]()} onClick={persistence.openDrafts} className="rounded-md px-2 py-1 text-xs hover:bg-[var(--vh-control)]">{uiMessages["ui.editor.drafts"]()}</Action>
               {saveStatus !== 'idle' ? (
-                <span className="text-[var(--vh-text-2)]">
+                <span className="truncate text-[var(--vh-text-2)]">
                   {saveStatus === 'saving' ? t('status.saving') : t('status.saved')}
                 </span>
               ) : null}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               <div className="hidden items-center rounded-lg border border-[var(--vh-border)] sm:flex">
                 <Action
                   type="button"
@@ -1739,6 +1740,7 @@ export function VideoEditorWorkspace({
               >
                 <SlidersHorizontal className="size-3.5" />
               </Action>
+              <LayerExportAction projectId={projectId} name={document.name} disabled={isExporting || !clips.some((clip) => clip.sourceType !== 'audio')} onError={setError} />
               <Action
                 type="button"
                 onClick={() =>
