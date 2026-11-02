@@ -424,6 +424,24 @@
       "clone_status": "cloned",
       "sha": "8f04fd6ecf4a548937971e840af2a985529fab76",
       "local_path": "research/upstream/Comfy-Org--ComfyUI"
+    },
+    {
+      "requested": "hypit-ai/hypit",
+      "status": 200,
+      "name": "hypit-ai/hypit",
+      "url": "https://github.com/hypit-ai/hypit",
+      "description": "Clone any viral video with AI agents. Not just a script, the whole workflow: swap the face, the words, the B-roll, ship 100 variants in one command, and get your 100M views.",
+      "stars": 27394,
+      "license": "Apache-2.0 with additional conditions (root LICENSE; GitHub reports NOASSERTION)",
+      "branch": "main",
+      "pushed_at": "2026-11-02T04:44:21Z",
+      "archived": false,
+      "fork": false,
+      "size_kb": 27293,
+      "clone_status": "cloned",
+      "sha": "0762c6be56c0af43fff3cdbdb285e21414dd249b",
+      "local_path": "research/upstream/hypit-ai--hypit",
+      "observed_date": "2026-11-02"
     }
   ]
 }

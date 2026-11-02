@@ -17,3 +17,9 @@ Every model receives the same plain text, and the line stays editable. Choosing 
 | Look | 35mm film, documentary, commercial, anime, black and white |
 
 Labels are translated in the interface; the prompt line stays in English because most image and video models follow English camera terms best. Shot controls describe the shot to the model and do not drive a camera rig; how closely a result follows them depends on the model. Multi-shot sequences and per-shot regeneration are not part of this yet.
+
+## Cinema page
+
+**Cinema** in the project sidebar directs one shot at a time: subject, action, setting, up to two camera moves, framing, light, look, sound, length and aspect ratio. The plan beside the form shows the chosen keyframe and video models, the prompt written for each model family and the settings it will send, and updates without spending credits. **Render takes** queues the keyframe and every take as one durable run. Finished takes show a measured quality check (frozen, black, cut, silent or low-resolution footage) and go to the timeline one at a time or as the best take per shot.
+
+A shot can start from a generated keyframe, a project image or straight from text, and can optionally end on a second project image. Start and end frames go only to models that declare ordered frames; character images go only to models that accept references. Agents use the same operation through the `viral_hit_shot` MCP tool.

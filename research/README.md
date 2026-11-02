@@ -56,8 +56,11 @@ Exact URLs, commits, clone status and observed license metadata are in `upstream
 | Comfy-Org/comfy-python-sdk | Python provider client | MIT; potential Python worker adapter |
 | Comfy-Org/comfy-api-proxy | Self-hosted endpoint bridge | MIT; requires a running backend; not bundled weights or free compute |
 | Comfy-Org/ComfyUI | Open-weight workflow execution | GPL-3.0; keep its service boundary and license obligations explicit |
+| hypit-ai/hypit | Viral-video cloning: word-anchored captions and B-roll, one composition reused for many variants, concurrent local rendering | Root LICENSE is Apache-2.0 with added conditions: no multi-tenant hosting or commercial redistribution without a separate license, and derivatives keep the same terms. Studied for ideas only; no source copied |
 
 The public repositories above are cloned at pinned commits. Cloning a reference is not evidence of a successful runtime test or permission to redistribute it.
+
+Ideas taken from hypit on 2026-11-02 and implemented independently: the durable worker runs steps concurrently under per-service, per-project and CPU/memory-based local limits (`apps/studio/src/core/harness/worker-pool.server.ts`). Still open: explicit reuse of unchanged material when making variants, and caption/B-roll timing anchored to words so a rewritten line re-flows.
 
 ## Current conclusion
 
