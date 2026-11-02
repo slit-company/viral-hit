@@ -30,8 +30,8 @@ test('Remix keeps a reference video\'s cuts and soundtrack and rebuilds them wit
     expect(response.ok()).toBe(true);
     return (await response.json()).asset;
   };
-  // Three hard cuts at 1 s and 2 s with a tone underneath: the edit grammar and soundtrack to keep.
-  await upload('Reference.mp4', 'video/mp4', ['-f', 'lavfi', '-i', 'color=red:s=320x180:r=30:d=1', '-f', 'lavfi', '-i', 'color=lime:s=320x180:r=30:d=1', '-f', 'lavfi', '-i', 'color=blue:s=320x180:r=30:d=1',
+  // Three hard cuts at 1 s and 2 s with a tone underneath: the edit grammar and soundtrack to keep. The middle shot pans right.
+  await upload('Reference.mp4', 'video/mp4', ['-f', 'lavfi', '-i', 'color=red:s=320x180:r=30:d=1', '-f', 'lavfi', '-i', "nullsrc=s=960x180:r=30:d=1,geq=lum='128+60*sin(X/23)+50*sin(Y/17+X/41)':cb=128:cr=170,crop=320:180:x='t*100':y=0", '-f', 'lavfi', '-i', 'color=blue:s=320x180:r=30:d=1',
     '-f', 'lavfi', '-i', 'sine=frequency=440:duration=3', '-filter_complex', '[0:v][1:v][2:v]concat=n=3:v=1:a=0[v]', '-map', '[v]', '-map', '3:a', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-shortest', '-movflags', '+faststart']);
   const still = await upload('Yellow.png', 'image/png', ['-f', 'lavfi', '-i', 'color=yellow:s=320x180', '-frames:v', '1']);
   const motion = await upload('Magenta.mp4', 'video/mp4', ['-f', 'lavfi', '-i', 'color=magenta:s=320x180:r=30:d=2', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-movflags', '+faststart']);
@@ -43,8 +43,11 @@ test('Remix keeps a reference video\'s cuts and soundtrack and rebuilds them wit
     await page.getByRole('button', { name: 'Find the cuts', exact: true }).click();
     await expect(page.getByText('3 shots · 1.0s average · 40 cuts per minute', { exact: true })).toBeVisible({ timeout: 60_000 });
     const material = page.getByRole('group', { name: 'Your material' });
-    await material.getByRole('button', { name: 'Yellow.png' }).click();
     await material.getByRole('button', { name: 'Magenta.mp4' }).click();
+    await material.getByRole('button', { name: 'Yellow.png' }).click();
+    // The camera analysis finishes after the cuts; the still that lands on the panning shot will pan with it.
+    await expect(page.getByText('Pan right', { exact: true })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole('checkbox', { name: "Give still images the reference's camera moves" })).toBeChecked();
     await page.getByRole('combobox', { name: 'Between shots', exact: true }).selectOption('crossfade');
     await page.screenshot({ path: 'test-results/remix-desktop.png', fullPage: true });
     await page.getByRole('button', { name: 'Build the remix on the timeline', exact: true }).click();
@@ -52,7 +55,11 @@ test('Remix keeps a reference video\'s cuts and soundtrack and rebuilds them wit
     const read = async () => (await (await request.get(`/api/app/projects/${id}/timeline`)).json()).timeline.document as TimelineDocument;
     const timeline = await read();
     const visuals = timeline.tracks.filter((track) => track.kind === 'video').flatMap((track) => track.clips);
-    expect(visuals.map((clip) => [clip.startTime, clip.duration, clip.assetId])).toEqual([[0, 1, still.id], [1, 1, motion.id], [2, 1, still.id]]);
+    expect(visuals.map((clip) => [clip.startTime, clip.duration, clip.assetId])).toEqual([[0, 1, motion.id], [1, 1, still.id], [2, 1, motion.id]]);
+    const moves = timeline.tracks.filter((track) => track.kind === 'overlay').flatMap((track) => track.clips);
+    expect(moves.map((clip) => [clip.startTime, clip.duration, clip.assetId])).toEqual([[1, 1, still.id]]);
+    const [from, to] = moves[0].motion!.keyframes;
+    expect(from.x).toBeGreaterThan(0.5); expect(to.x).toBeLessThan(0.5); expect(from.width).toBeGreaterThan(1);
     expect(visuals.map((clip) => clip.transition?.kind ?? null)).toEqual([null, 'crossfade', 'crossfade']);
     const audio = timeline.tracks.filter((track) => track.kind === 'audio').flatMap((track) => track.clips);
     expect(audio).toHaveLength(1);

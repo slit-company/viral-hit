@@ -11,7 +11,8 @@ export function useRemixes(projectId: string) {
   return useQuery({
     queryKey: key(projectId),
     queryFn: () => apiJsonGet<{ remixes: RemixView[] }>(url(projectId)).then(result => result.remixes),
-    refetchInterval: query => query.state.data?.some(remix => REMIX_RUNNING.has(remix.state)) ? 2000 : false,
+    // Cuts usually finish first; keep polling until the camera and text analysis is done too.
+    refetchInterval: query => query.state.data?.some(remix => REMIX_RUNNING.has(remix.state) || (remix.edit !== null && REMIX_RUNNING.has(remix.edit.state))) ? 2000 : false,
   });
 }
 
@@ -24,10 +25,10 @@ export function useAnalyzeReference(projectId: string) {
   });
 }
 
-export type RemixBuildResult = { offset: number; soundtrack: boolean; shots: Array<{ start: number; duration: number; assetId: string; filled: number }> };
+export type RemixBuildResult = { offset: number; soundtrack: boolean; cameraMoves: number; texts: number; shots: Array<{ start: number; duration: number; assetId: string; filled: number }> };
 export function useBuildRemix(projectId: string) {
   return useMutation({
-    mutationFn: (input: { requestId: string; materials: string[]; keepSoundtrack: boolean; transition: TimelineTransition | null }) =>
+    mutationFn: (input: { requestId: string; materials: string[]; keepSoundtrack: boolean; keepCamera: boolean; keepText: boolean; transition: TimelineTransition | null }) =>
       apiJsonPost<RemixBuildResult>(url(projectId), { action: 'build', ...input }),
   });
 }

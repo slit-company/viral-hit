@@ -25,7 +25,7 @@ export function RemixPage({ projectId }: { projectId: string }) {
   const remixes = useRemixes(projectId), analyze = useAnalyzeReference(projectId), build = useBuildRemix(projectId);
   const [referenceId, setReferenceId] = useState<string | null>(null);
   const [materials, setMaterials] = useState<string[]>([]);
-  const [keepSoundtrack, setKeepSoundtrack] = useState(true);
+  const [keepSoundtrack, setKeepSoundtrack] = useState(true), [keepCamera, setKeepCamera] = useState(true), [keepText, setKeepText] = useState(false);
   const [join, setJoin] = useState<TimelineTransitionKind | 'none'>('none');
   const videos: ChoiceAsset[] = (assets.data?.videos ?? []).map(asset => ({ ...asset, kind: 'video' }));
   const visuals: ChoiceAsset[] = [...videos, ...(assets.data?.images ?? []).map(asset => ({ ...asset, kind: 'image' as const }))];
@@ -59,6 +59,8 @@ export function RemixPage({ projectId }: { projectId: string }) {
         </section>
         <section className="space-y-3">
           <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepSoundtrack} onChange={event => setKeepSoundtrack(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_soundtrack']()}</label>
+          <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepCamera} onChange={event => setKeepCamera(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_camera']()}</label>
+          <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepText} disabled={remix?.grammar?.edit?.text === 'unavailable'} onChange={event => setKeepText(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_text']()}</label>
           <label className="flex items-center justify-between gap-3 text-xs">{m['ui.cinema.sequence_transition']()}
             <NativeSelect aria-label={m['ui.cinema.sequence_transition']()} value={join} onChange={event => setJoin(event.target.value as TimelineTransitionKind | 'none')} className="h-8 max-w-48 text-xs">
               {JOINS.map(kind => <option key={kind} value={kind}>{TRANSITION_LABELS[kind]()}</option>)}
@@ -71,13 +73,16 @@ export function RemixPage({ projectId }: { projectId: string }) {
         {remix && !remix.grammar && <p role="status" className="inline-flex items-center gap-2 text-sm text-[var(--vh-text-2)]">
           {remix.error ? <span className="text-red-700">{remix.error}</span> : <><Loader2 className="size-4 animate-spin" />{m['ui.remix.analyzing']()}</>}
         </p>}
+        {remix?.grammar && remix.edit && REMIX_RUNNING.has(remix.edit.state) && <p role="status" className="inline-flex items-center gap-2 text-xs text-[var(--vh-text-2)]"><Loader2 className="size-3.5 animate-spin" />{m['ui.remix.reading_edit']()}</p>}
+        {remix?.edit?.error && <p role="status" className="text-xs text-amber-700">{m['ui.remix.edit_failed']()}</p>}
+        {remix?.grammar?.edit?.text === 'unavailable' && <p className="text-xs text-[var(--vh-text-2)]">{m['ui.remix.text_unavailable']()}</p>}
         {remix?.grammar && <RemixShots remix={remix} plan={plan} urls={new Map(visuals.map(asset => [asset.id, asset.publicUrl]))} />}
         {remix?.grammar && <div className="flex flex-wrap items-center gap-3 border-t border-[var(--vh-border)] pt-4">
           <Action type="button" className="vh-primary inline-flex items-center gap-2" disabled={!chosen.length || build.isPending}
-            onClick={() => build.mutate({ requestId: remix.requestId, materials, keepSoundtrack, transition: join === 'none' ? null : { kind: join, duration: 0.4 } })}>
+            onClick={() => build.mutate({ requestId: remix.requestId, materials, keepSoundtrack, keepCamera, keepText: keepText && remix.grammar?.edit?.text === 'read', transition: join === 'none' ? null : { kind: join, duration: 0.4 } })}>
             {build.isPending ? <Loader2 className="size-4 animate-spin" /> : <Repeat2 className="size-4" />}{m['ui.remix.build']()}
           </Action>
-          {build.isSuccess && <p role="status" className="text-xs text-emerald-800">{m['ui.remix.built']({ count: build.data.shots.length })} {build.data.soundtrack ? m['ui.remix.built_soundtrack']() : ''}
+          {build.isSuccess && <p role="status" className="text-xs text-emerald-800">{m['ui.remix.built']({ count: build.data.shots.length })} {build.data.soundtrack ? m['ui.remix.built_soundtrack']() : ''} {build.data.cameraMoves || build.data.texts ? m['ui.remix.built_edit']({ moves: build.data.cameraMoves, texts: build.data.texts }) : ''}
             {' '}<Link href={'/editor/' + projectId} className="font-semibold underline underline-offset-4">{m['ui.remix.open_editor']()}</Link></p>}
           {build.isError && <p role="alert" className="text-xs text-red-700">{build.error.message}</p>}
           {analyze.isError && <p role="alert" className="text-xs text-red-700">{analyze.error.message}</p>}

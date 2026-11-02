@@ -260,3 +260,7 @@ Summed script gzip: **761,744 bytes**, **5,780 bytes** more than canvas branches
 ## Instagram DM collection — 2026-11-03
 
 Summed script gzip: **765,045 bytes**, **3,301 bytes** more than Instagram images and carousels (761,744); public files **9,314,943 bytes**. The script budget changed from 762,000 to **766,000** in this reviewed decision: the Connections page gains the DM collection panel and its small status hook, and 15 messages in four languages join the shared message chunk. Checks, downloads and frame sampling run in a loop inside the existing publication worker; no dependency, service or process was added.
+
+## Edit analysis — 2026-11-03
+
+Summed script gzip: **767,093 bytes**, **2,048 bytes** more than Instagram DM collection (765,045); public files **9,321,442 bytes**. The script budget changed from 766,000 to **768,000** in this reviewed decision: 16 Remix messages in four languages (camera moves, pace, analysis status and two build options) join the shared message chunk, and the shot list gains its chips. Motion estimation, text reading and the rebuild operations live in server-only modules (`grammar-read.ts`, `rebuild.ts`); the Remix page keeps importing only material assignment, so the browser-reachable module count stays at 358. Analysis runs in the existing harness worker with FFmpeg and an optional, separately installed Tesseract; no dependency was added.

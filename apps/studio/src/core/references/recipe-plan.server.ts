@@ -1,4 +1,6 @@
 import { sceneInput, SCENE_MAX_BYTES } from './scene-contract';
+import { grammarInput, GRAMMAR_MAX_BYTES } from '../remix/grammar-contract';
+import { grammarEngineIdentity } from '../remix/grammar-analysis.server';
 import { sceneEngineIdentity } from './scene-detection.server';
 import type { Plan } from '../harness/durable';
 import { isAssetOperation, assetOperationKind } from '../harness/asset-operations';
@@ -14,9 +16,10 @@ export async function pinReferencePlan(plan: Plan, signal = AbortSignal.timeout(
       const input = youtubeReferenceInput.parse(node.input), engine = youtubeEngineIdentity();
       if (!engine || (input.engine && input.engine !== engine)) throw new Error('Install the matching YoutubeExplode engine before queueing');
       node.input = { ...input, engine };
-    } else if (node.operation === 'reference.sample' || node.operation === 'reference.scenes') {
-      const input = node.operation === 'reference.scenes' ? sceneInput.parse(node.input) : sampleReferenceInput.parse(node.input);
-      const scene: Record<string, string> = node.operation === 'reference.scenes' ? { engine: await sceneEngineIdentity(signal) } : {};
+    } else if (node.operation === 'reference.sample' || node.operation === 'reference.scenes' || node.operation === 'reference.grammar') {
+      const input = node.operation === 'reference.scenes' ? sceneInput.parse(node.input) : node.operation === 'reference.grammar' ? grammarInput.parse(node.input) : sampleReferenceInput.parse(node.input);
+      const scene: Record<string, string> = node.operation === 'reference.scenes' ? { engine: await sceneEngineIdentity(signal) }
+        : node.operation === 'reference.grammar' ? { engine: await grammarEngineIdentity(grammarInput.parse(node.input).text, signal) } : {};
       if ('engine' in input && input.engine && input.engine !== scene.engine) throw Error('Scene detector engine changed');
       if (input.pin) throw new Error('Reference input was already pinned');
       if (node.bindings?.length) {
@@ -31,6 +34,7 @@ export async function pinReferencePlan(plan: Plan, signal = AbortSignal.timeout(
       } else {
         const { pin } = await inspectProjectReference(plan.projectId, input.assetId, signal);
         if (node.operation === 'reference.scenes' && pin.sizeBytes > SCENE_MAX_BYTES) throw Error('Scene analysis supports up to 64 MiB');
+        if (node.operation === 'reference.grammar' && pin.sizeBytes > GRAMMAR_MAX_BYTES) throw Error('Edit analysis supports up to 64 MiB');
         node.input = { ...input, ...scene, pin };
       }
     }

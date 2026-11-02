@@ -2,7 +2,9 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { applyEditorOperations } from '../commands/editor-commands';
 import { createTimelineDocument } from '../editor/timeline-document';
-import { assignRemixMaterials, remixGrammar, remixOperations } from './grammar';
+import { assignRemixMaterials } from './grammar';
+import { remixGrammar } from './grammar-read';
+import { remixOperations } from './rebuild';
 
 const grammar = remixGrammar([{ start: 0, end: 1.2 }, { start: 1.2, end: 1.8 }, { start: 1.8, end: 4.2 }, { start: 4.2, end: 5 }], 5);
 
