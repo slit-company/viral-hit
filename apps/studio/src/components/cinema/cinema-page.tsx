@@ -22,7 +22,8 @@ export function CinemaPage({ projectId }: { projectId: string }) {
       <div className="min-w-0 space-y-6 p-5 lg:overflow-y-auto sm:p-6">
         <ShotPlan production={preview.data} variations={draft.variations ?? 2} loading={preview.isFetching} error={preview.error?.message ?? (produce.error?.message || null)}
           describeFirst={!draft.subject.trim()} busy={!loaded || produce.isPending} onProduce={() => produce.mutate(draft)} />
-        <ShotRuns projectId={projectId} shots={runs.data ?? []} loading={runs.isPending} />
+        {/* Reusing a finished keyframe renders only new takes: no second keyframe generation or charge. */}
+        <ShotRuns projectId={projectId} shots={runs.data ?? []} loading={runs.isPending} onReuseKeyframe={assetId => update({ startAssetId: assetId, startFrame: 'generate' })} />
       </div>
     </div>
   </ProductPageShell>;

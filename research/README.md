@@ -60,7 +60,7 @@ Exact URLs, commits, clone status and observed license metadata are in `upstream
 
 The public repositories above are cloned at pinned commits. Cloning a reference is not evidence of a successful runtime test or permission to redistribute it.
 
-Ideas taken from hypit on 2026-11-02 and implemented independently: the durable worker runs steps concurrently under per-service, per-project and CPU/memory-based local limits (`apps/studio/src/core/harness/worker-pool.server.ts`). Still open: explicit reuse of unchanged material when making variants, and caption/B-roll timing anchored to words so a rewritten line re-flows.
+Ideas taken from hypit on 2026-11-02 and implemented independently: the durable worker runs steps concurrently under per-service, per-project and CPU/memory-based local limits (`apps/studio/src/core/harness/worker-pool.server.ts`), and Cinema variants can reuse a finished keyframe so only the changed takes are generated. Still open: caption/B-roll timing anchored to words so a rewritten line re-flows.
 
 ## Current conclusion
 

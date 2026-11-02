@@ -47,6 +47,13 @@ test('Cinema plans through UI and MCP, produces real local takes and appends one
     }).toBe(1);
     const first = shots[0].still.assetId, last = shots[0].takes[0].assetId;
     expect(first).toBeTruthy(); expect(last).toBeTruthy();
+    // Reusing the keyframe plans takes only, so a variant does not pay for a second keyframe.
+    await page.getByRole('button', { name: 'Reuse keyframe', exact: true }).click();
+    await expect.poll(() => page.evaluate(id => JSON.parse(localStorage.getItem('viral-hit:cinema:' + id)!).startAssetId, projectId)).toBe(first);
+    const reused = await (await request.post(url, { headers, data: { action: 'preview', spec: { ...draft, startAssetId: first } } })).json();
+    expect(reused.production.still).toBeNull();
+    expect(reused.production.video.parameters.provider_options.reference_mode).toBe('frames');
+    await expect(page.getByRole('button', { name: 'Render takes (2)', exact: true })).toBeEnabled();
     await page.getByRole('button', { name: 'Choose an end frame', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await expect(dialog.locator('img').first()).toBeVisible();

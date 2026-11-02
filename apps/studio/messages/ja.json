@@ -881,6 +881,8 @@
       "failed": "Failed",
       "cancelled": "Cancelled",
       "keyframe": "Keyframe",
+      "reuseKeyframe": "Reuse keyframe",
+      "reuseKeyframeHint": "Render new takes from this keyframe without generating it again.",
       "take": "Take {number}",
       "checking": "Checking…",
       "good": "Clean",

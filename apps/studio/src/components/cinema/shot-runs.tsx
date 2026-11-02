@@ -1,4 +1,4 @@
-import { CheckCircle2, Loader2, Plus } from 'lucide-react';
+import { CheckCircle2, Loader2, Plus, Repeat2 } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
 import type { ShotRunView, ShotTakeView } from '@/core/shot-harness/contract';
@@ -32,7 +32,7 @@ function Take({ projectId, shot, take, label }: { projectId: string; shot: ShotR
 }
 
 /** Every shot with its keyframe and takes side by side, newest first. */
-export function ShotRuns({ projectId, shots, loading }: { projectId: string; shots: ShotRunView[]; loading: boolean }) {
+export function ShotRuns({ projectId, shots, loading, onReuseKeyframe }: { projectId: string; shots: ShotRunView[]; loading: boolean; onReuseKeyframe: (assetId: string) => void }) {
   const t = useTranslations('AppShell.cinema');
   const assemble = useAssembleBest(projectId);
   const ready = shots.filter(shot => shot.takes.some(take => take.assetId));
@@ -56,7 +56,11 @@ export function ShotRuns({ projectId, shots, loading }: { projectId: string; sho
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {shot.still && <figure className="min-w-0 space-y-1.5">
           <div className="aspect-video overflow-hidden rounded-xl bg-[var(--vh-control)]">{shot.still.url ? <img src={shot.still.url} alt="" className="size-full object-cover" /> : <div className="grid size-full place-items-center text-xs text-[var(--vh-text-2)]">{shot.still.state === 'failed' ? <span className="p-3 text-red-700">{shot.still.error}</span> : <Loader2 className="size-4 animate-spin" />}</div>}</div>
-          <figcaption className="text-xs font-semibold">{t('keyframe')}</figcaption>
+          <figcaption className="flex flex-wrap items-center gap-1.5 text-xs font-semibold">{t('keyframe')}
+            {shot.still.assetId && <Action type="button" title={t('reuseKeyframeHint')} className="vh-secondary ml-auto inline-flex h-7 items-center gap-1 px-2 text-[11px]" onClick={() => onReuseKeyframe(shot.still!.assetId!)}>
+              <Repeat2 className="size-3.5" />{t('reuseKeyframe')}
+            </Action>}
+          </figcaption>
         </figure>}
         {shot.takes.map((take, index) => <Take key={take.jobId} projectId={projectId} shot={shot} take={take} label={t('take', { number: index + 1 })} />)}
       </div>

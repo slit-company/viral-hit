@@ -888,6 +888,8 @@
       "failed": "실패",
       "cancelled": "취소됨",
       "keyframe": "키프레임",
+      "reuseKeyframe": "이 키프레임 다시 쓰기",
+      "reuseKeyframeHint": "키프레임은 다시 만들지 않고 새 테이크만 렌더링해요.",
       "take": "테이크 {number}",
       "checking": "검사 중…",
       "good": "깔끔함",
