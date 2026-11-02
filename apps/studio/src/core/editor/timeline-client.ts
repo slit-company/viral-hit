@@ -3,6 +3,7 @@ import { createCommandId } from '@/core/commands/contracts';
 import { executeProjectCommand } from '@/core/commands/client';
 import type { EditorOperation } from '@/core/commands/editor-commands';
 import type { TimelineDocument } from '@/core/editor/timeline-document';
+import type { TimelineTransition } from '@/core/editor/transition-contract';
 import { apiJsonGet } from '@/lib/api-client';
 
 type TimelineStatePayload = {
@@ -57,6 +58,8 @@ export async function addProjectAssetsToTimeline({
   projectId,
   projectName: _projectName,
   assets,
+  transition,
+  keepRepeats = false,
 }: {
   projectId: string;
   projectName?: string;
@@ -64,12 +67,16 @@ export async function addProjectAssetsToTimeline({
     asset: RecentAsset;
     mediaType: 'image' | 'video' | 'audio';
   }>;
+  /** Joins consecutive added visuals with this transition. */
+  transition?: TimelineTransition | null;
+  /** Sequences may use one asset twice; a picker selection is de-duplicated. */
+  keepRepeats?: boolean;
 }) {
   if (assets.length === 0) throw new Error('Select at least one timeline asset');
   if (assets.some(({ asset }) => !asset.id?.trim())) {
     throw new Error('Timeline clips must reference a project asset');
   }
-  const uniqueAssets = Array.from(
+  const uniqueAssets = keepRepeats ? assets : Array.from(
     new Map(assets.map((entry) => [entry.asset.id, entry])).values()
   );
   const prepared = await Promise.all(
@@ -105,6 +112,12 @@ export async function addProjectAssetsToTimeline({
         : {}),
     })
   );
+  if (transition) {
+    const visuals = operations.filter((operation) => operation.type === 'add_clip' && operation.sourceType !== 'audio');
+    for (const operation of visuals.slice(1)) {
+      if (operation.type === 'add_clip' && operation.clipId) operations.push({ type: 'set_transition', clipId: operation.clipId, transition });
+    }
+  }
 
   const endpoint = `/api/app/projects/${encodeURIComponent(projectId)}/timeline`;
   const initial = await apiJsonGet<TimelineStatePayload>(endpoint);

@@ -1,12 +1,16 @@
+import { createHash } from 'node:crypto';
 import { openHarness } from '../harness/store';
 import { pinRuntimePlan } from '../harness/runtime-plan';
 import { assertRuntimeConfigured } from '../harness/capabilities';
 import { getActiveProject } from '../projects/projects';
+import { extractProjectVideoFrame } from '../projects/extract-project-video-frame';
 import { getProjectAssetById } from '../workspace-lib/assets/user-assets';
 import { listShotModels } from './catalog.server';
 import { SHOT_REQUEST_PREFIX, shotRequest, type ShotRunView, type ShotTakeView } from './contract';
 import { prepareShot, shotPlan, type ShotProduction } from './plan';
 import { inspectTake } from './quality.server';
+import { placeShot, readShotRecords } from './records.server';
+import { shotSpec, type ShotSpec } from './spec';
 
 const publicStep = (step: ShotProduction['video']) => ({
   modelId: step.model.id, modelName: step.model.name, provider: step.model.providerLabel ?? step.model.providerId ?? '',
@@ -32,6 +36,7 @@ async function takeView(projectId: string, job: Job): Promise<ShotTakeView> {
 async function listShots(projectId: string): Promise<ShotRunView[]> {
   const h = openHarness();
   try {
+    const records = readShotRecords(h, projectId);
     const runs = (h.runs(projectId) as Array<{ id: string; request_key: string; created_at: number }>).filter(run => run.request_key.startsWith(SHOT_REQUEST_PREFIX)).slice(0, 40);
     const views: ShotRunView[] = [];
     for (const run of runs) {
@@ -40,16 +45,30 @@ async function listShots(projectId: string): Promise<ShotRunView[]> {
       if (!takes.length) continue;
       const input = JSON.parse(takes[0].input_json) as { prompt: string; modelId: string; parameters?: { wmDuration?: string; provider_options?: { generate_audio?: boolean; sound?: string } } };
       const options = input.parameters?.provider_options;
+      const requestId = run.request_key.slice(SHOT_REQUEST_PREFIX.length), record = records.get(requestId);
+      const spec = record ? shotSpec.safeParse(record.spec) : null;
       views.push({
-        runId: run.id, requestId: run.request_key.slice(SHOT_REQUEST_PREFIX.length), createdAt: run.created_at,
+        runId: run.id, requestId, createdAt: run.created_at,
         prompt: input.prompt, modelId: input.modelId, stillModelId: still ? (JSON.parse(still.input_json) as { modelId: string }).modelId : null,
         durationSec: input.parameters?.wmDuration ? Number.parseFloat(input.parameters.wmDuration) : null,
         audio: options?.generate_audio === true || options?.sound === 'on',
         still: still ? await takeView(projectId, still) : null, takes: await Promise.all(takes.map(job => takeView(projectId, job))),
+        sequenceId: record?.sequenceId ?? requestId, shotId: record?.shotId ?? requestId, position: record?.position ?? 1, attempt: 1,
+        spec: spec?.success ? spec.data as ShotSpec : null, continuesFrom: record?.continuesFrom ?? null,
       });
     }
+    const attempts = new Map<string, ShotRunView[]>();
+    for (const view of views) attempts.set(view.sequenceId + '/' + view.shotId, [...(attempts.get(view.sequenceId + '/' + view.shotId) ?? []), view]);
+    for (const group of attempts.values()) [...group].sort((left, right) => left.createdAt - right.createdAt).forEach((view, index) => { view.attempt = index + 1; });
     return views;
   } finally { h.close(); }
+}
+
+/** A take's last frame becomes a project image; the same take always yields the same frame asset. */
+async function continueFrom(projectId: string, assetId: string) {
+  const derivedAssetId = 'tail-' + createHash('sha256').update(projectId + '\0' + assetId).digest('hex').slice(0, 32);
+  const frame = await extractProjectVideoFrame({ projectId, assetId, position: 'last', derivedAssetId, purpose: 'continuation_first_frame' });
+  return { frame: { assetId: frame.id, url: frame.publicUrl, width: frame.width, height: frame.height, sourceAssetId: assetId } };
 }
 
 /** The single application operation behind the HTTP route and the MCP tool. */
@@ -58,12 +77,19 @@ export async function changeShots(projectId: string, raw: unknown) {
   if (!await getActiveProject({ projectId })) throw Error('Project not found');
   if (request.action === 'list') return { shots: await listShots(projectId) };
   if (request.action === 'quality') return { quality: await inspectTake(projectId, request.assetId, { durationSec: request.durationSec, audio: request.audio }) };
+  if (request.action === 'continue') return continueFrom(projectId, request.assetId);
   const production = prepareShot(request.spec, await listShotModels());
   if (request.action === 'preview') return { production: publicProduction(production) };
   const plan = shotPlan(projectId, production);
   assertRuntimeConfigured(plan.nodes);
   const pinned = await pinRuntimePlan(plan);
   const h = openHarness();
-  try { return { runId: h.enqueue(pinned, SHOT_REQUEST_PREFIX + request.requestId), production: publicProduction(production) }; }
-  finally { h.close(); }
+  try {
+    const runId = h.enqueue(pinned, SHOT_REQUEST_PREFIX + request.requestId);
+    const placement = placeShot(h, projectId, {
+      requestId: request.requestId, sequenceId: request.sequence?.id ?? request.requestId, shotId: request.sequence?.shotId ?? request.requestId,
+      spec: production.spec, continuesFrom: request.sequence?.continuesFrom ?? null,
+    });
+    return { runId, placement: { sequenceId: placement.sequenceId, shotId: placement.shotId, position: placement.position }, production: publicProduction(production) };
+  } finally { h.close(); }
 }

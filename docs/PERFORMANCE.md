@@ -220,3 +220,7 @@ Summed script gzip: **728,029 bytes**, **5,220 bytes** more than the Cinema/work
 ## Spoken-word captions — 2026-11-02
 
 Summed script gzip: **731,790 bytes**, **3,761 bytes** more than editor transitions; public files **9,213,805 bytes**. The script budget changed from 729,000 to **732,000** in this reviewed decision. The added code is the caption tokenizer, re-timing and cue grouping (applied in the browser by the shared editor commands), the canvas highlight path, preview text, the highlight picker and eight messages in four languages. Moving caption drawing out of the media exporter brought that module and the server renderer under 400 lines. No dependency, worker or service was added; the server export uses FFmpeg's libass filter.
+
+## Cinema sequences — 2026-11-02
+
+Summed script gzip: **735,115 bytes**, **3,325 bytes** more than spoken-word captions; public files **9,226,529 bytes**. The script budget changed from 732,000 to **736,000** in this reviewed decision: the sequence strip and banner, shot actions (continue, edit, render again) and 15 messages in four languages, all in the Cinema route chunk. Sequence placement is one small table in the existing harness database; no dependency, worker or service was added.

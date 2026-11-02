@@ -1079,3 +1079,9 @@ An integration test builds a recipe from `subject-on-style` with `image-1` as su
 - **Real libass render:** an ASS script built from a bold three-word cue was rendered with FFmpeg; at 0.5/1.5/2.5 s the yellow pixels move from the first to the third word, the other words stay white, and the line stays centred near the bottom.
 - **Browser (1 test):** voice-style word timings become a cue through MCP, the highlight is chosen in the inspector, the preview colours the second word at 1.5 s, and browser and server MP4 exports both light each word in order; editing the text in the inspector keeps the timing of unchanged words. The editor, transition and workspace browser suites (28 tests) pass together.
 - 965 source tests, typecheck, i18n, architecture and the production build pass. Script gzip grew by 3,761 bytes; see [performance](PERFORMANCE.md#spoken-word-captions--2026-11-02).
+
+## Cinema sequences — 2026-11-02
+
+- **Placement (2 source tests):** runs record their sequence, shot and position in the harness database; a repeated shot keeps its position as another attempt, a new shot goes after the last one, other projects are separate and replaying a request keeps its placement. Grouping orders positions and puts the newest attempt first.
+- **Browser (1 test, local fixture provider and the real worker):** shot 1 rendered; **Continue** extracted the take's last frame (MCP `continue` returned the same image); shot 2 rendered from that frame in the same sequence with the source take recorded; **Render again** added attempt 2 at position 2; **Add sequence to timeline** with Crossfade placed two clips with a 0.5 s crossfade on the second. The phone layout has no horizontal overflow. The existing Cinema workflow tests (2) still pass. Fixture media only; no paid provider ran.
+- 967 source tests, typecheck, i18n, architecture and the production build pass; see [performance](PERFORMANCE.md#cinema-sequences--2026-11-02).
