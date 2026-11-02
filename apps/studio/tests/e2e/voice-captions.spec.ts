@@ -15,7 +15,8 @@ test('voice timing from the provider becomes captions with measured words, from 
   test.setTimeout(120_000);
   const id = (await (await request.post('/api/app/projects', { headers, data: { name: 'Voice captions QA' } })).json()).id;
   await page.goto(`/studio/${id}?target=audio&model=voice-fixture-speech`);
-  await page.getByLabel('Audio prompt', { exact: true }).fill('Find the hit first');
+  // A text-to-speech model names its prompt after the job.
+  await page.getByLabel('Script', { exact: true }).fill('Find the hit first');
   await page.getByRole('button', { name: 'Generate audio', exact: true }).click();
   await expect(page.getByText('Listen to generated audio', { exact: true })).toBeVisible({ timeout: 30_000 });
   const assets = (await (await request.get(`/api/app/projects/${id}/assets`)).json()).assets as Array<{ id: string; type: string }>;

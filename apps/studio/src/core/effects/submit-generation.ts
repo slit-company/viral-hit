@@ -121,6 +121,7 @@ export async function submitEffectGeneration({
   const promptConstraints = getGenerationPromptConstraints({
     modelId: effect.type === 3 ? VIDEO_ANALYSIS_MODEL_ID : effect.model,
     provider: effect.provider,
+    promptInput: binding.promptInput,
   });
   const prompt = validateGenerationPrompt(
     typeof safeInput.prompt === 'string' ? safeInput.prompt : '',

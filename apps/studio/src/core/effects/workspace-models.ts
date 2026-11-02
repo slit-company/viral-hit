@@ -3,6 +3,7 @@ import type { ReferenceInputs } from '@/core/generation-providers/reference-inpu
 import type { MaskInput } from '@/core/generation-providers/mask-input';
 import type { ReferenceRoles } from '@/core/generation-providers/reference-roles';
 import type { AnalysisInputs } from '@/core/generation-providers/analysis-inputs';
+import type { PromptInput } from './validation';
 import { buildCreateProjectPath } from '@/core/projects/project-entry';
 import { getGenerationModelBinding } from '@/core/generation-providers/catalog';
 import {
@@ -51,6 +52,8 @@ export type WorkspaceModelOption = {
   referenceInputs?: ReferenceInputs;
   maskInput?: MaskInput;
   referenceRoles?: ReferenceRoles;
+  /** Omitted when the model needs prompt text. */
+  promptInput?: PromptInput;
   mode?: WorkspaceModelMode;
   defaultMode?: WorkspaceModelMode;
   modeOptions?: WorkspaceModelMode[];

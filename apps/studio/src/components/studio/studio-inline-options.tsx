@@ -3,6 +3,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { NativeSelect } from '@/components/ui/native-select';
 import { localizeChoiceLabel, localizeControlLabel } from '@/components/generation-providers/control-label';
+import { SuggestedTextInput } from '@/components/generation-providers/suggested-text-input';
 import {
   resolveModelOptions,
   type ModelControl,
@@ -80,6 +81,14 @@ export function StudioInlineOptions({
                   event.target.value === '' ? '' : Number(event.target.value),
                 )
               }
+            />
+          ) : control.suggestions ? (
+            <SuggestedTextInput
+              label={controlLabel(control)}
+              value={String(values[control.key] ?? '')}
+              suggestions={control.suggestions}
+              maxLength={control.maxLength}
+              onChange={(next) => update(control.key, next)}
             />
           ) : control.multiline ? (
             <Textarea

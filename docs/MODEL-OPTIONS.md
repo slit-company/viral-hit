@@ -17,7 +17,7 @@ An independent generation provider may declare up to 16 `controls` on each model
 
 Supported controls:
 
-- `string`: `default`, explicit `maxLength` from 1 to 4000, optional `multiline`.
+- `string`: `default`, explicit `maxLength` from 1 to 4000, optional `multiline`. A single-line string can offer up to 48 distinct `suggestions` (`{value,label}`), such as a voice library. Studio shows them as a named list with an **Enter your own** choice, so any other value within `maxLength` stays valid.
 - `number`: finite `default`, `min`, `max`, optional `integer` (safe integer values).
 - `boolean`: boolean `default`.
 - `select`: string `default` and 1–32 distinct `{value,label}` choices.

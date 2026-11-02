@@ -4,7 +4,7 @@ Audio providers use the same installed provider boundary, model catalog, typed o
 
 ## Implement and install
 
-Declare `kind: "audio"` on a model in `provider.json`. Set provider `scope` to `general` or `specialized`. Declare typed `controls` for provider-specific duration, voice, style or other settings; values reach the module in `input.options`. Visual aspect ratios, frame references and video duration fields are rejected. Models may opt into `referenceInputs` to accept image, video and audio references alongside the required prompt and typed options. Omitting it preserves the text-only contract.
+Declare `kind: "audio"` on a model in `provider.json`. Set provider `scope` to `general` or `specialized`. Declare typed `controls` for provider-specific duration, voice, style or other settings; values reach the module in `input.options`. Visual aspect ratios, frame references and video duration fields are rejected. Models may opt into `referenceInputs` to accept image, video and audio references alongside the prompt and typed options. Omitting it preserves the text-only contract. A model that transforms a source without text, such as a voice changer, declares `"promptInput": "none"` ([prompt text](architecture/STUDIO-TOOLS.md#prompt-text)).
 
 The optional [procedural audio example](../examples/providers/procedural-audio) implements immediate and queued 24 kHz mono PCM WAV output without dependencies. It synthesizes sine/triangle tones from numeric controls; it does not interpret the prompt, synthesize speech or establish music-model quality. Replace its implementation with a suitable service or local engine to implement those capabilities. Model code remains independently installable and does not import studio internals.
 

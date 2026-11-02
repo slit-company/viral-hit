@@ -64,10 +64,9 @@ export function StudioMaskEditor({ projectId, model, source, disabled }: { proje
   }
 
   return <>
-    <Action className="vh-secondary flex shrink-0 items-center gap-1.5" aria-label={mask ? uiMessages["studio.controls.edit_marked_area"]() : uiMessages["studio.controls.mark_area_to_change"]()} disabled={disabled || !target} onClick={() => setOpen(true)}>
+    <Action className="vh-secondary flex shrink-0 items-center gap-1.5" aria-label={mask ? uiMessages["studio.controls.edit_marked_area"]() : uiMessages["studio.controls.mark_area_to_change"]()} title={target ? undefined : uiMessages["studio.media.add_an_image_to_mark_the_area_to_change_6187"]()} disabled={disabled || !target} onClick={() => setOpen(true)}>
       <Brush size={15} />{mask ? uiMessages["studio.controls.area_marked"]() : uiMessages["studio.controls.mark_area"]()}
     </Action>
-    {!target && <span className="text-xs text-[var(--vh-text-2)]">{uiMessages["studio.media.add_an_image_to_mark_the_area_to_change_6187"]()}</span>}
     <Dialog open={open} onOpenChange={next => { if (!saving) setOpen(next); }}>
       <DialogContent className="max-h-[calc(100dvh-32px)] max-w-3xl grid-rows-[auto_auto_minmax(0,1fr)_auto_auto]">
         <DialogTitle>{uiMessages["studio.media.mark_the_area_to_change_67e6"]()}</DialogTitle>

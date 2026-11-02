@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { recipeSchema, type Recipe } from './recipes';
 import type { ReferenceInputs } from '../generation-providers/reference-inputs';
+import type { PromptInput } from '../effects/validation';
 
 const count = z.number().int().min(0).max(20);
 export const modelRecipeDefinition = recipeSchema.omit({ nodes: true, parameters: true }).extend({
@@ -20,5 +21,7 @@ export type ModelRecipeModel = {
   mask?: { required: boolean };
   /** Specific reference roles the model declares. */
   roles?: string[];
+  /** Present when the model can run without prompt text ('optional') or ignores it ('none'). */
+  promptInput?: PromptInput;
   parameters: Recipe['parameters'];
 };

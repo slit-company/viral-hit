@@ -18,6 +18,17 @@ test('the published provider.json schema matches the runtime contract and accept
   assert.throws(() => providerManifestSchema.parse({ ...example, models: [{ ...example.models[0], defaultAspectRatio: '21:9' }] }), /defaultAspectRatio/);
 });
 
+test('prompt input is declared per model and needs sources when the prompt is ignored', () => {
+  const base = { id: 'clip-tool', name: 'Clip tool', kind: 'video', aspectRatios: ['auto'] };
+  const sources = { image: { min: 0, max: 0 }, video: { min: 1, max: 1 }, audio: { min: 0, max: 0 } };
+  const parse = (model: Record<string, unknown>) => providerManifestSchema.shape.models.element.safeParse(model);
+  assert.equal(parse({ ...base, promptInput: 'none', referenceInputs: sources }).success, true);
+  assert.equal(parse({ ...base, promptInput: 'optional' }).success, true);
+  assert.equal(parse({ ...base, promptInput: 'none' }).success, false);
+  assert.equal(parse({ ...base, promptInput: 'sometimes' }).success, false);
+  assert.equal(parse({ id: 'reader', name: 'Reader', kind: 'analysis', promptInput: 'optional' }).success, false);
+});
+
 test('installed model ids map to stable numbers outside the built-in range', () => {
   const id = installedEffectId('procedural-images', 'procedural-gradient');
   assert.equal(id, installedEffectId('procedural-images', 'procedural-gradient'));

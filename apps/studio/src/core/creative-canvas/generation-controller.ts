@@ -226,7 +226,7 @@ export const buildGenerationEffectInput = async ({
 
   const promptValidation = validateGenerationPrompt(
     draftCard.prompt,
-    getGenerationPromptConstraints({ modelId: model.id })
+    getGenerationPromptConstraints({ modelId: model.id, promptInput: model.promptInput })
   );
   if (!promptValidation.ok) {
     throw new Error(

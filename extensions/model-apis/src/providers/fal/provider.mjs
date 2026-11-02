@@ -1,8 +1,7 @@
 import { send, sendJson, ApiError } from '../../kit/http.mjs';
 import { credential } from '../../kit/polling.mjs';
 import { extensionFor } from '../../kit/media.mjs';
-import { catalogProvider } from '../../kit/catalog-provider.mjs';
-import { describeVideoImages } from '../../kit/video-image-inputs.mjs';
+import { catalogProvider, catalogModels } from '../../kit/catalog-provider.mjs';
 import catalog from './catalog.json' with { type: 'json' };
 // fal queue API: https://fal.ai/docs/documentation/model-apis/inference/queue
 const QUEUE = 'https://queue.fal.run/';
@@ -57,4 +56,4 @@ async function balance(api) {
 }
 
 export const { createGeneration, checkStatus, testConnection, checkBalance } = catalogProvider({ prefix: 'fal', label: 'fal', catalog, client, upload, submit, poll, test, balance });
-export const manifest = { id: 'fal', setupUrl: 'https://fal.ai/dashboard/keys', label: 'fal', description: 'fal model gallery: Nano Banana, GPT Image 2.5, FLUX 3, Seedream, Seedance 2.5, Kling 4, Gemini Omni, Wan 3, Grok, lip sync, upscaling, voice, music and sound.', environment: ['FAL_KEY'], balanceCheck: true, models: catalog.models.map(describeVideoImages) };
+export const manifest = { id: 'fal', setupUrl: 'https://fal.ai/dashboard/keys', label: 'fal', description: 'fal model gallery: Nano Banana, GPT Image 2.5, FLUX 3, Seedream, Seedance 2.5, Kling 4, Gemini Omni, Wan 3, Grok, lip sync, upscaling, voice, music and sound.', environment: ['FAL_KEY'], balanceCheck: true, models: catalogModels(catalog) };

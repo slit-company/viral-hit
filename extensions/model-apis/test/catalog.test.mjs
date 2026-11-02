@@ -2,12 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { admit, requestBody, collectMedia } from '../src/kit/catalog-request.mjs';
 import { profileFromSchema } from '../src/kit/schema-profile.mjs';
+import { catalogModels } from '../src/kit/catalog-provider.mjs';
 import fal from '../src/providers/fal/catalog.json' with { type: 'json' };
 import runway from '../src/providers/runway/catalog.json' with { type: 'json' };
 import higgsfield from '../src/providers/higgsfield/catalog.json' with { type: 'json' };
 
 const entry = (catalog, upstream) => catalog.models.find(item => item.model.upstreamModelId === upstream);
 const body = (catalog, upstream, input, uploaded = {}) => { const { model, binding } = entry(catalog, upstream); return requestBody(model, binding, admit(model, binding, input), { image: [], video: [], audio: [], ...uploaded }, input.seed); };
+
+test('catalog manifests tell the host which models need, allow or ignore prompt text', () => {
+  const byId = new Map([fal, runway, higgsfield].flatMap(catalog => catalogModels(catalog)).map(model => [model.id, model]));
+  assert.equal(byId.get('fal-sync-lipsync-v3').promptInput, 'none');
+  assert.equal(byId.get('runway-character-performance-act-two').promptInput, 'none');
+  assert.equal(byId.get('fal-kling-v4-image-to-video').promptInput, 'optional');
+  assert.equal(byId.get('higgsfield-genjutsu-object-swap').promptInput, 'optional');
+  assert.equal('promptInput' in byId.get('fal-elevenlabs-tts-eleven-v4'), false);
+  // The host accepts a prompt-free model only when a source is required.
+  for (const model of byId.values()) if (model.promptInput === 'none') assert.ok(Object.values(model.referenceInputs ?? {}).some(range => range.min > 0) || model.requiresImageInput, model.id);
+});
 
 test('first and last frames land in the image and end-image fields with string durations', () => {
   const result = body(fal, 'bytedance/seedance-2.5/us/image-to-video', { prompt: 'run', duration: '8s', imageUrls: ['a', 'b'], options: { resolution: '1080p' } }, { image: ['https://x/a.png', 'https://x/b.png'] });

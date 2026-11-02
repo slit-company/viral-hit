@@ -173,8 +173,10 @@ export async function preflightAssetFirstGeneration(source: unknown) {
       `Model ${generation.modelId} does not support ${generation.mode} generation.`
     );
   }
-  const prompt = validateGenerationPrompt(generation.prompt, getGenerationPromptConstraints({ modelId: descriptor.kind === 'analysis' ? 'video-analysis' : generation.modelId }));
+  const prompt = validateGenerationPrompt(generation.prompt, getGenerationPromptConstraints({ modelId: descriptor.kind === 'analysis' ? 'video-analysis' : generation.modelId, promptInput: binding.promptInput }));
   if (!prompt.ok) throw new Error(prompt.code === 'PROMPT_TOO_LONG' ? `Prompt must be ${prompt.maxChars} characters or fewer.` : 'Prompt is required.');
+  // A model without prompt text never receives one, so a stale draft prompt cannot fail the request.
+  if (binding.promptInput === 'none') generation = { ...generation, prompt: '' };
   if (provider.referenceDelivery === 'project-media') {
     const preparedReferences = await prepareLocalGenerationReferences(generation);
     const input = await compileAssetFirstGenerationInput({ ...preparedReferences, generationIntentId: '' });

@@ -5,7 +5,7 @@ import { draftModelOptions, modelOptionsDraftSchema } from '../generation-provid
 import type { WorkspaceModelOption } from '../effects/workspace-models';
 import type { ProjectGenerationItem } from '../effects/project-generations';
 import type { AssetFirstGenerationRequest } from '../commands/generation-contract';
-import { MAX_GENERATION_PROMPT_CHARS } from '../effects/validation';
+import { MAX_GENERATION_PROMPT_CHARS, getGenerationPromptConstraints } from '../effects/validation';
 
 export const studioAudioDraftSchema = z.object({
   version: z.literal(1), modelId: z.string().max(200),
@@ -17,10 +17,11 @@ export const newStudioAudioDraft = (modelId = '', prompt = ''): StudioAudioDraft
 export function studioAudioRequest(projectId: string, raw: StudioAudioDraft, model: WorkspaceModelOption | undefined): AssetFirstGenerationRequest {
   const draft = studioAudioDraftSchema.parse(raw);
   if (!model || model.id !== draft.modelId || model.available === false) throw Error('Choose a configured audio model.');
-  if (!draft.prompt.trim()) throw Error('Describe the audio or enter the words to speak.');
+  const prompt = getGenerationPromptConstraints({ modelId: model.id, promptInput: model.promptInput });
+  if (prompt.required && !draft.prompt.trim()) throw Error('Describe the audio or enter the words to speak.');
   if (new Set(draft.sources.map(source => source.id)).size !== draft.sources.length) throw Error('Audio sources must be distinct');
   validateReferenceCounts(studioSourceCounts(draft.sources), resolveAudioReferenceInputs(model.referenceInputs), 'Audio');
-  return { version: 2, projectId, mode: 'audio', modelId: model.id, prompt: draft.prompt.trim(), references: draft.sources.map(source => ({ assetId: source.id, role: source.type === 'audio' ? 'audio_track' : 'source' })), parameters: draftModelOptions(draft) };
+  return { version: 2, projectId, mode: 'audio', modelId: model.id, prompt: prompt.accepted ? draft.prompt.trim() : '', references: draft.sources.map(source => ({ assetId: source.id, role: source.type === 'audio' ? 'audio_track' : 'source' })), parameters: draftModelOptions(draft) };
 }
 
 export function restoreStudioAudioHistory(projectId: string, item: ProjectGenerationItem, library: StudioMediaSource[]): StudioAudioDraft {

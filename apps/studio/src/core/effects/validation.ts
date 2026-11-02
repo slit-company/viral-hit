@@ -210,34 +210,25 @@ export const truncatePromptToMaxChars = (
   maxChars = MAX_GENERATION_PROMPT_CHARS
 ) => Array.from(prompt).slice(0, maxChars).join('');
 
+/** How a model uses prompt text. A model that omits it needs a prompt. */
+export const PROMPT_INPUTS = ['optional', 'none'] as const;
+export type PromptInput = (typeof PROMPT_INPUTS)[number];
+
 export const getGenerationPromptConstraints = ({
   modelId,
+  promptInput,
 }: {
   modelId?: string | null;
   provider?: string | null;
-} = {}) => {
-  if (modelId === VIDEO_ANALYSIS_MODEL_ID) {
-    return {
-      required: true,
-      maxChars: VIDEO_ANALYSIS_GENERATION_PROMPT_CHARS,
-    } as const;
-  }
-  if (modelId && MOTION_CONTROL_MODEL_IDS.has(modelId)) {
-    return {
-      required: false,
-      maxChars: MOTION_CONTROL_GENERATION_PROMPT_CHARS,
-    } as const;
-  }
-  if (modelId === GROK_IMAGINE_VIDEO_MODEL_ID) {
-    return {
-      required: true,
-      maxChars: 4096,
-    } as const;
-  }
-  return {
-    required: true,
-    maxChars: MAX_GENERATION_PROMPT_CHARS,
-  } as const;
+  promptInput?: PromptInput | null;
+} = {}): { required: boolean; maxChars: number; accepted: boolean } => {
+  // Lip sync, upscaling and similar models work from their sources alone; prompt text is dropped.
+  if (promptInput === 'none') return { required: false, maxChars: 0, accepted: false };
+  const motionControl = Boolean(modelId && MOTION_CONTROL_MODEL_IDS.has(modelId));
+  const maxChars = modelId === VIDEO_ANALYSIS_MODEL_ID ? VIDEO_ANALYSIS_GENERATION_PROMPT_CHARS
+    : motionControl ? MOTION_CONTROL_GENERATION_PROMPT_CHARS
+    : modelId === GROK_IMAGINE_VIDEO_MODEL_ID ? 4096 : MAX_GENERATION_PROMPT_CHARS;
+  return { required: promptInput !== 'optional' && !motionControl, maxChars, accepted: true };
 };
 
 export const getGenerationPromptMaxChars = (
@@ -249,8 +240,10 @@ export const validateGenerationPrompt = (
   options?: {
     required?: boolean;
     maxChars?: number;
+    accepted?: boolean;
   }
 ): PromptValidationSuccess | PromptValidationFailure => {
+  if (options?.accepted === false) return { ok: true, trimmedPrompt: '', charCount: 0 };
   const required = options?.required ?? true;
   const maxChars = options?.maxChars ?? MAX_GENERATION_PROMPT_CHARS;
   const trimmedPrompt = prompt.trim();

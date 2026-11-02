@@ -1,3 +1,4 @@
+import { m as uiMessages } from '@/paraglide/messages.js';
 import { resolveAnalysisInputs } from '@/core/generation-providers/analysis-inputs';
 import { composerReferenceOptions } from './composer-reference-options';
 import { AnalysisSources } from './analysis-sources';
@@ -481,16 +482,17 @@ export function CreativeCanvasFrontLayer() {
   ]);
 
   const promptCharacterCount = countPromptCharacters(promptInputValue);
+  // Models that work from their sources alone ignore prompt text; the placeholder says so.
   const activePromptPlaceholder = isAnalysisDraft
     ? selectedModel?.analysisInputs ? 'Describe what to review across the selected media.' : labels.analysisPromptPlaceholder
+    : selectedModel?.promptInput === 'none' ? uiMessages["studio.media.prompt_not_needed"]()
     : activeDraftCard?.type === 'video'
       ? labels.videoPromptPlaceholder
       : labels.imagePromptPlaceholder;
   const activePromptCharacterLimit = isAnalysisDraft
     ? getGenerationPromptMaxChars({ modelId: VIDEO_ANALYSIS_MODEL_ID })
-    : getGenerationPromptConstraints({
-        modelId: selectedModel?.id,
-      }).maxChars ?? promptCharacterLimit;
+    : selectedModel?.promptInput === 'none' ? promptCharacterLimit
+    : getGenerationPromptConstraints({ modelId: selectedModel?.id, promptInput: selectedModel?.promptInput }).maxChars;
 
   const parameterSummaryTokens = useMemo(() => {
     if (!activeDraftCard) {

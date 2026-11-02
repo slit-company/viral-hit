@@ -4,7 +4,7 @@ import { listGenerationModelDescriptors } from '../generation-providers/model-ca
 import { prepareBoundModelOptions } from './bound-model-options';
 import { validateReferenceCounts } from '../generation-providers/reference-inputs';
 import { getWorkspaceEffectRegistryEntry } from '../effects/effect-registry';
-import { getGenerationPromptMaxChars } from '../effects/validation';
+import { getGenerationPromptConstraints } from '../effects/validation';
 import { generationModelInput } from './generation-contract';
 import { pointerParts } from './bindings';
 import type { Plan } from './durable';
@@ -49,8 +49,9 @@ export function inspectModelRequirements(plan: Plan, deferredInputs: Record<stri
       try { check(); } catch (error) { add('issue', error instanceof Error && !(error instanceof z.ZodError) ? error.message : 'Value does not match the installed model contract.', path); }
     };
     attempt('/prompt', () => {
-      const max = getGenerationPromptMaxChars({ modelId: input.mode === 'analysis' ? 'video-analysis' : input.modelId });
-      if (!input.prompt.trim() || input.prompt.trim().length > max) throw Error(`Direction must contain 1–${max} characters.`);
+      const prompt = getGenerationPromptConstraints({ modelId: input.mode === 'analysis' ? 'video-analysis' : input.modelId, promptInput: model.promptInput }), text = input.prompt.trim();
+      if (!prompt.accepted) return;
+      if ((prompt.required && !text) || text.length > prompt.maxChars) throw Error(`Direction must contain ${prompt.required ? 1 : 0}–${prompt.maxChars} characters.`);
     });
     // Source IDs may be deferred while their fixed declared kinds still determine required counts.
     const kindsDeferred = [...missing, ...upstream].some(parts => parts[0] === 'references' && (parts.length < 3 || parts[2] !== 'assetId'));

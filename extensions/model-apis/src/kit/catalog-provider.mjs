@@ -2,6 +2,15 @@ import { ApiError, isTransient } from './http.mjs';
 import { admit, requestBody, collectMedia } from './catalog-request.mjs';
 import { readReference, downloadResult } from './media.mjs';
 import { createPacer, processing, taskId, parseTaskId, unknownCost } from './polling.mjs';
+import { describeVideoImages } from './video-image-inputs.mjs';
+
+/** Manifest models of a schema-driven catalog: frame/reference modes plus how each model uses prompt text. */
+export function catalogModels(catalog) {
+  return catalog.models.map(entry => {
+    const model = describeVideoImages(entry), prompt = entry.binding.prompt;
+    return !prompt ? { ...model, promptInput: 'none' } : prompt.required === false ? { ...model, promptInput: 'optional' } : model;
+  });
+}
 
 /**
  * Shared lifecycle for schema-driven catalogs. A vendor supplies only:

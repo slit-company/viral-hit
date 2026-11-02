@@ -5,6 +5,7 @@ import type { ReferenceRoles } from './reference-roles';
 import type { VideoImageInputs } from './video-image-inputs';
 import type { ModelControl } from './model-controls';
 import type { AnalysisInputs } from './analysis-inputs';
+import type { PromptInput } from '@/core/effects/validation';
 import type { BaseAdapter, EffectRecord } from '@/core/adapters/base-adapter';
 
 export type GenerationMediaCapability = 'image' | 'video' | 'audio' | 'analysis';
@@ -19,6 +20,8 @@ export type GenerationProviderModelBinding = {
   videoImageInputs?: VideoImageInputs;
   /** Declared only by models that edit a marked area. */
   maskInput?: MaskInput;
+  /** Omitted when the model needs prompt text. */
+  promptInput?: PromptInput;
   /** Specific reference roles the model declares. */
   referenceRoles?: ReferenceRoles;
   /** Explicit output type/name for installed analysis models outside the image/video registry. */

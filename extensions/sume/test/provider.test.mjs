@@ -21,6 +21,9 @@ test('all 30 profiles build bounded explicit request bodies; video transforms om
     if (profile.route === 'restyle') assert.equal(body.image_urls, undefined);
     if (profile.route === 'music') assert.equal(body.duration, undefined);
   }
+  const promptInputs = Object.fromEntries(providerManifest().models.map(model => [model.id, model.promptInput]));
+  assert.equal(promptInputs['sume-sync-lipsync-3'], 'none'); assert.equal(promptInputs['sume-detach-audio'], 'none');
+  assert.equal(promptInputs['sume-remix-object-swap'], 'optional'); assert.equal(promptInputs['sume-gpt-image-2'], undefined);
   assert.throws(() => buildPayload(profiles.find(p => p.route === 'captions'), { videoUrls: ['owned:v'], options: { style: 'slam', language: 'ko' } }), /Hangul/);
   assert.throws(() => buildPayload(profiles[0], { ...input, options: { arbitrary: true } }), /Invalid/);
 });

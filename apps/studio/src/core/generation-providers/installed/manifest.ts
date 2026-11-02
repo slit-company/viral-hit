@@ -6,6 +6,7 @@ import { videoImageInputsSchema } from '../video-image-inputs';
 import { modelControlsSchema } from '../model-controls';
 import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
+import { PROMPT_INPUTS } from '@/core/effects/validation';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
@@ -26,6 +27,8 @@ export const providerModelSchema = z.object({
   referenceInputs: referenceInputsSchema.optional(),
   videoImageInputs: videoImageInputsSchema.optional(),
   maskInput: maskInputSchema.optional(),
+  /** 'optional' when the model can run without prompt text; 'none' when it works from its sources alone. */
+  promptInput: z.enum(PROMPT_INPUTS).optional(),
   /** Specific roles (style, subject, pose) the model understands; delivered to the module as input.references. */
   referenceRoles: referenceRolesSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
@@ -40,6 +43,8 @@ export const providerModelSchema = z.object({
   if ((model.kind === 'image' || model.kind === 'video') && !model.aspectRatios.length) ctx.addIssue({ code: 'custom', message: 'Image/video models require aspectRatios' });
   if (model.kind === 'analysis' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, with no image-generation or output aspect-ratio settings' });
   if (model.kind === 'audio' && (model.aspectRatios.length || model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Audio models use referenceInputs without visual aspect ratios or image-generation settings' });
+  if (model.kind === 'analysis' && model.promptInput) ctx.addIssue({ code: 'custom', message: 'Analysis models always take an instruction' });
+  if (model.promptInput === 'none' && !model.requiresImageInput && !Object.values(model.referenceInputs ?? {}).some(range => range.min > 0)) ctx.addIssue({ code: 'custom', message: 'A model without prompt text needs at least one required source' });
   if (model.kind === 'analysis' && model.referenceInputs) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, not referenceInputs' });
   if (model.referenceInputs && (model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Use referenceInputs alone instead of legacy image reference settings' });
   if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });

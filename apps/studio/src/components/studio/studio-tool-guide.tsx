@@ -4,6 +4,7 @@ import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
 import { toolCopy } from './tool-catalog';
 import type { StudioToolId } from '@/core/studio/tools';
+const AUDIO_TOOLS: ReadonlySet<StudioToolId> = new Set(['text-to-speech', 'voice-change', 'audio-generate', 'music-generate']);
 export function StudioToolGuide({
   tool,
   projectId,
@@ -19,7 +20,7 @@ export function StudioToolGuide({
   return (
     <div className="mx-auto w-full max-w-4xl px-1 py-7 sm:px-6 sm:py-14">
       <div className="mb-9 text-center">
-        <p className="text-[10px] font-semibold tracking-[.2em] text-[var(--vh-text-3)]">
+        <p className="text-[10px] font-semibold tracking-[.2em] text-[var(--vh-text-3)] [&:lang(ko)]:tracking-[.02em]">
           {uiMessages["studio.media.your_next_creation_a309"]()}</p>
         <h2 className="mt-4 text-[clamp(24px,2.6vw,38px)] font-semibold tracking-[-.045em]">
           {uiMessages["studio.tools.from_idea_to_finished_work_in_one_place"]()}</h2>
@@ -53,7 +54,7 @@ export function StudioToolGuide({
           </div>
           <h3 className="text-sm font-semibold">{uiMessages["studio.tools.02_model_and_settings"]()}</h3>
           <p className="text-xs leading-6 text-[var(--vh-text-2)]">
-            {uiMessages["studio.tools.choose_a_model_for_the_task_then_set_its_supported_length_aspect_ratio_and_quality"]()}</p>
+            {AUDIO_TOOLS.has(tool) ? uiMessages["studio.tools.choose_an_audio_model_then_its_settings"]() : uiMessages["studio.tools.choose_a_model_for_the_task_then_set_its_supported_length_aspect_ratio_and_quality"]()}</p>
         </div>
         <div className="space-y-3">
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl bg-[var(--vh-control)]">

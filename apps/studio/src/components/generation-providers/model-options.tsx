@@ -9,6 +9,7 @@ import { resolveModelOptions, type ModelOptionsDraft, type ModelOptionValues } f
 import { useWorkspaceModels } from '@/core/workspace-hooks/use-workspace-metadata';
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { localizeChoiceLabel, localizeControlLabel } from './control-label';
+import { SuggestedTextInput } from './suggested-text-input';
 
 /** The same declared settings form is used by Canvas and Studio; it never starts a generation. */
 export function ModelOptions({ modelId, value, disabled, onChange }: {
@@ -36,6 +37,7 @@ export function ModelOptions({ modelId, value, disabled, onChange }: {
             {control.type === 'select' ? <NativeSelect aria-label={label} value={String(values[control.key] ?? '')} onChange={event => update(control.key, event.target.value)}>{control.choices.map(item => <option key={item.value} value={item.value}>{localizeChoiceLabel(item.label)}</option>)}</NativeSelect>
               : control.type === 'boolean' ? <NativeSelect aria-label={label} value={String(values[control.key])} onChange={event => update(control.key, event.target.value === 'true')}><option value="true">{uiMessages["studio.tools.on"]()}</option><option value="false">{uiMessages["studio.tools.off"]()}</option></NativeSelect>
               : control.type === 'number' ? <Input aria-label={label} type="number" min={control.min} max={control.max} step={control.integer ? 1 : 'any'} value={String(values[control.key] ?? '')} onChange={event => update(control.key, event.target.value === '' ? '' : Number(event.target.value))} />
+              : control.suggestions ? <SuggestedTextInput label={label} value={String(values[control.key] ?? '')} suggestions={control.suggestions} maxLength={control.maxLength} onChange={next => update(control.key, next)} />
               : control.multiline ? <Textarea aria-label={label} maxLength={control.maxLength} value={String(values[control.key] ?? '')} onChange={event => update(control.key, event.target.value)} />
               : <Input aria-label={label} maxLength={control.maxLength} value={String(values[control.key] ?? '')} onChange={event => update(control.key, event.target.value)} />}
             {control.description && <span className="block break-words text-xs font-normal leading-5 text-[var(--vh-text-2)]">{control.description}</span>}

@@ -158,7 +158,7 @@ export const toRegisteredEffect = (
     platform: provider.id,
     api: null,
     provider: provider.id,
-    inputSchema: { ...buildInputSchema(entry), ...(binding.controls ? { provider_options: optionalAnyField } : {}) },
+    inputSchema: { ...buildInputSchema(entry), ...(binding.promptInput ? { prompt: { type: 'string', required: false } } : {}), ...(binding.controls ? { provider_options: optionalAnyField } : {}) },
   };
 };
 

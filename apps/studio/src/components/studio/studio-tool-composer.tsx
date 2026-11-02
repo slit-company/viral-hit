@@ -6,6 +6,7 @@ import { NativeSelect } from '@/components/ui/native-select';
 import { StudioVisualSourceControls } from './studio-visual-source-controls';
 import { StudioReferenceThumbnails } from './studio-reference-thumbnails';
 import { StudioInlineOptions } from './studio-inline-options';
+import { StudioPromptNotNeeded, StudioPromptOptional } from './studio-prompt-field';
 import {
   visualSourceReferences,
   visualReferenceInputs,
@@ -13,7 +14,6 @@ import {
 import { getWorkspaceAspectRatioOptions } from '@/core/effects/workspace-models';
 import {
   getGenerationPromptConstraints,
-  getGenerationPromptMaxChars,
   truncatePromptToMaxChars,
 } from '@/core/effects/validation';
 import type { WorkspaceModelMetadata } from '@/core/workspace-hooks/use-workspace-metadata';
@@ -61,10 +61,8 @@ export function StudioToolComposer({
     model,
     hasImageReferences: images.length > 0,
   });
-  const limit = getGenerationPromptMaxChars({ modelId: model.id });
-  const required = getGenerationPromptConstraints({
-    modelId: model.id,
-  }).required;
+  const prompt = getGenerationPromptConstraints({ modelId: model.id, promptInput: model.promptInput });
+  const { maxChars: limit, required } = prompt;
   const fields = [
     { key: 'aspectRatio', label: uiMessages["studio.tools.aspect_ratio"](), values: ratios },
     { key: 'duration', label: uiMessages["studio.tools.video_length"](), values: model.supportedDurations },
@@ -112,8 +110,8 @@ export function StudioToolComposer({
             {uiMessages["studio.tools.choose_project_media_or_upload_a_file_selected_references_will_be_used_for_this_task"]()}</p>
         </div>
       )}
-      <label className="block space-y-2">
-        <span className="text-xs font-semibold">{uiMessages["studio.tools.scene_description"]()}</span>
+      {prompt.accepted ? <label className="block space-y-2">
+        <span className="text-xs font-semibold">{uiMessages["studio.tools.scene_description"]()}{!required && <StudioPromptOptional />}</span>
         <Textarea
           aria-label={uiMessages["studio.tools.scene_description"]()}
           placeholder={toolCopy[tool].hint}
@@ -130,7 +128,7 @@ export function StudioToolComposer({
         <span className="block text-right text-[10px] text-[var(--vh-text-3)]">
           {draft.prompt.length} / {limit}
         </span>
-      </label>
+      </label> : <StudioPromptNotNeeded />}
       <div className="grid grid-cols-2 gap-3">
         {fields
           .filter((field) => field.values?.length)

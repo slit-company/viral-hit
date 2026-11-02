@@ -38,6 +38,7 @@ async function GET({ request }: { request: Request }) {
       ...(descriptor?.videoImageInputs ? { videoImageInputs: descriptor.videoImageInputs } : {}),
       ...(descriptor?.maskInput ? { maskInput: descriptor.maskInput } : {}),
       ...(descriptor?.referenceRoles ? { referenceRoles: descriptor.referenceRoles } : {}),
+      ...(descriptor?.promptInput ? { promptInput: descriptor.promptInput } : {}),
       defaultProviderModelVariant: model.defaultVariant
         ? resolveWorkspaceEffectProviderModelVariant({
             modelId: model.id,

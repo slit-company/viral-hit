@@ -31,6 +31,10 @@ The reference is Sume's **creation interface**, inspected at https://www.sume.co
 
 This is an excerpt of a model entry, not a complete installable provider. The module still implements the existing generation adapter contract. Different API wire formats require adapters; registering a URL alone does not implement an arbitrary API. Installed credentials are managed under Extensions, Cloud credentials through its existing settings dialog, and compatible packages through Runtime Packages.
 
+### Prompt text
+
+A model that omits `promptInput` needs a prompt. `"promptInput": "optional"` lets it run without one, and Studio marks the field **Optional**. `"promptInput": "none"` means the model works from its sources alone. Lip sync, voice change, upscaling, background removal, captions, trimming and audio extraction are examples. Studio replaces the prompt box with a short note, and the server drops any prompt text before the provider sees it. That way an old draft prompt cannot fail the request. A prompt-free model must require at least one source, and analysis models always take an instruction. The same rule applies to the Studio panel, the floating composer, Canvas, `generation.model` recipes and server admission. Audio prompts are named after the job: **Script** for text to speech, **Music description** and **Sound description**.
+
 A task with no installed compatible model shows the installation path. A known but unconfigured model shows connection requirements and disables generation. This distinguishes a visible workflow from an available model. It does not imply Sume/Higgsfield output quality, nor that every visible task already has a configured provider.
 
 ## Verification

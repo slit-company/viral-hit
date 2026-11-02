@@ -1,4 +1,5 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
+import { useEffect, useRef } from 'react';
 import { WorkspaceApiConfigDialog } from '@/components/app/workspace-api-config-dialog';
 import { PlugZap, ArrowUpRight } from 'lucide-react';
 import { Action } from '@/components/base/action';
@@ -15,9 +16,15 @@ export function StudioToolNavigation({
   tools: StudioToolsController;
   disabled: boolean;
 }) {
-  const group = groupForTool(tools.tool);
+  const group = groupForTool(tools.tool), strip = useRef<HTMLElement>(null);
+  // On a narrow screen the strip scrolls; keep the active group in view without moving the page.
+  useEffect(() => {
+    const nav = strip.current, active = nav?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (nav && active && (active.offsetLeft < nav.scrollLeft || active.offsetLeft + active.offsetWidth > nav.scrollLeft + nav.clientWidth)) nav.scrollTo({ left: active.offsetLeft - (nav.clientWidth - active.offsetWidth) / 2 });
+  }, [group.id]);
   return (
     <nav
+      ref={strip}
       aria-label={uiMessages["studio.tools.creation_tools"]()}
       className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-[var(--vh-border)] bg-[var(--vh-surface)] px-3 py-2 sm:px-5"
     >
@@ -85,8 +92,8 @@ export function StudioToolSelection({
         ))}
       </div>
       <div>
-        <p className="mb-2 text-[10px] font-semibold tracking-[.18em] text-[var(--vh-text-3)]">
-          {uiMessages["studio.media.create_e8a5"]()}{group.label.toUpperCase()}
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[.18em] text-[var(--vh-text-3)] [&:lang(ko)]:tracking-[.02em]">
+          {uiMessages["studio.media.create_e8a5"]()}<span aria-hidden="true"> · </span>{group.label}
         </p>
         <h1 className="text-[24px] font-semibold tracking-[-.04em]">
           {toolCopy[tools.tool].title}

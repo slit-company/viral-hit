@@ -5,7 +5,7 @@ import { resolveAnalysisInputs } from '../generation-providers/analysis-inputs';
 import { resolveAudioReferenceInputs, REFERENCE_MEDIA_KINDS, validateReferenceCounts } from '../generation-providers/reference-inputs';
 import { getWorkspaceEffectRegistryEntry } from '../effects/effect-registry';
 import { getWorkspaceMediaSchema } from '../effects/workspace-media';
-import { getGenerationPromptMaxChars } from '../effects/validation';
+import { getGenerationPromptConstraints } from '../effects/validation';
 import type { ModelControl } from '../generation-providers/model-controls';
 import { fingerprint, type Json } from './durable';
 import { compileRecipeForCheck, recipeSchema, type Recipe } from './recipes';
@@ -26,7 +26,9 @@ function source(model: GenerationModelDescriptor) {
   const references = model.kind === 'analysis' ? resolveAnalysisInputs(model.analysisInputs) : model.referenceInputs ?? (model.kind === 'audio' ? resolveAudioReferenceInputs() : {
     image: { min: entry?.requiresImageInput ? 1 : 0, max: media?.image.max ?? 0 }, video: { min: 0, max: media?.video.max ?? 0 }, audio: { min: 0, max: media?.audio.max ?? 0 },
   });
-  const exposures: Exposure[] = [{ parameter: { id: 'prompt', label: 'Direction', type: 'string', multiline: true, minLength: 1, maxLength: getGenerationPromptMaxChars({ modelId: model.kind === 'analysis' ? 'video-analysis' : model.id }) }, target: '/prompt' }];
+  const prompt = getGenerationPromptConstraints({ modelId: model.kind === 'analysis' ? 'video-analysis' : model.id, promptInput: model.promptInput });
+  // A model that ignores prompt text exposes no Direction field; the step keeps its empty prompt.
+  const exposures: Exposure[] = prompt.accepted ? [{ parameter: { id: 'prompt', label: 'Direction', type: 'string', multiline: true, minLength: prompt.required ? 1 : 0, maxLength: prompt.maxChars }, target: '/prompt' }] : [];
   for (const [id, label, key, choices] of [
     ['aspect-ratio', 'Aspect ratio', 'aspect_ratio', entry?.supportedAspectRatios],
     ['duration', 'Duration', 'wmDuration', entry?.supportedDurations],
@@ -34,7 +36,7 @@ function source(model: GenerationModelDescriptor) {
     if (choices?.length) exposures.push({ parameter: { id, label, type: 'enum', options: [...choices], default: String(model.defaultParameters[key] ?? choices[0]) }, target: `/parameters/${key}` });
   }
   exposures.push(...(model.controls ?? []).map(option));
-  const projection = { id: model.id, name: model.name, providerId: model.providerId, kind: model.kind, available: model.available, references, ...(model.maskInput ? { mask: model.maskInput } : {}), ...(model.referenceRoles ? { roles: [...model.referenceRoles] } : {}), parameters: exposures.map(item => item.parameter) };
+  const projection = { id: model.id, name: model.name, providerId: model.providerId, kind: model.kind, available: model.available, references, ...(model.maskInput ? { mask: model.maskInput } : {}), ...(model.referenceRoles ? { roles: [...model.referenceRoles] } : {}), ...(model.promptInput ? { promptInput: model.promptInput } : {}), parameters: exposures.map(item => item.parameter) };
   // Public contract identity only: no code, credential hash or environment values are exposed.
   const digest = fingerprint(JSON.parse(JSON.stringify({ ...projection, defaults: model.defaultParameters, targets: exposures.map(item => item.target) })) as Json);
   return { model, exposures, publicModel: { ...projection, digest } satisfies ModelRecipeModel };

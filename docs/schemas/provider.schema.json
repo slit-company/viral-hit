@@ -150,6 +150,31 @@
                     },
                     "multiline": {
                       "type": "boolean"
+                    },
+                    "suggestions": {
+                      "minItems": 1,
+                      "maxItems": 48,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 120
+                          },
+                          "label": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 80
+                          }
+                        },
+                        "required": [
+                          "value",
+                          "label"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
@@ -495,6 +520,13 @@
               }
             },
             "additionalProperties": false
+          },
+          "promptInput": {
+            "type": "string",
+            "enum": [
+              "optional",
+              "none"
+            ]
           },
           "referenceRoles": {
             "minItems": 1,

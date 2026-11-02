@@ -3,6 +3,7 @@ import { StudioVisualSourceControls } from './studio-visual-source-controls';
 import { visualSourceReferences } from '@/core/studio/studio-visual-sources';
 import type { StudioVisualSourcesController } from './use-studio-visual-sources';
 import { StudioReferenceThumbnails } from './studio-reference-thumbnails';
+import { StudioPromptNotNeeded } from './studio-prompt-field';
 import { ModelOptions } from '@/components/generation-providers/model-options';
 import { Action } from '@/components/base/action';
 import {
@@ -76,9 +77,8 @@ export function StudioComposer({
   const referenceUrls = visualSources.sources.filter(source => source.type === 'image').map(source => source.publicUrl);
   let referencesValid = true;
   try { visualSourceReferences(visualSources.sources, selectedModel, visualSources.mask); } catch { referencesValid = false; }
-  const promptRequired = getGenerationPromptConstraints({
-    modelId: selectedModel?.id,
-  }).required;
+  const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id, promptInput: selectedModel?.promptInput });
+  const promptRequired = promptConstraints.required;
   const selectedModeOptions = selectedModel?.modeOptions ?? [];
   const selectedVariantOptions = selectedModel?.variantOptions ?? [];
   const selectedQualityOptions = selectedModel?.qualityOptions ?? [];
@@ -149,7 +149,7 @@ export function StudioComposer({
       >
         <StudioVisualSourceControls projectId={projectId} model={selectedModel} source={visualSources} disabled={isBusy} />
         <StudioReferenceThumbnails urls={referenceUrls} onRemove={url => { if (!isBusy) { const source = visualSources.sources.find(item => item.publicUrl === url); if (source) visualSources.remove(source.id); } }} />
-        <div className="relative">
+        {promptConstraints.accepted ? <div className="relative">
           <textarea
             value={draft.prompt}
             onChange={(event) =>
@@ -169,7 +169,7 @@ export function StudioComposer({
             disabled={isBusy}
             className="h-[80px] min-h-[80px] w-full resize-none bg-transparent py-2 pl-2 pr-3 text-[14px] leading-6 text-[var(--vh-text-1)] outline-none placeholder:text-[var(--vh-text-2)] sm:h-[92px] sm:min-h-[92px] sm:pl-2 sm:pr-16 sm:text-[15px]"
           />
-        </div>
+        </div> : <div className="py-2"><StudioPromptNotNeeded /></div>}
 
         <div className="mt-1.5 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
@@ -288,7 +288,7 @@ export function StudioComposer({
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-2">
-            <span
+            {promptConstraints.accepted && <span
               className={cn(
                 'text-[10px] font-medium tabular-nums',
                 promptCharacterCount >= promptCharacterLimit
@@ -297,7 +297,7 @@ export function StudioComposer({
               )}
             >
               {promptCharacterCount}/{promptCharacterLimit}
-            </span>
+            </span>}
             <Action
               type="button"
               onClick={onGenerate}

@@ -23,6 +23,12 @@ test('control definitions reject ambiguous names, invalid defaults and excessive
   const manifest = providerManifestSchema.parse({ schemaVersion: 1, kind: 'viral-hit-provider', id: 'control-test', label: 'Controls', models: [{ id: 'controlled-review', name: 'Review', kind: 'analysis' }] });
   assert.equal(Object.hasOwn(manifest.models[0], 'controls'), false);
 });
+test('text options may offer named suggestions while any value within bounds stays valid', () => {
+  const voice = { key: 'voice_id', label: 'Voice', type: 'string', maxLength: 12, default: 'george', suggestions: [{ value: 'george', label: 'George' }, { value: 'lily', label: 'Lily' }] } as const;
+  const parsed = modelControlsSchema.parse([voice]);
+  assert.deepEqual(resolveModelOptions(parsed, { voice_id: 'my-clone' }), { voice_id: 'my-clone' });
+  for (const invalid of [{ ...voice, suggestions: [{ value: 'lily', label: 'A' }, { value: 'lily', label: 'B' }] }, { ...voice, suggestions: [{ value: 'x'.repeat(13), label: 'Long' }] }, { ...voice, multiline: true }]) assert.equal(modelControlsSchema.safeParse([invalid]).success, false);
+});
 test('draft options are model-scoped and transport retains bounded values', () => {
   const modelOptions = { modelId: 'model-a', values: { count: 7, audio: false } };
   assert.deepEqual(modelOptionsDraftSchema.parse(modelOptions), modelOptions);

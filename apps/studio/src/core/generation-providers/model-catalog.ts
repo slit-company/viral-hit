@@ -6,6 +6,7 @@ import type { ReferenceRoles } from './reference-roles';
 import type { VideoImageInputs } from './video-image-inputs';
 import { resolveModelOptions, type ModelControl } from './model-controls';
 import { resolveAnalysisInputs, type AnalysisInputs } from './analysis-inputs';
+import type { PromptInput } from '@/core/effects/validation';
 import {
   getWorkspaceEffectRegistryEntry,
   type WorkspaceEffectRegistryEntry,
@@ -50,6 +51,7 @@ export type GenerationModelDescriptor = {
   videoImageInputs?: VideoImageInputs;
   maskInput?: MaskInput;
   referenceRoles?: ReferenceRoles;
+  promptInput?: PromptInput;
   parameterSchema: unknown;
   defaultParameters: Record<string, unknown>;
   referenceSchema: unknown;
@@ -97,6 +99,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         ...(binding.videoImageInputs ? { videoImageInputs: binding.videoImageInputs } : {}),
         ...(binding.maskInput ? { maskInput: binding.maskInput } : {}),
         ...(binding.referenceRoles ? { referenceRoles: binding.referenceRoles } : {}),
+        ...(binding.promptInput ? { promptInput: binding.promptInput } : {}),
         referenceSchema: entry.workspaceType === 'ai-audio' ? resolveAudioReferenceInputs(binding.referenceInputs) : getWorkspaceMediaSchema(entry.id),
       },
     ];

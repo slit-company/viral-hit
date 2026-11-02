@@ -164,11 +164,11 @@ export function StudioWorkspace({
       if (isAnalysis) request = analysis.request();
       else if (media === 'audio') request = audio.request();
       else {
-        const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id });
+        const promptConstraints = getGenerationPromptConstraints({ modelId: selectedModel?.id, promptInput: selectedModel?.promptInput });
         if (promptConstraints.required && !draft.prompt.trim()) throw new Error(uiMessages["ui.studio.describe_what_you_want_to_create_first"]());
         const initialInput = buildDraftModelParameters(draft, (await getEffectsMetadata([selectedModel!.id])).data.effects?.[selectedModel!.id]?.inputSchema);
         const references = visualSourceReferences(visualSources.sources, selectedModel, visualSources.mask);
-        request = { version: GENERATION_REQUEST_VERSION, projectId, mode: draft.type, modelId: selectedModel!.id, prompt: draft.prompt, references, parameters: initialInput };
+        request = { version: GENERATION_REQUEST_VERSION, projectId, mode: draft.type, modelId: selectedModel!.id, prompt: promptConstraints.accepted ? draft.prompt : '', references, parameters: initialInput };
       }
       const precheck = await precheckEffect({ generation: request });
       if (!precheck.ok) throw new Error(precheck.data.error || uiMessages["ui.studio.generation_validation_failed"]());

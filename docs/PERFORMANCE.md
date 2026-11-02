@@ -264,3 +264,7 @@ Summed script gzip: **765,045 bytes**, **3,301 bytes** more than Instagram image
 ## Edit analysis — 2026-11-03
 
 Summed script gzip: **767,093 bytes**, **2,048 bytes** more than Instagram DM collection (765,045); public files **9,321,442 bytes**. The script budget changed from 766,000 to **768,000** in this reviewed decision: 16 Remix messages in four languages (camera moves, pace, analysis status and two build options) join the shared message chunk, and the shot list gains its chips. Motion estimation, text reading and the rebuild operations live in server-only modules (`grammar-read.ts`, `rebuild.ts`); the Remix page keeps importing only material assignment, so the browser-reachable module count stays at 358. Analysis runs in the existing harness worker with FFmpeg and an optional, separately installed Tesseract; no dependency was added.
+
+## Audio screens — 2026-11-03
+
+Summed script gzip: **769,836 bytes**, **2,743 bytes** more than Edit analysis (767,093); public files **9,328,774 bytes**. The script budget changed from 768,000 to **771,000** in this reviewed decision. 15 messages in four languages join the shared message chunk: file requirements, prompt names for each audio job, the no-prompt note and the voice picker. The Studio route gains three small components (`source-requirements`, `studio-prompt-field` additions and `suggested-text-input`). Prompt rules reuse the existing validation module, and voice names arrive as provider catalog data. No dependency was added, and browser-reachable modules went from 358 to 360.
