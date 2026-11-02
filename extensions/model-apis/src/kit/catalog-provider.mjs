@@ -10,8 +10,9 @@ import { createPacer, processing, taskId, parseTaskId, unknownCost } from './pol
  *   submit(api, binding, body, idempotencyKey) -> upstream task ID
  *   poll(api, upstreamId) -> { state: 'processing' | 'failed' | 'succeeded', output?, error?, cost? }
  *   test(api) -> resolves when the key works
+ *   balance(api) -> optional { state: 'known', amount, unit } | { state: 'unknown', reason } (read-only)
  */
-export function catalogProvider({ prefix, label, catalog, client, upload, submit, poll, test, download = {} }) {
+export function catalogProvider({ prefix, label, catalog, client, upload, submit, poll, test, balance, download = {} }) {
   const entries = new Map(catalog.models.map(entry => [entry.model.id, entry]));
   const pacer = createPacer();
   const entryFor = id => { const entry = entries.get(id); if (!entry) throw Error('Unknown ' + label + ' model: ' + id); return entry; };
@@ -55,5 +56,9 @@ export function catalogProvider({ prefix, label, catalog, client, upload, submit
   }
 
   async function testConnection({ configuration, signal }) { await test(client(configuration, signal)); return { ok: true }; }
-  return { createGeneration, checkStatus, testConnection };
+  async function checkBalance({ configuration, signal }) {
+    if (!balance) return { state: 'unknown', reason: label + ' has no balance API' };
+    return balance(client(configuration, signal));
+  }
+  return { createGeneration, checkStatus, testConnection, checkBalance };
 }

@@ -224,3 +224,7 @@ Summed script gzip: **731,790 bytes**, **3,761 bytes** more than editor transiti
 ## Cinema sequences — 2026-11-02
 
 Summed script gzip: **735,115 bytes**, **3,325 bytes** more than spoken-word captions; public files **9,226,529 bytes**. The script budget changed from 732,000 to **736,000** in this reviewed decision: the sequence strip and banner, shot actions (continue, edit, render again) and 15 messages in four languages, all in the Cinema route chunk. Sequence placement is one small table in the existing harness database; no dependency, worker or service was added.
+
+## Service credits — 2026-11-02
+
+Summed script gzip: **735,995 bytes**, **880 bytes** more than Cinema sequences and within the unchanged 736,000 budget; public files **9,228,879 bytes**. The added code is the balance line and actions on the Connections page. Balance checks run on the server; no dependency, worker or service was added.

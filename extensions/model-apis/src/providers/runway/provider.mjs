@@ -39,5 +39,13 @@ async function poll(api, id) {
   return { state: 'failed', error: (task.failure ?? task.status ?? 'unknown status') + (task.failureCode ? ' (' + task.failureCode + ')' : ''), cost };
 }
 
-export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'rw', label: 'Runway', catalog, client, upload, submit, poll, test: api => api.call('/v1/organization') });
-export const manifest = { id: 'runway', setupUrl: 'https://dev.runwayml.com', label: 'Runway', description: 'Runway Dev API: Gen-4.5, Veo 3.1, Seedance 2.5, Kling 4, Hailuo 3, Wan 3, MiniMax H3, Aleph video editing, Act-Two, image models and upscaling.', environment: ['RUNWAYML_API_SECRET'], models: catalog.models.map(describeVideoImages) };
+// GET /v1/organization reports the organization's remaining credits.
+async function balance(api) {
+  const organization = await api.call('/v1/organization');
+  return Number.isFinite(organization?.creditBalance)
+    ? { state: 'known', amount: organization.creditBalance, unit: 'credits' }
+    : { state: 'unknown', reason: 'Runway did not report a credit balance' };
+}
+
+export const { createGeneration, checkStatus, testConnection, checkBalance } = catalogProvider({ prefix: 'rw', label: 'Runway', catalog, client, upload, submit, poll, test: api => api.call('/v1/organization'), balance });
+export const manifest = { id: 'runway', setupUrl: 'https://dev.runwayml.com', label: 'Runway', description: 'Runway Dev API: Gen-4.5, Veo 3.1, Seedance 2.5, Kling 4, Hailuo 3, Wan 3, MiniMax H3, Aleph video editing, Act-Two, image models and upscaling.', environment: ['RUNWAYML_API_SECRET'], balanceCheck: true, models: catalog.models.map(describeVideoImages) };

@@ -31,4 +31,5 @@ Edit `src/providers/<id>/selection.mjs` to add or remove catalog models (at most
 - References are read from the project only when a generation is submitted, then delivered the way each vendor documents: fal CDN upload, Runway inline data or ephemeral upload, Higgsfield signed upload, inline data for Google, OpenAI and xAI.
 - Results are downloaded into the project as soon as they finish, because vendor links expire.
 - Cost is recorded when the vendor reports it (Runway credits, xAI USD); otherwise it stays unknown rather than estimated.
+- fal, Runway and ElevenLabs report remaining credit through a read-only balance check; Studio skips or refuses a service that reports zero ([service credits](../../docs/CREDITS.md)).
 

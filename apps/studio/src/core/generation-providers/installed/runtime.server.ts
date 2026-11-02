@@ -6,6 +6,7 @@ import { createProviderMediaContext } from '../local-media.server';
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { pinProviderTask, providerRuntimeDigest, unpinProviderTask } from './task-pin.server';
 import { createHash, randomUUID } from 'node:crypto';
+import { z } from 'zod';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BaseAdapter, type EffectRecord, type GenerationResult } from '@/core/adapters/base-adapter';
@@ -21,7 +22,12 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // A native import, so neither the build nor the dev server's module runner tries to resolve operator code.
 const nativeImport = new Function('url', 'return import(url)') as (url: string) => Promise<Partial<ProviderModule>>;
 
-type ProviderModule = { createGeneration: (request: unknown) => Promise<unknown>; checkStatus?: (request: unknown) => Promise<unknown>; testConnection?: (request: unknown) => Promise<unknown> };
+type ProviderModule = { createGeneration: (request: unknown) => Promise<unknown>; checkStatus?: (request: unknown) => Promise<unknown>; testConnection?: (request: unknown) => Promise<unknown>; checkBalance?: (request: unknown) => Promise<unknown> };
+const balanceResult = z.discriminatedUnion('state', [
+  z.object({ state: z.literal('known'), amount: z.number().finite(), unit: z.string().trim().min(1).max(16) }).strict(),
+  z.object({ state: z.literal('unknown'), reason: z.string().trim().min(1).max(300) }).strict(),
+]);
+export type ProviderBalanceResult = z.infer<typeof balanceResult>;
 
 /** The request a provider module receives: clean field names, never internal Viral Hit fields. */
 export function providerInput(input: unknown) {
@@ -75,6 +81,17 @@ export class InstalledProviderRuntime {
       if (JSON.stringify(configuration) !== JSON.stringify(resolveProviderConfiguration(this.manifest))) throw Error('Settings changed during the connection check');
       return { ok: true, checkedAt: new Date().toISOString() };
     } catch (error) { throw Error(redactProviderError(error, configuration)); }
+  }
+
+  /** Read-only remaining-credit check for providers that declare balanceCheck; never generates. */
+  async checkBalance(): Promise<ProviderBalanceResult> {
+    if (!this.manifest.balanceCheck || this.manifest.configurationDelivery !== 'request') return { state: 'unknown', reason: this.manifest.label + ' does not report a balance' };
+    const configuration = resolveProviderConfiguration(this.manifest);
+    if (this.manifest.environment.some(name => !configuration[name])) return { state: 'unknown', reason: 'Save the required settings first' };
+    const loaded = await this.load();
+    if (!loaded.checkBalance) return { state: 'unknown', reason: this.manifest.label + ' does not report a balance' };
+    try { return balanceResult.parse(await loaded.checkBalance({ configuration, signal: AbortSignal.timeout(10_000) })); }
+    catch (error) { throw Error(redactProviderError(error, configuration)); }
   }
 
   /** createGeneration problems fail the generation; checkStatus errors are thrown so polling retries them. */

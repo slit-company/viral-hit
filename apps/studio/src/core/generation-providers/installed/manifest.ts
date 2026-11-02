@@ -71,6 +71,8 @@ export const providerManifestSchema = z.object({
   /** Opt in to encrypted workspace settings passed as request.configuration. */
   configurationDelivery: z.literal('request').optional(),
   connectionTest: z.boolean().optional(),
+  /** Opt in to a read-only checkBalance({ configuration, signal }) export reporting remaining credits. */
+  balanceCheck: z.boolean().optional(),
   /** Official page where a user creates the key this provider needs (shown as "Get a key"). */
   setupUrl: z.string().url().max(300).refine(value => value.startsWith('https://'), 'Use an https:// setup URL').optional(),
   /** Short format hint for the key field, for example KEY_ID:KEY_SECRET. Never a real value. */

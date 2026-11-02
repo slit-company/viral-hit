@@ -5,10 +5,10 @@ import { readRequestJsonWithLimit, RequestBodyTooLargeError } from '@/lib/reques
 
 const headers = { 'Cache-Control': 'no-store' };
 export const Route = createFileRoute('/api/app/provider-connections')({ server: { handlers: {
-  GET: ({ request }) => {
+  GET: async ({ request }) => {
     const trust = validateTrustedWorkspaceMutation(request);
     if (!trust.ok) return Response.json({ error: trust.message }, { status: trust.status, headers });
-    try { return Response.json({ providers: providerConnections() }, { headers }); }
+    try { return Response.json({ providers: await providerConnections() }, { headers }); }
     catch { return Response.json({ error: 'Provider connection settings are unavailable.' }, { status: 503, headers }); }
   },
   POST: async ({ request }) => {

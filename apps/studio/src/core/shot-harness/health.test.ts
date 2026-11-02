@@ -9,5 +9,5 @@ test('the latest outcome per service decides: credit failures sink, successes li
     { modelId: 'grok', providerId: 'xai', succeeded: true, error: null, at: 2 },
     { modelId: 'flux', providerId: 'fal', succeeded: false, error: 'content policy', at: 4 },
   ]);
-  assert.deepEqual(Object.fromEntries(health), { higgsfield: { score: -30, reason: 'ran out of credit recently' }, xai: { score: 3, reason: 'worked recently' } });
+  assert.deepEqual(Object.fromEntries(health), { higgsfield: { score: -30, reason: 'ran out of credit on its last run', outOfCredit: true }, xai: { score: 3, reason: 'worked recently' } });
 });

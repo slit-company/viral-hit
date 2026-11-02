@@ -17,11 +17,12 @@ export const stillNeed = (spec: ShotSpec): RouteNeed =>
 const version = (id: string) => Number(id.match(/(\d+\.\d+)/)?.[1] ?? 0) / 100;
 
 /** Models that can run the step, best first. Hard requirements filter; preferences only reorder. */
-export function rankModels(models: readonly ShotModel[], need: RouteNeed): RankedModel[] {
+export function rankModels(models: readonly ShotModel[], need: RouteNeed, { includeEmpty = false } = {}): RankedModel[] {
   const task = need.kind === 'video' ? 'video-generate' : 'image-generate';
   const ranked: RankedModel[] = [];
   for (const model of models) {
     if (model.kind !== need.kind || model.available === false) continue;
+    if (model.credit?.state === 'empty' && !includeEmpty) continue;
     if (need.provider !== 'any' && model.providerId !== need.provider) continue;
     const tasks = model.studioTasks;
     if (!tasks.includes(task) && !(need.kind === 'image' && need.images > 0 && tasks.includes('image-edit'))) continue;
@@ -36,6 +37,7 @@ export function rankModels(models: readonly ShotModel[], need: RouteNeed): Ranke
     const family = familyFor(model), id = model.id.toLowerCase(), reasons = [family.id];
     let score = family.rank + version(id);
     if (model.health) { score += model.health.score; reasons.push(model.health.reason); }
+    if (model.credit?.state === 'available') reasons.push(model.credit.reason);
     if (need.kind === 'video' && need.images > 0) {
       // The capability filter above already proved the declared mode; rank by family and fit, not endpoint naming.
       reasons.push((need.imageMode ?? 'frames') === 'frames' ? (need.firstLast ? 'first and last frame' : 'animates the start frame') : 'uses the reference images');
@@ -53,14 +55,27 @@ export function rankModels(models: readonly ShotModel[], need: RouteNeed): Ranke
   return ranked.sort((left, right) => right.score - left.score || left.model.id.localeCompare(right.model.id));
 }
 
-/** The chosen model: the person's pick when it qualifies, otherwise the best ranked one. */
+const service = (model: ShotModel) => model.providerLabel ?? model.providerId ?? model.name;
+
+/**
+ * The chosen model: the person's pick when it qualifies, otherwise the best ranked one. Services that
+ * are out of credit are skipped for auto routing; a pick is refused only when the service itself
+ * reported an empty balance (a failed run alone may be stale after a top-up).
+ */
 export function pickModel(models: readonly ShotModel[], need: RouteNeed, requested: string) {
-  const ranked = rankModels(models, need);
+  const all = rankModels(models, need, { includeEmpty: true });
+  const ranked = all.filter(item => item.model.credit?.state !== 'empty');
+  const skipped = all.filter(item => item.model.credit?.state === 'empty');
   if (requested !== 'auto') {
-    const exact = ranked.find(item => item.model.id === requested);
+    const exact = all.find(item => item.model.id === requested);
     if (!exact) throw Error(`${requested} cannot run this ${need.kind} step (task, inputs or connection)`);
-    return { chosen: exact, ranked };
+    if (exact.model.credit?.state === 'empty' && exact.model.credit.source === 'balance') throw Error(`${service(exact.model)} has ${exact.model.credit.reason}. Add credits to that account or choose another model.`);
+    return { chosen: exact, ranked, skipped };
+  }
+  if (!ranked.length && skipped.length) {
+    const services = [...new Map(skipped.map(item => [service(item.model), item.model.credit!.reason])).entries()].map(([name, reason]) => name + ' (' + reason + ')');
+    throw Error(`Every service that can run this ${need.kind} step is out of credit: ${services.join(', ')}. Add credits to one of these accounts (Connections shows each balance) or connect another service.`);
   }
   if (!ranked.length) throw Error(need.provider === 'any' ? `No connected ${need.kind} model can run this step. Connect one in Connections.` : `${need.provider} has no connected ${need.kind} model for this step`);
-  return { chosen: ranked[0], ranked };
+  return { chosen: ranked[0], ranked, skipped };
 }

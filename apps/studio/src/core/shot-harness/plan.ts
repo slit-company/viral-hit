@@ -19,16 +19,21 @@ const summary = (ranked: RankedModel[]) => ranked.slice(0, 5).map(({ model, scor
 export function prepareShot(input: ShotSpecInput, models: readonly ShotModel[]): ShotProduction {
   const spec = shotSpec.parse(input);
   const notes: string[] = [];
+  const skippedServices = new Map<string, string>();
+  const noteSkipped = (skipped: RankedModel[]) => { for (const { model } of skipped) skippedServices.set(model.providerLabel ?? model.providerId ?? model.name, model.credit?.reason ?? ''); };
   const characters: Reference[] = spec.characterAssetIds.map(assetId => ({ assetId, kind: 'image', role: 'reference' }));
   let still: ShotStep | null = null, stillRanked: RankedModel[] = [];
   if (!spec.startAssetId && spec.startFrame === 'generate') {
     const picked = pickModel(models, stillNeed(spec), spec.imageModel);
     stillRanked = picked.ranked;
+    if (spec.imageModel === 'auto') noteSkipped(picked.skipped);
     const model = picked.chosen.model, compiled = compileStillPrompt(spec, familyFor(model), { characters: characters.length > 0 });
     still = { model, ...compiled, parameters: compileParameters(spec, model, notes), references: characters };
   }
   const start = still || spec.startAssetId;
   const picked = pickModel(models, videoNeed(spec), spec.videoModel);
+  if (spec.videoModel === 'auto') noteSkipped(picked.skipped);
+  for (const [name, reason] of skippedServices) notes.push(`Skipped ${name}: ${reason}`);
   const model = picked.chosen.model, family = familyFor(model);
   const hasAudio = Boolean(family.nativeAudio || model.controls?.some(control => control.key === 'generate_audio' || control.key === 'sound'));
   if (spec.audio && !hasAudio) notes.push(model.name + ' makes silent video; add the sound in the editor');

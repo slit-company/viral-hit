@@ -52,6 +52,9 @@
     "connectionTest": {
       "type": "boolean"
     },
+    "balanceCheck": {
+      "type": "boolean"
+    },
     "setupUrl": {
       "type": "string",
       "maxLength": 300,

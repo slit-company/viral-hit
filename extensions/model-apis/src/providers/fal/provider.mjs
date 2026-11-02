@@ -43,5 +43,18 @@ async function test(api) {
   catch (error) { if (!(error instanceof ApiError) || error.status !== 404) throw error; }
 }
 
-export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'fal', label: 'fal', catalog, client, upload, submit, poll, test });
-export const manifest = { id: 'fal', setupUrl: 'https://fal.ai/dashboard/keys', label: 'fal', description: 'fal model gallery: Nano Banana, GPT Image 2.5, FLUX 3, Seedream, Seedance 2.5, Kling 4, Gemini Omni, Wan 3, Grok, lip sync, upscaling, voice, music and sound.', environment: ['FAL_KEY'], models: catalog.models.map(describeVideoImages) };
+// Platform API: https://fal.ai/docs/platform-apis/v1/account/billing (needs a key with billing read access).
+async function balance(api) {
+  try {
+    const data = await api.call('https://api.fal.ai/v1/account/billing?expand=credits');
+    const amount = data?.credits?.current_balance;
+    if (typeof amount !== 'number' || !Number.isFinite(amount)) return { state: 'unknown', reason: 'fal did not report a credit balance' };
+    return { state: 'known', amount, unit: typeof data.credits.currency === 'string' ? data.credits.currency : 'USD' };
+  } catch (error) {
+    if (error instanceof ApiError && (error.status === 401 || error.status === 403)) return { state: 'unknown', reason: 'This fal key cannot read billing. An admin key with billing access shows the balance.' };
+    throw error;
+  }
+}
+
+export const { createGeneration, checkStatus, testConnection, checkBalance } = catalogProvider({ prefix: 'fal', label: 'fal', catalog, client, upload, submit, poll, test, balance });
+export const manifest = { id: 'fal', setupUrl: 'https://fal.ai/dashboard/keys', label: 'fal', description: 'fal model gallery: Nano Banana, GPT Image 2.5, FLUX 3, Seedream, Seedance 2.5, Kling 4, Gemini Omni, Wan 3, Grok, lip sync, upscaling, voice, music and sound.', environment: ['FAL_KEY'], balanceCheck: true, models: catalog.models.map(describeVideoImages) };

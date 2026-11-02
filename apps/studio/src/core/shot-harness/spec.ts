@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { shotGroups } from '../creative-canvas/shot-line';
 import { CAMERA_MOVE_IDS } from './camera-moves';
 import type { VideoImageInputs } from '../generation-providers/video-image-inputs';
+import type { ServiceCredit } from './health';
 
 const ids = <T extends readonly { id: string }[]>(items: T) => items.map(item => item.id) as [T[number]['id'], ...T[number]['id'][]];
 const assetId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
@@ -53,4 +54,6 @@ export type ShotModel = {
   available?: boolean;
   /** Recent outcomes on this workspace's account; see health.ts. */
   health?: { score: number; reason: string };
+  /** Remaining credit as the service reported it, or as the last failed run implied; see health.ts. */
+  credit?: ServiceCredit;
 };

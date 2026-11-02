@@ -2,6 +2,7 @@ import { resolveModelOptions } from './model-controls';
 import { validateMaskReferences } from './mask-input';
 import { validateReferenceRoles } from './reference-roles';
 import { prepareLocalGenerationReferences } from './local-media.server';
+import { assertServiceHasCredit } from './credit-gate.server';
 import { readFile, stat } from 'node:fs/promises';
 
 import {
@@ -179,6 +180,7 @@ export async function preflightAssetFirstGeneration(source: unknown) {
     const input = await compileAssetFirstGenerationInput({ ...preparedReferences, generationIntentId: '' });
     validateGenerationModelInput({ modelId: generation.modelId, input });
     await provider.assertConfigured?.();
+    await assertServiceHasCredit(found.providerId, provider.label ?? found.providerId);
     return { generation, binding, expectedUploadCount: 0, preparedReferences };
   }
   const uniqueAssets = new Map<
@@ -222,6 +224,7 @@ export async function preflightAssetFirstGeneration(source: unknown) {
   const input = await compileAssetFirstGenerationInput({ generation: validationRequest, generationIntentId: '', authorizedDeliveryUrls: validationUrls });
   validateGenerationModelInput({ modelId: generation.modelId, input });
   await provider.assertConfigured?.();
+  await assertServiceHasCredit(found.providerId, provider.label ?? found.providerId);
   return { generation, binding, expectedUploadCount, preparedReferences: undefined };
 }
 

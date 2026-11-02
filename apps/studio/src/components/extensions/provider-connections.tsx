@@ -4,7 +4,9 @@ import { ArrowUpRight, Check, KeyRound } from 'lucide-react';
 import { Action } from '@/components/base/action';
 
 type Field = { name: string; source: 'workspace' | 'environment' | 'missing' };
-type Connection = { id: string; label: string; canTest: boolean; revision: string; modelCount: number; description?: string; setupUrl?: string; keyFormat?: string; fields: Field[] };
+type Balance = { state: 'available' | 'empty' | 'unknown'; amount?: number; unit?: string; reason?: string; checkedAt: string };
+type Credit = { state: 'available' | 'empty'; source: 'balance' | 'history'; reason: string };
+type Connection = { id: string; label: string; canTest: boolean; canCheckBalance: boolean; revision: string; modelCount: number; description?: string; setupUrl?: string; keyFormat?: string; fields: Field[]; balance?: Balance; credit?: Credit };
 const headers = { 'Content-Type': 'application/json', 'x-viral-hit-workspace-request': '1' };
 async function request(body?: unknown) {
   const response = await fetch('/api/app/provider-connections', { method: body ? 'POST' : 'GET', headers, cache: 'no-store', ...(body ? { body: JSON.stringify(body) } : {}) });
@@ -21,19 +23,44 @@ const copy = (ko: boolean) => ({
   saved: ko ? '키를 저장했어요. 연결 확인으로 인증을 확인하세요.' : 'Saved. Press Check to confirm the key works.',
   tested: ko ? '인증을 확인했어요. 생성 요금과 결과 품질은 해당 서비스에서 확인하세요.' : 'Key confirmed. Generation is billed by this service.',
   removed: ko ? '저장된 키를 삭제했어요.' : 'Saved key removed.',
+  balance: ko ? '잔액' : 'Balance', checkBalance: ko ? '잔액 확인' : 'Check balance', empty: ko ? '크레딧 없음' : 'Out of credit',
+  creditsAdded: ko ? '충전했어요' : 'I added credits',
+  creditsNoted: ko ? '충전을 기록했어요. 자동 선택이 이 서비스를 다시 써요.' : 'Noted. Automatic model choice will use this service again.',
+  balanceChecked: ko ? '잔액을 확인했어요.' : 'Balance checked.',
+  emptyHistory: ko ? '마지막 생성이 크레딧 부족으로 실패해서 자동 선택에서 빠져 있어요.' : 'The last run failed for lack of credit, so automatic model choice skips this service.',
+  emptyBalance: ko ? '서비스가 잔액 0을 알려 와서 이 서비스로는 생성하지 않아요.' : 'The service reports no credits, so generations here are refused before they are sent.',
+  checkedAt: (iso: string) => new Date(iso).toLocaleString(ko ? 'ko-KR' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' }),
+  balanceUnknown: ko ? '잔액 확인 불가' : 'Balance unavailable',
 });
+
+const KO_UNITS: Record<string, string> = { credits: '크레딧', characters: '자' };
+const amount = (balance: Balance, ko = false) => (balance.amount ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 }) + (balance.unit ? ' ' + (ko ? KO_UNITS[balance.unit] ?? balance.unit : balance.unit) : '');
+
+/** Remaining credit as the service reported it, or as the last failed run implied. */
+function CreditLine({ connection, text, ko }: { connection: Connection; text: ReturnType<typeof copy>; ko: boolean }) {
+  const { balance, credit } = connection;
+  if (credit?.state === 'empty') return <p className="rounded-lg bg-red-50 px-2.5 py-2 text-xs leading-5 text-red-800">
+    <span className="font-semibold">{text.empty}</span>{balance?.state === 'empty' ? ' · ' + amount(balance, ko) : ''} · {credit.source === 'balance' ? text.emptyBalance : text.emptyHistory}
+  </p>;
+  if (balance?.state === 'available') return <p className="text-xs text-[var(--vh-text-2)]">{text.balance} <span className="font-semibold tabular-nums text-[var(--vh-text-1)]">{amount(balance, ko)}</span> · {text.checkedAt(balance.checkedAt)}</p>;
+  if (balance?.state === 'unknown' && balance.reason) return <p className="text-xs leading-5 text-[var(--vh-text-2)]">{text.balanceUnknown} · {balance.reason}</p>;
+  return null;
+}
 
 function ConnectionRow({ connection, ko, refresh }: { connection: Connection; ko: boolean; refresh: () => Promise<void> }) {
   const [values, setValues] = useState<Record<string, string>>({}), [busy, setBusy] = useState(false), [notice, setNotice] = useState(''), [error, setError] = useState('');
   const text = copy(ko), ready = connection.fields.every(field => field.source !== 'missing'), dirty = Object.values(values).some(value => value.trim());
-  async function run(action: 'save' | 'test' | 'remove') {
+  async function run(action: 'save' | 'test' | 'remove' | 'balance' | 'credits-added') {
     setBusy(true); setNotice(''); setError('');
     try {
-      const changes = action === 'remove' ? Object.fromEntries(connection.fields.filter(field => field.source === 'workspace').map(field => [field.name, null])) : Object.fromEntries(Object.entries(values).filter(([, value]) => value.trim()));
-      await request({ action: action === 'test' ? 'test' : 'save', providerId: connection.id, revision: connection.revision, ...(action !== 'test' ? { values: changes } : {}) });
+      if (action === 'balance' || action === 'credits-added') await request({ action, providerId: connection.id });
+      else {
+        const changes = action === 'remove' ? Object.fromEntries(connection.fields.filter(field => field.source === 'workspace').map(field => [field.name, null])) : Object.fromEntries(Object.entries(values).filter(([, value]) => value.trim()));
+        await request({ action: action === 'test' ? 'test' : 'save', providerId: connection.id, revision: connection.revision, ...(action !== 'test' ? { values: changes } : {}) });
+      }
       setValues({});
       await refresh();
-      setNotice(action === 'test' ? text.tested : action === 'remove' ? text.removed : text.saved);
+      setNotice({ test: text.tested, remove: text.removed, save: text.saved, balance: text.balanceChecked, 'credits-added': text.creditsNoted }[action]);
     } catch (failure) { setError(failure instanceof Error ? failure.message : 'Connection request failed'); }
     finally { setBusy(false); }
   }
@@ -47,9 +74,12 @@ function ConnectionRow({ connection, ko, refresh }: { connection: Connection; ko
     </div>
     {connection.fields.map(field => field.source === 'environment' ? <p key={field.name} className="text-xs text-[var(--vh-text-2)]">{field.name} · {text.environment}</p> :
       <TextField.Root key={field.name} className="vh-field"><TextField.Input aria-label={connection.fields.length === 1 ? connection.label + (ko ? ' API 키' : ' API key') : connection.label + ' ' + field.name} type="password" autoComplete="off" spellCheck={false} maxLength={8192} disabled={busy} value={values[field.name] ?? ''} placeholder={field.source === 'missing' ? (connection.keyFormat ?? text.paste) : text.replace} onChange={event => { setValues(previous => ({ ...previous, [field.name]: event.target.value })); setNotice(''); }} /></TextField.Root>)}
+    {ready && <CreditLine connection={connection} text={text} ko={ko} />}
     <div className="flex flex-wrap items-center gap-2">
       <Action type="submit" disabled={busy || !dirty} className="vh-primary">{text.save}</Action>
       {connection.canTest && <Action type="button" disabled={busy || !ready || dirty} className="vh-secondary" onClick={() => void run('test')}>{text.check}</Action>}
+      {connection.canCheckBalance && ready && <Action type="button" disabled={busy || dirty} className="vh-secondary" onClick={() => void run('balance')}>{text.checkBalance}</Action>}
+      {connection.credit?.state === 'empty' && connection.credit.source === 'history' && <Action type="button" disabled={busy} className="vh-secondary" onClick={() => void run('credits-added')}>{text.creditsAdded}</Action>}
       {connection.fields.some(field => field.source === 'workspace') && <Action type="button" disabled={busy} className="vh-secondary" onClick={() => void run('remove')}>{text.remove}</Action>}
       {busy && <span role="status" className="text-xs text-[var(--vh-text-2)]">{text.working}</span>}
     </div>
