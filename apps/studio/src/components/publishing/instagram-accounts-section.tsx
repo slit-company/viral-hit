@@ -3,12 +3,17 @@ import { useState } from 'react';
 import { ExternalLink, Instagram, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NativeSelect } from '@/components/ui/native-select';
+import { useQuery } from '@tanstack/react-query';
+import { apiJsonGet } from '@/lib/api-client';
 import { instagramAccountError, useInstagramAccounts } from './use-instagram-accounts';
+import { InstagramInboxPanel } from './instagram-inbox-panel';
+import { useInstagramInbox } from './use-instagram-inbox';
 
 export function InstagramAccountsSection({ issue, state, onSelectionDone }: { issue?: string; state?: string; onSelectionDone: () => void }) {
   const account = useInstagramAccounts(state, onSelectionDone), { snapshot, selection, loading, pending, error } = account;
   const [pageId, setPageId] = useState(''), [confirmId, setConfirmId] = useState<string | null>(null);
   const ready = snapshot?.instagram === 'ready', disabled = loading || pending, selected = selection?.candidates.find(candidate => candidate.pageId === pageId);
+  const inbox = useInstagramInbox(), projects = useQuery({ queryKey: ['sidebar-projects'], queryFn: () => apiJsonGet<{ projects: Array<{ id: string; name: string }> }>('/api/app/projects'), staleTime: 30_000 });
   return <div className="space-y-4">
     {issue && !['select', 'connected'].includes(issue) && <p role="status" className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-4 text-sm">{instagramAccountError(issue)}</p>}
     {error && <p role="alert" className="rounded-xl border border-destructive/30 p-4 text-sm">{error}</p>}
@@ -34,10 +39,12 @@ export function InstagramAccountsSection({ issue, state, onSelectionDone }: { is
       <div className="flex flex-wrap gap-2"><Button disabled={disabled || !selected} onClick={() => selected && void account.select(selected.pageId)}>{uiMessages["ui.publishing.connect_this_account"]()}</Button><Button variant="outline" disabled={pending} onClick={() => void account.cancel()}>{uiMessages["ui.publishing.cancel_connection"]()}</Button></div>
     </section>}
     <div className="flex items-center justify-between gap-3"><h3 className="font-semibold">{uiMessages["ui.publishing.your_instagram_accounts"]()}</h3><Button aria-label={uiMessages["ui.publishing.refresh_instagram_accounts"]()} variant="ghost" disabled={disabled} onClick={() => void account.refresh()}><RefreshCw className={loading ? 'animate-spin' : ''} /> {uiMessages["ui.publishing.refresh"]()}</Button></div>
+    {inbox.error && <p role="alert" className="rounded-xl border border-destructive/30 p-3 text-sm">{inbox.error}</p>}
     {snapshot?.accounts.length === 0 && <p className="rounded-2xl border border-dashed border-[var(--vh-border)] p-7 text-center text-sm text-[var(--vh-text-2)]">{uiMessages["ui.publishing.no_instagram_accounts_connected_yet"]()}</p>}
     {snapshot?.accounts.map(item => <article key={item.id} aria-label={uiMessages["ui.publishing.instagram_account_named"]({ name: item.username || item.instagramId })} className="space-y-4 rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)] p-5">
       <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1 break-words [overflow-wrap:anywhere]"><h3 className="font-semibold">{item.username ? `@${item.username}` : uiMessages["ui.publishing.instagram_account"]()}</h3><p className="mt-1 text-sm text-[var(--vh-text-2)]">{item.pageName}</p><p className="mt-1 text-xs text-[var(--vh-text-2)]">Instagram {item.instagramId} {uiMessages["ui.publishing.page"]()} {item.pageId}</p></div><span className="rounded-full bg-[var(--vh-control)] px-3 py-1 text-xs font-medium">{item.status === 'connected' ? uiMessages["ui.publishing.connected"]() : item.status === 'reconnect-required' ? uiMessages["ui.publishing.reconnect_required"]() : uiMessages["ui.publishing.disconnected"]()}</span></div>
       {item.issue && <p className="text-sm text-[var(--vh-text-2)]">{instagramAccountError(item.issue)}</p>}
+      {item.status !== 'disconnected' && <InstagramInboxPanel key={item.id + ':' + (inbox.inboxes.find(value => value.accountId === item.id)?.settings?.revision ?? 0)} accountId={item.id} inbox={inbox.inboxes.find(value => value.accountId === item.id)} projects={projects.data?.projects ?? []} pending={inbox.pending} change={inbox.change} />}
       {confirmId === item.id ? <div className="space-y-3 border-t border-[var(--vh-border)] pt-4"><p className="text-sm leading-6">{uiMessages["ui.publishing.disconnect_this_account_from_viral_hit_existing_posts_stay_on_instagram"]()}</p><div className="flex flex-wrap gap-2"><Button variant="destructive" disabled={disabled} onClick={async () => { if (await account.disconnect(item)) setConfirmId(null); }}>{uiMessages["ui.publishing.confirm_disconnect"]()}</Button><Button variant="outline" disabled={pending} onClick={() => setConfirmId(null)}>{uiMessages["ui.publishing.keep_connected"]()}</Button></div></div> : <div className="flex flex-wrap gap-2"><Button variant="outline" disabled={disabled || !ready} onClick={() => void account.connect(item)}>{item.status === 'connected' ? uiMessages["ui.publishing.renew_access"]() : uiMessages["ui.publishing.reconnect"]()}</Button>{item.status !== 'disconnected' && <Button variant="ghost" disabled={disabled} onClick={() => setConfirmId(item.id)}>{uiMessages["ui.publishing.disconnect"]()}</Button>}</div>}
     </article>)}
   </div>;

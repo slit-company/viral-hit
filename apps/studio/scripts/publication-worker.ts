@@ -3,11 +3,15 @@ import { setTimeout } from 'node:timers/promises';
 import { openPublications } from '../src/core/publishing/publication-files.server';
 import { openPublicationRuntime } from '../src/core/publishing/runtime.server';
 import { runPublicationStep } from '../src/core/publishing/worker.server';
+import { openInboxWorkerSession } from '../src/core/references/instagram-inbox-application.server';
+import { runInstagramInboxLoop } from '../src/core/references/instagram-inbox.server';
 
 managedRuntimeSnapshot();
 const shutdown = new AbortController();
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => shutdown.abort());
 const store = openPublications();
+// Instagram DM collection runs beside delivery so a slow download never delays a publication step.
+const inbox = runInstagramInboxLoop(shutdown.signal, () => openInboxWorkerSession());
 try {
   const runtime = openPublicationRuntime();
   try {
@@ -22,4 +26,4 @@ try {
       }
     }
   } finally { runtime.close(); }
-} finally { store.close(); }
+} finally { store.close(); await inbox; }

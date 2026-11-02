@@ -57,5 +57,10 @@ export function openInstagramAccounts(options: StorageOptions & { config?: MetaO
       credential: async (id, signal) => { signal.throwIfAborted(); const grant = store.credential(id, oauth.identity); return { pageId: grant.pageId, instagramId: grant.instagramId, accessToken: grant.accessToken, revision: grant.revision }; },
       fetch: options.fetch, invalidateCredential: async (id, token, revision) => store.invalidate(id, oauth.identity, token, revision),
     }),
+    /** The same Page credential for read-only inbox collection; a rejected token marks the account for renewal. */
+    messaging: {
+      credential: async (id: string, signal: AbortSignal) => { signal.throwIfAborted(); const grant = store.credential(id, oauth.identity); return { pageId: grant.pageId, instagramId: grant.instagramId, accessToken: grant.accessToken, revision: grant.revision }; },
+      invalidate: (id: string, credential: { accessToken: string; revision?: number }) => store.invalidate(id, oauth.identity, credential.accessToken, credential.revision),
+    },
   };
 }

@@ -256,3 +256,7 @@ Summed script gzip: **755,964 bytes**, **3,966 bytes** more than the ComfyUI can
 ## Instagram images and carousels — 2026-11-03
 
 Summed script gzip: **761,744 bytes**, **5,780 bytes** more than canvas branches and runs (755,964); public files **9,305,433 bytes**. The script budget changed from 756,000 to **762,000** in this reviewed decision. 29 new messages in four languages (about 6 KB of text before compression) go into the shared message chunk. The Publish page chunk, loaded only on `/publish`, gains the format choice, the ordered carousel picker and the swipeable review strip. Two duplicate labels and a hint were removed before raising the budget. Image conversion (FFmpeg), public hosting (the existing `s3mini` dependency) and container handling run on the server and in the existing publication worker. No dependency, service or background process was added.
+
+## Instagram DM collection — 2026-11-03
+
+Summed script gzip: **765,045 bytes**, **3,301 bytes** more than Instagram images and carousels (761,744); public files **9,314,943 bytes**. The script budget changed from 762,000 to **766,000** in this reviewed decision: the Connections page gains the DM collection panel and its small status hook, and 15 messages in four languages join the shared message chunk. Checks, downloads and frame sampling run in a loop inside the existing publication worker; no dependency, service or process was added.

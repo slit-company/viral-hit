@@ -64,7 +64,7 @@ Instagram accounts can now be connected at `/connections` through Meta and an ex
 
 ## Connecting Instagram
 
-Configure the four Meta settings described in [decision 010](architecture/010-instagram-accounts.md), using a Facebook Login for Business User access token configuration with the four documented permissions. On Connections, choose Connect Instagram, complete Meta consent, then review and select the Page-linked Instagram account. Reconnecting preserves both the Page and Instagram identity. Tokens stay encrypted on the server; choosing a destination does not upload or publish anything.
+Configure the four Meta settings described in [decision 010](architecture/010-instagram-accounts.md), using a Facebook Login for Business User access token configuration with the four documented permissions. On Connections, choose Connect Instagram, complete Meta consent, then review and select the Page-linked Instagram account. Reconnecting preserves both the Page and Instagram identity. Tokens stay encrypted on the server; choosing a destination does not upload or publish anything. To collect videos people send by DM, also add `instagram_manage_messages`, `pages_messaging` and `pages_manage_metadata` to the configuration and renew access; see [Instagram DM collection](REFERENCE-INTAKE.md#instagram-dm-collection).
 
 Account disconnect remains available if Meta configuration is removed. It clears local credentials and pending reconnects, while existing Instagram posts stay remote. Back up `data/publishing-accounts/instagram/accounts.sqlite` together with its sibling `workspace.key`. Live Meta consent and publishing have not yet been verified.
 

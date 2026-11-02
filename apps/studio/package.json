@@ -31,6 +31,7 @@
     "integration:probe:workbuddy-runtime": "tsx scripts/probe-workbuddy-runtime-package.ts",
     "integration:package:workbuddy": "tsx scripts/package-workbuddy-connector.ts",
     "reference": "tsx scripts/reference.ts",
+    "instagram-inbox": "tsx scripts/instagram-inbox.ts",
     "media:localize": "tsx scripts/localize-project-media.ts",
     "mcp": "tsx scripts/mcp-server.ts",
     "mcp:http": "tsx scripts/mcp-server.ts --http",
