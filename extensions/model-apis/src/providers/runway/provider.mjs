@@ -2,6 +2,7 @@ import { send, sendJson } from '../../kit/http.mjs';
 import { credential } from '../../kit/polling.mjs';
 import { dataUri, extensionFor } from '../../kit/media.mjs';
 import { catalogProvider } from '../../kit/catalog-provider.mjs';
+import { describeVideoImages } from '../../kit/video-image-inputs.mjs';
 import catalog from './catalog.json' with { type: 'json' };
 // Runway Dev API: https://docs.dev.runwayml.com/ai-context.md
 const API = 'https://api.dev.runwayml.com';
@@ -39,4 +40,4 @@ async function poll(api, id) {
 }
 
 export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'rw', label: 'Runway', catalog, client, upload, submit, poll, test: api => api.call('/v1/organization') });
-export const manifest = { id: 'runway', setupUrl: 'https://dev.runwayml.com', label: 'Runway', description: 'Runway Dev API: Gen-4.5, Veo 3.1, Seedance 2.5, Kling 4, Hailuo 3, Wan 3, MiniMax H3, Aleph video editing, Act-Two, image models and upscaling.', environment: ['RUNWAYML_API_SECRET'], models: catalog.models.map(entry => entry.model) };
+export const manifest = { id: 'runway', setupUrl: 'https://dev.runwayml.com', label: 'Runway', description: 'Runway Dev API: Gen-4.5, Veo 3.1, Seedance 2.5, Kling 4, Hailuo 3, Wan 3, MiniMax H3, Aleph video editing, Act-Two, image models and upscaling.', environment: ['RUNWAYML_API_SECRET'], models: catalog.models.map(describeVideoImages) };

@@ -467,6 +467,22 @@
             ],
             "additionalProperties": false
           },
+          "videoImageInputs": {
+            "type": "object",
+            "properties": {
+              "frames": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 2
+              },
+              "references": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 20
+              }
+            },
+            "additionalProperties": false
+          },
           "maskInput": {
             "type": "object",
             "properties": {

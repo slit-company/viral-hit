@@ -66,6 +66,7 @@ export function buildBody(profile, checked, images, audios = []) {
 }
 export function providerManifest() {
   const models = profiles.map(({ controls, referenceInputs, ...model }) => ({ ...model,
+    ...(!model.videoImageInputs && model.kind === 'video' && referenceInputs?.image.max ? { videoImageInputs: { frames: Math.min(2, referenceInputs.image.max) } } : {}),
     ...(controls?.length ? { controls } : {}),
     ...(referenceInputs && Object.values(referenceInputs).some(range => range.max) ? { referenceInputs } : {}),
   }));

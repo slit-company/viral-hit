@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { describeVideoImages } from './video-image-inputs.mjs';
 // Build-time converter: an official JSON input schema becomes a public Viral Hit model entry plus a private request binding.
 const RATIOS = ['1:1', '16:9', '9:16', '4:3', '3:4', '3:2', '2:3', '4:5', '5:4', '21:9', '9:21', '2:1', '1:2'];
 const IMAGE_SIZES = { square_hd: '1:1', landscape_16_9: '16:9', portrait_16_9: '9:16', landscape_4_3: '4:3', portrait_4_3: '3:4' };
@@ -156,5 +157,5 @@ export function profileFromSchema(prefix, entry, schema) {
   if (total > 0) model.referenceInputs = ranges;
   if (binding.prompt?.required === false && !binding.media.length) binding.prompt.required = true;
   if (entry.kind !== 'audio' && !model.aspectRatios) { model.aspectRatios = ['auto']; model.defaultAspectRatio = 'auto'; }
-  return { model, binding };
+  return { model: describeVideoImages({ model, binding }), binding };
 }

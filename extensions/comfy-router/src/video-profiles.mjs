@@ -5,6 +5,8 @@ const video = (id, name, upstreamModelId, aspectRatios, durations, maxImages, co
   id: 'comfy-' + id, name, upstreamModelId, kind: 'video', studioTasks: ['video-generate'],
   aspectRatios, defaultAspectRatio: '16:9', durations: seconds(durations), defaultDuration: '6s',
   referenceInputs: refs(0, maxImages, audio), controls,
+  ...(maxImages ? { videoImageInputs: { frames: id.startsWith('grok-') ? 1 : 2,
+    ...(controls.some(control => control.key === 'reference_mode') ? { references: maxImages } : {}) } } : {}),
 });
 
 /** Canonical Router IDs and supported subsets of their native schemas, checked 2026-11-02. */

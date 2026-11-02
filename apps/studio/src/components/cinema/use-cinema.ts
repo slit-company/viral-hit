@@ -13,7 +13,7 @@ export type ProductionView = { still: ShotStepView | null; video: ShotStepView; 
 export type CinemaDraft = ShotSpecInput & { subject: string; moves: string[]; characterAssetIds: string[] };
 
 export const DEFAULT_DRAFT: CinemaDraft = { subject: '', action: '', setting: '', moves: ['dolly-in'], mood: '', audio: '', duration: 5, aspectRatio: '16:9', startFrame: 'generate', characterAssetIds: [], videoModel: 'auto', imageModel: 'auto', provider: 'any', variations: 2 };
-const TERMINAL = new Set(['succeeded', 'failed', 'cancelled']);
+const TERMINAL = new Set(['succeeded', 'failed', 'canceled', 'cancelled', 'uncertain', 'blocked']);
 const shotsKey = (projectId: string) => ['cinema-shots', projectId];
 const url = (projectId: string) => '/api/app/projects/' + encodeURIComponent(projectId) + '/shots';
 
@@ -27,7 +27,11 @@ export function useCinemaDraft(projectId: string) {
     setLoaded(true);
   }, [key]);
   useEffect(() => { if (loaded) try { localStorage.setItem(key, JSON.stringify(draft)); } catch { /* storage unavailable */ } }, [key, loaded, draft]);
-  const update = (patch: Partial<CinemaDraft>) => setDraft(current => ({ ...current, ...patch }));
+  const update = (patch: Partial<CinemaDraft>) => setDraft(current => {
+    const next = { ...current, ...patch };
+    if (next.startFrame === 'none' && !next.startAssetId) next.endAssetId = undefined;
+    return next;
+  });
   return { draft, update, loaded };
 }
 
@@ -35,11 +39,12 @@ export function useCinemaDraft(projectId: string) {
 export function useShotPreview(projectId: string, draft: CinemaDraft) {
   const [settled, setSettled] = useState(draft);
   useEffect(() => { const timer = window.setTimeout(() => setSettled(draft), 450); return () => window.clearTimeout(timer); }, [draft]);
-  return useQuery({
+  const query = useQuery({
     queryKey: ['cinema-preview', projectId, JSON.stringify(settled)],
     queryFn: () => apiJsonPost<{ production: ProductionView }>(url(projectId), { action: 'preview', spec: settled }).then(result => result.production),
-    enabled: settled.subject.trim().length > 0, retry: false, staleTime: 60_000, placeholderData: previous => previous,
+    enabled: settled.subject.trim().length > 0, retry: false, staleTime: 60_000,
   });
+  return { ...query, isFetching: query.isFetching || JSON.stringify(draft) !== JSON.stringify(settled) };
 }
 
 export function useShotRuns(projectId: string) {
@@ -59,7 +64,7 @@ export function useProduceShot(projectId: string) {
 }
 
 const qualityQuery = (projectId: string, assetId: string | undefined, expect: { durationSec: number | null; audio: boolean }) => ({
-  queryKey: ['cinema-quality', projectId, assetId],
+  queryKey: ['cinema-quality', projectId, assetId, expect.durationSec, expect.audio],
   queryFn: () => apiJsonPost<{ quality: TakeQuality }>(url(projectId), { action: 'quality', assetId, ...(expect.durationSec ? { durationSec: expect.durationSec } : {}), audio: expect.audio }).then(result => result.quality),
   staleTime: Infinity, retry: false,
 });

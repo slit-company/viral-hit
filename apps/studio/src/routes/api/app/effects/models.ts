@@ -35,6 +35,7 @@ async function GET({ request }: { request: Request }) {
       inputSchema: descriptor?.parameterSchema ?? null,
       ...(descriptor?.controls ? { controls: descriptor.controls } : {}),
       ...(descriptor?.referenceInputs ? { referenceInputs: descriptor.referenceInputs } : {}),
+      ...(descriptor?.videoImageInputs ? { videoImageInputs: descriptor.videoImageInputs } : {}),
       ...(descriptor?.maskInput ? { maskInput: descriptor.maskInput } : {}),
       ...(descriptor?.referenceRoles ? { referenceRoles: descriptor.referenceRoles } : {}),
       defaultProviderModelVariant: model.defaultVariant

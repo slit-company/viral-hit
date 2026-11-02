@@ -102,7 +102,13 @@ export function compileParameters(spec: ShotSpec, model: ShotModel, notes: strin
     if (value !== undefined) options[key] = value;
   };
   const audio = Boolean(spec.audio);
-  choose('resolution', model.kind === 'video' ? ['1080p', '2K', '720p'] : ['2K', '2k', '1080p', '1K', '1k', '720p']);
+  const veoShort = familyFor(model).id === 'veo' && parameters.wmDuration !== '8s';
+  choose('resolution', model.kind === 'video' ? (veoShort ? ['720p'] : ['1080p', '1080P', '2K', 'fhd', '720p', '720P']) : ['2K', '2k', '1080p', '1K', '1k', '720p']);
+  if (model.kind === 'video') {
+    const start = Boolean(spec.startAssetId) || spec.startFrame === 'generate';
+    choose('reference_mode', [start ? 'frames' : 'references']);
+    choose('image_use', [start ? 'first-frame' : 'references']);
+  }
   choose('generate_audio', [audio]);
   choose('sound', [audio ? 'on' : 'off']);
   choose('enhance_prompt', [false]);

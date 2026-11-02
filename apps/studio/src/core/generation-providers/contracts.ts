@@ -2,6 +2,7 @@ import type { StudioToolId } from '@/core/studio/tools';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from './mask-input';
 import type { ReferenceRoles } from './reference-roles';
+import type { VideoImageInputs } from './video-image-inputs';
 import type { ModelControl } from './model-controls';
 import type { AnalysisInputs } from './analysis-inputs';
 import type { BaseAdapter, EffectRecord } from '@/core/adapters/base-adapter';
@@ -15,6 +16,7 @@ export type GenerationProviderModelBinding = {
   studioTasks?: StudioToolId[];
   analysisInputs?: AnalysisInputs;
   referenceInputs?: ReferenceInputs;
+  videoImageInputs?: VideoImageInputs;
   /** Declared only by models that edit a marked area. */
   maskInput?: MaskInput;
   /** Specific reference roles the model declares. */

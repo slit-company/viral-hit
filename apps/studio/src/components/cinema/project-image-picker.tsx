@@ -31,7 +31,7 @@ export function ProjectImagePicker({ projectId, label, value, max, disabled, onC
       {byId.get(id) && <img src={byId.get(id)!.publicUrl} alt={byId.get(id)!.filename ?? ''} className="size-full object-cover" />}
       <Action type="button" aria-label={t('clearStart')} disabled={disabled} onClick={() => onChange(value.filter(item => item !== id))} className="absolute right-0.5 top-0.5 grid size-5 place-items-center rounded-full bg-black/70 text-white"><X className="size-3" /></Action>
     </span>)}
-    {value.length < max && <Action type="button" disabled={disabled} onClick={() => setOpen(true)} className="inline-flex h-14 items-center gap-1.5 rounded-lg border border-dashed border-[var(--vh-border)] px-3 text-xs font-medium text-[var(--vh-text-2)] hover:bg-[var(--vh-control)]">
+    {value.length < max && <Action type="button" disabled={disabled} onClick={() => { setOpen(true); void images.refetch(); }} className="inline-flex h-14 items-center gap-1.5 rounded-lg border border-dashed border-[var(--vh-border)] px-3 text-xs font-medium text-[var(--vh-text-2)] hover:bg-[var(--vh-control)]">
       <ImagePlus className="size-4" />{label}
     </Action>}
     <Dialog open={open} onOpenChange={setOpen}>

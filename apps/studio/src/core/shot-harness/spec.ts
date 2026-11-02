@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { shotGroups } from '../creative-canvas/shot-line';
 import { CAMERA_MOVE_IDS } from './camera-moves';
+import type { VideoImageInputs } from '../generation-providers/video-image-inputs';
 
 const ids = <T extends readonly { id: string }[]>(items: T) => items.map(item => item.id) as [T[number]['id'], ...T[number]['id'][]];
 const assetId = z.string().regex(/^[A-Za-z0-9_-]{1,128}$/);
@@ -32,7 +33,10 @@ export const shotSpec = z.object({
   /** Keep both steps on one connected service (for example the account with credits); "any" lets routing choose. */
   provider: z.string().min(1).max(100).default('any'),
   variations: z.number().int().min(1).max(4).default(2),
-}).strict();
+}).strict().superRefine((spec, ctx) => {
+  if (spec.endAssetId && !spec.startAssetId && spec.startFrame !== 'generate') ctx.addIssue({ code: 'custom', path: ['endAssetId'], message: 'Choose or generate a start frame before setting the end frame' });
+  if (spec.endAssetId && spec.endAssetId === spec.startAssetId) ctx.addIssue({ code: 'custom', path: ['endAssetId'], message: 'Choose a different end frame' });
+});
 export type ShotSpec = z.infer<typeof shotSpec>;
 export type ShotSpecInput = z.input<typeof shotSpec>;
 
@@ -41,6 +45,7 @@ export type ShotModel = {
   id: string; name: string; providerId?: string; providerLabel?: string;
   kind: 'image' | 'video';
   studioTasks: string[];
+  videoImageInputs?: VideoImageInputs;
   referenceInputs?: { image: { min: number; max: number }; video: { min: number; max: number }; audio: { min: number; max: number } };
   supportedDurations?: string[];
   supportedAspectRatios?: string[];

@@ -32,6 +32,7 @@ export async function listShotModels(): Promise<ShotModel[]> {
       id: model.id, name: model.name, providerId: descriptor.providerId, providerLabel: descriptor.providerLabel,
       kind: type === 'ai-image' ? 'image' as const : 'video' as const, studioTasks: [...(descriptor.studioTasks ?? [])],
       referenceInputs: descriptor.referenceInputs, supportedDurations: model.supportedDurations ? [...model.supportedDurations] : undefined,
+      videoImageInputs: descriptor.videoImageInputs,
       supportedAspectRatios: model.supportedAspectRatios ? [...model.supportedAspectRatios] : undefined,
       controls: descriptor.controls as ShotModel['controls'], available: descriptor.available,
       ...(health.has(descriptor.providerId) ? { health: health.get(descriptor.providerId) } : {}),

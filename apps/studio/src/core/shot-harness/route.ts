@@ -1,7 +1,7 @@
 import { familyFor } from './compile';
 import type { ShotModel, ShotSpec } from './spec';
 
-export type RouteNeed = { kind: 'image' | 'video'; images: number; firstLast: boolean; audio: boolean; duration: number; aspectRatio: string; provider: string };
+export type RouteNeed = { kind: 'image' | 'video'; images: number; firstLast: boolean; imageMode?: 'frames' | 'references'; audio: boolean; duration: number; aspectRatio: string; provider: string };
 export type RankedModel = { model: ShotModel; score: number; reasons: string[] };
 const seconds = (value: string) => Number.parseFloat(value);
 
@@ -9,7 +9,7 @@ const seconds = (value: string) => Number.parseFloat(value);
 export function videoNeed(spec: ShotSpec): RouteNeed {
   const start = Boolean(spec.startAssetId) || spec.startFrame === 'generate';
   const images = start ? (spec.endAssetId ? 2 : 1) : spec.characterAssetIds.length;
-  return { kind: 'video', images, firstLast: Boolean(spec.endAssetId), audio: Boolean(spec.audio), duration: spec.duration, aspectRatio: spec.aspectRatio, provider: spec.provider };
+  return { kind: 'video', images, firstLast: Boolean(spec.endAssetId), imageMode: start ? 'frames' : 'references', audio: Boolean(spec.audio), duration: spec.duration, aspectRatio: spec.aspectRatio, provider: spec.provider };
 }
 export const stillNeed = (spec: ShotSpec): RouteNeed =>
   ({ kind: 'image', images: spec.characterAssetIds.length, firstLast: false, audio: false, duration: 0, aspectRatio: spec.aspectRatio, provider: spec.provider });
@@ -27,6 +27,12 @@ export function rankModels(models: readonly ShotModel[], need: RouteNeed): Ranke
     if (!tasks.includes(task) && !(need.kind === 'image' && need.images > 0 && tasks.includes('image-edit'))) continue;
     const image = model.referenceInputs?.image ?? { min: 0, max: 0 };
     if (image.min > need.images || image.max < need.images) continue;
+    if ((model.referenceInputs?.video.min ?? 0) > 0 || (model.referenceInputs?.audio.min ?? 0) > 0) continue;
+    if (need.kind === 'video' && need.images > 0) {
+      const mode = need.imageMode ?? 'frames', modes = model.videoImageInputs;
+      if ((modes?.[mode] ?? 0) < need.images) continue;
+      if (need.firstLast && (!modes?.frames || modes.frames < 2)) continue;
+    }
     const family = familyFor(model), id = model.id.toLowerCase(), reasons = [family.id];
     let score = family.rank + version(id);
     if (model.health) { score += model.health.score; reasons.push(model.health.reason); }

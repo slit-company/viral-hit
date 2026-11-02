@@ -2,6 +2,7 @@ import { send, sendJson, ApiError } from '../../kit/http.mjs';
 import { credential } from '../../kit/polling.mjs';
 import { extensionFor } from '../../kit/media.mjs';
 import { catalogProvider } from '../../kit/catalog-provider.mjs';
+import { describeVideoImages } from '../../kit/video-image-inputs.mjs';
 import catalog from './catalog.json' with { type: 'json' };
 // fal queue API: https://fal.ai/docs/documentation/model-apis/inference/queue
 const QUEUE = 'https://queue.fal.run/';
@@ -43,4 +44,4 @@ async function test(api) {
 }
 
 export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'fal', label: 'fal', catalog, client, upload, submit, poll, test });
-export const manifest = { id: 'fal', setupUrl: 'https://fal.ai/dashboard/keys', label: 'fal', description: 'fal model gallery: Nano Banana, GPT Image 2.5, FLUX 3, Seedream, Seedance 2.5, Kling 4, Gemini Omni, Wan 3, Grok, lip sync, upscaling, voice, music and sound.', environment: ['FAL_KEY'], models: catalog.models.map(entry => entry.model) };
+export const manifest = { id: 'fal', setupUrl: 'https://fal.ai/dashboard/keys', label: 'fal', description: 'fal model gallery: Nano Banana, GPT Image 2.5, FLUX 3, Seedream, Seedance 2.5, Kling 4, Gemini Omni, Wan 3, Grok, lip sync, upscaling, voice, music and sound.', environment: ['FAL_KEY'], models: catalog.models.map(describeVideoImages) };

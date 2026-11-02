@@ -13,7 +13,7 @@ import { CameraMovePreview } from './camera-move-preview';
 import { ProjectImagePicker } from './project-image-picker';
 import type { CinemaDraft } from './use-cinema';
 
-const DURATIONS = [3, 4, 5, 6, 8, 10, 12, 15];
+const DURATIONS = [3, 4, 5, 6, 8, 10, 12, 15, 20, 25, 30];
 const LOOK_GROUPS: ShotGroup[] = ['size', 'angle', 'lens', 'light', 'look'];
 const DRAFT_KEY: Record<string, 'framing' | 'angle' | 'lens' | 'light' | 'look'> = { size: 'framing', angle: 'angle', lens: 'lens', light: 'light', look: 'look' };
 const chip = (selected: boolean) => cn('rounded-full border px-2.5 py-1 text-[12px] font-medium transition-colors',
@@ -83,6 +83,10 @@ export function ShotForm({ projectId, draft, disabled, onChange }: { projectId: 
         </Action>;
       })}</div>
       <ProjectImagePicker projectId={projectId} label={t('startAsset')} max={1} disabled={disabled} value={draft.startAssetId ? [draft.startAssetId] : []} onChange={ids => onChange({ startAssetId: ids[0] })} />
+    </Field>
+    <Field label={t('end')} hint={t('endHint')}>
+      <ProjectImagePicker projectId={projectId} label={t('endAsset')} max={1} disabled={disabled || (!draft.startAssetId && draft.startFrame === 'none')}
+        value={draft.endAssetId ? [draft.endAssetId] : []} onChange={ids => onChange({ endAssetId: ids[0] })} />
     </Field>
     <Field label={t('characters')} hint={t('charactersHint')}>
       <ProjectImagePicker projectId={projectId} label={t('chooseImages')} max={4} disabled={disabled} value={draft.characterAssetIds} onChange={characterAssetIds => onChange({ characterAssetIds })} />

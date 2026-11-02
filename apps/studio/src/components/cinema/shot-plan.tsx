@@ -41,7 +41,7 @@ export function ShotPlan({ production, loading, error, describeFirst, busy, onPr
         {production.notes.map(note => <p key={note} className="text-xs text-amber-800">{note}</p>)}
         {production.alternatives.video.length > 1 && <p className="text-[11px] text-[var(--vh-text-3)]">{t('alternatives')}: {production.alternatives.video.slice(1, 4).map(item => item.name).join(' · ')}</p>}
       </>}
-    <Action type="button" className="vh-primary flex w-full items-center justify-center gap-2" disabled={busy || describeFirst || Boolean(error) || !production} onClick={onProduce}>
+    <Action type="button" className="vh-primary flex w-full items-center justify-center gap-2" disabled={busy || loading || describeFirst || Boolean(error) || !production} onClick={onProduce}>
       {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
       {busy ? t('producing') : t('produce', { count: production?.variations ?? 0 })}
     </Action>

@@ -2,6 +2,7 @@ import { STUDIO_TOOL_IDS, STUDIO_TOOL_KINDS } from '@/core/studio/tools';
 import { referenceInputsSchema } from '../reference-inputs';
 import { maskInputSchema } from '../mask-input';
 import { referenceRolesSchema } from '../reference-roles';
+import { videoImageInputsSchema } from '../video-image-inputs';
 import { modelControlsSchema } from '../model-controls';
 import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
@@ -23,6 +24,7 @@ export const providerModelSchema = z.object({
   studioTasks: z.array(z.enum(STUDIO_TOOL_IDS)).min(1).max(8).refine(items => new Set(items).size === items.length).optional(),
   analysisInputs: analysisInputsSchema.optional(),
   referenceInputs: referenceInputsSchema.optional(),
+  videoImageInputs: videoImageInputsSchema.optional(),
   maskInput: maskInputSchema.optional(),
   /** Specific roles (style, subject, pose) the model understands; delivered to the module as input.references. */
   referenceRoles: referenceRolesSchema.optional(),
@@ -41,6 +43,11 @@ export const providerModelSchema = z.object({
   if (model.kind === 'analysis' && model.referenceInputs) ctx.addIssue({ code: 'custom', message: 'Analysis uses analysisInputs, not referenceInputs' });
   if (model.referenceInputs && (model.maxReferenceImages || model.requiresImageInput)) ctx.addIssue({ code: 'custom', message: 'Use referenceInputs alone instead of legacy image reference settings' });
   if (model.kind !== 'analysis' && model.analysisInputs) ctx.addIssue({ code: 'custom', message: 'Only analysis models declare analysisInputs' });
+  if (model.videoImageInputs) {
+    const max = model.referenceInputs?.image.max ?? model.maxReferenceImages;
+    if (model.kind !== 'video') ctx.addIssue({ code: 'custom', message: 'Only video models declare videoImageInputs' });
+    if (Object.values(model.videoImageInputs).some(count => count > max)) ctx.addIssue({ code: 'custom', message: 'Video image modes must fit the declared image reference count' });
+  }
   if (model.referenceRoles && model.kind === 'analysis') ctx.addIssue({ code: 'custom', message: 'Analysis models describe sources with analysisInputs, not reference roles' });
   if (model.maskInput && model.kind !== 'image' && model.kind !== 'video') ctx.addIssue({ code: 'custom', message: 'Only image and video models accept a mask' });
   if (model.maskInput && !(model.referenceInputs ? model.referenceInputs.image.max + model.referenceInputs.video.max : model.maxReferenceImages)) ctx.addIssue({ code: 'custom', message: 'A mask needs at least one image or video reference to apply to' });

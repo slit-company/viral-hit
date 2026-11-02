@@ -30,7 +30,7 @@ export function prepareShot(input: ShotSpecInput, models: readonly ShotModel[]):
   const start = still || spec.startAssetId;
   const picked = pickModel(models, videoNeed(spec), spec.videoModel);
   const model = picked.chosen.model, family = familyFor(model);
-  const hasAudio = Boolean(model.controls?.some(control => control.key === 'generate_audio' || control.key === 'sound'));
+  const hasAudio = Boolean(family.nativeAudio || model.controls?.some(control => control.key === 'generate_audio' || control.key === 'sound'));
   if (spec.audio && !hasAudio) notes.push(model.name + ' makes silent video; add the sound in the editor');
   const references: Reference[] = start
     ? [{ assetId: spec.startAssetId ?? STILL_PLACEHOLDER, kind: 'image', role: 'reference' }, ...(spec.endAssetId ? [{ assetId: spec.endAssetId, kind: 'image' as const, role: 'reference' as const }] : [])]

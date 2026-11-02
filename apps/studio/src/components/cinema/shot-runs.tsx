@@ -11,11 +11,11 @@ const VERDICT_TONE = { good: 'bg-emerald-50 text-emerald-800 border-emerald-200'
 function Take({ projectId, shot, take, label }: { projectId: string; shot: ShotRunView; take: ShotTakeView; label: string }) {
   const t = useTranslations('AppShell.cinema');
   const quality = useTakeQuality(projectId, take.assetId, shot), add = useAddTake(projectId);
-  const pending = !['succeeded', 'failed', 'cancelled'].includes(take.state);
+  const pending = ['queued', 'submitting', 'running'].includes(take.state);
   return <figure className="min-w-0 space-y-1.5">
     <div className="relative aspect-video overflow-hidden rounded-xl bg-[var(--vh-control)]">
       {take.url ? <video src={take.url} controls playsInline preload="metadata" className="size-full object-cover" />
-        : <div className="grid size-full place-items-center p-3 text-center text-xs text-[var(--vh-text-2)]">{pending ? <span className="inline-flex items-center gap-1.5"><Loader2 className="size-4 animate-spin" />{t(take.state === 'queued' ? 'queued' : 'running')}</span> : <span className="break-words text-red-700">{take.error ?? t(take.state as 'failed')}</span>}</div>}
+        : <div className="grid size-full place-items-center p-3 text-center text-xs text-[var(--vh-text-2)]">{pending ? <span className="inline-flex items-center gap-1.5"><Loader2 className="size-4 animate-spin" />{t(take.state === 'queued' ? 'queued' : 'running')}</span> : <span className="break-words text-red-700">{take.error ?? t(take.state === 'canceled' || take.state === 'cancelled' ? 'cancelled' : 'failed')}</span>}</div>}
     </div>
     <figcaption className="flex flex-wrap items-center gap-1.5 text-xs">
       <span className="font-semibold">{label}</span>
@@ -27,6 +27,7 @@ function Take({ projectId, shot, take, label }: { projectId: string; shot: ShotR
         {add.isSuccess ? <CheckCircle2 className="size-3.5" /> : <Plus className="size-3.5" />}{add.isSuccess ? t('added') : t('addToTimeline')}
       </Action>}
     </figcaption>
+    {add.isError && <p role="alert" className="text-xs text-red-700">{add.error.message}</p>}
   </figure>;
 }
 
