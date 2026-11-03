@@ -145,7 +145,8 @@ export function StudioToolComposer({
       </label> : <StudioPromptNotNeeded />}
       <div className="grid grid-cols-2 gap-3">
         {fields
-          .filter((field) => field.values?.length)
+          // A setting with one choice has nothing to decide, so it stays out of the way.
+          .filter((field) => (field.values?.length ?? 0) > 1)
           .map((field) => (
             <label
               key={field.key}
