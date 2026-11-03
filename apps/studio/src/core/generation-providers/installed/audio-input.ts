@@ -5,7 +5,7 @@ import { resolveAudioReferenceInputs, validateReferenceCounts, type ReferenceInp
 
 const urls = z.array(z.string().url().max(4096)).max(20).optional();
 const audioInput = z.object({
-  prompt: z.string().trim().min(1).max(MAX_GENERATION_PROMPT_CHARS),
+  prompt: z.string().trim().max(MAX_GENERATION_PROMPT_CHARS),
   image_urls: urls, video_urls: urls, audio_urls: urls,
   image_url: z.never().optional(), video_url: z.never().optional(), audio_url: z.never().optional(),
   first_frame: z.never().optional(), last_frame: z.never().optional(),
@@ -16,8 +16,10 @@ const audioInput = z.object({
 });
 
 /** Repeated before upload and before module import; undeclared models remain text-only. */
-export function validateInstalledAudioInput(input: unknown, declared?: ReferenceInputs) {
+export function validateInstalledAudioInput(input: unknown, declared?: ReferenceInputs, promptInput?: 'none' | 'optional') {
   const parsed = audioInput.parse(input);
+  // Processing models, such as extracting a clip's sound, work from their sources alone.
+  if (!parsed.prompt && !promptInput) throw Error('Enter a prompt or script');
   validateReferenceCounts({ image: parsed.image_urls?.length ?? 0, video: parsed.video_urls?.length ?? 0, audio: parsed.audio_urls?.length ?? 0 }, resolveAudioReferenceInputs(declared), 'Audio');
   checkReferenceRoleEntries((input as Record<string, unknown>).reference_roles, [...(parsed.image_urls ?? []), ...(parsed.video_urls ?? []), ...(parsed.audio_urls ?? [])]);
   return parsed;

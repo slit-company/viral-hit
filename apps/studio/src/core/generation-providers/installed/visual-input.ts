@@ -6,7 +6,7 @@ import type { ProviderModel } from './manifest';
 
 const urls = z.array(z.string().url().max(4096)).max(30).optional();
 const visualInput = z.object({
-  prompt: z.string().trim().min(1).max(MAX_GENERATION_PROMPT_CHARS),
+  prompt: z.string().trim().max(MAX_GENERATION_PROMPT_CHARS),
   image_urls: urls, video_urls: urls, audio_urls: urls,
   mask_url: z.string().url().max(4096).optional(),
   image_url: z.never().optional(), video_url: z.never().optional(), audio_url: z.never().optional(),
@@ -20,6 +20,8 @@ const visualInput = z.object({
 /** Check both admission and adapter entry, before any installed module is imported. */
 export function validateInstalledVisualInput(input: unknown, model: ProviderModel) {
   const parsed = visualInput.parse(input);
+  // Models that work from their sources alone declare that a prompt is optional or not used.
+  if (!parsed.prompt && model.promptInput !== 'none' && model.promptInput !== 'optional') throw Error('Enter a prompt for ' + model.name);
   const limits = model.referenceInputs ?? { image: { min: model.requiresImageInput ? 1 : 0, max: model.maxReferenceImages }, video: { min: 0, max: 0 }, audio: { min: 0, max: 0 } };
   if (parsed.mask_url && !model.maskInput) throw Error(model.name + ' does not accept a mask');
   if (model.maskInput?.required && !parsed.mask_url) throw Error(model.name + ' needs a mask marking the area to change');
