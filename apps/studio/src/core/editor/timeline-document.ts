@@ -82,6 +82,8 @@ export type TimelineClip = {
   audioRole?: TimelineAudioRole;
   /** Lowers this music or sound clip while a voice clip plays; see audio-ducking.ts. */
   ducking?: AudioDucking;
+  /** Playback rate of a base-track video (0.25–4, omitted is 1); duration is the source range divided by it. */
+  speed?: number;
   overlay: TimelineOverlayTransform | null;
   motion?: OverlayMotion;
   /** How this base-track visual enters; see transition-contract.ts. */
@@ -210,7 +212,7 @@ export function createTimelineDocument({
   };
 }
 
-function withUpdatedTracks(
+export function withUpdatedTracks(
   document: TimelineDocument,
   tracks: TimelineTrack[]
 ): TimelineDocument {
@@ -374,6 +376,7 @@ export function normalizeTimelineDocument(
       if (clip.transition && (track.kind !== 'video' || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Transitions belong to visual clips on a base track.');
       if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Motion needs a visual overlay.');
       if (clip.ducking && (clip.sourceType !== 'audio' || clip.audioRole === 'voice')) throw new TimelineDocumentValidationError('Ducking belongs to music and sound clips, not voices.');
+      if (clip.speed !== undefined && (track.kind !== 'video' || clip.sourceType !== 'video')) throw new TimelineDocumentValidationError('Speed belongs to video clips on the base track.');
       if (clip.trackId !== track.id) {
         throw new TimelineDocumentValidationError(
           'Timeline clip points to a different track.'
@@ -568,7 +571,7 @@ export function getTimelineClipSource(clip: TimelineClip) {
         name: take.name,
         sourceDuration: take.sourceDuration,
         inPoint: 0,
-        outPoint: Math.min(take.sourceDuration, clip.duration),
+        outPoint: Math.min(take.sourceDuration, clip.duration * (clip.speed ?? 1)),
         take,
       }
     : {
@@ -692,23 +695,7 @@ export function trimTimelineClip(
     Math.min(clip.sourceDuration, finiteNonNegative(nextOutPoint))
   );
   if (outPoint - inPoint < 0.04) return document;
-
-  return withUpdatedTracks(
-    document,
-    document.tracks.map((track) => ({
-      ...track,
-      clips: track.clips.map((candidate) =>
-        candidate.id === clipId
-          ? {
-              ...candidate,
-              inPoint,
-              outPoint,
-              duration: roundTime(outPoint - inPoint),
-            }
-          : candidate
-      ),
-    }))
-  );
+  return replaceTimelineClip(document, clipId, { ...clip, inPoint, outPoint, duration: roundTime((outPoint - inPoint) / (clip.speed ?? 1)) });
 }
 
 export function resizeTimelineClip(
@@ -765,7 +752,7 @@ export function splitTimelineClip(
   const left: TimelineClip = {
     ...clip,
     outPoint: splitPoint,
-    duration: roundTime(splitPoint - clip.inPoint),
+    duration: roundTime((splitPoint - clip.inPoint) / (clip.speed ?? 1)),
   };
   const { transition: _entry, ...rightSource } = clip;
   const right: TimelineClip = {
@@ -773,7 +760,7 @@ export function splitTimelineClip(
     id: rightClipId?.trim() || createId('clip'),
     startTime: roundTime(clip.startTime + left.duration),
     inPoint: splitPoint,
-    duration: roundTime(clip.outPoint - splitPoint),
+    duration: roundTime((clip.outPoint - splitPoint) / (clip.speed ?? 1)),
   };
 
   return withUpdatedTracks(
@@ -879,5 +866,9 @@ export function updateTimelineAudioClip(
   // null turns ducking off; a level turns it on with the default ramps unless they are given.
   if (patch.ducking === null) delete next.ducking;
   else if (patch.ducking) next.ducking = normalizeDucking(patch.ducking);
-  return withUpdatedTracks(document, document.tracks.map((track) => ({ ...track, clips: track.clips.map((candidate) => candidate.id === clipId ? next : candidate) })));
+  return replaceTimelineClip(document, clipId, next);
 }
+
+/** Replaces one clip and recomputes the timeline length. */
+export const replaceTimelineClip = (document: TimelineDocument, clipId: string, next: TimelineClip) =>
+  withUpdatedTracks(document, document.tracks.map((track) => ({ ...track, clips: track.clips.map((candidate) => candidate.id === clipId ? next : candidate) })));

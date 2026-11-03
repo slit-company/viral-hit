@@ -224,7 +224,8 @@ async function mixTimelineAudio(
   let scheduled = false;
 
   for (const record of records) {
-    if (!record.audioTrack || record.clip.muted) continue;
+    // A clip at another speed is silent, as in the preview and the FFmpeg export.
+    if (!record.audioTrack || record.clip.muted || (record.clip.speed ?? 1) !== 1) continue;
     const sink = new AudioBufferSink(record.audioTrack);
     for await (const wrapped of sink.buffers(
       record.source.inPoint,

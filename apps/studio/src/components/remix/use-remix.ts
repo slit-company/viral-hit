@@ -28,7 +28,7 @@ export function useAnalyzeReference(projectId: string) {
 export type RemixBuildResult = { offset: number; soundtrack: boolean; cameraMoves: number; texts: number; shots: Array<{ start: number; duration: number; assetId: string; filled: number }> };
 export function useBuildRemix(projectId: string) {
   return useMutation({
-    mutationFn: (input: { requestId: string; materials: string[]; keepSoundtrack: boolean; keepCamera: boolean; keepText: boolean; transition: TimelineTransition | null }) =>
+    mutationFn: (input: { requestId: string; materials: string[]; keepSoundtrack: boolean; keepCamera: boolean; keepText: boolean; keepSpeed: boolean; transition: TimelineTransition | null }) =>
       apiJsonPost<RemixBuildResult>(url(projectId), { action: 'build', ...input }),
   });
 }

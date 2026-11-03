@@ -25,7 +25,7 @@ export function RemixPage({ projectId }: { projectId: string }) {
   const remixes = useRemixes(projectId), analyze = useAnalyzeReference(projectId), build = useBuildRemix(projectId);
   const [referenceId, setReferenceId] = useState<string | null>(null);
   const [materials, setMaterials] = useState<string[]>([]);
-  const [keepSoundtrack, setKeepSoundtrack] = useState(true), [keepCamera, setKeepCamera] = useState(true), [keepText, setKeepText] = useState(false);
+  const [keepSoundtrack, setKeepSoundtrack] = useState(true), [keepCamera, setKeepCamera] = useState(true), [keepText, setKeepText] = useState(false), [keepSpeed, setKeepSpeed] = useState(true);
   const [join, setJoin] = useState<TimelineTransitionKind | 'none'>('none');
   const videos: ChoiceAsset[] = (assets.data?.videos ?? []).map(asset => ({ ...asset, kind: 'video' }));
   const visuals: ChoiceAsset[] = [...videos, ...(assets.data?.images ?? []).map(asset => ({ ...asset, kind: 'image' as const }))];
@@ -61,6 +61,7 @@ export function RemixPage({ projectId }: { projectId: string }) {
           <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepSoundtrack} onChange={event => setKeepSoundtrack(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_soundtrack']()}</label>
           <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepCamera} onChange={event => setKeepCamera(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_camera']()}</label>
           <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepText} disabled={remix?.grammar?.edit?.text === 'unavailable'} onChange={event => setKeepText(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_text']()}</label>
+          <label className="flex items-center gap-2 text-xs"><input type="checkbox" checked={keepSpeed} onChange={event => setKeepSpeed(event.target.checked)} className="size-4 accent-[var(--vh-graph)]" />{m['ui.remix.keep_speed']()}</label>
           <label className="flex items-center justify-between gap-3 text-xs">{m['ui.cinema.sequence_transition']()}
             <NativeSelect aria-label={m['ui.cinema.sequence_transition']()} value={join} onChange={event => setJoin(event.target.value as TimelineTransitionKind | 'none')} className="h-8 max-w-48 text-xs">
               {JOINS.map(kind => <option key={kind} value={kind}>{TRANSITION_LABELS[kind]()}</option>)}
@@ -79,7 +80,7 @@ export function RemixPage({ projectId }: { projectId: string }) {
         {remix?.grammar && <RemixShots remix={remix} plan={plan} urls={new Map(visuals.map(asset => [asset.id, asset.publicUrl]))} />}
         {remix?.grammar && <div className="flex flex-wrap items-center gap-3 border-t border-[var(--vh-border)] pt-4">
           <Action type="button" className="vh-primary inline-flex items-center gap-2" disabled={!chosen.length || build.isPending}
-            onClick={() => build.mutate({ requestId: remix.requestId, materials, keepSoundtrack, keepCamera, keepText: keepText && remix.grammar?.edit?.text === 'read', transition: join === 'none' ? null : { kind: join, duration: 0.4 } })}>
+            onClick={() => build.mutate({ requestId: remix.requestId, materials, keepSoundtrack, keepCamera, keepSpeed, keepText: keepText && remix.grammar?.edit?.text === 'read', transition: join === 'none' ? null : { kind: join, duration: 0.4 } })}>
             {build.isPending ? <Loader2 className="size-4 animate-spin" /> : <Repeat2 className="size-4" />}{m['ui.remix.build']()}
           </Action>
           {build.isSuccess && <p role="status" className="text-xs text-emerald-800">{m['ui.remix.built']({ count: build.data.shots.length })} {build.data.soundtrack ? m['ui.remix.built_soundtrack']() : ''} {build.data.cameraMoves || build.data.texts ? m['ui.remix.built_edit']({ moves: build.data.cameraMoves, texts: build.data.texts }) : ''}

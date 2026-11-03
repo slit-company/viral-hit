@@ -26,6 +26,7 @@ const timelineClipSchema = z.object({
   text: z.string().max(4_000).default(''),
   audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(),
   ducking: audioDuckingSchema.optional(),
+  speed: z.number().finite().min(0.25).max(4).optional(),
   overlay: overlayTransformSchema.nullable().default(null),
   motion: overlayMotionSchema.optional(),
   transition: timelineTransitionSchema.optional(),

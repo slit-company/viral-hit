@@ -280,3 +280,7 @@ Summed script gzip: **780,021 bytes**, **8,752 bytes** more than Face match (771
 ## Ducking — 2026-11-03
 
 Summed script gzip: **781,358 bytes**, **1,337 bytes** more than Collaboration (780,021); public files **9,362,138 bytes**. The script budget changed from 781,000 to **783,000** in this reviewed decision. The ducking curve (`audio-ducking.ts`) is shared by the editor preview and the browser export. The inspector gains one select, and six messages in four languages join the message chunk. FFmpeg rendering uses the same module on the server, and no dependency was added.
+
+## Clip speed — 2026-11-03
+
+Summed script gzip: **782,424 bytes**, **1,066 bytes** more than Ducking (781,358). This is within the 783,000 budget: the speed select, the mapping in the preview and browser export, and three messages. The FFmpeg speed pass runs on the server only.

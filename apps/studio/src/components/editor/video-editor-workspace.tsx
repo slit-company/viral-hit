@@ -12,6 +12,7 @@ import { CaptionHighlightPicker } from './caption-highlight-picker';
 import { VoiceCaptionsAction } from './voice-captions-action';
 import { LayerExportAction } from './layer-export-action';
 import { AudioDuckingControl } from './audio-ducking-control';
+import { ClipSpeedControl } from './clip-speed-control';
 import { duckingGain, voiceIntervals } from '@/core/editor/audio-ducking';
 import { EditorComments } from '@/components/collaboration/editor-comments';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
@@ -558,7 +559,7 @@ export function VideoEditorWorkspace({
                     firstVisual.duration,
                     requestedTimelineTime - firstVisual.startTime
                   )
-                )
+                ) * (firstVisual.speed ?? 1)
             : (firstSource?.inPoint ?? 0)
         );
         setMetadata(
@@ -672,7 +673,7 @@ export function VideoEditorWorkspace({
       setSourceUrl(nextSource.sourceUrl);
       setCurrentTime(
         previewClip.sourceType === 'video'
-          ? nextSource.inPoint + previewOffset
+          ? nextSource.inPoint + previewOffset * (previewClip.speed ?? 1)
           : previewOffset
       );
     }
@@ -701,7 +702,7 @@ export function VideoEditorWorkspace({
     setTimelineCursorTime(
       timelineTime ??
         (previewClip && previewSource
-          ? previewClip.startTime + (time - previewSource.inPoint)
+          ? previewClip.startTime + (time - previewSource.inPoint) / (previewClip.speed ?? 1)
           : time)
     );
   };
@@ -742,9 +743,11 @@ export function VideoEditorWorkspace({
       let ready = true;
       if (active?.sourceType === 'video') {
         const source = getTimelineClipSource(active);
-        const expected = source.inPoint + (time - active.startTime);
+        const expected = source.inPoint + (time - active.startTime) * (active.speed ?? 1);
         if (!video || video.src !== new URL(source.sourceUrl, window.location.href).href || video.readyState < 2) ready = false;
         else {
+          // A clip at another speed plays at that rate and without its own sound, as in the exports.
+          if (video.playbackRate !== (active.speed ?? 1)) { video.playbackRate = active.speed ?? 1; video.muted = (active.speed ?? 1) !== 1; }
           if (Math.abs(video.currentTime - expected) > 0.25) video.currentTime = expected;
           if (video.paused) void video.play().catch(() => undefined);
         }
@@ -781,7 +784,7 @@ export function VideoEditorWorkspace({
       setSourceUrl(source.sourceUrl);
       sourceFileRef.current = null;
       if (clip.sourceType === 'video') {
-        const sourceTime = source.inPoint + offset;
+        const sourceTime = source.inPoint + offset * (clip.speed ?? 1);
         if (videoRef.current) videoRef.current.currentTime = sourceTime;
         setCurrentTime(sourceTime);
       } else {
@@ -806,7 +809,7 @@ export function VideoEditorWorkspace({
         );
         setSourceUrl(visualSource.sourceUrl);
         if (visualAtSelection.sourceType === 'video') {
-          const visualSourceTime = visualSource.inPoint + visualOffset;
+          const visualSourceTime = visualSource.inPoint + visualOffset * (visualAtSelection.speed ?? 1);
           if (videoRef.current) videoRef.current.currentTime = visualSourceTime;
           setCurrentTime(visualSourceTime);
         } else {
@@ -835,7 +838,7 @@ export function VideoEditorWorkspace({
     );
     setTimelineCursorTime(activeClip.startTime + offset);
     if (activeClip.sourceType === 'video') {
-      seek(activeClip.inPoint + offset, activeClip.startTime + offset);
+      seek(activeClip.inPoint + offset * (activeClip.speed ?? 1), activeClip.startTime + offset);
     } else {
       setCurrentTime(offset);
     }
@@ -1091,7 +1094,7 @@ export function VideoEditorWorkspace({
     }
     const splitSource = getTimelineClipSource(splitClip);
     const splitSourceTime =
-      splitSource.inPoint + (timelineCurrentTime - splitClip.startTime);
+      splitSource.inPoint + (timelineCurrentTime - splitClip.startTime) * (splitClip.speed ?? 1);
     const nextDocument = applyEditorOperations(document, [
       {
         type: 'split_clip',
@@ -1227,7 +1230,7 @@ export function VideoEditorWorkspace({
         if (session.clip.sourceType === 'image') {
           setCurrentTime(nextCursor - preview.startTime);
         } else {
-          setCurrentTime(preview.inPoint + (nextCursor - preview.startTime));
+          setCurrentTime(preview.inPoint + (nextCursor - preview.startTime) * (session.clip.speed ?? 1));
         }
       } catch {
         setError(t('errors.clipOverlap'));
@@ -1812,6 +1815,8 @@ export function VideoEditorWorkspace({
                     Math.min(previewSource.outPoint, currentTime)
                   );
                   event.currentTarget.currentTime = target;
+                  event.currentTarget.playbackRate = previewClip.speed ?? 1;
+                  event.currentTarget.muted = (previewClip.speed ?? 1) !== 1;
                 }}
                 onPlay={(event) => {
                   if (clock.running()) return;
@@ -1819,7 +1824,7 @@ export function VideoEditorWorkspace({
                   if (!previewClip || !previewSource) return;
                   syncAudioTracks(
                     previewClip.startTime +
-                      (event.currentTarget.currentTime - previewSource.inPoint),
+                      (event.currentTarget.currentTime - previewSource.inPoint) / (previewClip.speed ?? 1),
                     true
                   );
                 }}
@@ -1829,7 +1834,7 @@ export function VideoEditorWorkspace({
                   if (!previewClip || !previewSource) return;
                   syncAudioTracks(
                     previewClip.startTime +
-                      (event.currentTarget.currentTime - previewSource.inPoint),
+                      (event.currentTarget.currentTime - previewSource.inPoint) / (previewClip.speed ?? 1),
                     false
                   );
                 }}
@@ -1848,7 +1853,7 @@ export function VideoEditorWorkspace({
                   setCurrentTime(time);
                   if (previewClip && previewSource) {
                     const nextTimelineTime =
-                      previewClip.startTime + (time - previewSource.inPoint);
+                      previewClip.startTime + (time - previewSource.inPoint) / (previewClip.speed ?? 1);
                     setTimelineCursorTime(nextTimelineTime);
                     syncAudioTracks(
                       nextTimelineTime,
@@ -2292,6 +2297,10 @@ export function VideoEditorWorkspace({
                     </span>
                   </span>
                 </div>
+                {selectedClip.sourceType === 'video' && !selectedIsOverlay && (
+                  <ClipSpeedControl clip={selectedClip} disabled={document.tracks.some((track) => track.id === selectedClip.trackId && track.locked)}
+                    onChange={(speed) => commitDocument((current) => applyEditorOperations(current, [{ type: 'set_clip_speed', clipId: selectedClip.id, speed }]).document)} />
+                )}
 
                 <div className="py-4">
                   <div className="mb-3 flex items-center justify-between">

@@ -1191,3 +1191,9 @@ An integration test builds a recipe from `subject-on-style` with `image-1` as su
 - **FFmpeg:** a 440 Hz tone under a voice span from 2 to 4 s measured −12 dB (within 0.5 dB) between 2.5 and 3.5 s, and came back within 1% after the release.
 - **Unit tests:** voice spans merge when gaps are shorter than attack plus release and skip muted clips and tracks. The gain ramps down, holds and recovers as specified. The FFmpeg expression, evaluated at ten points, matches the preview curve within 0.001, including negative clip-time offsets. The full suite passed with 1,028 tests after music started ducking by default.
 - **Browser:** the inspector shows **Lower under voice** for a music clip in English and Korean, and the editor playback, layer export, transitions, voice caption and caption word tests pass.
+
+## Clip speed — 2026-11-03
+
+- **FFmpeg export (browser test):** a four-second clip, red then blue, was set to 2× through MCP, and the next image moved from 4 s to 2 s. The render lasted 3.0 s, showed red at 0.5 s and blue at 1.5 s (the source's later half), and showed the green image at 2.5 s. The inspector showed **Speed 2×** with the no-sound note.
+- **Unit tests:** speeds of 2×, 0.5× and back to 1× change the clip length and move the next clip each time. Out-of-range speeds are refused. Trimming and splitting a 2× clip keep timeline and source time in step, and the mapping helpers round-trip. A reference speed-up becomes a 2× second half (or the fastest rate the material allows, none below 1.25×), and a slow-down a 0.5× second half whose parts add up to the shot length.
+- **Regression:** the full suite passed with 1,031 tests, and the Remix, editor playback and transition browser tests pass.

@@ -306,6 +306,8 @@ export const editorOperationSchema = z.discriminatedUnion('type', [
       duration: positiveDurationSchema,
     })
     .strict(),
+  /** Plays a base-track video at 0.25–4× (1 restores normal speed); later clips on the track move with its new length. */
+  z.object({ type: z.literal('set_clip_speed'), clipId: commandIdSchema, speed: z.number().finite().min(0.25).max(4) }).strict(),
   z
     .object({
       type: z.literal('remove_clip'),

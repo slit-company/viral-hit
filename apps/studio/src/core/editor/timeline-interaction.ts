@@ -73,11 +73,13 @@ export function buildTimelineDragPreview({
     };
   }
 
+  // Source seconds per timeline second; dragging an edge of a sped clip moves its source point faster or slower.
+  const rate = clip.speed ?? 1;
   if (mode === 'trim-start') {
     const sourceMinimumStart =
       clip.sourceType === 'image'
         ? 0
-        : clip.startTime - clip.inPoint;
+        : clip.startTime - clip.inPoint / rate;
     const startTime = roundTime(
       clamp(
         clip.startTime + deltaTime,
@@ -89,7 +91,7 @@ export function buildTimelineDragPreview({
     const inPoint =
       clip.sourceType === 'image'
         ? 0
-        : roundTime(clip.inPoint + (startTime - clip.startTime));
+        : roundTime(clip.inPoint + (startTime - clip.startTime) * rate);
     return {
       id: clip.id,
       startTime,
@@ -104,7 +106,7 @@ export function buildTimelineDragPreview({
   const sourceMaximumEnd =
     clip.sourceType === 'image'
       ? Number.POSITIVE_INFINITY
-      : clip.startTime + (clip.sourceDuration - clip.inPoint);
+      : clip.startTime + (clip.sourceDuration - clip.inPoint) / rate;
   const endTime = roundTime(
     clamp(
       originalEnd + deltaTime,
@@ -121,7 +123,7 @@ export function buildTimelineDragPreview({
     outPoint:
       clip.sourceType === 'image'
         ? duration
-        : roundTime(clip.inPoint + duration),
+        : roundTime(clip.inPoint + duration * rate),
     sourceDuration:
       clip.sourceType === 'image' ? duration : clip.sourceDuration,
   };

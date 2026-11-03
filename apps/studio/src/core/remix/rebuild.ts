@@ -25,15 +25,28 @@ export function captionIntervals(texts: readonly RemixText[]): RemixText[] {
   return result;
 }
 
+/**
+ * A shot that speeds up (or slows down) in the reference plays its second half at 2× (or 0.5×) on video material:
+ * trim to the source it needs, split at the shot's middle and speed up the second part. Material too short for 2×
+ * gets the fastest rate it can fill, and below 1.25× the ramp is left out.
+ */
+export function rampOperations(clipId: string, ramp: 'up' | 'down' | null, length: number, available: number): EditorOperation[] | null {
+  if (!ramp || length < 0.5) return null;
+  const half = round(length / 2), rate = ramp === 'down' ? 0.5 : Math.min(2, round((available - half) / half));
+  if (ramp === 'up' && rate < 1.25) return null;
+  const end = round(half + half * rate);
+  return [{ type: 'trim_clip', clipId, inPoint: 0, outPoint: end }, { type: 'split_clip', clipId, sourceTime: half, rightClipId: clipId + '-ramp' }, { type: 'set_clip_speed', clipId: clipId + '-ramp', speed: rate }];
+}
+
 type Camera = { frameAspect: number; imageAspects: ReadonlyMap<string, number> };
 /**
  * Editor operations that place each shot at the reference's cut time after `offset`, plus the soundtrack.
  * With camera, a still in a moving shot also gets a covering overlay with that move; with texts, the
  * reference's on-screen text becomes editable captions at the same times and heights.
  */
-export function remixOperations({ assignments, offset, idPrefix, transition, soundtrack, camera = null, texts = [] }: {
+export function remixOperations({ assignments, offset, idPrefix, transition, soundtrack, camera = null, texts = [], speed = false }: {
   assignments: readonly RemixAssignment[]; offset: number; idPrefix: string; transition: TimelineTransition | null;
-  soundtrack: { assetId: string; duration: number } | null; camera?: Camera | null; texts?: readonly RemixText[];
+  soundtrack: { assetId: string; duration: number } | null; camera?: Camera | null; texts?: readonly RemixText[]; speed?: boolean;
 }): EditorOperation[] {
   const operations: EditorOperation[] = [];
   assignments.forEach(({ shot, material, length }, index) => {
@@ -49,7 +62,9 @@ export function remixOperations({ assignments, offset, idPrefix, transition, sou
       }
     } else {
       operations.push({ type: 'add_clip', clipId, assetId: material.assetId, sourceUrl: '', name: material.name, sourceType: 'video', sourceDuration: material.duration!, startTime });
-      if (length < material.duration! - 0.001) operations.push({ type: 'trim_clip', clipId, inPoint: 0, outPoint: length });
+      const ramp = speed ? rampOperations(clipId, shot.speed?.ramp ?? null, length, material.duration!) : null;
+      if (ramp) operations.push(...ramp);
+      else if (length < material.duration! - 0.001) operations.push({ type: 'trim_clip', clipId, inPoint: 0, outPoint: length });
     }
     if (transition && index > 0) operations.push({ type: 'set_transition', clipId, transition });
   });

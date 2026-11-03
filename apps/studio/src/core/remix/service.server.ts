@@ -113,7 +113,7 @@ export async function changeRemix(projectId: string, raw: unknown, origin: Viral
   const offset = timeline?.document.duration ?? 0;
   const camera = request.keepCamera && remix.grammar.edit ? await cameraContext(projectId, timeline?.document, assignments, remix.grammar) : null;
   const texts = request.keepText ? remix.grammar.edit?.texts ?? [] : [];
-  const operations = remixOperations({ assignments, offset, idPrefix: 'remix-' + randomUUID().slice(0, 8), transition: request.transition, soundtrack, camera, texts });
+  const operations = remixOperations({ assignments, offset, idPrefix: 'remix-' + randomUUID().slice(0, 8), transition: request.transition, soundtrack, camera, texts, speed: request.keepSpeed });
   const commandId = createCommandId();
   const result = await persistExternalCommandWithConflictRetry({ input: {
     projectId, origin, commandId, idempotencyKey: commandId, expectedRevision: request.expectedRevision ?? timeline?.version ?? null,
@@ -123,6 +123,7 @@ export async function changeRemix(projectId: string, raw: unknown, origin: Viral
   return {
     revision: result.revision, offset, soundtrack: Boolean(soundtrack),
     cameraMoves: operations.filter(operation => operation.type === 'set_overlay_motion').length, texts: operations.filter(operation => operation.type === 'upsert_caption').length,
+    speedChanges: operations.filter(operation => operation.type === 'set_clip_speed').length,
     shots: assignments.map(({ shot, material: used, length }) => ({ start: offset + shot.start, duration: shot.duration, assetId: used.assetId, filled: length })),
   };
 }

@@ -28,6 +28,8 @@ export const remixRequest = z.discriminatedUnion('action', [
     keepCamera: z.boolean().default(true),
     /** Copy the reference's on-screen text as editable captions at the same times and heights. */
     keepText: z.boolean().default(false),
+    /** Repeat a shot's speed-up or slow-down on video material: the second half of the shot plays at 2× or 0.5×. */
+    keepSpeed: z.boolean().default(true),
     expectedRevision: z.number().int().min(0).nullable().optional(),
   }).strict(),
 ]);

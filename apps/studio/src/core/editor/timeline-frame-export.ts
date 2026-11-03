@@ -64,7 +64,7 @@ export function createBaseVisualPainter({
       .reverse()
       .find((record) => timelineTime >= record.clip.startTime && timelineTime < record.clip.startTime + record.clip.duration);
     if (!active) return;
-    const sourceTime = Math.min(heldTime(active), active.source.inPoint + (timelineTime - active.clip.startTime));
+    const sourceTime = Math.min(heldTime(active), active.source.inPoint + (timelineTime - active.clip.startTime) * (active.clip.speed ?? 1));
     const progress = transitionProgress(active.clip, timelineTime);
     if (progress === null || !active.clip.transition) {
       await draw(context, active, sourceTime);

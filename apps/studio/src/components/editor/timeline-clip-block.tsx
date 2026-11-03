@@ -83,7 +83,7 @@ export function TimelineClipBlock({
                 1,
                 Math.max(0, clip.outPoint - clip.inPoint - 0.05)
               );
-              video.currentTime = clip.inPoint + previewOffset;
+              video.currentTime = clip.inPoint + previewOffset * (clip.speed ?? 1);
             }}
             className="absolute inset-0 size-full object-cover opacity-28 transition group-hover:opacity-38"
           />

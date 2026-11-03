@@ -4,6 +4,7 @@ import type { TimelineTransition } from '@/core/editor/transition-contract';
 import { setTimelineTransition, setTimelineTransitionsAtCuts } from '@/core/editor/transitions';
 import type { CaptionWord } from '@/core/editor/caption-words';
 import { addCaptionsFromWords, setCaptionHighlight, setCaptionWords } from '@/core/editor/caption-word-ops';
+import { setTimelineClipSpeed } from '@/core/editor/clip-speed';
 import {
   applySrtToTimeline,
   setCaptionStyle,
@@ -62,6 +63,7 @@ export type EditorOperation =
     }
   | { type: 'move_clip'; clipId: string; startTime: number }
   | { type: 'set_clip_duration'; clipId: string; duration: number }
+  | { type: 'set_clip_speed'; clipId: string; speed: number }
   | { type: 'remove_clip'; clipId: string; ripple?: boolean }
   | {
       type: 'update_audio';
@@ -225,6 +227,10 @@ export function applyEditorOperations(
         );
       }
       next = resizeTimelineClip(document, operation.clipId, operation.duration);
+    } else if (operation.type === 'set_clip_speed') {
+      if (!findTimelineClip(document, operation.clipId)) throw new ViralHitCommandError('NOT_FOUND', `Clip ${operation.clipId} was not found.`);
+      try { next = setTimelineClipSpeed(document, operation.clipId, operation.speed); }
+      catch (error) { throw new ViralHitCommandError('INVALID_COMMAND', error instanceof Error ? error.message : 'Speed could not be set.'); }
     } else if (operation.type === 'remove_clip') {
       if (!findTimelineClip(document, operation.clipId)) {
         throw new ViralHitCommandError('NOT_FOUND', `Clip ${operation.clipId} was not found.`);
