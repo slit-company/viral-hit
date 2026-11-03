@@ -12,6 +12,8 @@ import { inspectTake } from './quality.server';
 import { checkFaceMatch } from '../characters/face-match.server';
 import { placeShot, readShotRecords } from './records.server';
 import { shotSpec, type ShotSpec } from './spec';
+import { estimateGenerationStep } from '../costs/generation-cost.server';
+import { sumCosts } from '../costs/pricing';
 
 const publicStep = (step: ShotProduction['video']) => ({
   modelId: step.model.id, modelName: step.model.name, provider: step.model.providerLabel ?? step.model.providerId ?? '',
@@ -20,6 +22,9 @@ const publicStep = (step: ShotProduction['video']) => ({
 const publicProduction = (production: ShotProduction) => ({
   still: production.still ? publicStep(production.still) : null, video: publicStep(production.video),
   variations: production.spec.variations, notes: production.notes, alternatives: production.alternatives,
+  /** The still once plus every take, from each model's published price. */
+  cost: sumCosts([...(production.still ? [production.still] : []), ...Array.from({ length: production.spec.variations }, () => production.video)]
+    .map(step => estimateGenerationStep({ modelId: step.model.id, prompt: step.prompt, parameters: step.parameters }))),
 });
 type Job = { id: string; node_id: string; state: string; error: string | null; input_json: string; output_json: string | null };
 

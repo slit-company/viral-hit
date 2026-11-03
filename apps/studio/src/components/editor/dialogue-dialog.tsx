@@ -11,7 +11,9 @@ import { SuggestedTextInput } from '@/components/generation-providers/suggested-
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
 import { useWorkspaceModels } from '@/core/workspace-hooks/use-workspace-metadata';
 import { dialogueSpeakers, parseDialogueScript, type DialogueView } from '@/core/dialogue/contract';
-import type { ModelControl } from '@/core/generation-providers/model-controls';
+import { resolveModelOptions, type ModelControl } from '@/core/generation-providers/model-controls';
+import { costRequest, estimateCost, sumCosts } from '@/core/costs/pricing';
+import { CostTotalText } from '@/components/generation-providers/cost-estimate';
 
 const url = (projectId: string) => '/api/app/projects/' + encodeURIComponent(projectId) + '/dialogues';
 const voiceControl = (controls?: ModelControl[]) => controls?.find(control => /^voice(_id)?$/.test(control.key) && (control.type === 'string' || control.type === 'select'));
@@ -27,6 +29,13 @@ export function DialogueDialog({ projectId }: { projectId: string }) {
   const lines = useMemo(() => parseDialogueScript(script), [script]), speakers = dialogueSpeakers(lines);
   // Each new speaker starts with a different voice so the conversation is easy to follow.
   const voiceOf = (speaker: string, index: number) => cast[speaker] ?? options[index % Math.max(1, options.length)]?.value ?? (control?.default as string | undefined) ?? '';
+  // One generation per line, each priced by its text length on the chosen service.
+  const cost = useMemo(() => {
+    if (!model?.pricing || !lines.length) return null;
+    let defaults: Record<string, unknown> = {};
+    try { defaults = resolveModelOptions(model.controls, undefined); } catch { defaults = {}; }
+    return sumCosts(lines.map(line => estimateCost(model.pricing, costRequest({ prompt: line.text, options: defaults }))));
+  }, [model, lines]);
   const list = useQuery({ queryKey: ['dialogues', projectId], queryFn: () => apiJsonGet<{ dialogues: DialogueView[] }>(url(projectId)).then(result => result.dialogues), enabled: open, refetchInterval: 2_000 });
   const produce = useMutation({ mutationFn: () => { const id = crypto.randomUUID(); setRequestId(id); return apiJsonPost(url(projectId), { action: 'produce', requestId: id, modelId: model!.id, script, cast: Object.fromEntries(speakers.map((speaker, index) => [speaker, voiceOf(speaker, index)])) }); }, onSuccess: () => client.invalidateQueries({ queryKey: ['dialogues', projectId] }) });
   const place = useMutation({ mutationFn: (id: string) => apiJsonPost(url(projectId), { action: 'place', requestId: id }) });
@@ -51,7 +60,7 @@ export function DialogueDialog({ projectId }: { projectId: string }) {
             </div>)}
           </fieldset>}
           <Action type="button" className="vh-primary w-full" disabled={!lines.length || produce.isPending || (current !== null && !done)} onClick={() => produce.mutate()}>{m['ui.dialogue.make']({ count: lines.length })}</Action>
-          <p className="text-[11px] text-[var(--vh-text-3)]">{m['ui.dialogue.cost_note']()}</p>
+          <p className="text-[11px] text-[var(--vh-text-3)]">{cost && <><CostTotalText className="font-semibold text-[var(--vh-text-2)]" total={cost} checked={model?.pricing?.checked} />{' · '}</>}{m['ui.dialogue.cost_note']()}</p>
           {(produce.error ?? place.error) && <p role="alert" className="text-xs text-red-700">{(produce.error ?? place.error)!.message}</p>}
           {current && <ol className="space-y-1.5 rounded-xl border border-[var(--vh-border)] p-3 text-xs" aria-label={m['ui.dialogue.progress']()}>
             {current.lines.map(line => <li key={line.index} className="flex items-center gap-2">

@@ -3,6 +3,8 @@ import { m } from '@/paraglide/messages.js';
 import { getLocale } from '@/paraglide/runtime.js';
 import { Button } from '@/components/ui/button';
 import type { ApprovalStep, ApprovalView } from '@/core/agent/contract';
+import { sumCosts } from '@/core/costs/pricing';
+import { CostTotalText, formatCost } from '@/components/generation-providers/cost-estimate';
 
 export const formatAgentTime = (iso: string) => new Date(iso).toLocaleString(getLocale(), { dateStyle: 'medium', timeStyle: 'short' });
 const MODE_LABEL: Record<string, () => string> = {
@@ -22,10 +24,11 @@ export function ApprovalCard({ approval, busy, onDecide }: { approval: ApprovalV
     <ul className="space-y-2">
       {approval.steps.map((step, index) => <li key={index} className="rounded-xl bg-[var(--vh-control)] p-3 text-sm">
         <p className="font-semibold break-words">{step.model ?? stepKind(step)}</p>
-        {step.model && <p className="text-xs text-[var(--vh-text-2)]">{stepKind(step)}</p>}
+        {step.model && <p className="text-xs text-[var(--vh-text-2)]">{stepKind(step)}{step.cost ? ' · ' + m['ui.cost.about']({ amount: formatCost(step.cost) }) : step.cost === null ? ' · ' + m['ui.cost.unpriced']() : ''}</p>}
         {step.prompt && <p className="mt-1.5 line-clamp-3 break-words text-[var(--vh-text-2)]">{step.prompt}</p>}
       </li>)}
     </ul>
+    {approval.steps.some(step => step.cost !== undefined) && <p className="text-sm font-semibold">{m['ui.cost.estimate']()} <CostTotalText className="font-normal text-[var(--vh-text-2)]" total={sumCosts(approval.steps.filter(step => step.cost !== undefined).map(step => step.cost ?? null))} /></p>}
     <div className="flex flex-wrap items-center gap-2">
       <Button disabled={busy} onClick={() => onDecide('approve')}><Check aria-hidden="true" /> {m['ui.agent.approve']()}</Button>
       <Button variant="outline" disabled={busy} onClick={() => onDecide('reject')}><X aria-hidden="true" /> {m['ui.agent.reject']()}</Button>

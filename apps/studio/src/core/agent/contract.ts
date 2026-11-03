@@ -1,3 +1,4 @@
+import type { CostEstimate } from '@/core/costs/pricing';
 import { z } from 'zod';
 
 /** Whether generation an AI agent asks for waits for a person ("ask") or starts at once ("off"). */
@@ -5,7 +6,7 @@ export const APPROVAL_MODES = ['off', 'ask'] as const;
 export type ApprovalMode = (typeof APPROVAL_MODES)[number];
 export type ApprovalState = 'pending' | 'approved' | 'rejected' | 'used';
 /** One generation step as the person approving it sees it; mode is image, video, audio or analysis when known. */
-export type ApprovalStep = { label: string; mode?: string; model?: string; prompt?: string };
+export type ApprovalStep = { label: string; mode?: string; model?: string; prompt?: string; /** Estimate from the model's published price; null when it lists none. */ cost?: CostEstimate | null };
 export type ApprovalView = {
   id: string; projectId: string; projectName: string | null;
   /** run: a queued run waits; request: the agent repeats its call after approval. */

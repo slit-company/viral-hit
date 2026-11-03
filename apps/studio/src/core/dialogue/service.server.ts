@@ -7,6 +7,7 @@ import { pinRuntimePlan } from '../harness/runtime-plan';
 import { openHarness } from '../harness/store';
 import type { Json, NodeSpec } from '../harness/durable';
 import { getGenerationModelDescriptor } from '../generation-providers/model-catalog';
+import { estimatePlanCost } from '../costs/generation-cost.server';
 import { readAssetSpeechWords } from '../effects/speech-words.server';
 import { getActiveProject } from '../projects/projects';
 import { getProjectAssetById } from '../workspace-lib/assets/user-assets';
@@ -44,7 +45,7 @@ async function produce(projectId: string, request: Extract<ReturnType<typeof dia
     h.db.exec('CREATE TABLE IF NOT EXISTS vh_dialogues (request_id TEXT PRIMARY KEY, project_id TEXT NOT NULL, lines_json TEXT NOT NULL, created_at INTEGER NOT NULL)');
     const runId = h.enqueue(pinned, DIALOGUE_REQUEST_PREFIX + request.requestId);
     h.db.prepare('INSERT OR IGNORE INTO vh_dialogues VALUES (?, ?, ?, ?)').run(request.requestId, projectId, JSON.stringify(lines), Date.now());
-    return { runId, lines: lines.length };
+    return { runId, lines: lines.length, cost: estimatePlanCost(nodes) };
   } finally { h.close(); }
 }
 

@@ -20,6 +20,7 @@ import type { WorkspaceModelMetadata } from '@/core/workspace-hooks/use-workspac
 import type { CanvasGenerationCard } from '@/core/creative-canvas/canvas-types';
 import type { StudioVisualSourcesController } from './use-studio-visual-sources';
 import { toolCopy } from './tool-catalog';
+import { ModelCostEstimate } from '@/components/generation-providers/cost-estimate';
 import type { StudioToolId } from '@/core/studio/tools';
 
 export function StudioToolComposer({
@@ -184,6 +185,7 @@ export function StudioToolComposer({
         )}
       </Action>
       <p className="text-[11px] leading-5 text-[var(--vh-text-3)]">
+        <ModelCostEstimate modelId={model.id} duration={model.supportedDurations?.length ? draft.duration : null} prompt={draft.prompt} options={draft.modelOptions} className="mr-1.5 text-[11px]" />
         {uiMessages["studio.tools.your_selected_provider_charges_for_generation_results_are_saved_in_this_project"]()}</p>
     </div>
   );

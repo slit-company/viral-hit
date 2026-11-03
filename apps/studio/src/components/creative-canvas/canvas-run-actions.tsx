@@ -4,6 +4,7 @@ import { m } from '@/paraglide/messages.js';
 import { Action } from '@/components/base/action';
 import { cn } from '@/lib/utils';
 import { creativeCanvasPanelClassName } from './creative-canvas-theme';
+import { CostTotalText } from '@/components/generation-providers/cost-estimate';
 import { useCanvasRunActions, useCanvasRunStatus, type CanvasRunPlanView, type CanvasRunStepView } from './use-canvas-runs';
 
 const REASON: Record<NonNullable<CanvasRunStepView['reason']>, () => string> = {
@@ -53,6 +54,7 @@ export function CanvasRunActions({ projectId, cardId, lowered }: { projectId: st
         </li>)}
       </ol>}
       {!plan.blocked && !toRun.length && <p role="status">{m['ui.canvas_run.up_to_date']()}</p>}
+      {!plan.blocked && toRun.length > 0 && plan.cost && <p className="font-semibold">{m['ui.cost.estimate']()} <CostTotalText className="font-normal text-[var(--vh-text-2)]" total={plan.cost} /></p>}
       <div className="flex justify-end gap-2">
         <Action type="button" className="vh-secondary h-8 px-3 text-xs" onClick={() => setPlan(null)}>{m['ui.canvas_run.cancel']()}</Action>
         {!plan.blocked && toRun.length > 0 && <Action type="button" className="vh-primary h-8 px-3 text-xs" disabled={busy}

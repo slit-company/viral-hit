@@ -2,6 +2,8 @@ import { Loader2, Sparkles } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import type { ProductionView, ShotStepView } from './use-cinema';
+import { CostTotalText } from '@/components/generation-providers/cost-estimate';
+import { m } from '@/paraglide/messages.js';
 
 function settings(step: ShotStepView) {
   const options = (step.parameters.provider_options ?? {}) as Record<string, unknown>;
@@ -41,6 +43,7 @@ export function ShotPlan({ production, variations, loading, error, describeFirst
         {production.notes.map(note => <p key={note} className="text-xs text-amber-800">{note}</p>)}
         {production.alternatives.video.length > 1 && <p className="text-[11px] text-[var(--vh-text-3)]">{t('alternatives')}: {production.alternatives.video.slice(1, 4).map(item => item.name).join(' · ')}</p>}
       </>}
+    {production?.cost && !loading && <p className="text-xs font-semibold">{m['ui.cost.estimate']()} <CostTotalText className="font-normal text-[var(--vh-text-2)]" total={production.cost} /></p>}
     <Action type="button" className="vh-primary flex w-full items-center justify-center gap-2" disabled={busy || loading || describeFirst || Boolean(error) || !production} onClick={onProduce}>
       {busy ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
       {busy ? t('producing') : t('produce', { count: variations })}

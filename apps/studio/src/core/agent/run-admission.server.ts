@@ -4,6 +4,7 @@ import type { Json, NodeSpec, Plan } from '../harness/durable';
 import { insertApproval, readApprovalMode } from './agent-records.server';
 import type { ApprovalStep } from './contract';
 import { currentAgent } from './request-origin.server';
+import { estimateGenerationStep } from '../costs/generation-cost.server';
 
 const excerpt = (value: Json | undefined, limit: number) => (typeof value === 'string' && value.trim() ? value.trim().slice(0, limit) : undefined);
 
@@ -12,7 +13,8 @@ export function describeGenerationSteps(nodes: readonly Pick<NodeSpec, 'operatio
   const labels = new Map(runtimeCapabilities().map((capability) => [capability.operation, capability.label]));
   return nodes.map((node) => {
     const input = (node.input && typeof node.input === 'object' && !Array.isArray(node.input) ? node.input : {}) as Record<string, Json>;
-    return { label: labels.get(node.operation) ?? node.operation, mode: excerpt(input.mode, 20), model: excerpt(input.modelId ?? input.model, 120), prompt: excerpt(input.prompt, 240) };
+    return { label: labels.get(node.operation) ?? node.operation, mode: excerpt(input.mode, 20), model: excerpt(input.modelId ?? input.model, 120), prompt: excerpt(input.prompt, 240),
+      ...(node.operation === 'generation.model' ? { cost: estimateGenerationStep(input) } : {}) };
   });
 }
 

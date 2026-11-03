@@ -1,10 +1,11 @@
+import type { CostTotal } from '@/core/costs/pricing';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { m } from '@/paraglide/messages.js';
 import type { CanvasRunReason } from '@/core/creative-canvas/canvas-run-plan';
 import { WORKSPACE_MUTATION_HEADER, WORKSPACE_MUTATION_HEADER_VALUE } from '@/lib/trusted-local-request';
 
 export type CanvasRunStepView = { cardId: string; name: string; modelId: string; mode: string; action: 'run' | 'reuse'; reason: CanvasRunReason | null };
-export type CanvasRunPlanView = { blocked: { cardId: string; name: string; message: string } | null; steps: CanvasRunStepView[] };
+export type CanvasRunPlanView = { blocked: { cardId: string; name: string; message: string } | null; steps: CanvasRunStepView[]; cost?: CostTotal };
 type Status = { active: boolean; runs: Array<{ runId: string; held: boolean; steps: Array<{ cardId: string; state: string }> }> };
 
 async function canvasRuns<T>(projectId: string, body?: Record<string, unknown>): Promise<T> {

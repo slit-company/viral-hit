@@ -15,6 +15,8 @@ import { branchCanvasCards, branchFrames, planCanvasRun, type CanvasCards, type 
 import { markCanvasTake, readCanvasTakes, recordCanvasTakes, type CanvasTake } from './canvas-takes.server';
 import { getCanvasGenerationMode, isCanvasGenerationCard, type CanvasGenerationCard, type CanvasOutputCard } from './canvas-types';
 import { captureGenerationSnapshot } from './generation-snapshot';
+import { estimateGenerationStep } from '../costs/generation-cost.server';
+import { sumCosts } from '../costs/pricing';
 
 export const CANVAS_RUN_PREFIX = 'canvas:';
 const NODE_PREFIX = 'card:';
@@ -57,7 +59,11 @@ const BLOCKED: Record<NonNullable<CanvasRunPlan['blocked']>['reason'], string> =
 };
 function describePlan(plan: CanvasRunPlan, cards: CanvasCards) {
   const name = (id: string) => cards[id]?.name ?? id;
+  // Only steps that run are paid; reused results cost nothing.
+  const costOf = (step: CanvasRunStep) => { try { return estimateGenerationStep(stepNode(cards[step.cardId] as CanvasGenerationCard, step).input); } catch { return null; } };
+  const running = plan.blocked ? [] : plan.steps.filter((step) => step.action === 'run');
   return {
+    cost: sumCosts(running.map(costOf)),
     blocked: plan.blocked ? { ...plan.blocked, name: name(plan.blocked.cardId), message: `${name(plan.blocked.cardId)} ${BLOCKED[plan.blocked.reason]}.` } : null,
     steps: plan.steps.map((step) => {
       const card = cards[step.cardId] as CanvasGenerationCard;

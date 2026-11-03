@@ -1,3 +1,4 @@
+import type { CostTotal } from '@/core/costs/pricing';
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiJsonGet, apiJsonPost } from '@/lib/api-client';
@@ -13,7 +14,7 @@ import type { ShotSpecInput } from '@/core/shot-harness/spec';
 
 export type ShotStepView = { modelId: string; modelName: string; provider: string; prompt: string; dropped: string[]; parameters: Record<string, unknown> };
 export type Alternative = { id: string; name: string; score: number; reasons: string[] };
-export type ProductionView = { still: ShotStepView | null; video: ShotStepView; variations: number; notes: string[]; alternatives: { video: Alternative[]; still: Alternative[] } };
+export type ProductionView = { still: ShotStepView | null; video: ShotStepView; variations: number; notes: string[]; alternatives: { video: Alternative[]; still: Alternative[] }; cost?: CostTotal };
 export type CinemaDraft = ShotSpecInput & { subject: string; moves: string[]; characterAssetIds: string[] };
 /** Where the next render goes: a new shot after `position`, or another attempt of `shotId`. */
 export type CinemaSequence = ShotSequenceInput & { position?: number; frameUrl?: string };

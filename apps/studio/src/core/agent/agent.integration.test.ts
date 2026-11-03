@@ -33,7 +33,8 @@ test('generation runs an agent queues wait for a person; runs people start, and 
     assert.equal(held(h, waiting), 1);
     const [approval] = readApprovals('pending');
     assert.equal(approval.runId, waiting);
-    assert.deepEqual(approval.steps, [{ label: 'Installed generation model', model: 'fixture/video', prompt: 'A red kite over the sea' }]);
+    // The fixture model publishes no price, so the step says so instead of guessing.
+    assert.deepEqual(approval.steps, [{ label: 'Installed generation model', model: 'fixture/video', prompt: 'A red kite over the sea', cost: null }]);
     assert.equal(approval.tool, 'viral_hit_shot');
     assert.equal(await h.step(waiting, adapters), false, 'a held run claims nothing');
     assert.equal(submits, 0);

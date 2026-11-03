@@ -39,6 +39,7 @@ import { getModelIconPathByModelId } from '@/core/workspace-lib/model-icons';
 import type { StudioMedia } from '@/core/studio/studio-runtime';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
 import { cn } from '@/lib/utils';
+import { ModelCostEstimate } from '@/components/generation-providers/cost-estimate';
 
 export function StudioComposer({
   draft,
@@ -288,6 +289,7 @@ export function StudioComposer({
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-2">
+            <ModelCostEstimate modelId={selectedModel?.id} duration={media === 'video' ? draft.duration : null} prompt={draft.prompt} options={draft.modelOptions} />
             {promptConstraints.accepted && <span
               className={cn(
                 'text-[10px] font-medium tabular-nums',
