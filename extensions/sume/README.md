@@ -1,6 +1,6 @@
 # Sume creative APIs
 
-Optional provider for Viral Hit. Thirty explicit model/operation profiles join the existing Studio, Canvas, model recipes and MCP generation interface. No model weights, new worker queue or runtime SDK dependencies.
+Optional provider for Viral Hit. Thirty-six explicit model/operation profiles join the existing Studio, Canvas, model recipes and MCP generation interface. No model weights, new worker queue or runtime SDK dependencies.
 
 ## Install and connect
 
@@ -22,7 +22,8 @@ Create or open a project, choose a Sume model in Studio, enter a prompt, and sel
 | Family | Profiles |
 | --- | --- |
 | Images | GPT Image 2 (including masks), GPT Image 2.5, Nano Banana 2.1, Seedream 5 Lite, Higgsfield Soul |
-| Video | Seedance 2.5 reference and first/last-frame variants, Kling 3, Veo 3.1, Grok Imagine Video 1.5 |
+| Video | Seedance 2.5 reference and first/last-frame variants, MiniMax H3 and H3 Max references (images, clips and audio together), Kling 3, Veo 3.1, Grok Imagine Video 1.5 |
+| Genjutsu | Motion transfer and object swap from a source clip and subject images, full and Light |
 | Remix | Motion transfer, object swap, 20 restyle presets; Kling motion control |
 | Speech/video | Portrait and video lip sync, translation with lip sync, animated captions |
 | Editing | Video upscale, image background removal, video trim, audio extraction |

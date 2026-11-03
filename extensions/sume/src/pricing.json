@@ -1,0 +1,264 @@
+{
+ "sume-gpt-image-2": {
+  "currency": "USD",
+  "per": "output",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "quality",
+   "amounts": {
+    "low": 0.006,
+    "medium": 0.053,
+    "high": 0.211
+   }
+  },
+  "amount": 0.211
+ },
+ "sume-gpt-image-2.5": {
+  "currency": "USD",
+  "per": "output",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "quality",
+   "amounts": {
+    "auto": 0.40026,
+    "low": 0.01113,
+    "medium": 0.02595,
+    "high": 0.10008,
+    "xhigh": 0.1779,
+    "max": 0.40026
+   }
+  },
+  "amount": 0.40026
+ },
+ "sume-nano-banana-2.1": {
+  "currency": "USD",
+  "per": "output",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "1K": 0.0336,
+    "2K": 0.0504,
+    "4K": 0.1134
+   }
+  },
+  "amount": 0.1134
+ },
+ "sume-seedream-5-lite": {
+  "currency": "USD",
+  "per": "output",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "amount": 0.0339
+ },
+ "sume-higgsfield-soul": {
+  "currency": "USD",
+  "per": "output",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.0032,
+    "1080p": 0.0057
+   }
+  },
+  "amount": 0.0057
+ },
+ "sume-seedance-2.5": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.1028,
+    "720p": 0.2312,
+    "1080p": 0.5686
+   }
+  },
+  "amount": 0.5686
+ },
+ "sume-seedance-2.5-frames": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.1028,
+    "720p": 0.2312,
+    "1080p": 0.5686
+   }
+  },
+  "amount": 0.5686
+ },
+ "sume-minimax-h3": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "768p": 0.06,
+    "2K": 0.13,
+    "4K": 0.156
+   }
+  },
+  "amount": 0.156
+ },
+ "sume-minimax-h3-max": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "768p": 0.08,
+    "1080p": 0.1
+   }
+  },
+  "amount": 0.1
+ },
+ "sume-higgsfield-genjutsu": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.318,
+    "720p": 0.681,
+    "1080p": 1.632
+   }
+  },
+  "amount": 1.632
+ },
+ "sume-higgsfield-genjutsu-object-swap": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.318,
+    "720p": 0.681,
+    "1080p": 1.632
+   }
+  },
+  "amount": 1.632
+ },
+ "sume-higgsfield-genjutsu-light": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "720p": 0.1,
+    "1080p": 0.2
+   }
+  },
+  "amount": 0.2
+ },
+ "sume-higgsfield-genjutsu-light-object-swap": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "720p": 0.1,
+    "1080p": 0.2
+   }
+  },
+  "amount": 0.2
+ },
+ "sume-kling-3": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "1080p": 0.112
+   }
+  },
+  "amount": 0.112
+ },
+ "sume-veo-3.1": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.2,
+    "1080p": 0.2
+   }
+  },
+  "amount": 0.2
+ },
+ "sume-grok-imagine-video-1.5": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.08,
+    "720p": 0.14
+   }
+  },
+  "amount": 0.14
+ },
+ "sume-veed-fabric-1.0": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "amount": 0.08
+ },
+ "sume-sync-lipsync-3": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "amount": 0.133333
+ }
+}

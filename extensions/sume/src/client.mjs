@@ -1,6 +1,6 @@
 const API = 'https://api.sume.com';
 export class SumeError extends Error {
-  constructor(status, code, retryAfter = 0) { super('Sume request failed (' + status + (code ? ', ' + code : '') + ')'); this.status = status; this.retryAfter = retryAfter; }
+  constructor(status, code, retryAfter = 0, detail = '') { super('Sume request failed (' + status + (code ? ', ' + code : '') + ')' + (detail ? ': ' + detail : '')); this.status = status; this.retryAfter = retryAfter; }
 }
 export async function limitedJson(response) {
   const reader = response.body?.getReader();
@@ -28,7 +28,9 @@ export function client(configuration, signal) {
       const code = typeof data.error?.code === 'string' && /^[a-zA-Z0-9_.-]{1,80}$/.test(data.error.code) ? data.error.code : '';
       const retry = response.headers.get('retry-after');
       const delay = retry && /^\d+$/.test(retry) ? Number(retry) : retry ? Math.ceil((Date.parse(retry) - Date.now()) / 1000) : 0;
-      throw new SumeError(response.status, code, Math.min(600, Math.max(2, delay || 2)));
+      // Sume's own explanation, shortened and with long tokens removed, so a rejected request says what to change.
+      const detail = typeof data.error?.message === 'string' ? data.error.message.replace(/[A-Za-z0-9_-]{32,}/g, '[id]').replace(/\s+/g, ' ').trim().slice(0, 200) : '';
+      throw new SumeError(response.status, code, Math.min(600, Math.max(2, delay || 2)), detail);
     }
     const json = await limitedJson(response);
     if (!json.data || typeof json.data !== 'object') throw Error('Sume returned an invalid data envelope');

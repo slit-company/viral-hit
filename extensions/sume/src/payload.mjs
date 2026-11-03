@@ -26,9 +26,10 @@ export function buildPayload(profile, input) {
   switch (profile.route) {
     case 'image': Object.assign(body, { model: profile.upstreamModelId, prompt, aspect_ratio: aspect, ...options }, images.length ? { image_urls: images } : {}, input.maskUrl ? { mask_image_url: input.maskUrl } : {}); break;
     case 'video':
-      Object.assign(body, { model: profile.upstreamModelId, prompt, aspect_ratio: aspect, duration, ...options });
+      Object.assign(body, { model: profile.upstreamModelId, prompt, aspect_ratio: profile.aspectMap?.[aspect] ?? aspect, duration, ...options });
       if (profile.frameMode) { if (images[0]) body.image_url = images[0]; if (images[1]) body.end_image_url = images[1]; }
-      else { if (images.length) body.reference_image_urls = images; if (videos.length) body.reference_video_urls = videos; }
+      else if (profile.sourceVideo) { body.video_url = videos[0]; if (images.length) body.reference_image_urls = images; }
+      else { if (images.length) body.reference_image_urls = images; if (videos.length) body.reference_video_urls = videos; if (audio.length) body.reference_audio_urls = audio; }
       break;
     case 'remix': Object.assign(body, { video_url: videos[0], image_urls: images, resolution: options.resolution }, prompt ? { prompt } : {}); break;
     case 'restyle': Object.assign(body, { video_url: videos[0], ...options }, prompt ? { prompt } : {}); break;

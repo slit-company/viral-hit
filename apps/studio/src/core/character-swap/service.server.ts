@@ -45,7 +45,9 @@ async function prepare(projectId: string, request: Target) {
     : request.imageAssetIds!.slice(0, imageMax);
   for (const assetId of images) if ((await getProjectAssetById({ projectId, assetId }))?.type !== 'image') throw Error('Character references must be project images');
   const entry = getWorkspaceEffectRegistryEntry(model.id), durations = entry?.supportedDurations;
-  const longest = Math.min(MAX_SWAP_SECONDS, ...(durations ?? []).map(value => Number.parseInt(value, 10)).filter(Number.isFinite));
+  // Pieces may be as long as the longest output the model makes, up to 15 seconds.
+  const lengths = (durations ?? []).map(value => Number.parseInt(value, 10)).filter(Number.isFinite);
+  const longest = Math.min(MAX_SWAP_SECONDS, lengths.length ? Math.max(...lengths) : MAX_SWAP_SECONDS);
   const pieces = swapSegments(clip.inPoint, (clip.outPoint - clip.inPoint), longest).map(piece => ({ ...piece, outputDuration: swapDuration(piece.duration, durations) }));
   const prompt = characterSwapPrompt(request.notes, images.length);
   return { model, clip, images, pieces, prompt, auto: Boolean(entry?.supportedAspectRatios?.includes('auto')) };

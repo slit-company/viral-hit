@@ -11,8 +11,8 @@ const input = { prompt: 'A blue circle', aspectRatio: '1:1', imageUrls: ['owned:
 async function mock(handler, run) { const original = globalThis.fetch; globalThis.fetch = handler; try { return await run(); } finally { globalThis.fetch = original; } }
 function catalog(id = 'gpt-image-2') { return { model: { id, capabilities: { image_edit: true, aspect_ratios: ['1:1'], qualities: ['medium'] } } }; }
 
-test('all 30 profiles build bounded explicit request bodies; video transforms omit unsupported prompt/aspect', () => {
-  assert.equal(providerManifest().models.length, 30);
+test('all 36 profiles build bounded explicit request bodies; video transforms omit unsupported prompt/aspect', () => {
+  assert.equal(providerManifest().models.length, 36);
   for (const profile of profiles) {
     const refs = Object.fromEntries(Object.entries(profile.referenceInputs).map(([kind, value]) => [kind + 'Urls', Array.from({ length: value.min }, (_, i) => kind + i)]));
     const { body, path } = buildPayload(profile, { prompt: 'Test script', ...refs, ...(profile.route === 'speech' ? { options: { voice_id: 'voi_' + 'a'.repeat(32) } } : {}) });
@@ -26,6 +26,12 @@ test('all 30 profiles build bounded explicit request bodies; video transforms om
   assert.equal(promptInputs['sume-remix-object-swap'], 'optional'); assert.equal(promptInputs['sume-gpt-image-2'], undefined);
   assert.throws(() => buildPayload(profiles.find(p => p.route === 'captions'), { videoUrls: ['owned:v'], options: { style: 'slam', language: 'ko' } }), /Hangul/);
   assert.throws(() => buildPayload(profiles[0], { ...input, options: { arbitrary: true } }), /Invalid/);
+  // MiniMax H3 references: images, a reference clip and audio together, in the clip's own shape.
+  const h3 = buildPayload(profiles.find(p => p.id === 'sume-minimax-h3'), { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], audioUrls: ['a0'], aspectRatio: 'auto', duration: '8s' });
+  assert.deepEqual([h3.path, h3.body.model, h3.body.aspect_ratio, h3.body.duration, h3.body.resolution, h3.body.reference_image_urls, h3.body.reference_video_urls, h3.body.reference_audio_urls], ['/v1/video-router/generate', 'minimax-h3', 'adaptive', 8, '768p', ['i0'], ['v0'], ['a0']]);
+  // Genjutsu edits the source clip itself and takes the subject from the images.
+  const swap = buildPayload(profiles.find(p => p.id === 'sume-higgsfield-genjutsu-light-object-swap'), { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], duration: '6s' });
+  assert.deepEqual([swap.body.model, swap.body.video_url, swap.body.reference_image_urls, swap.body.reference_video_urls, swap.body.resolution], ['higgsfield-genjutsu-light-object-swap', 'v0', ['i0'], undefined, '480p']);
 });
 
 test('local upload is deduplicated, credential never forwarded, generation gets durable idempotency key', async () => {

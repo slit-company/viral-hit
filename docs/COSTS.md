@@ -21,8 +21,9 @@ Estimates are approximate. They leave out reference and input extras (for exampl
 | Comfy | 26 of 28 | [Partner node pricing](https://docs.comfy.org/tutorials/partner-nodes/pricing) at 211 credits per US dollar (every Veo rate there is a multiple of 2.11 credits per $0.01). Seedance rates are Comfy's 16:9, 24 fps examples; GPT Image 2.5 bills tokens and is not listed. |
 | xAI | 3 of 3 | [xAI pricing](https://docs.x.ai/developers/pricing) at medium image quality |
 | Gemini | 4 of 4 | [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing); Nano Banana 2 Lite and Gemini Omni Flash list only some sizes |
+| Sume | 18 of 36 | The prices Sume lists with its video and image models (`extensions/sume/scripts/sync-prices.mjs`), per image or per second by resolution and quality |
 | ElevenLabs | Speech | One credit per character for Eleven v4 (measured: 33 characters used 33 credits) and Multilingual v2, half for Flash v2.5. Shown as characters, the unit of the ElevenLabs balance. |
-| Higgsfield, Sume, OpenAI | — | Not listed yet |
+| Higgsfield, OpenAI | — | Not listed yet |
 
 Each price records its source and the date it was checked. To refresh fal, run `FAL_KEY=... node extensions/model-apis/scripts/sync-fal-prices.mjs` and then `pnpm providers`; the call only reads prices.
 
