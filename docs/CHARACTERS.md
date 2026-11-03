@@ -16,7 +16,7 @@ On Canvas, open the image reference menu of a draft and choose the character und
 | Reference images | Up to 20 PNG, JPEG or WebP images of up to 20 MB each. One is the **main image**; others are labeled other angle, expression, outfit or detail |
 | Always keep / Never change | Up to 24 short rules each, written into the brief |
 | Voice direction | Optional note for narration or TTS |
-| Provider identities | Optional IDs from a provider, such as a Higgsfield Soul ID, so an extension can use the provider's own identity model |
+| Provider identities | IDs a service trained for this character, such as a Higgsfield [Soul ID](#soul-id), so its models use their own identity model |
 
 The first image becomes the main image unless you choose another. Every change raises the version, and each change must name the version it was based on, so two tabs or agents cannot silently overwrite each other. Images are checked with FFprobe before they are stored.
 
@@ -54,6 +54,14 @@ Set it up once with `pnpm character face-setup`. This downloads the two models (
 | CLI | `pnpm character match <project-id> <character-id> <asset-id...>` |
 
 Turning the head, strong shadows and motion blur lower the score of the same person, so treat values near 0.363 as uncertain. The check measures human faces only. Mascots, illustrations and products are reported as having no face.
+
+## Soul ID
+
+A Soul ID is Higgsfield's trained identity of a character. Soul models keep that face and look more closely than reference images alone. Open the character, choose a model version under **Trained identities** (Soul 2 or Soul Cinema) and press **Create Soul ID**. Viral Hit sends the character's reference images, main image first and at most 20, to Higgsfield with your connected key; Higgsfield trains it in a few minutes and bills the account. The list shows each ID with its status, checks training every 20 seconds while the page is open, and keeps one ID per version, so creating it again replaces the old one. A Soul ID made on Higgsfield's own site can be pasted into **Higgsfield Soul ID** instead.
+
+In Studio, the **Soul ID** setting of Soul 2 and Soul Cinema lists each character's finished ID of that version by the character's name. Agents use the same actions through `viral_hit_character`: `identity_services` lists services that train identities, `train_identity` (`id`, `expectedVersion`, `providerId`, `version`) starts training, and `check_identity` (`id`, `referenceId`) records how it is going.
+
+Any installed provider can offer the same: declare `identityTraining` in `provider.json` and export `createIdentity` and `checkIdentity` ([extending](EXTENDING.md#train-a-character-identity)).
 
 ## Storage
 

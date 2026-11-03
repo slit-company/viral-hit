@@ -236,6 +236,16 @@ An installed publishing connector can also report how delivered posts perform. D
 
 An installed model provider can opt in to `configurationDelivery: "request"`. The declared `environment` names then resolve from server environment values or encrypted workspace settings and arrive as `request.configuration`. Only opted-in modules appear in Extensions' API connection form. Do not copy credentials into manifests, outputs or error messages. An optional `connectionTest: true` enables an explicit `testConnection({ configuration, signal })` export that returns `{ ok: true }` after a read-only authenticated request; discovery never calls it. An optional `balanceCheck: true` enables a read-only `checkBalance({ configuration, signal })` export returning `{ state: "known", amount, unit }` or `{ state: "unknown", reason }`; see [service credits](CREDITS.md).
 
+### Train a character identity
+
+A provider whose service learns a character from images, such as Higgsfield's Soul ID, declares it in `provider.json`:
+
+```json
+{ "identityTraining": { "family": "higgsfield-soul", "label": "Soul ID", "versions": [{ "value": "v2", "label": "Soul 2" }], "maxImages": 20 } }
+```
+
+This is a field fragment of the manifest. Export `createIdentity({ name, version, images, configuration, signal })`, where `images` holds `{ bytes, mimeType }` of the character's references with the main image first, and `checkIdentity({ referenceId, configuration, signal })`. Both return `{ referenceId, status: "training" | "ready" | "failed", error? }`. A model setting that takes the identity declares it as a string control with `"identity": { "family": "higgsfield-soul", "version": "v2" }`, and Studio offers each character's finished identity of that family and version by name.
+
 `createGeneration` also receives `requestKey`, the durable generation ID. Use it as the basis of upstream idempotency rather than creating a new ID on transport retry. `checkStatus` receives the retained upstream task ID. Neither a lost submit response nor a poll failure authorizes another paid submission.
 
 A result may include `cost: { state, final, unit?, reserved?, captured?, refunded?, released?, usdCents? }`. State is `unknown`, `reserved`, `captured` or `refunded`; numeric values are public provider-reported amounts, with corresponding optional amount fields under `usdCents`. Core retains this as `output.providerCost`. Missing costs are unknown, never zero. Omit cost on subsequent polls without new billing information to preserve the last known receipt. See the optional [Sume extension](../extensions/sume/README.md) and [connection architecture](architecture/PROVIDER-CONNECTIONS.md).

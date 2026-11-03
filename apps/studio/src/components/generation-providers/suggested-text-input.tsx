@@ -5,11 +5,11 @@ import { NativeSelect } from '@/components/ui/native-select';
 
 const CUSTOM = '__custom__';
 
-/** A text option with named presets, such as a voice library: pick a name or enter your own value. */
-export function SuggestedTextInput({ label, value, suggestions, maxLength, onChange }: {
-  label: string; value: string; suggestions: readonly { value: string; label: string }[]; maxLength: number; onChange: (value: string) => void;
+/** A text option with named presets, such as a voice library: pick a name or enter your own value. noneLabel offers leaving it empty. */
+export function SuggestedTextInput({ label, value, suggestions, maxLength, onChange, noneLabel }: {
+  label: string; value: string; suggestions: readonly { value: string; label: string }[]; maxLength: number; onChange: (value: string) => void; noneLabel?: string;
 }) {
-  const known = suggestions.some(item => item.value === value);
+  const known = suggestions.some(item => item.value === value) || (noneLabel !== undefined && value === '');
   const [custom, setCustom] = useState(!known);
   const typing = custom || !known;
   return <span className="block space-y-2">
@@ -18,6 +18,7 @@ export function SuggestedTextInput({ label, value, suggestions, maxLength, onCha
       setCustom(next === CUSTOM);
       if (next !== CUSTOM) onChange(next);
     }}>
+      {noneLabel !== undefined && <option value="">{noneLabel}</option>}
       {suggestions.map(item => <option key={item.value} value={item.value}>{item.label}</option>)}
       <option value={CUSTOM}>{uiMessages["studio.controls.custom_value"]()}</option>
     </NativeSelect>

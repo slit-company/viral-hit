@@ -287,3 +287,7 @@ Summed script gzip: **797,472 bytes**, **4,152 bytes** more than Character swap 
 ## Image layers — 2026-11-03
 
 Summed script gzip: **808,337 bytes**, **10,865 bytes** more than Relight and Edit text (797,472). The script budget changed from 798,000 to **809,000** in this reviewed decision. The Layers page is its own route chunk of 6,044 bytes, loaded only when the page opens; its 47 messages in four languages add 3,728 bytes to the shared message chunk, and the Studio handoff adds a 746-byte chunk. Splitting, flattening and the ZIP run on the server, and no dependency was added.
+
+## Soul ID — 2026-11-03
+
+Summed script gzip: **811,819 bytes**, **3,482 bytes** more than Image layers (808,337). The script budget changed from 809,000 to **813,000** in this reviewed decision. The character page gains the trained-identities panel, Studio's model settings offer each character's Soul ID, and 12 messages in four languages join the message chunk. Training and status checks run on the server, and no dependency was added.

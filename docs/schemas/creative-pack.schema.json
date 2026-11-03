@@ -388,6 +388,26 @@
                     "label": {
                       "type": "string",
                       "maxLength": 80
+                    },
+                    "providerId": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{1,39}$"
+                    },
+                    "version": {
+                      "type": "string",
+                      "maxLength": 40
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "training",
+                        "ready",
+                        "failed"
+                      ]
+                    },
+                    "error": {
+                      "type": "string",
+                      "maxLength": 300
                     }
                   },
                   "required": [

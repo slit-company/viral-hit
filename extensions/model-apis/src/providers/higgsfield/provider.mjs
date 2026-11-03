@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { send, sendJson } from '../../kit/http.mjs';
 import { credential } from '../../kit/polling.mjs';
 import { catalogProvider, catalogModels } from '../../kit/catalog-provider.mjs';
-import catalog from './catalog.json' with { type: 'json' };
+import synced from './catalog.json' with { type: 'json' };
 // Higgsfield API: https://docs.higgsfield.ai/llms-full.txt
 const API = 'https://api.higgsfield.ai';
 const UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'video/mp4', 'audio/mpeg', 'audio/wav'];
@@ -24,6 +24,25 @@ async function upload(api, media) {
   return publicUrl.href;
 }
 
+// Soul models take a trained Soul ID of their own version. The published schema types it as a UUID, which the generic
+// converter skips, so it is added here as a text setting that Studio fills from the character library.
+const SOUL_VERSIONS = { 'higgsfield-soul-2': 'v2', 'higgsfield-higgsfield-ai-soul-cinema': 'cinema' };
+const catalog = { ...synced, models: synced.models.map(entry => {
+  const version = SOUL_VERSIONS[entry.model.id];
+  if (!version) return entry;
+  const control = { key: 'custom_reference_id', label: 'Soul ID', type: 'string', default: '', maxLength: 64, identity: { family: 'higgsfield-soul', version }, description: 'A trained Soul ID (' + version + ') keeps this character\'s face and look' };
+  return { model: { ...entry.model, controls: [...(entry.model.controls ?? []), control] }, binding: { ...entry.binding, controls: [...entry.binding.controls, { key: control.key, field: control.key }] } };
+}) };
+const UUID = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
+
+/** Checked before anything is uploaded or sent. The API accepts a strength of 0 with a Soul ID but cannot run it. */
+function checkSoulId(options = {}) {
+  const id = options.custom_reference_id;
+  if (id === undefined || id === '') return;
+  if (typeof id !== 'string' || !UUID.test(id.trim())) throw Error('A Soul ID looks like 3db34ab5-3439-4317-9e03-08dc30852e69');
+  if (options.custom_reference_strength === 0) throw Error('Set the Soul ID strength above 0');
+}
+
 async function submit(api, binding, body, key) {
   const idempotencyKey = 'vh-' + createHash('sha256').update(key).digest('hex');
   const data = await api.call('/' + binding.endpoint, { method: 'POST', body, headers: { 'Idempotency-Key': idempotencyKey } });
@@ -40,5 +59,29 @@ async function poll(api, id) {
   return { state: 'failed', error: reason };
 }
 
-export const { createGeneration, checkStatus, testConnection } = catalogProvider({ prefix: 'hf', label: 'Higgsfield', catalog, client, upload, submit, poll, test: api => api.call('/v1/custom-references/list?page=1&page_size=1') });
-export const manifest = { id: 'higgsfield', setupUrl: 'https://console.higgsfield.ai', keyFormat: 'KEY_ID:KEY_SECRET', label: 'Higgsfield', description: 'Direct Higgsfield API: Soul, Cinema Studio, Ads Studio, Seedance 2.5 create/edit/extend, Kling 3 and O3, motion control, Wan 3, MiniMax H3, LTX 2.5 and Genjutsu.', environment: ['HIGGSFIELD_API_KEY'], models: catalogModels(catalog) };
+/** A Soul ID trains from 1–100 images; training runs on Higgsfield and is billed to the account. */
+export async function createIdentity({ name, version, images, configuration, signal }) {
+  const api = client(configuration, signal);
+  const urls = [];
+  for (const image of images) urls.push(await upload(api, image));
+  try { return identity(await api.call('/v1/custom-references', { method: 'POST', body: { name: String(name).slice(0, 100), model_version: version, input_images: urls.map(url => ({ type: 'image_url', image_url: url })) } })); }
+  catch (error) {
+    if (error?.status === 429) throw Error('Higgsfield is already training as many Soul IDs as it allows at once. Try again in a few minutes; nothing was charged.');
+    throw error;
+  }
+}
+export async function checkIdentity({ referenceId, configuration, signal }) {
+  if (!UUID.test(referenceId)) throw Error('This is not a Soul ID');
+  return identity(await client(configuration, signal).call('/v1/custom-references/' + referenceId));
+}
+function identity(data) {
+  if (!UUID.test(data?.id ?? '')) throw Error('Higgsfield did not return a Soul ID');
+  const status = data.status === 'completed' ? 'ready' : data.status === 'failed' ? 'failed' : 'training';
+  return { referenceId: data.id, status, ...(status === 'failed' && typeof data.fail_reason === 'string' && data.fail_reason.trim() ? { error: data.fail_reason.trim().slice(0, 300) } : {}) };
+}
+
+const provider = catalogProvider({ prefix: 'hf', label: 'Higgsfield', catalog, client, upload, submit, poll, test: api => api.call('/v1/custom-references/list?page=1&page_size=1') });
+export const { checkStatus, testConnection } = provider;
+export async function createGeneration(request) { checkSoulId(request?.input?.options); return provider.createGeneration(request); }
+export const manifest = { id: 'higgsfield', setupUrl: 'https://console.higgsfield.ai', keyFormat: 'KEY_ID:KEY_SECRET',
+  identityTraining: { family: 'higgsfield-soul', label: 'Soul ID', versions: [{ value: 'v2', label: 'Soul 2' }, { value: 'cinema', label: 'Soul Cinema' }], maxImages: 20 }, label: 'Higgsfield', description: 'Direct Higgsfield API: Soul, Cinema Studio, Ads Studio, Seedance 2.5 create/edit/extend, Kling 3 and O3, motion control, Wan 3, MiniMax H3, LTX 2.5 and Genjutsu.', environment: ['HIGGSFIELD_API_KEY'], models: catalogModels(catalog) };

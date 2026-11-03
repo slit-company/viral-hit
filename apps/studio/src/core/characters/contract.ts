@@ -18,7 +18,13 @@ export const providerIdentitySchema = z.object({
   provider: z.string().regex(/^[a-z][a-z0-9-]{1,40}$/),
   referenceId: z.string().trim().min(1).max(200),
   label: z.string().trim().max(80).optional(),
+  /** Set when Viral Hit trained it: the installed service, its model version and how training went. A pasted ID has none and counts as ready. */
+  providerId: z.string().regex(/^[a-z][a-z0-9-]{1,39}$/).optional(),
+  version: z.string().max(40).optional(),
+  status: z.enum(['training', 'ready', 'failed']).optional(),
+  error: z.string().max(300).optional(),
 }).strict();
+export type ProviderIdentity = z.infer<typeof providerIdentitySchema>;
 
 const voiceSchema = z.object({ direction: z.string().trim().min(1).max(500), provider: z.string().max(40).optional(), voiceId: z.string().max(120).optional() }).strict();
 const profileFields = {
@@ -78,6 +84,12 @@ export const characterRequest = z.discriminatedUnion('action', [
   z.object({ action: z.literal('set_canonical'), id: characterId, expectedVersion: z.number().int().positive(), sha256 }).strict(),
   z.object({ action: z.literal('archive'), id: characterId, expectedVersion: z.number().int().positive() }).strict(),
   z.object({ action: z.literal('use'), id: characterId, projectId: z.string().min(1).max(160) }).strict(),
+  /** Services that can train an identity, such as a Higgsfield Soul ID, with their versions and whether they are connected. */
+  z.object({ action: z.literal('identity_services') }).strict(),
+  /** Trains an identity from the character's reference images with that service's account, which is billed for it. */
+  z.object({ action: z.literal('train_identity'), id: characterId, expectedVersion: z.number().int().positive(), providerId: z.string().regex(/^[a-z][a-z0-9-]{1,39}$/), version: z.string().min(1).max(40) }).strict(),
+  /** Asks the service how training is going and records the answer; read-only on the service. */
+  z.object({ action: z.literal('check_identity'), id: characterId, referenceId: z.string().trim().min(1).max(200) }).strict(),
   /** MCP and CLI hosts only: writes a character file to a new absolute path. Browsers download it instead. */
   z.object({ action: z.literal('export'), id: characterId, path: z.string().min(1).max(4096) }).strict(),
   /** MCP and CLI hosts read an absolute path; browsers upload the file and send no path. */

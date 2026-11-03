@@ -55,6 +55,56 @@
     "balanceCheck": {
       "type": "boolean"
     },
+    "identityTraining": {
+      "type": "object",
+      "properties": {
+        "family": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]{1,40}$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 40
+        },
+        "versions": {
+          "minItems": 1,
+          "maxItems": 8,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "value": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9._-]{0,39}$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 60
+              }
+            },
+            "required": [
+              "value",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "maxImages": {
+          "default": 20,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "family",
+        "label",
+        "versions"
+      ],
+      "additionalProperties": false
+    },
     "setupUrl": {
       "type": "string",
       "maxLength": 300,
@@ -175,6 +225,23 @@
                         ],
                         "additionalProperties": false
                       }
+                    },
+                    "identity": {
+                      "type": "object",
+                      "properties": {
+                        "family": {
+                          "type": "string",
+                          "pattern": "^[a-z][a-z0-9-]{1,40}$"
+                        },
+                        "version": {
+                          "type": "string",
+                          "maxLength": 40
+                        }
+                      },
+                      "required": [
+                        "family"
+                      ],
+                      "additionalProperties": false
                     }
                   },
                   "required": [

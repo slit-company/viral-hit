@@ -4,6 +4,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { NativeSelect } from '@/components/ui/native-select';
 import { localizeChoiceLabel, localizeControlLabel } from '@/components/generation-providers/control-label';
 import { SuggestedTextInput } from '@/components/generation-providers/suggested-text-input';
+import { useQuery } from '@tanstack/react-query';
+import { apiJsonGet } from '@/lib/api-client';
+import { identitySuggestions } from '@/core/characters/identities';
+import type { Character } from '@/core/characters/contract';
 import {
   resolveModelOptions,
   type ModelControl,
@@ -23,7 +27,12 @@ export function StudioInlineOptions({
   disabled: boolean;
   onChange: (value: ModelOptionsDraft) => void;
 }) {
+  // Settings that take a trained identity, such as a Soul ID, offer the character library's.
+  const wantsIdentity = Boolean(controls?.some(control => control.type === 'string' && control.identity));
+  const characters = useQuery({ queryKey: ['characters', 'identities'], queryFn: () => apiJsonGet<{ characters: Character[] }>('/api/app/characters').then(result => result.characters), enabled: wantsIdentity, staleTime: 30_000 });
   if (!controls?.length) return null;
+  const suggestionsFor = (control: ModelControl) => control.type !== 'string' ? undefined
+    : control.identity ? [...identitySuggestions(characters.data ?? [], control.identity), ...(control.suggestions ?? [])] : control.suggestions;
   const values = {
     ...resolveModelOptions(controls, undefined),
     ...(value?.modelId === modelId ? value.values : {}),
@@ -82,11 +91,12 @@ export function StudioInlineOptions({
                 )
               }
             />
-          ) : control.suggestions ? (
+          ) : suggestionsFor(control)?.length ? (
             <SuggestedTextInput
               label={controlLabel(control)}
               value={String(values[control.key] ?? '')}
-              suggestions={control.suggestions}
+              suggestions={suggestionsFor(control)!}
+              noneLabel={control.type === 'string' && control.identity ? uiMessages['ui.identity.none']() : undefined}
               maxLength={control.maxLength}
               onChange={(next) => update(control.key, next)}
             />

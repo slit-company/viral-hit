@@ -19,7 +19,7 @@ import { installedEffectId, providerManifestSchema, type ProviderManifest } from
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { InstalledProviderAdapter, InstalledProviderRuntime } from './runtime.server';
 
-export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery' | 'configurationDelivery' | 'connectionTest' | 'balanceCheck' | 'setupUrl' | 'keyFormat'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
+export type InstalledProviderSummary = Pick<ProviderManifest, 'id' | 'label' | 'scope' | 'author' | 'license' | 'description' | 'environment' | 'referenceDelivery' | 'configurationDelivery' | 'connectionTest' | 'balanceCheck' | 'identityTraining' | 'setupUrl' | 'keyFormat'> & { models: { id: string; name: string; kind: 'image' | 'video' | 'audio' | 'analysis' }[] };
 export type InstalledProviderProblem = { location: string; message: string };
 
 class ProviderLoadError extends Error {}
@@ -83,8 +83,8 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
   const definition: GenerationProviderDefinition = { ...metadata, executionIdentity: () => providerRuntimeDigest(manifest, source), assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs, model?.promptInput); if (model && (effect.type === 1 || effect.type === 2)) validateInstalledVisualInput(input, model); resolveModelOptions(model?.controls, input.provider_options); } };
   definitions.set(manifest.id, definition);
   registerGenerationProvider(definition);
-  const { id, label, scope, author, license, description, environment, referenceDelivery, configurationDelivery, connectionTest, balanceCheck, setupUrl, keyFormat } = manifest;
-  return { id, label, scope, author, license, description, environment, configurationDelivery, connectionTest, ...(balanceCheck ? { balanceCheck } : {}), ...(setupUrl ? { setupUrl } : {}), ...(keyFormat ? { keyFormat } : {}), ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
+  const { id, label, scope, author, license, description, environment, referenceDelivery, configurationDelivery, connectionTest, balanceCheck, identityTraining, setupUrl, keyFormat } = manifest;
+  return { id, label, scope, author, license, description, environment, configurationDelivery, connectionTest, ...(balanceCheck ? { balanceCheck } : {}), ...(identityTraining ? { identityTraining } : {}), ...(setupUrl ? { setupUrl } : {}), ...(keyFormat ? { keyFormat } : {}), ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }
 
 let loadedDirectory: string | undefined, sourceStamp = '';

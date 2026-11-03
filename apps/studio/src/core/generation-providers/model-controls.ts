@@ -6,7 +6,9 @@ const choice = z.object({ value: z.string().min(1).max(120), label: z.string().m
 export const modelControlSchema = z.discriminatedUnion('type', [
   z.object({ ...common, type: z.literal('string'), default: z.string().max(4000), maxLength: z.number().int().min(1).max(4000), multiline: z.boolean().optional(),
     /** Known values offered by name, such as a voice library; any other text stays allowed. */
-    suggestions: z.array(choice).min(1).max(48).optional() }).strict(),
+    suggestions: z.array(choice).min(1).max(48).optional(),
+    /** Takes a trained character identity of this family and version, such as a Soul ID; Studio offers the character library's. */
+    identity: z.object({ family: z.string().regex(/^[a-z][a-z0-9-]{1,40}$/), version: z.string().max(40).optional() }).strict().optional() }).strict(),
   z.object({ ...common, type: z.literal('number'), default: z.number().finite(), min: z.number().finite(), max: z.number().finite(), integer: z.boolean().optional() }).strict(),
   z.object({ ...common, type: z.literal('boolean'), default: z.boolean() }).strict(),
   z.object({ ...common, type: z.literal('select'), default: z.string().max(120), choices: z.array(choice).min(1).max(32) }).strict(),

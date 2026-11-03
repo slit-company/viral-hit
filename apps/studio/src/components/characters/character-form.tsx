@@ -27,7 +27,9 @@ function Text({ id, label, hint, value, onChange, multiline }: { id: string; lab
 export function CharacterProfileFields({ value, onChange }: { value: CharacterProfile; onChange: (value: CharacterProfile) => void }) {
   const [keep, setKeep] = useState(value.invariants.join('\n'));
   const [never, setNever] = useState(value.forbidden.join('\n'));
-  const soul = value.providerIdentities.find(item => item.provider === 'higgsfield-soul')?.referenceId ?? '';
+  // This field holds a Soul ID pasted from Higgsfield; ones Viral Hit trained are listed under trained identities.
+  const pasted = (item: CharacterProfile['providerIdentities'][number]) => item.provider === 'higgsfield-soul' && !item.providerId;
+  const soul = value.providerIdentities.find(pasted)?.referenceId ?? '';
   useEffect(() => { setKeep(value.invariants.join('\n')); setNever(value.forbidden.join('\n')); }, [value.invariants, value.forbidden]);
   return <div className="space-y-3">
     <div className="grid gap-3 sm:grid-cols-[1fr_180px]">
@@ -39,7 +41,7 @@ export function CharacterProfileFields({ value, onChange }: { value: CharacterPr
     <Text id="character-keep" label={uiMessages["ui.characters.always_keep"]()} hint={uiMessages["ui.characters.one_per_line_for_example_white_chest_patch_round_glasses"]()} value={keep} onChange={text => { setKeep(text); onChange({ ...value, invariants: lines(text).slice(0, 24) }); }} multiline />
     <Text id="character-never" label={uiMessages["ui.characters.never_change"]()} hint={uiMessages["ui.characters.one_per_line_for_example_extra_fingers_different_logo"]()} value={never} onChange={text => { setNever(text); onChange({ ...value, forbidden: lines(text).slice(0, 24) }); }} multiline />
     <Text id="character-voice" label={uiMessages["ui.characters.voice_direction_optional"]()} value={value.voice?.direction ?? ''} onChange={direction => onChange({ ...value, voice: direction.trim() ? { ...value.voice, direction } : undefined })} />
-    <Text id="character-soul" label={uiMessages["ui.characters.higgsfield_soul_id_optional"]()} hint={uiMessages["ui.characters.used_by_the_higgsfield_extension_for_identity_faithful_generation"]()} value={soul} onChange={referenceId => onChange({ ...value, providerIdentities: [...value.providerIdentities.filter(item => item.provider !== 'higgsfield-soul'), ...(referenceId.trim() ? [{ provider: 'higgsfield-soul', referenceId: referenceId.trim() }] : [])] })} />
+    <Text id="character-soul" label={uiMessages["ui.characters.higgsfield_soul_id_optional"]()} hint={uiMessages["ui.characters.used_by_the_higgsfield_extension_for_identity_faithful_generation"]()} value={soul} onChange={referenceId => onChange({ ...value, providerIdentities: [...value.providerIdentities.filter(item => !pasted(item)), ...(referenceId.trim() ? [{ provider: 'higgsfield-soul', referenceId: referenceId.trim() }] : [])] })} />
   </div>;
 }
 

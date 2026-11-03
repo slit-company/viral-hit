@@ -4,6 +4,7 @@ import { Action } from '@/components/base/action';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { characterBrief, type Character, type CharacterProfile } from '@/core/characters/contract';
 import { CharacterProfileFields, ImagePicker, roleLabel } from './character-form';
+import { CharacterIdentities } from './character-identities';
 import { characterFileUrl, referenceUrl, type ImageDraft, type useCharacters } from './use-characters';
 
 const profileOf = ({ name, kind, description, invariants, forbidden, voice, providerIdentities }: Character): CharacterProfile => ({ name, kind, description, invariants, forbidden, ...(voice ? { voice } : {}), providerIdentities });
@@ -12,7 +13,8 @@ export function CharacterDetail({ character, library, onClose }: { character: Ch
   const [profile, setProfile] = useState(() => profileOf(character));
   const [images, setImages] = useState<ImageDraft[]>([]);
   const [confirmArchive, setConfirmArchive] = useState(false);
-  useEffect(() => { setProfile(profileOf(character)); }, [character]);
+  // A reload with the same version keeps unsaved edits; a new version shows what was saved.
+  useEffect(() => { setProfile(profileOf(character)); }, [character.id, character.version]);
   const changed = JSON.stringify(profile) !== JSON.stringify(profileOf(character));
   const base = { id: character.id, expectedVersion: character.version };
   return <Dialog open onOpenChange={open => { if (!open) onClose(); }}>
@@ -31,6 +33,7 @@ export function CharacterDetail({ character, library, onClose }: { character: Ch
         {images.length > 0 && <Action disabled={library.busy} onClick={async () => { if (await library.addImages(character, images)) setImages([]); }} className="vh-secondary text-xs">{uiMessages["ui.characters.add_images"]({ count: images.length, plural: images.length === 1 ? '' : 's' })}</Action>}
       </section>
       <CharacterProfileFields value={profile} onChange={setProfile} />
+      <CharacterIdentities character={character} library={library} />
       <section aria-label={uiMessages["ui.characters.prompt_brief"]()} className="rounded-xl bg-[var(--vh-control)] p-3 text-xs leading-relaxed"><p className="mb-1 font-semibold">{uiMessages["ui.characters.added_to_prompts"]()}</p>{characterBrief(profile)}</section>
       {library.error && <p role="alert" className="whitespace-pre-wrap rounded-lg bg-red-500/10 p-3 text-xs text-red-800">{library.error}</p>}
       <div className="sticky -bottom-6 z-10 -mx-6 -mb-6 flex flex-wrap items-center justify-between gap-2 border-t border-[var(--vh-border)] bg-[var(--vh-surface)] px-6 py-4">

@@ -22,7 +22,9 @@ const LOOPBACK = new Set(['localhost', '127.0.0.1', '[::1]']);
 // A native import, so neither the build nor the dev server's module runner tries to resolve operator code.
 const nativeImport = new Function('url', 'return import(url)') as (url: string) => Promise<Partial<ProviderModule>>;
 
-type ProviderModule = { createGeneration: (request: unknown) => Promise<unknown>; checkStatus?: (request: unknown) => Promise<unknown>; testConnection?: (request: unknown) => Promise<unknown>; checkBalance?: (request: unknown) => Promise<unknown> };
+type ProviderModule = { createGeneration: (request: unknown) => Promise<unknown>; checkStatus?: (request: unknown) => Promise<unknown>; testConnection?: (request: unknown) => Promise<unknown>; checkBalance?: (request: unknown) => Promise<unknown>; createIdentity?: (request: unknown) => Promise<unknown>; checkIdentity?: (request: unknown) => Promise<unknown> };
+const identityResult = z.object({ referenceId: z.string().trim().min(1).max(200), status: z.enum(['training', 'ready', 'failed']), error: z.string().trim().max(300).optional() }).strict();
+export type ProviderIdentityResult = z.infer<typeof identityResult>;
 const balanceResult = z.discriminatedUnion('state', [
   z.object({ state: z.literal('known'), amount: z.number().finite(), unit: z.string().trim().min(1).max(16) }).strict(),
   z.object({ state: z.literal('unknown'), reason: z.string().trim().min(1).max(300) }).strict(),
@@ -91,6 +93,27 @@ export class InstalledProviderRuntime {
     const loaded = await this.load();
     if (!loaded.checkBalance) return { state: 'unknown', reason: this.manifest.label + ' does not report a balance' };
     try { return balanceResult.parse(await loaded.checkBalance({ configuration, signal: AbortSignal.timeout(10_000) })); }
+    catch (error) { throw Error(redactProviderError(error, configuration)); }
+  }
+
+  /** Trains a character identity, such as a Soul ID, from images; the service bills it to the saved account. */
+  async createIdentity(request: { name: string; version: string; images: { bytes: Uint8Array; mimeType: string }[] }): Promise<ProviderIdentityResult> {
+    const training = this.manifest.identityTraining;
+    if (!training || this.manifest.configurationDelivery !== 'request') throw Error(this.manifest.label + ' does not train character identities');
+    if (!training.versions.some(version => version.value === request.version)) throw Error('Choose a ' + training.label + ' version ' + this.manifest.label + ' offers');
+    if (!request.images.length || request.images.length > training.maxImages) throw Error(training.label + ' takes 1 to ' + training.maxImages + ' images');
+    return this.identityCall('createIdentity', request, 10 * 60_000);
+  }
+
+  /** Read-only: how training of an identity is going. */
+  checkIdentity(referenceId: string) { return this.identityCall('checkIdentity', { referenceId }, 30_000); }
+
+  private async identityCall(method: 'createIdentity' | 'checkIdentity', request: Record<string, unknown>, timeout: number) {
+    const configuration = resolveProviderConfiguration(this.manifest);
+    if (!this.manifest.identityTraining || this.manifest.environment.some(name => !configuration[name])) throw Error('Save the ' + this.manifest.label + ' settings first');
+    const loaded = await this.load();
+    if (!loaded[method]) throw Error(this.manifest.label + ' does not train character identities');
+    try { return identityResult.parse(await loaded[method]!({ ...request, configuration, signal: AbortSignal.timeout(timeout) })); }
     catch (error) { throw Error(redactProviderError(error, configuration)); }
   }
 

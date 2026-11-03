@@ -81,6 +81,17 @@ export const providerManifestSchema = z.object({
   connectionTest: z.boolean().optional(),
   /** Opt in to a read-only checkBalance({ configuration, signal }) export reporting remaining credits. */
   balanceCheck: z.boolean().optional(),
+  /**
+   * Opt in to createIdentity({ name, version, images, configuration, signal }) and checkIdentity({ referenceId, configuration, signal })
+   * exports that train a reusable character identity from reference images, such as a Higgsfield Soul ID. family names the
+   * identities a model control accepts; the service bills training to the person's account.
+   */
+  identityTraining: z.object({
+    family: z.string().regex(/^[a-z][a-z0-9-]{1,40}$/),
+    label: z.string().trim().min(1).max(40),
+    versions: z.array(z.object({ value: z.string().regex(/^[a-z0-9][a-z0-9._-]{0,39}$/), label: z.string().trim().min(1).max(60) }).strict()).min(1).max(8),
+    maxImages: z.number().int().min(1).max(100).default(20),
+  }).strict().optional(),
   /** Official page where a user creates the key this provider needs (shown as "Get a key"). */
   setupUrl: z.string().url().max(300).refine(value => value.startsWith('https://'), 'Use an https:// setup URL').optional(),
   /** Short format hint for the key field, for example KEY_ID:KEY_SECRET. Never a real value. */

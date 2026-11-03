@@ -36,7 +36,7 @@ export function useCharacters() {
     finally { setBusy(false); }
   }
   return {
-    characters, busy, error, clearError: () => setError(''),
+    characters, busy, error, clearError: () => setError(''), refresh: load,
     create: (profile: CharacterProfile, images: ImageDraft[]) => run(() => upload({ action: 'create', profile }, images)),
     addImages: (character: Character, images: ImageDraft[]) => run(() => upload({ action: 'add_references', id: character.id, expectedVersion: character.version }, images)),
     change: (request: CharacterRequest) => run(() => apiJsonPost<Character>('/api/app/characters', request)),
