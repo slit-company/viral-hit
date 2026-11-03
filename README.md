@@ -53,7 +53,7 @@ The #OpenSourceHiggsfield challenge produced close to a hundred projects. Most r
 | | One-effect apps | Generation studios | **Viral Hit** |
 |---|:---:|:---:|:---:|
 | Generate images and video | One effect | ✅ | ✅ 9 tools, 9 services, any model you add |
-| Remix: motion transfer, subject swap, restyle | Often one | Some | ✅ |
+| Motion transfer and subject swap on any model, scored against the source | Often one | Some | ✅ [Shapeshift](docs/SHAPESHIFT.md) |
 | Lip sync, voice, music, captions, dubbing | — | Some | ✅ |
 | Import a reference and split it into shots | — | Rare | ✅ |
 | Storyboards with one accepted take per shot | — | Rare | ✅ |
@@ -90,7 +90,7 @@ The #OpenSourceHiggsfield challenge produced close to a hundred projects. Most r
 |---|---|
 | Image and video generation | **Studio → Image / Video** with any connected provider |
 | Cinema Studio (direct the shot) | [Shot controls](docs/SHOT-CONTROLS.md) for framing, lens, camera move, light and look, plus [storyboards](docs/STORYBOARDS.md) that plan, produce and accept each shot |
-| Genjutsu / Openjutsu (swap a character in a video) | **Studio → Remix** with motion transfer, subject swap and restyle |
+| Genjutsu / Openjutsu (swap a character in a video) | [Shapeshift](docs/SHAPESHIFT.md): motion transfer, object swap and ten styles on any connected model, with Auto routing, side-by-side variations and motion and face scores |
 | Consistent characters | [Characters](docs/CHARACTERS.md): reference images and written rules reused in every project |
 | Lip sync, voice, music | **Studio → Lip sync / Voice / Music** |
 | Publishing | [Publish](docs/PUBLISHING.md) to YouTube, Instagram or your own installed destination, with [performance readings](docs/MEASUREMENT.md) |
@@ -116,7 +116,7 @@ Viral Hit calls the official APIs of the services below. Connect any of them in 
 | [OpenAI](extensions/model-apis/README.md) | `OPENAI_API_KEY` | GPT Image 2.5 Sunburst and Flare |
 | [xAI](extensions/model-apis/README.md) | `XAI_API_KEY` | Grok Imagine Image 2 and Video 1.5 |
 | [ElevenLabs](extensions/model-apis/README.md) | `ELEVENLABS_API_KEY` | Voice, Eleven Music 2.5, sound effects, voice changer |
-| [Sume](extensions/sume/README.md) | `SUME_API_KEY` | 30 image, video, remix, lip sync, caption, voice and music operations |
+| [Sume](extensions/sume/README.md) | `SUME_API_KEY` | 39 image, video, video edit, remix, lip sync, caption, voice and music operations |
 
 Fal, Runway and Higgsfield models are generated from each service's published JSON schemas, so lengths, aspect ratios, references and options match what the API accepts. Paid requests are sent once and results are saved into your project right away.
 
