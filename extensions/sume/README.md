@@ -22,22 +22,23 @@ Create or open a project, choose a Sume model in Studio, enter a prompt, and sel
 | Family | Profiles |
 | --- | --- |
 | Images | GPT Image 2 (including masks), GPT Image 2.5, Nano Banana 2.1, Seedream 5 Lite, Higgsfield Soul |
-| Video | Seedance 2.5 reference and first/last-frame variants, MiniMax H3 and H3 Max references (images, clips and audio together), Kling 3, Veo 3.1, Grok Imagine Video 1.5 |
+| Video | Seedance 2.5 reference, first/last-frame and video edit variants, MiniMax H3 and H3 Max references (images, clips and audio together), Wan 3.0 references (up to 10 images and 15 seconds of clips), Kling 3, Veo 3.1, Grok Imagine Video 1.5 |
 | Genjutsu | Motion transfer and object swap from a source clip and subject images, full (4–30 s clips) and Light (4–15 s clips) |
 | Remix | Motion transfer, object swap, 20 restyle presets; Kling motion control |
 | Speech/video | Portrait and video lip sync, translation with lip sync, animated captions |
 | Editing | Video upscale, image background removal, split into layers (2–8 transparent layers), video trim, audio extraction |
 | Audio | Seven music models; speech with four engine choices and an existing Sume voice ID |
 
-For first/last-frame generation, the first selected image is the start frame and the second is the end frame. Remix accepts one 4–15 second clip and 1–8 images; restyle takes one clip and a preset. Genjutsu reads the clip's length from the MP4 itself and sends it rounded up, as Sume requires; it has no length or shape to choose. Light bills the source seconds as well as the output seconds, so its listed price per second is doubled. Other source-length options must match the selected clip or audio, rounded up. Studio fills them in from the attached clip. Speech requires a Sume voice UUID or `voi_` library ID belonging to the selected engine's family. Music duration/lyrics can be requested in the prompt; a universal duration parameter is deliberately not sent because support varies by model. Korean captions should use a Hangul style such as `korean-ad` or `black-outline`.
+For first/last-frame generation, the first selected image is the start frame and the second is the end frame. Remix accepts one 4–15 second clip and 1–8 images; restyle takes one clip and a preset. Genjutsu and Seedance 2.5 video edit read the clip's length from the MP4 itself and send it rounded up, as Sume requires; they have no length or shape to choose, and the result keeps the clip's length and framing. Light bills the source seconds as well as the output seconds, so its listed price per second is doubled. Other source-length options must match the selected clip or audio, rounded up. Studio fills them in from the attached clip. Speech requires a Sume voice UUID or `voi_` library ID belonging to the selected engine's family. Music duration/lyrics can be requested in the prompt; a universal duration parameter is deliberately not sent because support varies by model. Korean captions should use a Hangul style such as `korean-ad` or `black-outline`.
 
 ## Execution and limits
 
 - The app admits owned local references, pins hashes and provides a call-scoped reader. Upload is sequential, deduplicated within a call, limited to 64 MiB per reference and 256 MiB total by the host.
 - Sume receives the selected media only when generation is submitted. Signed PUT uploads have no API authorization header; redirects and unrecognized destinations are rejected.
-- Submit uses a stable idempotency key derived from the durable generation ID and model. There is no automatic paid POST retry. If the response is lost, inspect the original Viral Hit intent and Sume job history before creating another generation. Automatic discovery of an unknown upstream job is not implemented.
+- Submit uses a stable idempotency key derived from the durable generation ID and model. There is no automatic paid POST retry. If the response is lost, inspect the original Viral Hit intent and Sume job history before creating another generation.
 - Public reserved/captured/refunded/released credit amounts and available USD-cent amounts are retained in generation output as `providerCost`. Unreported cost is explicitly unknown, never zero. Final settlement is not inferred from a completed video.
-- Original Sume job IDs are retained through the installed-provider runtime pin and existing persistent poller. Status/result GETs retry through that poller, with bounded `Retry-After`/poll hints. This connector does not claim cancellation of running remote work.
+- Original Sume job IDs are retained through the installed-provider runtime pin and existing persistent poller. Status/result GETs retry through that poller, with bounded `Retry-After`/poll hints. Work already running on Sume finishes there.
+- Connections and model routing read the key's remaining balance from the same read-only route as the connection check, so automatic model choices try funded services first.
 - Result URLs must use `https://media.sume.com`; downloads receive no provider credential. The app owns media persistence, decoding checks, asset provenance, editor attachment and export.
 - Avatars/face-swap resources, voice creation/cloning, voice change, arbitrary router model registration, pre-submit price estimates, billing reconciliation after the final receipt, webhooks and remote cancellation are not included. Caption output is a rendered video, not editable word timing; use the existing local transcript/editor workflow when editable captions are needed.
 

@@ -14,6 +14,13 @@ export async function testConnection({ configuration, signal }) {
   await client(configuration, signal).request('/v1/open/balance');
   return { ok: true };
 }
+/** Read-only: the balance a model API key may spend, from the same route as the connection check. */
+export async function checkBalance({ configuration, signal }) {
+  const data = await client(configuration, signal).request('/v1/open/balance');
+  const amount = typeof data.balance_usd_micros === 'number' ? data.balance_usd_micros / 1_000_000 : data.balance;
+  if (typeof amount !== 'number' || !Number.isFinite(amount)) return { state: 'unknown', reason: 'Sume did not report a balance' };
+  return { state: 'known', amount: Math.round(amount * 100) / 100, unit: typeof data.currency === 'string' && /^[A-Z]{3}$/.test(data.currency) ? data.currency : 'USD' };
+}
 /** Reads each reference once, even when both the source length and the upload need it. */
 function once(readMedia) {
   if (typeof readMedia !== 'function') return readMedia;
@@ -51,7 +58,12 @@ export async function checkStatus({ model, taskId, configuration, signal }) {
   try {
     const data = await api.request('/v1/jobs/' + encodeURIComponent(taskId) + '/status');
     const status = data.sume_status ?? String(data.status).toLowerCase();
-    if (['failed', 'canceled', 'cancelled'].includes(status)) { nextPoll.delete(taskId); return { status: 'failed', taskId, ...(data.job?.usage_summary ? { cost: reportedCost(data) } : {}), error: 'Sume job ' + taskId + ' ' + status + '. See Sume job history for details.' }; }
+    if (['failed', 'canceled', 'cancelled'].includes(status)) {
+      nextPoll.delete(taskId);
+      // Sume's own reason, such as a declined reference photo, shortened and with long tokens removed.
+      const reason = typeof data.job?.error?.message === 'string' ? data.job.error.message.replace(/[A-Za-z0-9_-]{32,}/g, '[id]').replace(/\s+/g, ' ').trim().slice(0, 200) : '';
+      return { status: 'failed', taskId, ...(data.job?.usage_summary ? { cost: reportedCost(data) } : {}), error: reason ? 'Sume: ' + reason : 'Sume job ' + taskId + ' ' + status + '. See Sume job history for details.' };
+    }
     if (status !== 'completed' || data.result_ready === false) { defer(taskId, data.next_poll_after_seconds); return { status: 'processing', taskId, ...(data.job?.usage_summary ? { cost: reportedCost(data) } : {}) }; }
     const output = await api.request('/v1/jobs/' + encodeURIComponent(taskId) + '/result');
     const artifacts = output.result?.artifacts;

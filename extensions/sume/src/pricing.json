@@ -137,6 +137,38 @@
   },
   "amount": 0.1
  },
+ "sume-wan-3.0": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "720p": 0.1,
+    "1080p": 0.2
+   }
+  },
+  "amount": 0.2
+ },
+ "sume-seedance-2.5-edit": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.1028,
+    "720p": 0.2312,
+    "1080p": 0.5686
+   }
+  },
+  "amount": 0.5686
+ },
  "sume-higgsfield-genjutsu": {
   "currency": "USD",
   "per": "second",

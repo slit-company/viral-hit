@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGeneration, checkStatus, testConnection, sourceLength } from '../src/provider.mjs';
+import { createGeneration, checkStatus, testConnection, checkBalance, sourceLength } from '../src/provider.mjs';
 import { mp4Seconds } from '../src/mp4.mjs';
 import { profiles, providerManifest } from '../src/profiles.mjs';
 import { buildPayload } from '../src/payload.mjs';
@@ -12,8 +12,8 @@ const input = { prompt: 'A blue circle', aspectRatio: '1:1', imageUrls: ['owned:
 async function mock(handler, run) { const original = globalThis.fetch; globalThis.fetch = handler; try { return await run(); } finally { globalThis.fetch = original; } }
 function catalog(id = 'gpt-image-2') { return { model: { id, capabilities: { image_edit: true, aspect_ratios: ['1:1'], qualities: ['medium'] } } }; }
 
-test('all 37 profiles build bounded explicit request bodies; video transforms omit unsupported prompt/aspect', () => {
-  assert.equal(providerManifest().models.length, 37);
+test('all 39 profiles build bounded explicit request bodies; video transforms omit unsupported prompt/aspect', () => {
+  assert.equal(providerManifest().models.length, 39);
   for (const profile of profiles) {
     const refs = Object.fromEntries(Object.entries(profile.referenceInputs).map(([kind, value]) => [kind + 'Urls', Array.from({ length: value.min }, (_, i) => kind + i)]));
     const { body, path } = buildPayload(profile, { prompt: 'Test script', ...refs, ...(profile.route === 'speech' ? { options: { voice_id: 'voi_' + 'a'.repeat(32) } } : {}) });
@@ -115,7 +115,19 @@ test('polling survives reload, respects Retry-After, handles failure and validat
     });
     await mock(async url => String(url).endsWith('/status') ? json({ sume_status: 'completed' }) : json({ result: { artifacts: [{ type: 'image', url: 'https://evil.example/result.png' }] } }), async () => { await assert.rejects(checkStatus({ model, taskId: 'job_badhost', configuration, signal: signal() }), /media host/); });
     await mock(async () => json({ sume_status: 'failed' }), async () => { assert.equal((await checkStatus({ model, taskId: 'job_failed', configuration, signal: signal() })).status, 'failed'); });
+    // A declined input explains itself, so people know to change the picture or the model.
+    await mock(async () => json({ sume_status: 'failed', job: { error: { message: "This model doesn't take photos that may show a famous person." } } }), async () => {
+      assert.equal((await checkStatus({ model, taskId: 'job_declined', configuration, signal: signal() })).error, "Sume: This model doesn't take photos that may show a famous person.");
+    });
   } finally { Date.now = originalNow; }
+});
+
+test('balance check reads the dollars a model API key may spend', async () => {
+  const balance = body => async (url, init) => { assert.equal(String(url), 'https://api.sume.com/v1/open/balance'); assert.equal(init.method, 'GET'); return json(body); };
+  await mock(balance({ balance: 16.4759, currency: 'USD', billing_type: 'credit-based', balance_usd_micros: 16475900 }), async () => assert.deepEqual(await checkBalance({ configuration, signal: signal() }), { state: 'known', amount: 16.48, unit: 'USD' }));
+  await mock(balance({ balance: 0, currency: 'USD' }), async () => assert.deepEqual(await checkBalance({ configuration, signal: signal() }), { state: 'known', amount: 0, unit: 'USD' }));
+  await mock(balance({ billing_type: 'credit-based' }), async () => assert.equal((await checkBalance({ configuration, signal: signal() })).state, 'unknown'));
+  assert.equal(providerManifest().balanceCheck, true);
 });
 
 test('connection check is read-only; oversized data and upstream secret-bearing errors are bounded', async () => {
