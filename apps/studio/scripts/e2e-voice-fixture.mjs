@@ -15,13 +15,14 @@ const source = `export async function createGeneration({ input, signal }) {
   ascii(0, 'RIFF'); view.setUint32(4, bytes.length - 8, true); ascii(8, 'WAVE'); ascii(12, 'fmt ');
   view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true); view.setUint32(24, rate, true);
   view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true); ascii(36, 'data'); view.setUint32(40, samples * 2, true);
-  for (let i = 0; i < samples; i++) view.setInt16(44 + i * 2, Math.round(Math.sin(2 * Math.PI * 220 * i / rate) * 3000), true);
+  const pitch = input.options?.voice_id === 'high' ? 330 : 220;
+  for (let i = 0; i < samples; i++) view.setInt16(44 + i * 2, Math.round(Math.sin(2 * Math.PI * pitch * i / rate) * 3000), true);
   return { status: 'succeeded', media: [{ data: bytes, mimeType: 'audio/wav' }], speechWords: words.map((text, index) => ({ text, start: index * step, end: index * step + 0.35 })) };
 }`;
 
 export async function prepareVoiceFixture(providers) {
   const directory = join(providers, 'voice-fixture');
   await mkdir(directory, { recursive: true });
-  await writeFile(join(directory, 'provider.json'), JSON.stringify({ schemaVersion: 1, kind: 'viral-hit-provider', id: 'voice-fixture', label: 'Voice timing fixture', scope: 'general', models: [{ id: 'voice-fixture-speech', name: 'Voice timing fixture', kind: 'audio', studioTasks: ['text-to-speech'] }] }));
+  await writeFile(join(directory, 'provider.json'), JSON.stringify({ schemaVersion: 1, kind: 'viral-hit-provider', id: 'voice-fixture', label: 'Voice timing fixture', scope: 'general', models: [{ id: 'voice-fixture-speech', name: 'Voice timing fixture', kind: 'audio', studioTasks: ['text-to-speech'], controls: [{ key: 'voice_id', label: 'Voice', type: 'select', default: 'low', choices: [{ value: 'low', label: 'Low' }, { value: 'high', label: 'High' }] }] }] }));
   await writeFile(join(directory, 'provider.mjs'), source);
 }

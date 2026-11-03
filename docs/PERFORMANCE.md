@@ -284,3 +284,7 @@ Summed script gzip: **781,358 bytes**, **1,337 bytes** more than Collaboration (
 ## Clip speed — 2026-11-03
 
 Summed script gzip: **782,424 bytes**, **1,066 bytes** more than Ducking (781,358). This is within the 783,000 budget: the speed select, the mapping in the preview and browser export, and three messages. The FFmpeg speed pass runs on the server only.
+
+## Dialogue — 2026-11-03
+
+Summed script gzip: **785,111 bytes**, **2,687 bytes** more than Clip speed (782,424); public files **9,375,433 bytes**. The script budget changed from 783,000 to **786,000** in this reviewed decision. The editor gains the dialogue dialog and the script parser it shares with the server, and 13 messages in four languages join the message chunk. Lines are generated and placed on the server, no dependency was added, and the architecture check still finds no server module reachable from the browser.

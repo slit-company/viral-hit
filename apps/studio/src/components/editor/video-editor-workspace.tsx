@@ -13,6 +13,7 @@ import { VoiceCaptionsAction } from './voice-captions-action';
 import { LayerExportAction } from './layer-export-action';
 import { AudioDuckingControl } from './audio-ducking-control';
 import { ClipSpeedControl } from './clip-speed-control';
+import { DialogueDialog } from './dialogue-dialog';
 import { duckingGain, voiceIntervals } from '@/core/editor/audio-ducking';
 import { EditorComments } from '@/components/collaboration/editor-comments';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
@@ -1749,6 +1750,7 @@ export function VideoEditorWorkspace({
                 <SlidersHorizontal className="size-3.5" />
               </Action>
               <EditorComments projectId={projectId} currentTime={currentTime} selectedClipId={selectedClipId} onSeek={seekTimeline} />
+              <DialogueDialog projectId={projectId} />
               <LayerExportAction projectId={projectId} name={document.name} disabled={isExporting || !clips.some((clip) => clip.sourceType !== 'audio')} onError={setError} />
               <Action
                 type="button"

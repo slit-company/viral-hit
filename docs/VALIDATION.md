@@ -1197,3 +1197,12 @@ An integration test builds a recipe from `subject-on-style` with `image-1` as su
 - **FFmpeg export (browser test):** a four-second clip, red then blue, was set to 2× through MCP, and the next image moved from 4 s to 2 s. The render lasted 3.0 s, showed red at 0.5 s and blue at 1.5 s (the source's later half), and showed the green image at 2.5 s. The inspector showed **Speed 2×** with the no-sound note.
 - **Unit tests:** speeds of 2×, 0.5× and back to 1× change the clip length and move the next clip each time. Out-of-range speeds are refused. Trimming and splitting a 2× clip keep timeline and source time in step, and the mapping helpers round-trip. A reference speed-up becomes a 2× second half (or the fastest rate the material allows, none below 1.25×), and a slow-down a 0.5× second half whose parts add up to the shot length.
 - **Regression:** the full suite passed with 1,031 tests, and the Remix, editor playback and transition browser tests pass.
+
+## Dialogue — 2026-11-03
+
+- **Live ElevenLabs run:** the script `Mina: Did you see that?` / `Jun: Just now. Again!` was voiced with Alice for Mina and Adam for Jun. Both lines succeeded as one durable run. **Add to timeline in order** placed a 1.28 s line at 0 s and a 2.08 s line at 1.58 s (0.3 s gap), and added three captions from ElevenLabs word timing ("Did you see that?", "Just now.", "Again!"). The two files measured different median pitch (225 Hz and 176 Hz).
+- **Browser test:** with a local voice service whose pitch follows the chosen voice, the dialog gave Mina and Jun different voices, voiced both lines through the harness worker and placed them in order, 0.3 s apart, with captions.
+- **Unit tests:** scripts with plain and full-width colons, continuation lines, narration before the first name and blank lines parse into the expected turns, and speakers keep first-appearance order.
+- **Dev server:** after a code reload re-evaluated the provider registry, durable runs failed with "Choose an installed model with a durable runtime identity" and the durable model list was empty. Installed provider definitions are now restored with the held snapshot. After a forced registry reload the list still had 193 models, 9 of them ElevenLabs.
+- **MCP:** `viral_hit_dialogue` joins the catalog (62 tools) with produce, list and place.
+- **Regression:** the full suite passed with 1,032 tests, and the voice captions, word captions, studio audio, audio references and agent approval browser tests pass with the updated voice fixture.

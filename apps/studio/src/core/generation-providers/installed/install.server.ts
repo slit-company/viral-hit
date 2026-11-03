@@ -13,8 +13,8 @@ import type { WorkspaceDuration } from '@/core/effects/effect-registry';
 import { getWorkspaceEffectRegistryEntry, registerInstalledWorkspaceEffectEntry } from '@/core/effects/effect-registry';
 import { registerInstalledWorkspaceMediaSchema } from '@/core/effects/workspace-media';
 import { findGenerationModelBinding, getGenerationProviderMetadata, registerInstalledGenerationProviderMetadata } from '../catalog';
-import type { GenerationProviderMetadata } from '../contracts';
-import { registerGenerationProvider } from '../registry';
+import type { GenerationProviderDefinition, GenerationProviderMetadata } from '../contracts';
+import { getGenerationProvider, registerGenerationProvider } from '../registry';
 import { installedEffectId, providerManifestSchema, type ProviderManifest } from './manifest';
 import { validateInstalledAnalysisInput } from './analysis-input';
 import { InstalledProviderAdapter, InstalledProviderRuntime } from './runtime.server';
@@ -51,6 +51,7 @@ export function readProviderFolder(path: string) {
 }
 
 const connectionRuntimes = new Map<string, InstalledProviderRuntime>();
+const definitions = new Map<string, GenerationProviderDefinition>();
 export function installedConnectionRuntime(id: string) { installGenerationProviders(); return connectionRuntimes.get(id); }
 
 function install({ manifest, source }: ReturnType<typeof readProviderFolder>, managed = false): InstalledProviderSummary {
@@ -79,7 +80,9 @@ function install({ manifest, source }: ReturnType<typeof readProviderFolder>, ma
   }
   const runtime = new InstalledProviderRuntime(manifest, source, managed);
   connectionRuntimes.set(manifest.id, runtime);
-  registerGenerationProvider({ ...metadata, executionIdentity: () => providerRuntimeDigest(manifest, source), assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); if (model && (effect.type === 1 || effect.type === 2)) validateInstalledVisualInput(input, model); resolveModelOptions(model?.controls, input.provider_options); } });
+  const definition: GenerationProviderDefinition = { ...metadata, executionIdentity: () => providerRuntimeDigest(manifest, source), assertConfigured: async () => assertProviderConfigured(manifest), isConfigured: () => !missingProviderEnvironment(manifest).length, createAdapter: effect => new InstalledProviderAdapter(effect, runtime), readOutputMedia: runtime.readOutputMedia, validateInput: (effect, input) => { const model = manifest.models.find(model => model.id === effect.linkName); if (effect.type === 3) validateInstalledAnalysisInput(input, model?.analysisInputs); if (effect.type === 4) validateInstalledAudioInput(input, model?.referenceInputs); if (model && (effect.type === 1 || effect.type === 2)) validateInstalledVisualInput(input, model); resolveModelOptions(model?.controls, input.provider_options); } };
+  definitions.set(manifest.id, definition);
+  registerGenerationProvider(definition);
   const { id, label, scope, author, license, description, environment, referenceDelivery, configurationDelivery, connectionTest, balanceCheck, setupUrl, keyFormat } = manifest;
   return { id, label, scope, author, license, description, environment, configurationDelivery, connectionTest, ...(balanceCheck ? { balanceCheck } : {}), ...(setupUrl ? { setupUrl } : {}), ...(keyFormat ? { keyFormat } : {}), ...(referenceDelivery ? { referenceDelivery } : {}), models: manifest.models.map(model => ({ id: model.id, name: model.name, kind: model.kind })) };
 }
@@ -88,7 +91,7 @@ let loadedDirectory: string | undefined, sourceStamp = '';
 let installed: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] } | null = null;
 // Dev servers can re-evaluate this module while the model catalog keeps its registrations; reuse the
 // process-wide snapshot instead of registering the same providers twice.
-type Held = { state: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] }; directory?: string; stamp: string; runtimes: Map<string, InstalledProviderRuntime> };
+type Held = { state: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] }; directory?: string; stamp: string; runtimes: Map<string, InstalledProviderRuntime>; definitions?: Map<string, GenerationProviderDefinition> };
 const HELD = Symbol.for('viral-hit.installed-generation-providers');
 const held = globalThis as typeof globalThis & { [HELD]?: Held };
 
@@ -102,11 +105,13 @@ export function installGenerationProviders(directory = process.env.VIRAL_HIT_PRO
   if (previous && previous.state.providers.every(provider => getGenerationProviderMetadata(provider.id))) {
     installed = previous.state; loadedDirectory = previous.directory; sourceStamp = previous.stamp;
     for (const [id, runtime] of previous.runtimes) connectionRuntimes.set(id, runtime);
+    // The provider registry can be re-evaluated on its own; put the installed definitions back so durable runs still pin them.
+    for (const [id, definition] of previous.definitions ?? []) { definitions.set(id, definition); if (!getGenerationProvider(id)) registerGenerationProvider(definition); }
     return installed;
   }
   const state: { providers: InstalledProviderSummary[]; problems: InstalledProviderProblem[] } = { providers: [], problems: [] };
   installed = state; loadedDirectory = directory; sourceStamp = providerSourceStamp(directory);
-  held[HELD] = { state, directory, stamp: sourceStamp, runtimes: connectionRuntimes };
+  held[HELD] = { state, directory, stamp: sourceStamp, runtimes: connectionRuntimes, definitions };
   const managed = managedRuntimeEntries('provider');
   if (!directory && !managed.length) return state;
   let folders: string[];
