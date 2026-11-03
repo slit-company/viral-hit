@@ -12,7 +12,8 @@ import { getProjectAssetById } from '../workspace-lib/assets/user-assets';
 import { swapVerdict, type CharacterSwapView, type SwapEvaluation } from './contract';
 
 const noFace = (error: unknown) => error instanceof Error && /No face was found in the reference/.test(error.message);
-async function similarity(projectId: string, assetId: string, against: { characterId: string } | { referenceAssetIds: string[] }) {
+/** How much a result's faces resemble the references, or null when the references show no face. */
+export async function faceSimilarity(projectId: string, assetId: string, against: { characterId: string } | { referenceAssetIds: string[] }) {
   try { return (await checkFaceMatch(projectId, { assetIds: [assetId], ...against })).results[0] ?? null; }
   catch (error) { if (noFace(error)) return null; throw error; }
 }
@@ -25,10 +26,10 @@ export async function evaluateSwap(projectId: string, swap: CharacterSwapView): 
   const evaluations: (SwapEvaluation | null)[] = [];
   for (const piece of swap.pieces) {
     if (!piece.outputAssetId) { evaluations.push(piece.evaluation); continue; }
-    const character = await similarity(projectId, piece.outputAssetId, swap.characterId ? { characterId: swap.characterId } : { referenceAssetIds: swap.imageAssetIds });
+    const character = await faceSimilarity(projectId, piece.outputAssetId, swap.characterId ? { characterId: swap.characterId } : { referenceAssetIds: swap.imageAssetIds });
     const frame = await extractProjectVideoFrame({ projectId, assetId: piece.sourceAssetId, position: piece.duration / 2,
       derivedAssetId: 'swapface-' + createHash('sha256').update(projectId + '\0' + piece.sourceAssetId).digest('hex').slice(0, 32) });
-    const source = await similarity(projectId, piece.outputAssetId, { referenceAssetIds: [frame.id] });
+    const source = await faceSimilarity(projectId, piece.outputAssetId, { referenceAssetIds: [frame.id] });
     evaluations.push({ verdict: swapVerdict(character?.similarity ?? null, source?.similarity ?? null), character: character?.similarity ?? null, source: source?.similarity ?? null, facedFrames: character?.facedFrames ?? 0 });
   }
   const h = openSwapRecords();

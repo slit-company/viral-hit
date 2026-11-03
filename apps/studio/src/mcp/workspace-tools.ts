@@ -21,6 +21,7 @@ import { registerDialogueTools } from './dialogue-tools';
 import { registerSpendingTools } from './spending-tools';
 import { registerCharacterSwapTools } from './character-swap-tools';
 import { registerImageLayerTools } from './image-layer-tools';
+import { registerShapeshiftTools } from './shapeshift-tools';
 /** Registration seam for project transfer, recipe pack, character and delivery tools. */
 export function registerWorkspaceTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   registerAssetGenerationTools(server);
@@ -45,4 +46,5 @@ export function registerWorkspaceTools(server: McpServer, project: (projectId?: 
   registerSpendingTools(server);
   registerCharacterSwapTools(server, project);
   registerImageLayerTools(server, project);
+  registerShapeshiftTools(server, project);
 }
