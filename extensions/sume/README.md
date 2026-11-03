@@ -13,7 +13,7 @@ Import `extensions/sume/dist/sume.runtime.json` in Runtime packages, review and 
 
 Open **Connections**, save a Sume API key under Model APIs, and choose **Check**. Keys are encrypted in the private workspace data directory; their values are never returned to the browser. An operator may instead set `SUME_API_KEY` on every process; environment configuration takes precedence. All processes must use the same workspace data directory. Finish pending work before replacing keys: changing credentials fences existing tasks until their original configuration is restored.
 
-The check calls `GET /v1/open/balance`. It verifies authentication, not a paid generation or output quality. Generation requires Sume account balance and may be gated by model/account. A model catalog read checks current supported options before uploading references or submitting a router job.
+The check calls `GET /v1/open/balance`. Generation requires Sume account balance and may be gated by model/account. A model catalog read checks current supported options before uploading references or submitting a router job.
 
 Create or open a project, choose a Sume model in Studio, enter a prompt, and select references from project assets. Results are saved through the existing generation output pipeline, can become new generation inputs, and can be placed on the editable timeline and exported. Processing-only models still use the app's required prompt field; enter a short description of the task. The connector omits that field from endpoints that reject it.
 

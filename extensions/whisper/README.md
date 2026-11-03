@@ -29,13 +29,13 @@ export VIRAL_HIT_FFMPEG=/absolute/path/to/ffmpeg
 export VIRAL_HIT_FFPROBE=/absolute/path/to/ffprobe
 ```
 
-Obtain each digest from the actual file with `shasum -a 256 /absolute/file` (macOS) or `sha256sum /absolute/file` (Linux). Keep model/tool installations immutable for pending jobs. The adapter verifies CLI/model hashes before recognition and again before accepting its output. Declared configuration participates in the existing job fingerprint. Dynamic libraries, CPU backends and FFmpeg bytes are not completely fingerprinted by this bridge.
+Obtain each digest from the actual file with `shasum -a 256 /absolute/file` (macOS) or `sha256sum /absolute/file` (Linux). Keep model/tool installations immutable for pending jobs. The adapter verifies CLI/model hashes before recognition and again before accepting its output. Declared configuration participates in the existing job fingerprint.
 
 ## Use and extend
 
 Import source media into a project, select **Runs → Caption a video** or **Caption a recording with a cover image**, choose the range and language, then queue. `auto` asks the model to detect language; explicit `en`, `ko`, `ja`, etc. must be supported by the chosen model. English-only models require English. The maximum-audio-seconds input selects up to that duration from the start point, ending at the available source audio if shorter. GPU execution is disabled; CPU threads are selectable from one to four, default two.
 
-Review the original recording and returned words/timing, download SRT if useful, then **Add editable sequence**. SRT times are relative to the selected source range. Existing timeline content is retained and the sequence appends after it. Correct caption text and timing in the editor. The original recognition receipt remains unchanged by those edits. An empty recognition result leaves the caption track empty; it does not prove that the source contains no speech.
+Review the original recording and returned words/timing, download SRT if useful, then **Add editable sequence**. SRT times are relative to the selected source range. Existing timeline content is retained and the sequence appends after it. Correct caption text and timing in the editor. The original recognition receipt remains unchanged by those edits.
 
 Recipes are portable JSON in `recipes/`. Fork them for interviews, tutorials, voice notes, narration or any other use. They expose ordinary asset/number/string parameters, use `ext.whisper-transcribe` and bind its clip output to `editor.sequence`. Recognition itself works with either source kind. An audio-only recipe can retain the transcript without creating a sequence; the supplied audio-caption recipe asks for a cover because the current video exporter requires a visual track. Other installed engines can emit the same transcript JSON without modifying the studio.
 
@@ -43,7 +43,7 @@ Recipes are portable JSON in `recipes/`. Fork them for interviews, tutorials, vo
 
 Each selected original is at most 64 MiB and one hour; a run decodes at most 120 seconds into mono 16 kHz 16-bit WAV, bounded to 4 MiB. Models are at most 2 GiB; this is a file limit, not a memory limit. The transcription process has a 180-second deadline inside a four-minute adapter budget. Captured tool output is at most 1 MiB, transcript JSON at most 512 KiB, and accepted segment count at most 120. Oversized transcripts fail; they are not silently truncated. Native tools can consume additional memory and CPU, especially with larger models.
 
-Submission retains a stable request identity. Polling performs local recognition; an interruption before the successful result is stored may repeat that local computation. Completed results are retained by the harness. Cancellation/timeout sends SIGTERM, escalates after five seconds and waits for child closure before deleting private files. Missing audio is a failure, not a synthetic transcript. Crash-orphan file cleanup remains separate work.
+Submission retains a stable request identity. Polling performs local recognition; an interruption before the successful result is stored may repeat that local computation. Completed results are retained by the harness. Cancellation/timeout sends SIGTERM, escalates after five seconds and waits for child closure before deleting private files. Missing audio is a failure, not a synthetic transcript.
 
 Whisper timestamps and text are estimates. Timing outside the selected range or overlapping a prior segment is clipped and counted; empty/fully out-of-range segments are omitted and counted. This normalization is not forced alignment. Noise, silence, music, accents and mixed languages may produce missing or invented words. No speaker diarization, translation, word-level alignment or narrative understanding is implemented here.
 

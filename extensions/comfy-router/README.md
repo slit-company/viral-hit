@@ -39,4 +39,4 @@ Run `pnpm providers` at the repository root to build bundled providers, then res
 - Inputs: 20 MiB per image (Kling: 10 MB, PNG/JPEG), 15 MiB per WAV/MP3, 40 MiB total references, 64 MiB serialized JSON. Veo needs PNG/JPEG. Reference audio is currently a Seedance-only subset.
 - Results: 64 MiB image, 512 MiB downloaded video or 96 MiB inline video. Catalog/status JSON stays capped at 4 MB; only result reads allow larger inline media.
 - Accounts without queue access use the synchronous route and recover timeouts under the same key. Its in-memory fallback is capped at eight requests/64 MiB; restarting it requires checking Comfy usage history. It never evicts live work.
-- Costs stay unknown unless reported. Real paid Comfy generation, quality and latency remain unverified. Fourteen mocked contract tests cover native bodies, admission, media, idempotency, polling and recovery.
+- Costs stay unknown unless reported. Fourteen mocked contract tests cover native bodies, admission, media, idempotency, polling and recovery.

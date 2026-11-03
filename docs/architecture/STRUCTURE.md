@@ -1,6 +1,6 @@
 # Structure rules
 
-These rules govern new work and changes to existing code. Read them before implementing a feature. The product remains a general creative workspace; brand-specific marketing workflows are optional extensions. `docs/PARITY.md` records acceptance scope, not a claim of completion.
+These rules govern new work and changes to existing code. Read them before implementing a feature. The product remains a general creative workspace; brand-specific marketing workflows are optional extensions.
 
 In the ownership table, `src/` paths are relative to `apps/studio/`; other paths are relative to the repository root.
 
@@ -63,7 +63,7 @@ Performance readings live in `core/measurement/`. Connectors expose an optional 
 
 ## Automated gate and known debt
 
-Run `pnpm architecture:check` before the normal typecheck, source tests, i18n and build gates. The checker uses TypeScript syntax trees to inspect local runtime dependencies, prohibited browser imports, core/UI direction, research imports, cycles and module size. It is a static guard, not a complete security or quality proof: arbitrary runtime module loading, package internals and runtime data flow still require review.
+Run `pnpm architecture:check` before the normal typecheck, source tests, i18n and build gates. The checker uses TypeScript syntax trees to inspect local runtime dependencies, prohibited browser imports, core/UI direction, research imports, cycles and module size.
 
 `architecture-baseline.json` records exact existing oversized modules and cycles. Never increase an allowance just to pass. Reductions are allowed after verification; a new exception requires a named architectural decision and review. The baseline does not mean that existing large modules are good structure.
 
@@ -73,7 +73,7 @@ Priority decomposition targets are the editor workspace, canvas shell/interactio
 
 `core/publishing/installed/` owns operator manifests, public discovery, metadata validation and the trusted module boundary. Browser code imports only pure contracts. Discovery reads bounded files and compiles a synchronous JSON Schema; it never imports executable modules. HTTP/MCP/CLI still call the existing publication application service. Installed destinations add ordered image/video/audio inputs; pinned media uses the existing integrity-checked streaming store.
 
-Approval pins a fingerprint of connector manifest, source and declared environment values. The worker imports the captured source only for approved work, validates that fingerprint before every action, and delegates transfer/publish/reconcile to the existing lease/fence state machine. Configuration changes pause the original operation; unknown start/publish outcomes cannot trigger another write. Raw receipts and credentials stay server-side; only the explicit validated publicDelivery subobject can reach UI. Modules are trusted server code, not sandboxed plugins. Use separate optional runtimes for heavyweight dependencies.
+Approval pins a fingerprint of connector manifest, source and declared environment values. The worker imports the captured source only for approved work, validates that fingerprint before every action, and delegates transfer/publish/reconcile to the existing lease/fence state machine. Configuration changes pause the original operation; unknown start/publish outcomes cannot trigger another write. Raw receipts and credentials stay server-side; only the explicit validated publicDelivery subobject can reach UI. Modules run as trusted server code. Use separate optional runtimes for heavyweight dependencies.
 
 Creative packs follow [the composition decision](CREATIVE-PACKS.md): preflight all content, retain each library's atomic mutations, report partial completion and reuse exact items on retry. Their completion record is an immutable snapshot, not a mutable link to current character profiles.
 
@@ -96,7 +96,6 @@ Installed generation providers follow [the local-input boundary](LOCAL-PROVIDER-
 Structured provider reports follow [the analysis-to-plan decision](STRUCTURED-ANALYSIS.md): pure bounded output contracts, identity-checked discovery, source-byte verification on preparation and an unsaved storyboard handoff through existing operations.
 
 Independent model options follow [the declared-control boundary](MODEL-OPTIONS.md): bounded public definitions, namespaced values, model-scoped drafts and repeated validation before provider execution.
-
 
 Declared audio references reuse the common per-kind count contract, existing asset-first admission and local provider reader. `referenceInputs` is optional metadata; omission retains text-only audio and existing fingerprints. Studio analysis/audio share source selection, bounded library projection and fenced upload/history actions. Model changes retain sources and reject incompatible submissions; no second upload store or polling engine is introduced.
 

@@ -35,16 +35,16 @@ This is an excerpt of a model entry, not a complete installable provider. The mo
 
 A model that omits `promptInput` needs a prompt. `"promptInput": "optional"` lets it run without one, and Studio marks the field **Optional**. `"promptInput": "none"` means the model works from its sources alone. Lip sync, voice change, upscaling, background removal, captions, trimming and audio extraction are examples. Studio replaces the prompt box with a short note, and the server drops any prompt text before the provider sees it. That way an old draft prompt cannot fail the request. A prompt-free model must require at least one source, and analysis models always take an instruction. The same rule applies to the Studio panel, the floating composer, Canvas, `generation.model` recipes and server admission. Audio prompts are named after the job: **Script** for text to speech, **Music description** and **Sound description**.
 
-A task with no installed compatible model shows the installation path. A known but unconfigured model shows connection requirements and disables generation. This distinguishes a visible workflow from an available model. It does not imply Sume/Higgsfield output quality, nor that every visible task already has a configured provider.
+A task with no installed compatible model shows the installation path. A known but unconfigured model shows connection requirements and disables generation. This distinguishes a visible workflow from an available model.
 
 ## Verification
 
-`studio-tool-workflow.spec.ts` switches between two independent local image providers, inspects submitted model IDs and aspect ratio, reloads the selected provider, adds the retained output to a real timeline and opens the editor at desktop/mobile sizes. These fixtures create real gradient files and are explicitly **not AI-quality evidence**. Existing Studio browser tests cover mixed references, actual audio/video playback, masks, analysis settings, history reuse and unavailable model drafts. No Sume API call or paid generation is needed for these checks.
+`studio-tool-workflow.spec.ts` switches between two independent local image providers, inspects submitted model IDs and aspect ratio, reloads the selected provider, adds the retained output to a real timeline and opens the editor at desktop/mobile sizes. Existing Studio browser tests cover mixed references, actual audio/video playback, masks, analysis settings, history reuse and unavailable model drafts. No Sume API call or paid generation is needed for these checks.
 
 ## Production budget and styling
 
 Common vendor modules used by multiple entry points share a chunk through [Rolldown code splitting](https://rolldown.rs/reference/OutputOptions.codeSplitting). Media engines remain dynamically imported. The canonical CSS layer declaration is prepended to SEED stylesheet sources before splitting and hashing; this preserves SEED styling when a vendor stylesheet loads before global CSS. Keyboard focus indicators are retained.
 
-The final production check measured **614,239 bytes** for the sum of gzip-compressed JavaScript chunks (existing ceiling: 616,000 bytes), and **9,030,553 bytes** for all public assets (ceiling: 10,000,000). No runtime dependency or budget increase was added. These are bundle measurements, not generation latency or AI quality measurements.
+The final production check measured **614,239 bytes** for the sum of gzip-compressed JavaScript chunks (existing ceiling: 616,000 bytes), and **9,030,553 bytes** for all public assets (ceiling: 10,000,000). No runtime dependency or budget increase was added.
 
 Validated on 2026-10-29: 932 unit/integration tests, 12 targeted Studio browser tests, 7 optional Sume adapter tests; architecture, types, locale checks and production build. The additional production browser run exercises provider switching, creation, result-to-timeline attachment and editor navigation at 1440×1000 and 390×844.

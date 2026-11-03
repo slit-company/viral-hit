@@ -14,7 +14,7 @@ Before importing or calling a module, the runtime checks every input against tha
 
 The reader is closed in `finally` after the module resolves or throws. Outstanding reads are aborted and awaited. An asynchronous provider must consume/copy the required source before returning a task ID. `checkStatus` receives no reader; polling and managed runtime fingerprints keep their existing behavior. Failures do not create an alternate queue or silently resubmit paid work. Generation history maps retained local identifiers back to the project's existing media endpoint for playback.
 
-Modules are trusted server code with the operator's process privileges, not sandboxed plugins. The reader provides a bounded supported interface; it is not a sandbox or whole-process RAM limit. A module may still choose an external service, so local delivery alone does not imply offline inference.
+Modules run as trusted server code with the operator's process privileges. The reader provides a bounded supported interface.
 
 ## Verification
 

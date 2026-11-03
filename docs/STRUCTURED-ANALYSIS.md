@@ -1,6 +1,6 @@
 # Structured analysis into editable storyboards
 
-Independent analysis providers may return a versioned report alongside (or instead of) plain text. The same contract works for general reference analysis and a specialized technical or creative reviewer. The studio validates structure and source identity; it does not verify the model's interpretation or automatically accept its proposals.
+Independent analysis providers may return a versioned report alongside (or instead of) plain text. The same contract works for general reference analysis and a specialized technical or creative reviewer.
 
 ## Provider output
 
@@ -52,12 +52,11 @@ References retain `provider-analysis` evidence and the original generation ID/fi
 
 ## Example and limits
 
-The independent [technical inspector](../examples/providers/media-inspector/README.md) emits one structured observation of measured file metadata over the full video. It deliberately supplies no creative proposal because it does not understand scenes. Actual FFprobe output → draft preparation → explicit save is verified with original media. Provider proposal-field and queued-result tests use authored protocol fixtures; they do not establish semantic AI quality.
+The independent [technical inspector](../examples/providers/media-inspector/README.md) emits one structured observation of measured file metadata over the full video. It deliberately supplies no creative proposal because it does not understand scenes. Actual FFprobe output → draft preparation → explicit save is verified with original media.
 
-Nested/conditional provider-specific forms, representative semantic-quality evaluation, automatic creative acceptance and a general graph editor remain separate work. The report bridge adds no model dependency, resident inference service or new queue.
+The report bridge adds no model dependency, resident inference service or new queue.
 
 Providers may declare bounded scalar [model options](MODEL-OPTIONS.md) for their particular analysis workflow.
-
 
 ## Version 2: observations with independent sources
 
@@ -81,9 +80,9 @@ report: {
 
 Image observations must omit `start` and `end`. Video/audio observations require both with the existing millisecond precision, minimum interval and one-hour bounds. All existing text, count, unique-ID and byte limits apply. The published JSON schema describes the fields; runtime refinement also enforces kind-specific ranges. Providers can omit observations for inputs they did not describe, but each reported source must exist in the retained request.
 
-Version 2 handoff rejects remote/unpinned inputs, contradictory singular aliases, duplicate source assets, wrong-kind pins, foreign projects and missing source positions. It does not guess a source from a filename, a URL in model text or the first video. At most 20 originals/256 MiB are admitted; preparation verifies each original sequentially, including companions that influenced the report but were not selected. Provider source/index declarations remain machine assertions about what was observed; valid identity does not prove semantic accuracy.
+Version 2 handoff rejects remote/unpinned inputs, contradictory singular aliases, duplicate source assets, wrong-kind pins, foreign projects and missing source positions. It does not guess a source from a filename, a URL in model text or the first video. At most 20 originals/256 MiB are admitted; preparation verifies each original sequentially, including companions that influenced the report but were not selected.
 
-The report picker shows the filename, short asset ID, media kind and independent interval for each observation. Preparing selected observations creates one editable shot per observation, in selected order. Still images without a proposal duration start at three seconds; a warning explains that editable default. Audio observations are references for planning a shot and do not automatically add a soundtrack. Add soundtrack material explicitly through the existing plan controls.
+The report picker shows the filename, short asset ID, media kind and independent interval for each observation. Preparing selected observations creates one editable shot per observation, in selected order. Still images without a proposal duration start at three seconds; a warning explains that editable default. Add soundtrack material explicitly through the existing plan controls.
 
 References retain the observation ID and original kind/index alongside the generation ID, fingerprint and model name. Sharing a project remaps actual asset references while preserving this historical evidence. A recipient can review/edit the plan without installing the original analysis provider. The full report and original generation database are not included; older importers must support these additional evidence fields.
 

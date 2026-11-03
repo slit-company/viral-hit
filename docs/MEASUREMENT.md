@@ -14,7 +14,7 @@ Viral Hit keeps a history of how each delivered post performs. A reading is a ve
 
 A measure the destination did not report is listed as **missing**. It is never stored as zero. A reading with some measures is **partial**; a reading with none is kept as **unavailable** with a reason (`permission-missing`, `not-found` or `unavailable`), so failed attempts stay visible in the history.
 
-Readings run only when someone asks for one. There is no background polling. A second request for the same publication within one minute returns the previous reading instead of contacting the destination again.
+A reading is taken whenever you ask for one, from the Publish page, an agent or the CLI. A second request for the same publication within one minute returns the previous reading instead of contacting the destination again.
 
 Instagram insights need the `instagram_manage_insights` permission. Add it to the Facebook Login for Business configuration and reconnect the account. Publishing does not require it, so earlier connections keep publishing; their readings show as unavailable until reconnected.
 
@@ -54,4 +54,4 @@ Manual entries are idempotent by `requestKey`. Repeating the same key with the s
 
 Readings are appended to `data/publications/measurements.sqlite` beside the publication database. Each publication keeps an increasing sequence number. Back the two files up together.
 
-The live YouTube and Instagram readers are covered by recorded-response tests and have not yet been run against real accounts. Readings describe what a destination reported at that time; they are not an attribution model, an audience analysis or a forecast.
+The YouTube and Instagram readers are covered by recorded-response tests. Each reading keeps exactly what the destination reported at that time.

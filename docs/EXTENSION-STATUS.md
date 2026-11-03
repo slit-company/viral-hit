@@ -12,10 +12,10 @@ Agents call `viral_hit_extension_status` with `{}`. HTTP clients read `GET /api/
 
 ## What the states mean
 
-- **Metadata loaded**: the definition was accepted and declared required settings are present. This does not prove valid credentials, successful module loading, working generation, output quality or delivery. Skill compatibility checks declared MCP tool names and minimum app version.
+- **Metadata loaded**: the definition was accepted and declared required settings are present. Skill compatibility checks declared MCP tool names and minimum app version.
 - **Needs setup**: a declared setting is missing or a skill is incompatible. The report returns variable names and presence, never their values. Publishing connectors report missing names only.
 - **Could not load**: the definition could not be read or validated. Fix its server files using the corresponding [provider](../apps/studio/docs/PROVIDERS.md), [adapter](EXTERNAL-ADAPTERS.md), [publishing](PUBLISHING.md) or [skill](SKILLS.md) guide. Public errors omit native filesystem errors and malformed JSON contents.
-- **Provider files changed**: the current provider directory metadata differs from the loaded snapshot. This is a bounded file-stat hint, not an integrity proof. Restart to load new definitions.
+- **Provider files changed**: the current provider directory metadata differs from the loaded snapshot. Restart to load new definitions.
 
 Refresh reads metadata; it never imports extension modules, probes accounts, generates media or publishes. There is no background polling or additional daemon. Explicit `provider check` is different: that CLI command imports the selected module to check its exports, and trusted module top-level code can run.
 
@@ -33,7 +33,7 @@ Model providers can declare required environment names in `provider.json`:
 
 This is a field fragment, not a complete provider manifest. Omission means no declared required variables. Blank/whitespace values count as missing. Missing required values make installed models unavailable in discovery and block generation preflight before an upload intent, remote reference upload or generation record is created. Presence does not validate a value. The module reads its own settings from `process.env`; none are copied into browser metadata.
 
-Diagnostics do not install, update or remove runtime code. Automated dependency installation, version management, community discovery and live provider acceptance remain separate work.
+Diagnostics do not install, update or remove runtime code.
 
 Managed [runtime packages](RUNTIME-PACKAGES.md) appear as installed sources after process restart. Changes to desired package state appear as pending restart diagnostics; Refresh does not replace a loaded runtime. CLI/MCP/HTTP manage package review/install/update/removal and retained history. The package list distinguishes this process snapshot from desired state.
 

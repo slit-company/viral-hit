@@ -59,6 +59,6 @@ Turning the head, strong shadows and motion blur lower the score of the same per
 
 Character records live in `character-library.sqlite` inside the data directory. Images are stored once by content hash under `characters/`, so the same image used by several characters takes space once.
 
-## Limits
+## Good to know
 
-Characters do not start generation. Only the main image is attached on Canvas; other angles stay in the project assets to attach by hand. Viral Hit does not create Soul IDs. Face match compares human faces only and does not measure product or outfit similarity.
+Characters never start a generation on their own. Canvas attaches the main image; the other angles stay in the project's media to attach by hand. Face match compares human faces.

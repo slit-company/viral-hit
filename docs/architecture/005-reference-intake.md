@@ -10,4 +10,4 @@ Copy or download to private temporary storage, inspect the actual container, bou
 
 Source samples and original video become project reference assets, usable by existing editor and project-media recipe inputs. Intake does not edit a timeline, enqueue generation, send a DM or publish a post. New HTTP/MCP/UI callers must independently validate their transport trust; the initial caller is a local CLI. Disk cleanup and automatic inbox collection are not implied by file/asset registration.
 
-Verification must include real MP4 decoding/frame extraction, replay after source deletion, corrupted retained bytes, identity isolation, CDN validation and rejected preview-only inputs. Test .NET build and bounded subprocess failure independently of live YouTube access. No reference acquisition result establishes generation quality or Higgsfield parity.
+Verification must include real MP4 decoding/frame extraction, replay after source deletion, corrupted retained bytes, identity isolation, CDN validation and rejected preview-only inputs. Test .NET build and bounded subprocess failure independently of live YouTube access.

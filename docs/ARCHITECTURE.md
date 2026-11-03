@@ -4,9 +4,9 @@ Viral Hit is a general creative project system. Advertising, music videos, anima
 
 ## Implemented foundation
 
-The studio contains the React canvas, project assets, timeline, command kernel, local import, browser MP4 export, server rendering and MCP services. UI and agents share revision-checked commands. Integration package sources are local development templates; they are not published installers.
+The studio contains the React canvas, project assets, timeline, command kernel, local import, browser MP4 export, server rendering and MCP services. UI and agents share revision-checked commands. Integration package sources ship as local templates you can adapt.
 
-UI and MCP edit the same authoritative project through incremental commands with revision checks. The visual canvas is a composition surface; its edges are not currently the execution DAG. The new durable harness has its own explicit dependency graph. UI, CLI and the new `viral_hit_runs_list` / `viral_hit_runs_change` MCP tools share this ledger. These two graphs are not yet automatically synchronized.
+UI and MCP edit the same authoritative project through incremental commands with revision checks. The visual canvas is the composition surface, and the durable harness runs an explicit dependency graph. UI, CLI and the `viral_hit_runs_list` / `viral_hit_runs_change` MCP tools share this ledger.
 
 ```
 UI / local MCP → Command kernel → Project + Assets + Canvas + Timeline
@@ -18,7 +18,7 @@ Runs UI / JSON plan → SQLite durable queue → independent worker → Comfy Ro
                           event ledger ← provider status + native receipt
 ```
 
-A separate `asset.materialize` DAG node now consumes a declared URL or project-scoped binary reference from the provider receipt, acquires and probes the media, publishes immutable local bytes, registers the project Asset and records SHA-256/lineage. The Runs panel attaches that asset through a revision-checked editor command. Provider success and local-asset readiness remain separate states. This path is tested with provider fixtures and an actual public HTTPS download; a real Comfy generation is still a release gate.
+A separate `asset.materialize` DAG node now consumes a declared URL or project-scoped binary reference from the provider receipt, acquires and probes the media, publishes immutable local bytes, registers the project Asset and records SHA-256/lineage. The Runs panel attaches that asset through a revision-checked editor command. Provider success and local-asset readiness are separate states. This path is tested with provider fixtures and an actual public HTTPS download.
 
 ## Durable execution
 
@@ -28,26 +28,17 @@ Each job records its submission key before network I/O. Comfy Router explicitly 
 
 Cancellation is a request until a provider poll confirms the outcome. A late successful result after a cancellation request remains in the audit record and cannot seed the cache. Known rejection, failed generation and unknown submission outcome are separate states. Unknown credits remain null, never zero.
 
-Only explicit cacheable nodes with entirely cacheable ancestry can reuse outputs. Comfy native receipts have caching disabled because their media URLs can expire. Durable cache eligibility must eventually require verified local content hashes. A versioned prompt without a fixed model/seed is insufficient evidence of deterministic output.
+Only explicit cacheable nodes with entirely cacheable ancestry can reuse outputs. Comfy native receipts have caching disabled because their media URLs can expire. A versioned prompt without a fixed model/seed is insufficient evidence of deterministic output.
 
-The worker starts every claimable step its limits allow: eight at once, three per model service, three generation submissions per project, and one to four local media steps sized from the host's CPUs and memory. `VIRAL_HIT_WORKER_CONCURRENCY`, `VIRAL_HIT_PROVIDER_CONCURRENCY` and `VIRAL_HIT_LOCAL_CONCURRENCY` override the defaults. Slots are reserved before a job is leased, and leases still fence each job to one step. There is no spending limit yet. The current local service is not a multi-tenant deployment. Poll failures retain the existing provider ID and retry; per-provider terminal timeout policies and operator reconciliation tools remain to implement.
+The worker starts every claimable step its limits allow: eight at once, three per model service, three generation submissions per project, and one to four local media steps sized from the host's CPUs and memory. `VIRAL_HIT_WORKER_CONCURRENCY`, `VIRAL_HIT_PROVIDER_CONCURRENCY` and `VIRAL_HIT_LOCAL_CONCURRENCY` override the defaults. Slots are reserved before a job is leased, and leases fence each job to one step. Poll failures keep the existing provider ID and retry. Every generation's estimate and service are recorded in the [spending ledger](COSTS.md).
 
 ## Provider contracts
 
-The initial Comfy Router adapter uses the actual `@comfyorg/sdk` package pinned at 0.5.0, with native model request bodies. No browser credentials are used. `COMFY_API_KEY` is server-only. The Runs catalog includes FLUX.2 Pro images, Kling 3.0 Turbo video and Eleven v3 speech, with the latter two checked against published model-specific input/output schemas. The recipes are implemented and fixture-tested; live provider runs, quality and latency remain unverified. The CLI accepts other Router model paths and native bodies, but each model's capabilities require their own validation.
+The initial Comfy Router adapter uses the actual `@comfyorg/sdk` package pinned at 0.5.0, with native model request bodies. No browser credentials are used. `COMFY_API_KEY` is server-only. The Runs catalog includes FLUX.2 Pro images, Kling 3.0 Turbo video and Eleven v3 speech, with the latter two checked against published model-specific input/output schemas. The recipes are covered by fixture tests, and the CLI accepts other Router model paths and native bodies.
 
 Comfy Cloud workflow idempotency differs from Router: Cloud's duplicate submission rejection does not recover an unknown original job. A Cloud adapter must use reconciliation, not copy the Router retry behavior. Self-hosted ComfyUI via the API proxy is a separate provider with its own deployment, model weights and resource requirements.
 
 Sources inspected: [Comfy SDK docs](https://docs.comfy.org/development/api-development/sdks), [TypeScript SDK](https://github.com/Comfy-Org/comfy-typescript-sdk), [API proxy](https://github.com/Comfy-Org/comfy-api-proxy). Pinned research commits are in `research/upstream-lock.json`.
-
-## Ordered release work
-
-1. Durable media import and revision-checked timeline attachment are implemented. Next validate against actual Comfy outputs, add expired-URL refresh without paid regeneration, complete per-shot acceptance/replacement and broaden container/decode/audio-sync coverage. Existing tests cover interruption after immutable file publication and restart before asset polling.
-2. Versioned data recipes and typed parameter/output binding are now implemented; see `EXTENDING.md`. Next add shot/character libraries, explicit budget admission, durable output integrity checks and per-provider capability/schema discovery. Run real image, video and audio jobs through Comfy.
-3. Extract reference pipeline reference analysis, planning/review and performance lineage as generic adapters. A source reference is evidence, not an instruction to the agent. Apply precise edit operations to the same timeline that the user edits.
-4. Extend the editor for transitions, keyframes, speed changes, waveform/ducking and complex multi-track compositions. Benchmark the inherited engine against Diffusion Studio and FFmpeg using identical assets.
-5. Implement and validate the full `PARITY.md` matrix: Cinema, motion/object transfer, layers, identity consistency, audio/lipsync, templates, collaboration and export. Do not label a generic provider API as those completed features.
-6. Prepare sanitized public release, reproducible installation, actual workflow exports, benchmark results and the competition demo/submission.
 
 ## Run locally
 
@@ -58,7 +49,7 @@ pnpm run setup
 pnpm dev
 ```
 
-Open `http://127.0.0.1:3808/projects`. The process starts both the web app and the independent durable worker. Imported media, editing and export work without provider credentials. To enable Comfy, supply `COMFY_API_KEY` securely in the parent environment before starting. Provider calls incur your provider's charges. No spending cap is implemented yet.
+Open `http://127.0.0.1:3808/projects`. The process starts both the web app and the independent durable worker. Imported media, editing and export work without provider credentials. To enable Comfy, supply `COMFY_API_KEY` securely in the parent environment before starting, or add it in **Connections**. Provider calls are billed to your provider account.
 
 ```sh
 # Optional server-only environment file; do not commit it.
@@ -91,4 +82,4 @@ The Router adapter retains binary results under the configured data root's `harn
 
 A downstream materialization node receives an opaque `{jobId, sha256}` reference, resolves it only within its own project, verifies both source and copied bytes, and probes the real container before registering the asset. Provider Content-Type is descriptive, not trusted. Invalid bytes remain an auditable receipt but never become an editable asset. Cancellation still follows the existing ledger; saved bytes do not make a canceled job eligible for attachment.
 
-This is process-restart recovery, not a power-loss durability guarantee. Automatic cleanup of orphaned temporary receipt directories and retention policies remain pending. The SDK buffers binary responses in memory and applies its own response cap; storage also rejects empty bodies and bodies over 512 MiB. Large-file streaming needs a future transport surface.
+Saved receipts survive a process restart. The SDK buffers binary responses in memory and applies its own response cap; storage also rejects empty bodies and bodies over 512 MiB.

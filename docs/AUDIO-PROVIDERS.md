@@ -6,11 +6,11 @@ Audio providers use the same installed provider boundary, model catalog, typed o
 
 Declare `kind: "audio"` on a model in `provider.json`. Set provider `scope` to `general` or `specialized`. Declare typed `controls` for provider-specific duration, voice, style or other settings; values reach the module in `input.options`. Visual aspect ratios, frame references and video duration fields are rejected. Models may opt into `referenceInputs` to accept image, video and audio references alongside the prompt and typed options. Omitting it preserves the text-only contract. A model that transforms a source without text, such as a voice changer, declares `"promptInput": "none"` ([prompt text](architecture/STUDIO-TOOLS.md#prompt-text)).
 
-The optional [procedural audio example](../examples/providers/procedural-audio) implements immediate and queued 24 kHz mono PCM WAV output without dependencies. It synthesizes sine/triangle tones from numeric controls; it does not interpret the prompt, synthesize speech or establish music-model quality. Replace its implementation with a suitable service or local engine to implement those capabilities. Model code remains independently installable and does not import studio internals.
+The optional [procedural audio example](../examples/providers/procedural-audio) implements immediate and queued 24 kHz mono PCM WAV output without dependencies. Replace its implementation with a suitable service or local engine to implement those capabilities. Model code remains independently installable and does not import studio internals.
 
 A successful module returns `status: "succeeded"` and `media: [{data, mimeType}]`, or a URL allowed by its declared `mediaHosts`. Binary MIME types are `audio/wav`, `audio/mpeg`, `audio/ogg`, `audio/mp4` and `audio/aac`. Queued models return `status: "processing", taskId` and implement `checkStatus`; polling must observe the original task instead of creating another generation. Results are limited to 64 MiB per audio file. The storage boundary rejects empty data and non-audio response content types. It does not exhaustively decode arbitrary outputs; ensure the engine returns valid playable media.
 
-Put the provider folder under `VIRAL_HIT_PROVIDERS_DIR`, or distribute it in a reviewed [runtime package](RUNTIME-PACKAGES.md). Restart the app, MCP server and workers to activate changed source. Credentials are declared by name and remain server-side. Modules are trusted server code, not sandboxed plugins. Heavy engines and models stay in optional installations.
+Put the provider folder under `VIRAL_HIT_PROVIDERS_DIR`, or distribute it in a reviewed [runtime package](RUNTIME-PACKAGES.md). Restart the app, MCP server and workers to activate changed source. Credentials are declared by name and remain server-side. Modules run as trusted server code. Heavy engines and models stay in optional installations.
 
 ## Declare reference inputs
 
@@ -30,7 +30,7 @@ Asset-first requests name owned asset IDs in `references`. `audio_track` is vali
 
 Use `referenceDelivery: "project-media"` for local inputs: `media` describes admitted pins and `readMedia(url)` returns verified bytes only while `createGeneration` runs. The existing 64 MiB/file, 256 MiB total/cumulative-read limits apply. Project ownership and hashes are checked before importing provider code. Queued providers must retain their own task input/state: `checkStatus` receives the original task ID and no media reader. Remote delivery uses existing explicit upload admission; selecting files alone does not send them to a model service.
 
-The optional [audio conform processor](../examples/providers/audio-conform) demonstrates real soundtrack trim/gain/padding and optional video-duration matching. It uses separately installed FFmpeg/FFprobe, keeps source bytes intact, and returns a normal audio asset. It does not interpret prompt text, perform voice conversion or synthesize Foley.
+The optional [audio conform processor](../examples/providers/audio-conform) demonstrates real soundtrack trim/gain/padding and optional video-duration matching. It uses separately installed FFmpeg/FFprobe, keeps source bytes intact, and returns a normal audio asset.
 
 ## Studio
 
@@ -65,4 +65,4 @@ A consumed token cannot generate again. After an uncertain submission response, 
 
 ## Validation scope
 
-The example tests use real WAV bytes, decoded durations, queued completion, MIME/size rejection, exact saved options, missing-model recovery and single-use intents. These establish extension behavior, not hosted model availability, music/speech quality, voice cloning, lipsync or full audio-editing parity. Final browser and production evidence is recorded separately in [validation](VALIDATION.md).
+The example tests use real WAV bytes, decoded durations, queued completion, MIME/size rejection, exact saved options, missing-model recovery and single-use intents. Final browser and production evidence is recorded separately in [validation](VALIDATION.md).

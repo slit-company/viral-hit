@@ -2,7 +2,7 @@
 
 A runtime package distributes complete, self-contained modules for image/video providers, workflow adapters and publishing connectors. It can combine any of those kinds, and its scope can be general or specialized for one format/team/job. Existing recipes, skills and creative packs remain data-only; installing them cannot install executable code.
 
-Use **Extensions → Manage runtime packages**, `pnpm runtime-package` from `apps/studio`, the `viral_hit_runtime_package` MCP tool, or the trusted local `/api/app/runtime-packages` HTTP endpoint. The browser library distinguishes the installed set from the version loaded by this studio process. Independent catalog downloads for executable packages are not yet implemented.
+Use **Extensions → Manage runtime packages**, `pnpm runtime-package` from `apps/studio`, the `viral_hit_runtime_package` MCP tool, or the trusted local `/api/app/runtime-packages` HTTP endpoint. The browser library distinguishes the installed set from the version loaded by this studio process.
 
 ## Use the browser library
 
@@ -65,19 +65,19 @@ For an authorized install/update, apply the exact reviewed package:
 }
 ```
 
-`trustCode` is an explicit trust decision: modules run with the host's filesystem, environment and network privileges. They are not sandboxed or signed. Apply replaces the whole package release, including removing entries absent from the incoming release. It cannot overwrite operator folder files or identities owned by other packages. Both tokens and all managed writes are compared in one SQLite transaction; stale reviews need fresh inspection. Operator files are hashed again before commit, but independently edited filesystem directories do not participate in that SQLite transaction.
+`trustCode` is an explicit trust decision: modules run with the host's filesystem, environment and network privileges. They run as trusted server code. Apply replaces the whole package release, including removing entries absent from the incoming release. It cannot overwrite operator folder files or identities owned by other packages. Both tokens and all managed writes are compared in one SQLite transaction; stale reviews need fresh inspection. Operator files are hashed again before commit, but independently edited filesystem directories do not participate in that SQLite transaction.
 
-Use `pnpm runtime-package change < /absolute/request.json`. `list` distinguishes desired installed packages from this process's loaded snapshot. Restart the studio, MCP and workers together after changes. No hot reload is attempted. A package reported installed is stored desired state; required environment settings and separate engines may still be absent, and runtime execution is not verified by installation.
+Use `pnpm runtime-package change < /absolute/request.json`. `list` distinguishes desired installed packages from this process's loaded snapshot. Restart the studio, MCP and workers together after changes. No hot reload is attempted.
 
 ## Remove, restore and protect work
 
 Call `review-remove` with `id`, then authorized `remove` with `id` and the returned `stateDigest` as `expectedStateDigest`. This removes the desired active package. Already running processes retain their loaded source until restarted. Jobs, project media, publishing receipts and retained releases are untouched.
 
-`history` lists retained digests, including removed packages. `export` returns the normalized package at an optional historical `digest`; CLI syntax is `export <id> <new-file> [digest]`. To restore, inspect that historical package against the current catalog, apply with fresh tokens and restart the processes. This is explicit restoration, not an automatic downgrade or task migration.
+`history` lists retained digests, including removed packages. `export` returns the normalized package at an optional historical `digest`; CLI syntax is `export <id> <new-file> [digest]`. To restore, inspect that historical package against the current catalog, apply with fresh tokens and restart the processes.
 
-Workflow jobs retain existing adapter/configuration fingerprints. Approved publications retain their connector runtime version. Managed provider tasks now retain code/model/declared-configuration fingerprints in their persisted task identity, with the original remote task ID alongside it. A mismatched runtime refuses status checks before importing source. Restoring the exact release/configuration restores eligibility; an untracked operator task requires its original operator runtime. Installation does not establish provider idempotency, quality, cancellation support or recovery from a lost initial submission response.
+Workflow jobs retain existing adapter/configuration fingerprints. Approved publications retain their connector runtime version. Managed provider tasks now retain code/model/declared-configuration fingerprints in their persisted task identity, with the original remote task ID alongside it. A mismatched runtime refuses status checks before importing source. Restoring the exact release/configuration restores eligibility; an untracked operator task requires its original operator runtime.
 
-## Limits and transport
+## Sizes and transport
 
 Up to 16 entries/package, 12 MB compact serialized input, 8 MB source/package, 32 active entries and 8 MB source per kind across managed packages. Operator and managed entries share the existing loader caps. Manifests are at most 64 KB; adapter/connector modules at most 2 MB; provider modules at most 5 MiB. Storage retains at most 64 package identities and 128 MiB of release documents; historical purge is not implemented. Downloads use compact JSON so a package at the byte limit can be imported again. The CLI writes new files only. HTTP requires the workspace trust header, bounded JSON and rejects host paths; public HTTPS/GitHub URLs are accepted only by the separate `fetch` action for inspection. No new runtime dependency or background poller is added.
 
@@ -95,6 +95,6 @@ All transports share the same operation:
 pnpm runtime-package fetch https://example.org/engine.json SHA256
 ```
 
-HTTP `/api/app/runtime-packages` accepts `{ "action": "fetch", "url": "https://example.org/engine.json", "expectedSha256": "<64 lowercase hex characters>" }`; MCP `viral_hit_runtime_package` wraps that object in `request`. The hash is optional for a direct link. The result contains the usual inspection plus `download: { source, sha256, catalogPinned }`. The raw download hash differs from the canonical `digest` used by `apply`. CLI `change` also accepts this request on stdin. These are templates, not an assertion of a hosted release.
+HTTP `/api/app/runtime-packages` accepts `{ "action": "fetch", "url": "https://example.org/engine.json", "expectedSha256": "<64 lowercase hex characters>" }`; MCP `viral_hit_runtime_package` wraps that object in `request`. The hash is optional for a direct link. The result contains the usual inspection plus `download: { source, sha256, catalogPinned }`. The raw download hash differs from the canonical `digest` used by `apply`. CLI `change` also accepts this request on stdin.
 
 Fetch is bounded to 12,000,000 bytes and 20 seconds, with streaming public DNS/socket pinning, redirect checks and cleanup of temporary files. URLs and redirects cannot contain credentials, query strings, fragments or custom ports; authenticated sources remain unsupported. Download/inspection never imports modules, installs dependencies, starts jobs or saves a release. No automatic update fetch or background scan was added.

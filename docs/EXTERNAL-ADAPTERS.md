@@ -6,7 +6,7 @@ Viral Hit can load explicitly installed execution adapters alongside its built-i
 
 ## Try the independent audio example
 
-The repository includes a standalone procedural tone adapter. It synthesizes a quiet PCM WAV, publishes an immutable binary receipt, then uses the existing `asset.materialize` step to create an ordinary project asset. Its output can be added to an audio track, used as a take or exported with visual media. The current browser MP4 action requires a visual clip; audio-only file export remains separate work. It is a calibration example, not a speech/music model or a generation-quality benchmark.
+The repository includes a standalone procedural tone adapter. It synthesizes a quiet PCM WAV, publishes an immutable binary receipt, then uses the existing `asset.materialize` step to create an ordinary project asset. Its output can be added to an audio track, used as a take or exported with visual media.
 
 From the repository root:
 
@@ -38,7 +38,7 @@ Descriptors are bounded to 64 KB, individual modules to 2 MB and aggregate sourc
 
 Export a default adapter object with the methods in [the TypeScript contract](../apps/studio/src/core/harness/external-adapter-api.ts). The worker imports the exact verified bytes through a data URL. Bundle external dependencies into the `.mjs`; `node:` built-ins are supported, relative imports are not. JSON inspection and capability discovery do not import the module. The implementation version in each recipe node must match the descriptor version. Recipe identity/version continues to participate in plan fingerprints.
 
-Adapters run with the worker's normal filesystem, environment and network privileges. The digest pins identity; it is not a sandbox, author signature or quality certification. Review code and its license before installing it. Code that loads additional mutable executable files can defeat reproducibility; bundle dependencies and declare configuration. Process isolation and signed installation packages remain future work.
+Adapters run with the worker's normal filesystem, environment and network privileges. The digest pins identity. Review code and its license before installing it. Code that loads additional mutable executable files can defeat reproducibility; bundle dependencies and declare configuration. Process isolation and signed installation packages remain future work.
 
 ## Inputs, recovery and output
 
@@ -103,14 +103,12 @@ pnpm dev
 
 Import an audio file into a project, then select **Runs → Audio gain**. Select **Source audio**, a volume multiplier and maximum duration, and queue the workflow. The example decodes at most the first 30 seconds of a local input up to 64 MiB into a new 48 kHz stereo PCM WAV. It preserves the original, and gain above 1 can clip loud inputs. Its declared executable path is pinned with the job configuration; the binary itself is operator-managed, so pin its version in your deployment too. The processor does not call an AI model or paid service. Install both examples by copying their descriptor/module pairs into one adapter directory; recipes stay in a separate directory.
 
-Adapter isolation, streaming inputs, hot upgrades and automatic environment repair remain separate work.
-
 The implementation follows [Ajv's draft-07 schema contract](https://ajv.js.org/json-schema.html#draft-07-default) and [Node's data URL module loading rules](https://nodejs.org/api/esm.html#data-imports). See [validation evidence](VALIDATION.md) for tested behavior and limitations.
 
 ## Bounded long local execution
 
 An adapter descriptor may declare `execution: { "timeoutMs": 240000, "abortOnCancel": true }`. The step budget is 1,000–300,000 ms; omitting it preserves 60,000 ms. The harness claims a lease for the step budget plus 60 seconds. This policy is part of the pinned descriptor identity and cannot be supplied by recipe input. The module's own execution-policy field is not trusted over the descriptor.
 
-`abortOnCancel` is an explicit promise that interrupting submission leaves no unknown remote side effect. Use it for local processing/read-only acquisition whose subprocesses honor AbortSignal and are awaited until shutdown. Do not opt paid/remote submission into this behavior merely to make cancellation look immediate; preserve its original receipt/reconciliation contract. The harness waits for the adapter to settle instead of releasing a lease while it may still be doing I/O. This is cooperative cancellation, not a sandbox or an enforcement mechanism for non-cooperating code.
+`abortOnCancel` is an explicit promise that interrupting submission leaves no unknown remote side effect. Use it for local processing/read-only acquisition whose subprocesses honor AbortSignal and are awaited until shutdown. Do not opt paid/remote submission into this behavior merely to make cancellation look immediate; preserve its original receipt/reconciliation contract. The harness waits for the adapter to settle instead of releasing a lease while it may still be doing I/O. Cancellation is cooperative.
 
 Declared video inputs may now bind to successful `reference.youtube`/`reference.sample` root `/assetId` outputs as well as `asset.materialize`. The host binds project/kind/hash/size and checks the actual bytes before the extension runs. The original and sample assets remain available independently of any particular downstream recipe.

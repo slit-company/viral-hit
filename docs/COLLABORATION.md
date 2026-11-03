@@ -40,6 +40,6 @@ A project keeps at most 20 active links and 1,000 comments. Comments are plain t
 
 POST requests need the `x-viral-hit-workspace-request: 1` header, like every other change.
 
-## Limits
+## Before you share
 
-There are no accounts, live cursors or simultaneous editing in one screen. Editor links change the timeline through the command API, and the review page itself only plays the newest rendered cut. Render the timeline from the editor or through MCP before asking for review.
+Editor links change the timeline through the command API, and the review page plays the newest rendered cut, so render the timeline from the editor or through MCP before asking for review.

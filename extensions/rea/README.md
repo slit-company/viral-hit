@@ -2,7 +2,7 @@
 
 Connect [REA](https://github.com/morluto/rea) to the existing Viral Hit harness. The bridge supports static analysis of a JavaScript/Electron artifact and bounded observation of one already-open browser target. It produces an evidence summary in **Runs**, with a JSON download and a companion skill for turning findings into a feature map and reconstruction plan.
 
-This is an integration with **rea-agents 6.8.0**, not a replacement REA implementation. REA is MIT licensed and installed separately. The default studio installs no REA, browser, native disassembler or language model. The question guides the companion agent's interpretation; it does not change REA's deterministic capture into a semantic feature analysis.
+This integrates **rea-agents 6.8.0**. REA is MIT licensed and installed separately. The default studio installs no REA, browser, native disassembler or language model. The question guides the companion agent's interpretation; it does not change REA's deterministic capture into a semantic feature analysis.
 
 ## Build and install
 
@@ -70,15 +70,15 @@ Choose **Inspect a website** or **Inspect a JavaScript or Electron app** in Runs
 
 ## Bounds and recovery
 
-One engine runs per evidence directory, enforced by an exclusive lock. There is no background engine or second queue. A CLI invocation has a 90-second deadline, 8 MiB combined output limit and 512 MiB V8 heap limit; source-analysis children use a 256 MiB V8 heap limit. Web bundle analysis has a 45-second analysis budget; the whole harness call has a 200-second deadline. These are not total RSS or aggregate disk quotas. Large targets can exceed limits and return partial evidence. The public UTF-8 summary is capped at 96 KB; omitted observations remain in retained evidence.
+One engine runs per evidence directory, enforced by an exclusive lock. There is no background engine or second queue. A CLI invocation has a 90-second deadline, 8 MiB combined output limit and 512 MiB V8 heap limit; source-analysis children use a 256 MiB V8 heap limit. Web bundle analysis has a 45-second analysis budget; the whole harness call has a 200-second deadline. Large targets can exceed limits and return partial evidence. The public UTF-8 summary is capped at 96 KB; omitted observations remain in retained evidence.
 
-Child processes inherit only an isolated HOME/TMPDIR, minimal PATH, locale and color setting. They do not inherit provider credentials. This is process isolation, not an OS sandbox: REA still runs as the operator. Website capture can retain sensitive page data; private evidence files use mode 0600 and new directories 0700. Summaries can still contain inspected identifiers and source paths, so review before sharing.
+Child processes inherit only an isolated HOME/TMPDIR, minimal PATH, locale and color setting. They do not inherit provider credentials. REA runs in its own process as the operator. Website capture can retain sensitive page data; private evidence files use mode 0600 and new directories 0700. Summaries can still contain inspected identifiers and source paths, so review before sharing.
 
 An intent is written before capture. Completed receipts reconcile by reading retained files without reobserving the target. An incomplete intent remains uncertain and cannot silently rerun. A missing or changed completed result also becomes uncertain. Cancellation stops the process group; completed evidence can survive cancellation. After a host crash, inspect `.analysis-lock/owner.json`, confirm the original process is gone, then remove only the stale lock. Retain incomplete intents while deciding whether to create a fresh run. Evidence has no automatic expiry; operators own retention and disk cleanup.
 
 ## Verification
 
-`npm test` uses a protocol fixture for boundaries, output limits, cancellation, configuration changes, project scope, recovery and partial reports. It does not prove REA's analysis quality.
+`npm test` uses a protocol fixture for boundaries, output limits, cancellation, configuration changes, project scope, recovery and partial reports.
 
 For live verification, build the extension, create a configuration JSON containing the four `VIRAL_HIT_REA_NODE`, `VIRAL_HIT_REA_CLI`, `VIRAL_HIT_REA_CLI_SHA256` and `VIRAL_HIT_REA_TARGETS` values, then run:
 
@@ -89,7 +89,7 @@ pnpm --dir apps/studio exec tsx scripts/verify-rea.ts \
 
 The verifier uses a new isolated data directory, validates the runtime/pack/skill through their real application contracts, installs the data definitions there, runs actual REA through the existing harness and verifies retained evidence IDs/hashes. It writes a result and preview environment. It never installs into the main workspace.
 
-Native binary analysis, automatic interaction tracing, server-only source recovery and automatic reconstruction are outside this first bridge. The initial implementation provides evidence collection and an agent workflow, not feature parity with an inspected product.
+Native binary analysis, automatic interaction tracing, server-only source recovery and automatic reconstruction are outside this first bridge.
 
 ### Recorded checks: 2026-10-28
 

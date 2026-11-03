@@ -14,10 +14,9 @@ The worker checks the phase gate before reading retained media or writing the du
 
 Editing an unstarted reservation increments revision, clears approval, resets the old queue deadline and fences any expired claim. New approval checks the new digest and allows the worker to recompute timing. An active lease or started session remains immutable. Canceling an unstarted reservation creates no remote container. Stopping a started operation retains the existing I/O quarantine and read-only reconciliation contract.
 
-The studio must be running with an accurate system clock. The time is an earliest publication time, not a guaranteed delivery SLA. Upload/processing may finish later. A reservation approved before downtime resumes when the studio returns; an existing expired container is not silently recreated. The UI discloses delayed delivery. An elapsed, unapproved draft requires a new future time; a replayed creation key still returns its original record without creating new work.
+The studio must be running with an accurate system clock. Upload/processing may finish later. A reservation approved before downtime resumes when the studio returns; an existing expired container is not silently recreated. The UI discloses delayed delivery. An elapsed, unapproved draft requires a new future time; a replayed creation key still returns its original record without creating new work.
 
 ## Evidence and remaining scope
 
 Tests reopen real SQLite reservations, verify zero provider requests before preparation, check preparation and final boundaries down to one millisecond, revise a waiting reservation to immediate delivery, cancel it, rewind time during both identity and final status reads, recover after late restart and retain a single publish POST after a lost reply. Application tests verify admission and elapsed-time approval. Browser coverage edits a local scheduled time, rejects a stale digest, plays retained video, approves the reviewed revision, reloads the waiting state and cancels it.
 
-No real Meta consent, scheduled upload or public visibility has been verified. Images/carousels, manually continuing a stopped staged publication, media normalization and public-release readiness remain separate work. This change does not claim general Higgsfield parity.

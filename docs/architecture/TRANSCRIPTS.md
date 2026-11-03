@@ -1,6 +1,6 @@
 # Optional speech recognition and portable transcripts
 
-`core/transcripts/` owns a provider-independent, versioned transcript result and subtitle serialization. Results identify the exact project media, selected source-time range, recognition engine/model and estimated segment timings. They are machine estimates for review, not verified observations or a storyboard's acceptance record. They live in the existing durable job output; this feature adds no transcript database or execution engine.
+`core/transcripts/` owns a provider-independent, versioned transcript result and subtitle serialization. Results identify the exact project media, selected source-time range, recognition engine/model and estimated segment timings. They live in the existing durable job output; this feature adds no transcript database or execution engine.
 
 An independently installed `ext.whisper-transcribe` adapter lives in `extensions/whisper/`. It reads declared project video/audio through the existing bounded media context, decodes a selected range to mono 16 kHz PCM and runs an operator-installed whisper.cpp CLI/model. No model downloads, package installs or daemon start happen when a recipe is inspected, installed or discovered. Code/configuration are pinned by the existing adapter wrapper; CLI and model hashes are additionally verified by the implementation. Dynamic libraries and FFmpeg installations remain operator-managed.
 

@@ -23,7 +23,7 @@ From `apps/studio`, run `pnpm reference --project PROJECT_ID --youtube VIDEO_ID 
 
 The worker selects MP4 video and audio streams separately, downloads through YoutubeExplode's stream API and muxes with FFmpeg without re-encoding. It does not assume a combined stream exists. Maximum height is selectable from 144 through 1080; a lower available rendition can be selected. Aggregate download and final output are capped at 256 MiB; source duration is at most one hour. The engine deadline is 180 seconds, mux deadline 30 seconds. Downloads use a 128 KiB reusable buffer. Input is a single exact YouTube video ID, not an arbitrary URL, playlist or search request.
 
-The worker receives a minimal environment and never prints stream URLs, response bodies or cookies. The parent waits for shutdown before removing temporary files. POSIX SIGTERM cancels requests and terminates an active mux process. Windows process-tree cancellation is not verified. Abrupt machine/process termination can leave temporary files; this is not an OS disk quota or an execution sandbox.
+The worker receives a minimal environment and never prints stream URLs, response bodies or cookies. The parent waits for shutdown before removing temporary files. POSIX SIGTERM cancels requests and terminates an active mux process. Abrupt machine/process termination can leave temporary files; this is not an OS disk quota or an execution sandbox.
 
 No login cookies, private-video support, channel discovery, timed caption intake or playlist import are exposed by this first bridge. YoutubeExplode offers additional APIs that can be added behind explicit contracts. Upstream service changes can break download support independently of a successful local build.
 

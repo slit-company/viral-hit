@@ -18,7 +18,7 @@ Saved run inputs, fingerprints, receipts, project media and timeline edits remai
 
 A recipe pack records the originally installed composition. Discovery compares its digest with its current member definitions and reports **complete**, **modified** or **missing**. The UI displays changed or missing installed packs, including those imported from outside the bundled catalog.
 
-Reimport and review the original pack to restore missing members. The existing installation operation checks every recipe in one transaction even when the pack identity is already known. It reuses exact members and restores absent ones; any existing changed definition blocks the whole operation. It never resets an author's local edit just because an old pack was reimported. Pack-wide replacement/removal remains separate work.
+Reimport and review the original pack to restore missing members. The existing installation operation checks every recipe in one transaction even when the pack identity is already known. It reuses exact members and restores absent ones; any existing changed definition blocks the whole operation. It never resets an author's local edit just because an old pack was reimported.
 
 ## Runs opened before another update
 

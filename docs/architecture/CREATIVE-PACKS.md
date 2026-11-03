@@ -6,7 +6,6 @@ A distributed transaction across SQLite databases and skill directories would in
 
 Readers can observe installed items before the complete pack record. This is intentional and documented. An interruption does not remove successful items or roll back unrelated concurrent edits. Automatic execution of skills, paid generation, external publishing and installation of executable runtime modules are outside this boundary.
 
-
 Remote sharing is stateless on the server: `fetch` downloads public HTTPS bytes to an atomic new file, then `inspect` and `install` operate on that retained file. The shared downloader pins public DNS, checks each redirect and bounds streamed bytes. The browser holds one Blob/File through review and installation; HTTP temporary downloads are removed when their stream closes or the request aborts. No long-lived remote cache, background cleanup process or URL-based installation state is introduced. MCP/CLI fetch intentionally returns `inspected: false`: a successful transfer is not a validated pack.
 
 Same-ID update, retained release export and listing removal follow [the release lifecycle decision](CREATIVE-PACK-LIFECYCLE.md). Recipe membership and the final creative head are separate commits; failure is explicit and requires fresh inspection, not an implied cross-library rollback.

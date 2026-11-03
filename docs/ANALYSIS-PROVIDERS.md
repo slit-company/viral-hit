@@ -1,6 +1,6 @@
 # Independent media analysis providers
 
-An installed provider can now offer `kind: "analysis"` models alongside image/video generation models. Use this for general video review or a specialized inspection workflow without modifying the editor. Models can declare accepted counts of project images, videos and audio alongside a prompt, and return a text report. Models without an `analysisInputs` declaration retain the original exactly-one-video contract. It does not imply that a provider understands scenes or that its conclusions are accurate.
+An installed provider can now offer `kind: "analysis"` models alongside image/video generation models. Use this for general video review or a specialized inspection workflow without modifying the editor. Models can declare accepted counts of project images, videos and audio alongside a prompt, and return a text report. Models without an `analysisInputs` declaration retain the original exactly-one-video contract.
 
 ## Declare a model
 
@@ -20,7 +20,7 @@ A complete small `provider.json`:
 
 Use `scope: "specialized"` for a particular format/job. Model IDs must be unique across installed providers and built-in models. Analysis models do not declare output aspect ratios, durations or generation-specific reference-image slots. Use `analysisInputs` for accepted analysis media. Existing image/video manifests continue to require aspect ratios. Discovery validates metadata without importing executable code. Missing required environment values disable the installed option; Extensions explains which setting names are missing.
 
-The module is `provider.mjs` by default. Copy the folder into `VIRAL_HIT_PROVIDERS_DIR`, or use the existing reviewed executable-runtime package lifecycle, then restart the studio and separate MCP processes. Module dependencies must be bundled into that one file; Node built-ins are available. Modules are trusted server code, not isolated plugins.
+The module is `provider.mjs` by default. Copy the folder into `VIRAL_HIT_PROVIDERS_DIR`, or use the existing reviewed executable-runtime package lifecycle, then restart the studio and separate MCP processes. Module dependencies must be bundled into that one file; Node built-ins are available. Modules run as trusted server code.
 
 ## Declare accepted media
 
@@ -40,7 +40,7 @@ Submit project asset IDs through the existing asset-first contract. The server d
 
 Single-picture and audio-only requests use the same generation history, task receipts and polling. History includes `referenceImages`, `referenceVideos` and `referenceAudios`, projecting local pins back to playable project URLs. Provider-specific options remain available. Canvas, Studio and HTTP/MCP share these models and limits. Studio can upload project originals once and reuse their asset IDs in later analyses.
 
-The optional [media batch inspector](../examples/providers/media-batch-inspector/README.md) measures real files sequentially with FFprobe, without a network request, daemon or model download. It demonstrates technical input processing, not semantic or creative-quality understanding.
+The optional [media batch inspector](../examples/providers/media-batch-inspector/README.md) measures real files sequentially with FFprobe, without a network request, daemon or model download.
 
 ## Implement the report
 
@@ -68,7 +68,7 @@ In **Studio**, choose **Analysis**, select the installed model and enter a promp
 
 The analysis draft is separate from image/video generation. It persists in this browser tab's session storage, scoped to the project, and survives reload. An unreadable stored copy stays untouched while a fresh draft is shown; **Replace unreadable draft** explicitly replaces it with the current selection and resumes saving. Storage failures are reported; completed reports remain in durable project history.
 
-Reusing an analysis history item restores its recorded model, prompt, depth, declared options and all media kinds without uploading again. Local references retain exact asset IDs; unavailable models remain visibly unavailable and unavailable nonlocal references fail explicitly. The server still verifies project membership and source bytes at submission. The source picker deduplicates the latest 500 asset-membership entries and displays up to 50 search matches, disclosing that bound; selected older local sources can still be restored from history. This is draft/history recovery, not cloud draft synchronization.
+Reusing an analysis history item restores its recorded model, prompt, depth, declared options and all media kinds without uploading again. Local references retain exact asset IDs; unavailable models remain visibly unavailable and unavailable nonlocal references fail explicitly. The server still verifies project membership and source bytes at submission. The source picker deduplicates the latest 500 asset-membership entries and displays up to 50 search matches, disclosing that bound; selected older local sources can still be restored from history.
 
 By default, the source is an already-public URL or a managed upload of local/private media. To read project files directly, add `"referenceDelivery": "project-media"` to the provider manifest. The runtime then supplies `media` and `readMedia(input.videoUrl)` during `createGeneration`. The latter resolves to `{bytes, projectId, assetId, kind, sha256, sizeBytes, mimeType, filename}` after verifying ownership and content. `input.videoUrl` is then an opaque identifier, not a fetchable URL. No managed-upload configuration is needed.
 
@@ -76,12 +76,12 @@ The reader admits only declared local references (64 MiB each, 256 MiB total, at
 
 ## Real optional processor and remaining work
 
-[`media-inspector`](../examples/providers/media-inspector/README.md) performs actual FFprobe metadata inspection with no model service or new dependency. Its second model adds a 9:16/audio-presence review. Verified local bytes, SHA-256 and measured stream metadata make the report reproducible. It is a technical processor, not an AI-quality demonstration.
+[`media-inspector`](../examples/providers/media-inspector/README.md) performs actual FFprobe metadata inspection with no model service or new dependency. Its second model adds a 9:16/audio-presence review. Verified local bytes, SHA-256 and measured stream metadata make the report reproducible.
 
-Semantic video interpretation, representative model-quality tests and nested/conditional provider-specific forms remain open; bounded scalar [model options](MODEL-OPTIONS.md) are supported. Typed report → storyboard mapping is described below. The scene/transcript storyboard handoff is still a separate typed workflow; a free-text provider report is not silently converted into timed observations.
+Typed report → storyboard mapping is described below. The scene/transcript storyboard handoff is still a separate typed workflow; a free-text provider report is not silently converted into timed observations.
 
 ## Structured report handoff
 
-Providers may now return a validated `report` with timed observations and optional shot proposals. Storyboards can prepare selected observations as an unsaved plan. Legacy report version 1 requires exactly one pinned local video without accompanying images/audio. Report version 2 binds each observation to a specific image, video or audio input and verifies every original before preparation. See [the output schema and review workflow](STRUCTURED-ANALYSIS.md). This implements typed report-to-plan mapping; representative semantic analysis quality and automatic creative planning remain unverified.
+Providers may now return a validated `report` with timed observations and optional shot proposals. Storyboards can prepare selected observations as an unsaved plan. Legacy report version 1 requires exactly one pinned local video without accompanying images/audio. Report version 2 binds each observation to a specific image, video or audio input and verifies every original before preparation. See [the output schema and review workflow](STRUCTURED-ANALYSIS.md).
 
 Plain-text batch reports remain in generation history. Structured version 2 reports use explicit per-kind source positions and independent ranges; ambiguous version 1 batch reports remain ineligible for storyboard preparation.

@@ -12,7 +12,7 @@ Present optional inputs use the same project membership, kind, size and content 
 
 The composition is local and replayable. It recovers a published binary before accessing originals, validates input containers and bounded FFprobe metadata, renders one segment at a time and publishes a durable MP4 receipt. Six declared slots total at most 256 MiB; output is at most 64 MiB. The descriptor allows 180 seconds with cancellation propagated to the existing POSIX process-group terminator. Native processes are trusted, not an OS sandbox. Installed engine/runtime versions and lock digest remain pinned.
 
-The authored timeline stays in the durable input. Output is a flattened video asset that can be trimmed, split, replaced as a take or mixed in the editor. Layer-by-layer vid2 round-trip and arbitrary streaming sources are separate work.
+The authored timeline stays in the durable input. Output is a flattened video asset that can be trimmed, split, replaced as a take or mixed in the editor.
 
 ## Evidence
 

@@ -14,4 +14,4 @@ Drafts use this browser origin's local storage. They persist across reloads and 
 
 Each snapshot is bounded to 4 MiB including its base and pending document, with up to 20 valid drafts per project. Browser-wide quota can be lower than the theoretical aggregate. A failed storage write retains the previous copy and displays an actionable error; network saving can still proceed. No draft is automatically expired or removed to make room. Invalid snapshots remain in storage and are reported as unreadable, without applying them to the project. Downloaded draft JSON is an audit/recovery snapshot, not an automatically executable recipe or a portable project bundle. Use a [project file](PROJECT-FILES.md) to move a project with its media.
 
-A recovery review can include a draft from another currently open tab. Inspect its timestamp and contents before restoring it. Cross-tab collaboration, per-field conflict resolution and importing a downloaded draft through a dedicated UI are still separate work.
+A recovery review can include a draft from another currently open tab. Inspect its timestamp and contents before restoring it.

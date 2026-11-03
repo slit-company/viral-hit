@@ -24,7 +24,7 @@ pnpm dev
 
 If other adapters are installed, copy these generated descriptor/module pairs into the existing adapter directory instead of replacing it. Restart consuming processes together. Keep engine installations immutable while jobs are pending: lockfile/version checks do not verify every executable file's contents.
 
-Open **Runs → Recipe library** and install the **Local media engines** pack, which contains every recipe in `recipes/` ([pack.json](pack.json)). You can still import `recipes/music2-render.json` and `recipes/vid2-render.json` individually, inspect, and install. This retains existing recipes. Each exposes an editable JSON document; the examples are starting points, not the only compositions. Queue, wait for **Asset ready**, then add the asset to the timeline or use it as a take. Authored JSON remains in the run input. Vid2 scenes/layers do not yet round-trip into separate editor clips; music2 tracks currently produce one mixed WAV.
+Open **Runs → Recipe library** and install the **Local media engines** pack, which contains every recipe in `recipes/` ([pack.json](pack.json)). You can still import `recipes/music2-render.json` and `recipes/vid2-render.json` individually, inspect, and install. This retains existing recipes. Each exposes an editable JSON document; the examples are starting points, not the only compositions. Queue, wait for **Asset ready**, then add the asset to the timeline or use it as a take. Authored JSON remains in the run input.
 
 | Engine | Enabled | Bridge limits |
 |---|---|---|
@@ -35,7 +35,7 @@ Open **Runs → Recipe library** and install the **Local media engines** pack, w
 
 Documents are limited to 16,000 characters and bounded nesting/node count. Upstream validators determine format correctness. Video runs one segment at a time (`--jobs 1`); FFmpeg can still use multiple threads. Validation has a 10s deadline, rendering 40s, and accepted output is ≤64 MiB. These fit the harness's 60s poll budget. Larger jobs need a persistent background-process protocol first. Limits are not OS memory/disk quotas.
 
-Children receive a minimal environment without inherited provider credentials or Bun overrides. Output is bounded; temporary files are removed on ordinary completion/failure. AbortSignal/deadline termination kills the POSIX process group, including Bun/FFmpeg descendants. User cancellation is currently observed between harness steps, so a render can finish before that request is processed. A host crash can leave temporary files; Windows and cross-host process recovery remain open.
+Children receive a minimal environment without inherited provider credentials or Bun overrides. Output is bounded; temporary files are removed on ordinary completion/failure. AbortSignal/deadline termination kills the POSIX process group, including Bun/FFmpeg descendants. User cancellation is currently observed between harness steps, so a render can finish before that request is processed.
 
 Local input/render errors become failed jobs with concise diagnostics; dependent materialization blocks. Runtime/configuration mismatches preserve recovery without switching tools. Existing binary receipts recover before parsing/rendering. Publication failures remain ambiguous for receipt recovery. This bridge has no remote generation side effects.
 
@@ -65,10 +65,10 @@ Both are editable recipe manifests, not hardcoded layouts in the application. Fo
 
 A previous `asset.materialize` node can bind its `/assetId` to `/assets/video-1` or another matching slot, so separately generated images, footage and scores compose in one durable workflow. Project, kind, byte count and content hash are pinned together. Recipes never receive host file paths.
 
-The bridge stages only selected verified bytes, checks container signatures and FFprobe metadata, and substitutes temporary paths in an execution copy. Images are PNG/JPEG/WebP (32 MiB); videos MP4/WebM (64 MiB); audio WAV/MP3/M4A/FLAC/Ogg (32 MiB). Images/video are limited to 16 megapixels; moving/audio sources to one hour; audio to eight channels. Six slots declare 256 MiB total. Arbitrary URLs, file paths, playlists, SVG, capture sessions, providers, TTS, custom fonts and LUT files are rejected. These are parser/input limits, not an OS sandbox.
+The bridge stages only selected verified bytes, checks container signatures and FFprobe metadata, and substitutes temporary paths in an execution copy. Images are PNG/JPEG/WebP (32 MiB); videos MP4/WebM (64 MiB); audio WAV/MP3/M4A/FLAC/Ogg (32 MiB). Images/video are limited to 16 megapixels; moving/audio sources to one hour; audio to eight channels. Six slots declare 256 MiB total. Arbitrary URLs, file paths, playlists, SVG, capture sessions, providers, TTS, custom fonts and LUT files are rejected.
 
 Composition has a 180s harness deadline, 5s per input probe, 10s timeline validation and 120s rendering, one segment at a time. Cancellation propagates to the process group during rendering. Output remains ≤64 MiB. Published binary receipts recover before reading sources. The two earlier adapters retain their existing deadlines.
 
-The rendered MP4 can be trimmed, split, mixed or used as a replacement take in the editor. Its original authored timeline remains in the run; native vid2 layers do not yet become individual editor clips.
+The rendered MP4 can be trimmed, split, mixed or used as a replacement take in the editor.
 
-Run `npm run test:compose -- /absolute/evidence-directory` with the FFmpeg variables above. It executes actual music2 and vid2, chains materializer outputs into optional media slots, checks 720×1280 and 1280×720 four-second/120-frame outputs, confirms an 880 Hz test tone in the narration channel, preserves source hashes, recovers receipts and exports through the editor. The test tone is not generated speech. Captured frames support visual review; no model-quality claim follows.
+Run `npm run test:compose -- /absolute/evidence-directory` with the FFmpeg variables above. It executes actual music2 and vid2, chains materializer outputs into optional media slots, checks 720×1280 and 1280×720 four-second/120-frame outputs, confirms an 880 Hz test tone in the narration channel, preserves source hashes, recovers receipts and exports through the editor. The test tone is not generated speech.

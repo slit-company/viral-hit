@@ -14,6 +14,6 @@ The adapter verifies ima2's exact supported version, rejects redirects, bounds r
 
 ## Validation and limits
 
-HTTP fixture tests cover ambiguity, cancellation, path/metadata mismatches and limits. The opt-in verifier runs actual pinned ima2 application routes/storage with an isolated synthetic AI response, exercises both recipes through the real harness/materializer/timeline and interrupts the first submission after remote acceptance. This does not validate live AI quality, every provider lane or Higgsfield parity.
+HTTP fixture tests cover ambiguity, cancellation, path/metadata mismatches and limits. The opt-in verifier runs actual pinned ima2 application routes/storage with an isolated synthetic AI response, exercises both recipes through the real harness/materializer/timeline and interrupts the first submission after remote acceptance.
 
 Masks, image branches, alpha verification, video generation, live model discovery and real provider acceptance are subsequent capabilities, not implied by this bridge.

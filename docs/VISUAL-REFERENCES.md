@@ -24,19 +24,19 @@ Omitting `referenceInputs` preserves the legacy visual declaration: `maxReferenc
 
 Discovery returns the count declaration and media slots. Studio, Canvas, asset-first HTTP/MCP/CLI requests and `generation.model` recipes use the same model registration. Server admission and adapter entry validate required/maximum counts, accepted aspect ratios/durations, distinct reference URLs and supported array fields before importing provider code. Internal `video_url`, `image_url`, frame aliases or forged parameters do not override the owned references.
 
-Providers receive ordered `input.imageUrls`, `input.videoUrls` and `input.audioUrls`. These preserve order within each kind, not cross-kind interleaving. `referenceDelivery: "project-media"` provides verified call-scoped `media` and `readMedia`; otherwise the existing managed upload path supplies authorized delivery URLs. Counts alone do not establish that a model understands a reference, performs lip-sync, or maintains identity/motion. Models that need to know what each reference is for declare [reference roles](#reference-roles); semantic quality still needs separate evaluation.
+Providers receive ordered `input.imageUrls`, `input.videoUrls` and `input.audioUrls`. These preserve order within each kind, not cross-kind interleaving. `referenceDelivery: "project-media"` provides verified call-scoped `media` and `readMedia`; otherwise the existing managed upload path supplies authorized delivery URLs.
 
 ## Studio selection and recovery
 
 The image/video composer now has **Sources** and **Upload files**. The source dialog shows each selected file's kind, its required/maximum counts and a deduplicated project library. Uploads are local project assets; selecting them does not start generation. A whole excessive selection fails before upload. If a later individual upload fails, successfully uploaded sources remain selected.
 
-When a model requires a source clip, Studio reads the attached clip's length. It sets the output length to the shortest one that covers the clip and fills a `source_seconds` option with the length rounded up. You can still change both. Switching visual models preserves selected originals and disables generation when counts no longer match. The source selection survives reload in the same browser tab and project. This storage contains sources only, not a complete visual prompt/options draft. An unreadable stored selection remains until explicit replacement. Generation history reuse restores all image/video/audio IDs, including known local files outside the recent library window, without re-uploading them. Original ownership is checked again on submission.
+When a model requires a source clip, Studio reads the attached clip's length. It sets the output length to the shortest one that covers the clip and fills a `source_seconds` option with the length rounded up. You can still change both. Switching visual models preserves selected originals and disables generation when counts no longer match. The source selection survives reload in the same browser tab and project. An unreadable stored selection remains until explicit replacement. Generation history reuse restores all image/video/audio IDs, including known local files outside the recent library window, without re-uploading them. Original ownership is checked again on submission.
 
-Canvas continues to use its per-kind media slots and server validation. Studio count feedback does not imply that every Canvas interaction has identical presentation. External module/configuration changes still require coordinated process restart.
+Canvas continues to use its per-kind media slots and server validation. External module/configuration changes still require coordinated process restart.
 
 ## Optional real processor
 
-[Visual conform](../examples/providers/visual-conform/README.md) independently implements video-to-image frame extraction and short video formatting with an optional image overlay and soundtrack. It uses actual local PNG/MP4/WAV files and separately installed FFmpeg/FFprobe. A durable video → frame recipe and a browser Studio → frame → editable sequence → MP4 flow are verified. This processor does not interpret prompts or perform AI inference. Contributors can implement other general or specialized models behind the same declaration.
+[Visual conform](../examples/providers/visual-conform/README.md) independently implements video-to-image frame extraction and short video formatting with an optional image overlay and soundtrack. It uses actual local PNG/MP4/WAV files and separately installed FFmpeg/FFprobe. A durable video → frame recipe and a browser Studio → frame → editable sequence → MP4 flow are verified. Contributors can implement other general or specialized models behind the same declaration.
 
 ## Edit a marked area
 
@@ -52,7 +52,7 @@ Admission rejects a mask for a model without `maskInput`, a missing mask when it
 
 In Studio, choosing a mask-capable model shows **Mark area**. The painter draws over the first selected image with brush, eraser, whole-image and clear actions, and saves the mask as a new project file; the original is never modified. The mask stays with the selection after reload and is restored when a request is reused from history. Removing its image drops the mask.
 
-The optional [masked edit processor](../examples/providers/masked-edit/README.md) blurs, desaturates, pixelates or fills only the marked area with FFmpeg. It proves the contract with real pixels; it is not generative inpainting. A diffusion inpainting model, ComfyUI graph or hosted editing API plugs into the same declaration without app changes.
+The optional [masked edit processor](../examples/providers/masked-edit/README.md) blurs, desaturates, pixelates or fills only the marked area with FFmpeg. A diffusion inpainting model, ComfyUI graph or hosted editing API plugs into the same declaration without app changes.
 
 ## Reference roles
 

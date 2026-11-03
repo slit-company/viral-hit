@@ -18,10 +18,9 @@ The file is a plain POSIX tar readable with `tar -tf`. It contains `manifest.jso
 
 The manifest records schema-validated Canvas and timeline documents whose media references use `viralhit:asset:<id>` and a list of assets with kind, MIME type, size, SHA-256 and probed dimensions/duration. Other tools can generate or read this format; the strict subset is regular files only, exact member names, no links, directories, extensions or duplicates.
 
-## Limits
+## Sizes and storage
 
-Files are limited to 2 GiB, 500 assets and 512 MiB per asset, with a 5 MiB manifest. Export requires local project media; run `pnpm media:localize` first if a project still references remote storage. Export fails when media is missing, altered or changed while the file is being prepared, so an incomplete file is never offered. Prepared and staged files are kept under the data directory's `project-bundles/` folder until removed by the operator.
-
+Files can be up to 2 GiB, 500 assets and 512 MiB per asset, with a 5 MiB manifest. Export requires local project media; run `pnpm media:localize` first if a project still references remote storage. Export fails when media is missing, altered or changed while the file is being prepared, so an incomplete file is never offered. Prepared and staged files are kept under the data directory's `project-bundles/` folder until removed by the operator.
 
 ## Storyboard transfer
 

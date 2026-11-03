@@ -49,4 +49,4 @@ Canvas offers **Model options** for installed image, video and analysis models t
 
 Canvas project snapshots and generation snapshots retain the bounded option values. The generation history's stored input retains server-resolved defaults. Provider package changes still require restart. Existing pending managed tasks retain the original runtime fingerprint and cannot silently migrate to a changed manifest. Existing manifests without `controls` retain their normalized structure.
 
-The browser discovery cache can be stale after a server/provider restart; invalid old values fail server validation rather than being coerced into a new choice. Refresh the page to reload definitions. Rich nested forms, file controls, conditional fields, automatically migrating saved settings and a generalized graph editor remain open. This change does not establish model quality or arbitrary upstream API compatibility.
+The browser discovery cache can be stale after a server/provider restart; invalid old values fail server validation rather than being coerced into a new choice. Refresh the page to reload definitions.

@@ -31,6 +31,6 @@ Changes save on their own a moment after you make them. When the same stack was 
 
 Agents use the same stacks through the MCP tool `viral_hit_image_layers` (`create`, `list`, `get`, `update` with the current revision, `flatten`, `delete`). Over HTTP, use `GET/POST /api/app/projects/<projectId>/image-layers` and `GET /api/app/projects/<projectId>/image-layers/<stackId>/zip`.
 
-## Limits
+## Getting the best results
 
-How well the light changes and how faithfully the lettering is kept depend on the model. Models that follow instructions closely (GPT Image, Nano Banana, FLUX, Seedream) do best. For a small area, mark it with the [mask brush](VISUAL-REFERENCES.md#edit-a-marked-area) on a model that accepts masks.
+Models that follow instructions closely (GPT Image, Nano Banana, FLUX, Seedream) give the cleanest relighting and lettering. For a small area, mark it with the [mask brush](VISUAL-REFERENCES.md#edit-a-marked-area) on a model that accepts masks.

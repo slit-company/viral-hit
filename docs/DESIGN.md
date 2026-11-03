@@ -22,10 +22,9 @@ Review actual routes at 1440×1000 and the project list/recipe modal at 390×844
 
 No Higgsfield performance or model-quality parity is established by this redesign. See the validation ledger for functional tests and remaining benchmark gates. Logo source/prompt: [BRAND.md](BRAND.md).
 
-
 ## Component audit and ownership rules
 
-The current implementation is not mostly copied SEED source components. It combines direct reuse, adapters around the same SEED primitives and editor-specific components. An import audit on 2026-10-19 found 40 of 65 component `.tsx` files directly importing `components/base/`, `components/ui/` or `@seed-design/react`. This is direct dependency coverage, not the percentage of SEED source code reused; it excludes route files and does not count controls or transitive usage.
+The current implementation is not mostly copied SEED source components. It combines direct reuse, adapters around the same SEED primitives and editor-specific components. An import audit on 2026-10-19 found 40 of 65 component `.tsx` files directly importing `components/base/`, `components/ui/` or `@seed-design/react`.
 
 | Control/layout | Actual implementation | Reuse classification |
 |---|---|---|
@@ -36,41 +35,35 @@ The current implementation is not mostly copied SEED source components. It combi
 | Colors/type/interaction states | Owned SEED token and chrome subset | Token/style adaptation |
 | Timeline, media preview, connected canvas | Editor-specific composition | Product-specific components |
 
-Inspected upstream `SectionHeading.tsx`, `PageHeader.tsx` and `LoadingPlaceholder.tsx` are further reusable candidates. They are not integrated merely by appearing in this table. Prefer the actual SEED heading/header and skeleton pattern when replacing corresponding surfaces; the consumer phone shell and Saju commerce/chat components are not appropriate editor primitives. New shared controls must follow [structure rules](architecture/STRUCTURE.md), with feature behavior kept outside the common UI layer.
+Inspected upstream `SectionHeading.tsx`, `PageHeader.tsx` and `LoadingPlaceholder.tsx` are further reusable candidates. Prefer the actual SEED heading/header and skeleton pattern when replacing corresponding surfaces; the consumer phone shell and Saju commerce/chat components are not appropriate editor primitives. New shared controls must follow [structure rules](architecture/STRUCTURE.md), with feature behavior kept outside the common UI layer.
 
 ### Reference workflow results
 
 Reference recipes reuse the existing Runs dialog, SEED-backed recipe fields, SEED actions and project-asset picker. The new result component uses semantic figures with uncropped frame previews and selected timestamps, five columns on desktop and three on narrow screens. It introduces no alternate control system. Actual 1440×1000 and 390×844 captures and the fixed self-review scorecard are retained locally under `research/evidence/reference-recipes/visual/`.
 
-
 The publishing connections page uses the shared SEED-backed Button, existing light surface/text/border tokens and the workspace shell; it does not introduce a second control system or claim direct SEED source reuse. Long channel names wrap, account status stays explicit, and disconnect presents inline confirmation with the remote-video/schedule consequence. At phone widths, project mode navigation now occupies a separate header row with text labels, keeping Back, Runs, language, connections and configuration reachable. This fixes a real pointer interception found after adding the connections entry point; horizontal overflow alone did not detect that overlap.
 
-
-The project Publish page composes the same light shell and SEED-backed Button with shared Input/Textarea and a shared NativeSelect using input tokens. Native video, date/time and checkbox controls preserve browser media, keyboard and mobile behavior. This is primitive/token reuse, not a claim of copied SEED source. Preparation and review are separate columns on desktop and stacked on phones. The retained preview, destination and visibility remain in the review card; only confirmed reviewed revisions can be queued. Status distinguishes local approval from provider observation. The project Publish entry uses its own header icon, preserving the existing four mode tabs.
+The project Publish page composes the same light shell and SEED-backed Button with shared Input/Textarea and a shared NativeSelect using input tokens. Native video, date/time and checkbox controls preserve browser media, keyboard and mobile behavior. Preparation and review are separate columns on desktop and stacked on phones. The retained preview, destination and visibility remain in the review card; only confirmed reviewed revisions can be queued. Status distinguishes local approval from provider observation. The project Publish entry uses its own header icon, preserving the existing four mode tabs.
 
 ## Instagram account connections
 
-The Instagram provider card, Page/Instagram selection and account lifecycle reuse the existing shared Button and NativeSelect, ProductPageShell, SEED-based tokens and light surface treatment. These are shared-control/token adaptations, not a new assertion of direct SEED source reuse. Full Page names and both destination IDs remain visible below the native select on mobile. No provider SDK or new browser dependency is introduced.
+The Instagram provider card, Page/Instagram selection and account lifecycle reuse the existing shared Button and NativeSelect, ProductPageShell, SEED-based tokens and light surface treatment. Full Page names and both destination IDs remain visible below the native select on mobile. No provider SDK or new browser dependency is introduced.
 
-Real account UI captures at 1440×1000 and 390×844 passed the frozen visual rubric at 4.35/5 (self-review). The flow used real application routes and encrypted account storage with an isolated Meta response fixture, not a real Meta consent/account. Production captures separately show unconfigured Google/Meta controls disabled. Evidence is under `research/evidence/instagram-accounts/`; the failed URL/file evidence-binding attempt is retained, with the corrected binding in `visual-verified/`.
-
+Real account UI captures at 1440×1000 and 390×844 passed the frozen visual rubric at 4.35/5. The flow used real application routes and encrypted account storage with an isolated Meta response fixture, not a real Meta consent/account. Production captures separately show unconfigured Google/Meta controls disabled. Evidence is under `research/evidence/instagram-accounts/`; the failed URL/file evidence-binding attempt is retained, with the corrected binding in `visual-verified/`.
 
 ## Instagram publication review
 
 Publish composes separate YouTube and Instagram forms around one destination selector and delivery queue. The Instagram form/card reuse shared NativeSelect, Textarea, Button and the existing light SEED surface tokens. Reel/Story-specific caption and disclosure fields stay in the publishing feature; metadata validation, video inspection and provider calls stay in its server domain. Retained playback and revision-bound approval reuse the established review control. This adds no UI library or direct-source-reuse percentage claim.
 
-
 Instagram scheduling adds the existing shared Input with a native datetime-local control. Drafts retain the browser-local edit value while reviewed metadata stores an explicit UTC instant. The review card repeats the scheduled time/zone and uses a distinct Approve schedule action and Scheduled in studio waiting label. The existing queue, preview and shared light controls remain the same; no calendar library is added.
 
-Overlay motion uses the shared SEED Action controls and existing native range/select inputs. On screens below 640 px, the same Inspector content opens in the shared SEED dialog with focus management, Escape and focus return; desktop keeps its side panel. This is an adaptation of shared primitives, not a copy of SEED product content.
-
+Overlay motion uses the shared SEED Action controls and existing native range/select inputs. On screens below 640 px, the same Inspector content opens in the shared SEED dialog with focus management, Escape and focus return; desktop keeps its side panel.
 
 Creative pack link import composes the existing SEED Action, SEED TextField and light product shell. The link form wraps into a full-width action on phones; review reuses the existing recipes/instructions/reference-image view and retains its explicit confirmation. Installed pack cards show stable IDs and name download actions by title plus ID, so multiple community packs remain distinguishable. This is shared primitive/token reuse.
 
 The Skills lifecycle views reuse SEED Action, the shared dialog and light surface tokens. Update review labels installed/incoming versions, exposes both complete definitions and retained-version download, and requires a comparison checkbox. Removal has a separate revision-specific review. Skill cards expose stable IDs in text and accessible Read names. Native confirmation checkboxes follow the existing pack review pattern.
 
-
-The storyboard workspace reuses SEED Action, SEED TextField, the shared NativeSelect and ProductShell, plus the existing recipe parameter/asset form and Runs dialog. Feature-local components own plan, shot and review layout. This is SEED-based adaptation and shared token/control reuse, not a claim that the entire page was copied from SEED. Desktop (1440×960) and mobile (390×844) review captures include actual selected video ranges, long titles and saved/draft state.
+The storyboard workspace reuses SEED Action, SEED TextField, the shared NativeSelect and ProductShell, plus the existing recipe parameter/asset form and Runs dialog. Feature-local components own plan, shot and review layout. Desktop (1440×960) and mobile (390×844) review captures include actual selected video ranges, long titles and saved/draft state.
 
 Video layers reuse the existing Overlay import action, shared inspector and native range controls. The inspector identifies the clip as a visual overlay and exposes audio volume only for video. Native video preview lives inside the existing selectable/draggable layer control; no alternate button, dialog or theme is introduced. Mobile uses the same SEED inspector dialog and scrollable controls.
 

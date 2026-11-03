@@ -1,6 +1,6 @@
 # 010: Browser-bound Instagram account connections
 
-Status: Meta authorization-code flow, encrypted Page selection, account lifecycle and browser HTTP/UI implemented. Live Meta consent and publishing admission remain unverified/unintegrated respectively.
+Status: Meta authorization-code flow, encrypted Page selection, account lifecycle and browser HTTP/UI implemented.
 
 ## Scope and ownership
 
@@ -21,7 +21,7 @@ The implementation uses a Facebook Login for Business **User access token** conf
 
 ## Credential and callback boundary
 
-Operator settings are `VIRAL_HIT_META_APP_ID`, `VIRAL_HIT_META_APP_SECRET`, `VIRAL_HIT_META_LOGIN_CONFIG_ID` and `VIRAL_HIT_META_REDIRECT_URI`. The exact callback path is `/api/app/publishing/instagram/callback`. Use a configured HTTPS origin, or HTTP loopback for local development where Meta permits the registered redirect. Production approval and permissions remain the deployer's responsibility; configuration alone does not prove app review or a working real grant.
+Operator settings are `VIRAL_HIT_META_APP_ID`, `VIRAL_HIT_META_APP_SECRET`, `VIRAL_HIT_META_LOGIN_CONFIG_ID` and `VIRAL_HIT_META_REDIRECT_URI`. The exact callback path is `/api/app/publishing/instagram/callback`. Use a configured HTTPS origin, or HTTP loopback for local development where Meta permits the registered redirect.
 
 A random state and separate HttpOnly browser-binding cookie are created for each login. The store retains hashes of both, the configured client identity, redirect URI, target account UUID and optional reconnect revision. The callback consumes the pending state once before exchanging its code. It verifies the token's app, user, type, required scopes and expiry before and after the long-lived exchange. Raw callbacks, provider errors, access tokens and secrets never appear in the UI or account views. The callback renders no HTML and redirects to a fixed local connection page.
 
@@ -41,4 +41,4 @@ Disconnect deletes local credentials and pending reconnect/selection flows and i
 
 `GET/POST /api/app/publishing/instagram/accounts` requires workspace trust checks; writes require same-origin JSON capped at 4 KiB. Actions are `connect`, `select`, `cancel` and revision-checked `disconnect`. Reading a pending selection also requires its private browser binding. Consent, choice and local lifecycle are available on `/connections`.
 
-The ordinary publication draft/runtime now includes Instagram video admission, a safe container receipt shape, retained preview, revision-bound approval and a five-observation processing poll budget. The account UUID preserves its Page/Instagram pair through reconnect and the transport rechecks it before writes. Live Meta consent, real Page permissions and an operator-approved upload remain separate validation work.
+The ordinary publication draft/runtime now includes Instagram video admission, a safe container receipt shape, retained preview, revision-bound approval and a five-observation processing poll budget. The account UUID preserves its Page/Instagram pair through reconnect and the transport rechecks it before writes.

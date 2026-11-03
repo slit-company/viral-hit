@@ -74,7 +74,7 @@ Select the actual output node, output array (`images`, `audio`, `gifs` or `video
 
 ### Project images as workflow inputs
 
-Declare an imported parameter as `{ "id": "source", "label": "Source image", "type": "asset", "kind": "image" }`, targeting the string filename input of a native node such as `LoadImage`. The importer inserts a `comfy.upload` stage and binds its returned filename into the graph. One image parameter can feed several nodes. Image parameters never inherit a native filename as a default project asset ID: the user selects a project image in Runs. See [resize graph](../examples/comfy-api-resize.json), [definition](../examples/comfy-resize-definition.json) and the generated [recipe](../recipes/local-image-resize.json). This pattern also supports image-conditioned custom graphs when their required nodes and models are installed; the resize example does not prove those models' quality.
+Declare an imported parameter as `{ "id": "source", "label": "Source image", "type": "asset", "kind": "image" }`, targeting the string filename input of a native node such as `LoadImage`. The importer inserts a `comfy.upload` stage and binds its returned filename into the graph. One image parameter can feed several nodes. Image parameters never inherit a native filename as a default project asset ID: the user selects a project image in Runs. See [resize graph](../examples/comfy-api-resize.json), [definition](../examples/comfy-resize-definition.json) and the generated [recipe](../recipes/local-image-resize.json).
 
 The UI previews the selected image and explains that it will be sent to the configured ComfyUI server. Selection currently reads the first 500 project assets, filters for local PNG/JPEG/WebP images up to 32 MiB, and refreshes when Runs is reopened. MCP/CLI can specify any valid project asset ID directly. Remote-only assets must first be localized. Video/audio input transfer and masks are not implemented by this image adapter.
 
@@ -96,7 +96,7 @@ CLI exit codes are 0 for `checked`/`not-applicable`, 2 for reported `issues`, 3 
 
 Checks only GET `/object_info/<class>` on the administrator-configured server, with four concurrent reads, a 12-second overall deadline, two MB per response and eight MB aggregate. Redirects are refused. Missing classes, malformed/unavailable responses, current choice lists, primitive input ranges, required graph inputs and linked output indices are distinguished. Declared dependency inputs and unsupported custom semantics remain deferred. The report records the checked time and connection fingerprint; no job, upload, installation, model download or harness run is created.
 
-This is an advisory schema snapshot. ComfyUI's own validation may be richer or may override published input constraints. Models/files can change afterward, and output shapes, custom validation, input-image integrity and generation quality are not established by this check. Queueing remains a separate action; project-image membership/hash checks and native submission validation still apply there. Node names, filenames and choices returned by the server are source data, never instructions.
+This is an advisory schema snapshot. ComfyUI's own validation may be richer or may override published input constraints. Queueing remains a separate action; project-image membership/hash checks and native submission validation still apply there. Node names, filenames and choices returned by the server are source data, never instructions.
 
 ## Typed parameter and output binding
 
@@ -111,7 +111,7 @@ A node starts with a JSON `input` and existing placeholders. Its `parameters` ma
 
 The compiler copies typed values, without string interpolation or evaluation. Parameters can be string, finite number, boolean, an enumerated string, or project media (`type: "asset", kind: "image" | "video" | "audio"`). Media values are project asset IDs, not filesystem paths or remote URLs. String parameters can declare `multiline: false` for short identifiers, URLs and names; omitted/true retains a multiline text area. This is presentation metadata, not a change to string validation. Unknown values and invalid defaults fail validation.
 
-For multi-stage processing, `bindings` select output JSON from an explicitly declared upstream node. The following is a **contract example**, not a live claim about a particular model's result format:
+For multi-stage processing, `bindings` select output JSON from an explicitly declared upstream node.
 
 ```json
 {
@@ -144,14 +144,13 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for where a contribution belongs and h
 
 Keep general project/asset/timeline contracts free of brand-specific fields. Specialized parameters belong in recipes or optional metadata. Reuse public source only with compatible license/provenance and update `THIRD_PARTY_NOTICES.md`. Preserve existing MCP names when extending the catalog; new Viral Hit tools use `viral_hit_*`.
 
-Validate changes at the affected boundary. Provider logic needs timeout/restart/ambiguous-response tests. Editor changes need real imported media, a decoded export and visual inspection. A model-quality claim needs real paid/open-weight generation evidence, not fixtures. Do not mark broad parity areas complete from narrow tests. Document missing functionality and failed comparisons alongside successful ones.
-
+Validate changes at the affected boundary. Provider logic needs timeout/restart/ambiguous-response tests. Editor changes need real imported media, a decoded export and visual inspection. A model-quality claim needs real paid/open-weight generation evidence.
 
 ## Durable media stage
 
 `asset.materialize` takes `{ "url": "", "kind": "image", "label": "Opening frame" }`, with a URL filled by a dependency binding or a user parameter. It requests HTTPS media from public addresses only, pins resolved DNS to the connection, rechecks redirects, forwards no auth/cookies, bounds downloads to 512 MiB and obeys cancellation/time limits. Private/self-hosted media needs an explicit future provider bridge; arbitrary localhost download is not enabled by a recipe.
 
-FFprobe validates supported raster/container types, dimensions, stream presence and duration. This is not exhaustive decoding or a quality rating. A stable asset ID derives from project and job key. Bytes are published without overwriting an earlier artifact, hashed, registered and linked to the project. A restart between file publication and database linkage reuses the file. The paid provider job is a separate DAG node, so retrying local import does not resubmit generation. The original provider receipt remains immutable; the local job returns its own asset record with SHA-256, size, type, duration and local project URL.
+FFprobe validates supported raster/container types, dimensions, stream presence and duration. A stable asset ID derives from project and job key. Bytes are published without overwriting an earlier artifact, hashed, registered and linked to the project. A restart between file publication and database linkage reuses the file. The paid provider job is a separate DAG node, so retrying local import does not resubmit generation. The original provider receipt remains immutable; the local job returns its own asset record with SHA-256, size, type, duration and local project URL.
 
 `viral_hit_runs_change` action `attach` accepts `runId`, `jobId` and `expectedRevision`. It only accepts successful, uncanceled local-import jobs in the selected project, rechecks file integrity and applies one stable `add_clip` command. It never replaces the entire timeline. Repeated attachment returns the same command receipt; stale revisions fail. The UI fetches the timeline revision before requesting this action.
 
@@ -169,7 +168,7 @@ Evidence for the FLUX mapping: [official Comfy cinematic example](https://github
 
 `open-motion` exposes a prompt, 16:9/9:16/1:1 framing, integer duration 3–15 seconds and 720p/1080p settings using `kling/kling-3.0-turbo`. `spoken-line` uses `elevenlabs/eleven_v3` with the model-specific `inputs: [{text, voice_id}]` body and a stability setting. There is no fixed brand, narrator, language, advertising format or required aspect ratio in the engine. Voice IDs are supplied by the user; provider access and model capabilities still apply.
 
-These contracts were read from the public [Kling schema](https://docs.comfy.org/router-schemas/kling/kling-3.0-turbo.json) and [Eleven v3 schema](https://docs.comfy.org/router-schemas/elevenlabs/eleven_v3.json). Schema version and SHA-256 are pinned in [model-contracts.json](../research/model-contracts.json). The model-specific schema takes precedence over a generic SDK example. The checked Eleven v3 route uses dialogue inputs, rather than a top-level `text` property. Input-contract inspection and fixture execution do not establish real provider acceptance or generation quality.
+These contracts were read from the public [Kling schema](https://docs.comfy.org/router-schemas/kling/kling-3.0-turbo.json) and [Eleven v3 schema](https://docs.comfy.org/router-schemas/elevenlabs/eleven_v3.json). Schema version and SHA-256 are pinned in [model-contracts.json](../research/model-contracts.json). The model-specific schema takes precedence over a generic SDK example. The checked Eleven v3 route uses dialogue inputs, rather than a top-level `text` property.
 
 For binary-returning models, bind the provider node's `/binaryReceipt` to a materializer input's `/receipt`:
 
@@ -185,7 +184,7 @@ For binary-returning models, bind the provider node's `/binaryReceipt` to a mate
 }
 ```
 
-Use either `url` or `receipt`, never both. The resolved receipt is an opaque job ID plus hash; recipes cannot supply local paths or another project's ID. Binary results are retained before the provider job is marked successful. The materializer verifies and copies them into normal Assets, then the existing revision-checked attachment adds video to a visual track or audio to an audio track. Extending the same pattern to music, effects or other binary models still requires a verified native input contract and a supported output container.
+Use either `url` or `receipt`, never both. The resolved receipt is an opaque job ID plus hash; recipes cannot supply local paths or another project's ID. Binary results are retained before the provider job is marked successful. The materializer verifies and copies them into normal Assets, then the existing revision-checked attachment adds video to a visual track or audio to an audio track.
 
 ## Editable workflow output
 
@@ -201,7 +200,6 @@ Installed recipe-only packs can publish same-ID releases through [reviewed pack 
 
 [Independent analysis providers](ANALYSIS-PROVIDERS.md) use the existing provider module/manifest boundary for general review or specialized one-video text reports. They share Canvas selection, HTTP/MCP descriptors, generation records and polling. The optional [technical inspector](../examples/providers/media-inspector/README.md) runs FFprobe without a model service; semantic analysis requires a suitable independently implemented engine.
 
-
 ## Local model inputs
 
 Installed generation providers can opt into `referenceDelivery: "project-media"` to consume verified project files through `readMedia`, without a cloud upload dependency. Use the same contract for general models and specialized processors. See [local provider media](architecture/LOCAL-PROVIDER-MEDIA.md) for limits, reader lifetime, queued-job behavior and the trust boundary. The optional [technical inspector](../examples/providers/media-inspector/README.md) is a standalone implementation using this interface.
@@ -214,7 +212,7 @@ Analysis providers can declare [image/video/audio input ranges](ANALYSIS-PROVIDE
 
 ## Add an audio model
 
-[Independent audio providers](AUDIO-PROVIDERS.md) declare `kind: "audio"` and typed model options. Studio, MCP and CLI share admission, single-use intents, polling and project asset storage. General and specialized models use the same interface. The optional procedural example returns real WAV; declared image/video/audio reference delivery is supported, while actual generative conditioning quality and Canvas audio generation nodes remain separate work.
+[Independent audio providers](AUDIO-PROVIDERS.md) declare `kind: "audio"` and typed model options. Studio, MCP and CLI share admission, single-use intents, polling and project asset storage. General and specialized models use the same interface.
 
 [Generation receipt inspection](GENERATION-RECOVERY.md) gives general and specialized model callers a read-only MCP/CLI recovery operation keyed by their original intent token. The submission path stores that link before provider execution and preserves ambiguous outcomes without authorizing replay. Installed models also participate in durable recipes through the contract below.
 

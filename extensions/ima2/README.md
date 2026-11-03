@@ -5,7 +5,7 @@ Connect an independently installed **ima2-gen 3.26.3** server to the Viral Hit h
 Two data-only recipes are included. They are also offered together as the **ima2 image generation** pack in **Runs → Recipe library**, from [pack.json](pack.json):
 
 - `ima2-image`: one prompt → one image → project asset.
-- `ima2-reference`: a pinned project image and direction → one new image → project asset. This is reference-guided generation, not mask/inpainting support. The original stays in the project.
+- `ima2-reference`: a pinned project image and direction → one new image → project asset. The original stays in the project.
 
 ## Installation
 
@@ -51,4 +51,4 @@ pnpm --dir apps/studio exec tsx scripts/verify-ima2.ts \
   /absolute/ima2-install/node_modules/ima2-gen /absolute/evidence-directory
 ```
 
-The separate ima2 installation must have its native dependencies built. The verifier's child environment has isolated HOME/config/storage and blocks other outbound fetches. It does not use personal provider credentials. This proves integration, not paid generation quality or support for every listed model. Masks, branching UI, alpha verification, ima2 video, model discovery UI and live provider quality checks remain separate work.
+The separate ima2 installation must have its native dependencies built. The verifier's child environment has isolated HOME/config/storage and blocks other outbound fetches. It does not use personal provider credentials.
