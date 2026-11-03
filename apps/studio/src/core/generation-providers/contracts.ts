@@ -1,3 +1,4 @@
+import type { ModelPricing } from '@/core/costs/pricing';
 import type { StudioToolId } from '@/core/studio/tools';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from './mask-input';
@@ -24,6 +25,8 @@ export type GenerationProviderModelBinding = {
   promptInput?: PromptInput;
   /** Specific reference roles the model declares. */
   referenceRoles?: ReferenceRoles;
+  /** Published price, for estimates before a run. */
+  pricing?: ModelPricing;
   /** Explicit output type/name for installed analysis models outside the image/video registry. */
   kind?: 'image' | 'video' | 'audio' | 'analysis';
   name?: string;

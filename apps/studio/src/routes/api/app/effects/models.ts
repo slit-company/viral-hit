@@ -39,6 +39,7 @@ async function GET({ request }: { request: Request }) {
       ...(descriptor?.maskInput ? { maskInput: descriptor.maskInput } : {}),
       ...(descriptor?.referenceRoles ? { referenceRoles: descriptor.referenceRoles } : {}),
       ...(descriptor?.promptInput ? { promptInput: descriptor.promptInput } : {}),
+      ...(descriptor?.pricing ? { pricing: descriptor.pricing } : {}),
       defaultProviderModelVariant: model.defaultVariant
         ? resolveWorkspaceEffectProviderModelVariant({
             modelId: model.id,

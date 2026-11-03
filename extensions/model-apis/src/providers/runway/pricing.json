@@ -1,0 +1,530 @@
+{
+ "runway-text-to-video-gen4.5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.12
+ },
+ "runway-text-to-video-veo3.1": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.4,
+  "by": {
+   "option": "audio",
+   "amounts": {
+    "true": 0.4,
+    "false": 0.2
+   }
+  }
+ },
+ "runway-text-to-video-veo3.1-fast": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.15,
+  "by": {
+   "option": "audio",
+   "amounts": {
+    "true": 0.15,
+    "false": 0.1
+   }
+  }
+ },
+ "runway-text-to-video-seedance2-5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.68,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.2,
+    "720p": 0.3,
+    "1080p": 0.68
+   }
+  },
+  "minimum": 0.8
+ },
+ "runway-text-to-video-kling-4": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.188,
+  "by": {
+   "option": "ratio",
+   "amounts": {
+    "1280:720": 0.1256,
+    "720:1280": 0.1256,
+    "940:940": 0.1256,
+    "1460:624": 0.1256,
+    "auto_720p": 0.1256,
+    "1920:1080": 0.188,
+    "1080:1920": 0.188,
+    "1440:1440": 0.188,
+    "2200:940": 0.188,
+    "auto_1080p": 0.188
+   }
+  }
+ },
+ "runway-text-to-video-hailuo3": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.15,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "768p": 0.1,
+    "768P": 0.1,
+    "2k": 0.15,
+    "2K": 0.15
+   }
+  }
+ },
+ "runway-text-to-video-wan3": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.2,
+  "by": {
+   "option": "ratio",
+   "amounts": {
+    "832:480": 0.05,
+    "720:544": 0.05,
+    "624:624": 0.05,
+    "544:720": 0.05,
+    "480:832": 0.05,
+    "auto_480p": 0.05,
+    "1280:720": 0.1,
+    "1104:832": 0.1,
+    "960:960": 0.1,
+    "832:1104": 0.1,
+    "720:1280": 0.1,
+    "auto_720p": 0.1,
+    "1920:1080": 0.2,
+    "1648:1248": 0.2,
+    "1440:1440": 0.2,
+    "1248:1648": 0.2,
+    "1080:1920": 0.2,
+    "auto_1080p": 0.2
+   }
+  }
+ },
+ "runway-text-to-video-h3-max": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.08,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "768p": 0.08
+   }
+  }
+ },
+ "runway-text-to-video-grok-imagine-1-5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.29,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.1,
+    "720p": 0.16,
+    "1080p": 0.29
+   }
+  }
+ },
+ "runway-text-to-video-gemini-omni-flash-1.1": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.1,
+    "1080p": 0.15,
+    "4k": 0.3
+   }
+  }
+ },
+ "runway-image-to-video-gen4.5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.12
+ },
+ "runway-image-to-video-veo3.1": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.4,
+  "by": {
+   "option": "audio",
+   "amounts": {
+    "true": 0.4,
+    "false": 0.2
+   }
+  }
+ },
+ "runway-image-to-video-veo3.1-fast": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.15,
+  "by": {
+   "option": "audio",
+   "amounts": {
+    "true": 0.15,
+    "false": 0.1
+   }
+  }
+ },
+ "runway-image-to-video-seedance2-5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.68,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.2,
+    "720p": 0.3,
+    "1080p": 0.68
+   }
+  },
+  "minimum": 0.8
+ },
+ "runway-image-to-video-kling-4": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.188,
+  "by": {
+   "option": "ratio",
+   "amounts": {
+    "1280:720": 0.1256,
+    "720:1280": 0.1256,
+    "940:940": 0.1256,
+    "1460:624": 0.1256,
+    "auto_720p": 0.1256,
+    "1920:1080": 0.188,
+    "1080:1920": 0.188,
+    "1440:1440": 0.188,
+    "2200:940": 0.188,
+    "auto_1080p": 0.188
+   }
+  }
+ },
+ "runway-image-to-video-hailuo3": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.15,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "768p": 0.1,
+    "768P": 0.1,
+    "2k": 0.15,
+    "2K": 0.15
+   }
+  }
+ },
+ "runway-image-to-video-wan3": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.2,
+  "by": {
+   "option": "ratio",
+   "amounts": {
+    "832:480": 0.05,
+    "720:544": 0.05,
+    "624:624": 0.05,
+    "544:720": 0.05,
+    "480:832": 0.05,
+    "auto_480p": 0.05,
+    "1280:720": 0.1,
+    "1104:832": 0.1,
+    "960:960": 0.1,
+    "832:1104": 0.1,
+    "720:1280": 0.1,
+    "auto_720p": 0.1,
+    "1920:1080": 0.2,
+    "1648:1248": 0.2,
+    "1440:1440": 0.2,
+    "1248:1648": 0.2,
+    "1080:1920": 0.2,
+    "auto_1080p": 0.2
+   }
+  }
+ },
+ "runway-image-to-video-h3-max": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.08,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "768p": 0.08
+   }
+  }
+ },
+ "runway-image-to-video-grok-imagine-1-5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.29,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.1,
+    "720p": 0.16,
+    "1080p": 0.29
+   }
+  }
+ },
+ "runway-image-to-video-gemini-omni-flash-1.1": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.1,
+    "1080p": 0.15,
+    "4k": 0.3
+   }
+  }
+ },
+ "runway-video-to-video-aleph2": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.28,
+  "minimum": 0.56
+ },
+ "runway-video-to-video-klingo3-pro": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.17
+ },
+ "runway-text-to-image-gen4-image": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.08,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.05,
+    "1080p": 0.08
+   }
+  }
+ },
+ "runway-text-to-image-gpt-image-2-5-sunburst": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.11,
+  "by": {
+   "option": "quality",
+   "amounts": {
+    "low": 0.02,
+    "medium": 0.03,
+    "high": 0.11,
+    "xhigh": 0.19,
+    "max": 0.42
+   }
+  }
+ },
+ "runway-text-to-image-nano-banana-2.1": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.12,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.04,
+    "720p": 0.04,
+    "1080p": 0.06,
+    "4k": 0.12
+   }
+  }
+ },
+ "runway-text-to-image-gemini-image3-pro": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.4,
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.2,
+    "720p": 0.2,
+    "1080p": 0.2,
+    "4k": 0.4
+   }
+  }
+ },
+ "runway-text-to-image-seedream5-pro": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.09,
+  "by": {
+   "option": "ratio",
+   "amounts": {
+    "1024:1024": 0.05,
+    "1184:896": 0.05,
+    "896:1184": 0.05,
+    "1376:768": 0.05,
+    "768:1376": 0.05,
+    "1296:864": 0.05,
+    "864:1296": 0.05,
+    "auto_1k": 0.05,
+    "2048:2048": 0.09,
+    "2304:1728": 0.09,
+    "1728:2304": 0.09,
+    "2720:1530": 0.09,
+    "1530:2720": 0.09,
+    "2496:1664": 0.09,
+    "1664:2496": 0.09,
+    "auto_2k": 0.09
+   }
+  }
+ },
+ "runway-text-to-image-ideogram-4-5": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.25,
+  "by": {
+   "option": "quality",
+   "amounts": {
+    "very_low": 0.01,
+    "low": 0.04,
+    "medium": 0.08,
+    "high": 0.25
+   }
+  }
+ },
+ "runway-text-to-image-grok-imagine-image-2": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.06,
+  "by": {
+   "option": "quality",
+   "amounts": {
+    "low": 0.04,
+    "medium": 0.06
+   }
+  }
+ },
+ "runway-image-upscale-magnific-precision-upscaler-v2": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "output",
+  "amount": 0.25
+ },
+ "runway-video-upscale-magnific-video-upscaler-creative": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.21,
+    "1k": 0.21,
+    "2k": 0.27
+   }
+  }
+ },
+ "runway-character-performance-act-two": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.05
+ },
+ "runway-sound-effect-eleven-text-to-sound-v2": {
+  "currency": "USD",
+  "basis": "list",
+  "source": "https://docs.dev.runwayml.com/guides/pricing/",
+  "checked": "2026-11-03",
+  "per": "second",
+  "amount": 0.01
+ }
+}

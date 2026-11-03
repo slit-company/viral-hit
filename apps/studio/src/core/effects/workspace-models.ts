@@ -1,3 +1,4 @@
+import type { ModelPricing } from '@/core/costs/pricing';
 import type { StudioToolId } from '@/core/studio/tools';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
 import type { MaskInput } from '@/core/generation-providers/mask-input';
@@ -54,6 +55,8 @@ export type WorkspaceModelOption = {
   referenceRoles?: ReferenceRoles;
   /** Omitted when the model needs prompt text. */
   promptInput?: PromptInput;
+  /** Published price, for estimates before a run. */
+  pricing?: ModelPricing;
   mode?: WorkspaceModelMode;
   defaultMode?: WorkspaceModelMode;
   modeOptions?: WorkspaceModelMode[];

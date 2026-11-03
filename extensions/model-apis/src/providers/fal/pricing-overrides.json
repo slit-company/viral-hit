@@ -1,0 +1,256 @@
+{
+ "fal-bytedance-seedance-2.5-us-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/bytedance/seedance-2.5/us/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.2205,
+    "720p": 0.473,
+    "1080p": 1.164
+   }
+  }
+ },
+ "fal-bytedance-seedance-2.5-us-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/bytedance/seedance-2.5/us/image-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.2205,
+    "720p": 0.473,
+    "1080p": 1.164
+   }
+  }
+ },
+ "fal-bytedance-seedance-2.5-us-reference-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/bytedance/seedance-2.5/us/reference-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.2205,
+    "720p": 0.473,
+    "1080p": 1.164
+   }
+  }
+ },
+ "fal-kling-v4-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/kling/v4/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.157,
+    "1080p": 0.235
+   }
+  }
+ },
+ "fal-kling-v4-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/kling/v4/image-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.157,
+    "1080p": 0.235
+   }
+  }
+ },
+ "fal-kling-v4-video-to-video-edit": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/kling/v4/video-to-video/edit",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.188,
+    "1080p": 0.282
+   }
+  }
+ },
+ "fal-google-gemini-omni-flash-v1.1-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/google/gemini-omni-flash/v1.1/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "360p": 0.03,
+    "720p": 0.1,
+    "1080p": 0.15,
+    "4k": 0.3
+   }
+  }
+ },
+ "fal-google-gemini-omni-flash-v1.1-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/google/gemini-omni-flash/v1.1/image-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "360p": 0.03,
+    "720p": 0.1,
+    "1080p": 0.15,
+    "4k": 0.3
+   }
+  }
+ },
+ "fal-google-gemini-omni-flash-v1.1-edit": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/google/gemini-omni-flash/v1.1/edit",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "360p": 0.03,
+    "720p": 0.1,
+    "1080p": 0.15,
+    "4k": 0.3
+   }
+  }
+ },
+ "fal-minimax-h3-max-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/minimax/h3-max/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480P": 0.05,
+    "768P": 0.08,
+    "1080P": 0.16
+   }
+  }
+ },
+ "fal-minimax-h3-max-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/minimax/h3-max/image-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480P": 0.05,
+    "768P": 0.08,
+    "1080P": 0.16
+   }
+  }
+ },
+ "fal-alibaba-wan-3.0-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/alibaba/wan-3.0/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "720p": 0.1,
+    "1080p": 0.2
+   }
+  }
+ },
+ "fal-alibaba-wan-3.0-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/alibaba/wan-3.0/image-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.05,
+    "720p": 0.1,
+    "1080p": 0.2
+   }
+  }
+ },
+ "fal-xai-grok-imagine-video-v1.5-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/xai/grok-imagine-video/v1.5/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.08,
+    "720p": 0.14,
+    "1080p": 0.25
+   }
+  }
+ },
+ "fal-xai-grok-imagine-video-v1.5-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/xai/grok-imagine-video/v1.5/image-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.08,
+    "720p": 0.14,
+    "1080p": 0.25
+   }
+  }
+ },
+ "fal-blackforestlabs-flux-3-max-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.17,
+    "1080p": 0.29
+   }
+  }
+ },
+ "fal-wan-v2.2-14b-animate-replace": {
+  "currency": "USD",
+  "per": "second",
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/replace",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "480p": 0.04,
+    "580p": 0.06,
+    "720p": 0.08
+   }
+  }
+ }
+}

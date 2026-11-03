@@ -7,6 +7,7 @@ import { modelControlsSchema } from '../model-controls';
 import { analysisInputsSchema } from '../analysis-inputs';
 import { analysisReport } from '../analysis-report';
 import { PROMPT_INPUTS } from '@/core/effects/validation';
+import { modelPricingSchema } from '@/core/costs/pricing';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 
@@ -31,6 +32,8 @@ export const providerModelSchema = z.object({
   promptInput: z.enum(PROMPT_INPUTS).optional(),
   /** Specific roles (style, subject, pose) the model understands; delivered to the module as input.references. */
   referenceRoles: referenceRolesSchema.optional(),
+  /** Published price, for estimates before a run; see docs/COSTS.md. */
+  pricing: modelPricingSchema.optional(),
   upstreamModelId: z.string().trim().min(1).max(200).optional(),
   aspectRatios: z.array(z.enum(PROVIDER_ASPECT_RATIOS)).max(PROVIDER_ASPECT_RATIOS.length).default([]),
   defaultAspectRatio: z.enum(PROVIDER_ASPECT_RATIOS).optional(),

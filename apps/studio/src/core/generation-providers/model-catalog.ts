@@ -1,3 +1,4 @@
+import type { ModelPricing } from '@/core/costs/pricing';
 import type { StudioToolId } from '@/core/studio/tools';
 import { resolveAudioReferenceInputs } from './reference-inputs';
 import type { ReferenceInputs } from '@/core/generation-providers/reference-inputs';
@@ -52,6 +53,7 @@ export type GenerationModelDescriptor = {
   maskInput?: MaskInput;
   referenceRoles?: ReferenceRoles;
   promptInput?: PromptInput;
+  pricing?: ModelPricing;
   parameterSchema: unknown;
   defaultParameters: Record<string, unknown>;
   referenceSchema: unknown;
@@ -100,6 +102,7 @@ export function listGenerationModelDescriptors(): GenerationModelDescriptor[] {
         ...(binding.maskInput ? { maskInput: binding.maskInput } : {}),
         ...(binding.referenceRoles ? { referenceRoles: binding.referenceRoles } : {}),
         ...(binding.promptInput ? { promptInput: binding.promptInput } : {}),
+        ...(binding.pricing ? { pricing: binding.pricing } : {}),
         referenceSchema: entry.workspaceType === 'ai-audio' ? resolveAudioReferenceInputs(binding.referenceInputs) : getWorkspaceMediaSchema(entry.id),
       },
     ];

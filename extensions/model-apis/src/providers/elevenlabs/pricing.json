@@ -1,0 +1,17 @@
+{
+ "elevenlabs-speech": {
+  "currency": "characters",
+  "per": "character",
+  "by": {
+   "option": "model_id",
+   "amounts": {
+    "eleven_v4": 1,
+    "eleven_multilingual_v2": 1,
+    "eleven_flash_v2_5": 0.5
+   }
+  },
+  "basis": "list",
+  "source": "https://elevenlabs.io/pricing/api",
+  "checked": "2026-11-03"
+ }
+}

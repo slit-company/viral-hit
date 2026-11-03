@@ -1,0 +1,58 @@
+{
+ "google-nano-banana-2.1": {
+  "currency": "USD",
+  "per": "output",
+  "by": {
+   "option": "image_size",
+   "amounts": {
+    "1K": 0.0336,
+    "2K": 0.0504,
+    "4K": 0.113
+   }
+  },
+  "basis": "list",
+  "source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "checked": "2026-11-03"
+ },
+ "google-nano-banana-pro": {
+  "currency": "USD",
+  "per": "output",
+  "by": {
+   "option": "image_size",
+   "amounts": {
+    "1K": 0.134,
+    "2K": 0.134,
+    "4K": 0.24
+   }
+  },
+  "basis": "list",
+  "source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "checked": "2026-11-03"
+ },
+ "google-nano-banana-2-lite": {
+  "currency": "USD",
+  "per": "output",
+  "by": {
+   "option": "image_size",
+   "amounts": {
+    "1K": 0.0336
+   }
+  },
+  "basis": "list",
+  "source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "checked": "2026-11-03"
+ },
+ "google-gemini-omni-flash": {
+  "currency": "USD",
+  "per": "second",
+  "by": {
+   "option": "resolution",
+   "amounts": {
+    "720p": 0.1
+   }
+  },
+  "basis": "list",
+  "source": "https://ai.google.dev/gemini-api/docs/pricing",
+  "checked": "2026-11-03"
+ }
+}

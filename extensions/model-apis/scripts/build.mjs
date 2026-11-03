@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Bundles each provider into dist/providers/<id>/ with its provider.json, ready for VIRAL_HIT_PROVIDERS_DIR.
 import { build } from 'esbuild';
+import { existsSync } from 'node:fs';
 import { mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -12,9 +13,17 @@ for (const id of ids) {
   const source = join(root, 'src/providers', id, 'provider.mjs'), directory = join(root, 'dist/providers', id);
   const { manifest } = await import(pathToFileURL(source).href);
   if (manifest?.id !== id) throw Error(id + '/provider.mjs must export a manifest with id ' + id);
+  // Published prices live next to the catalog so a catalog sync never drops them.
+  const pricingFile = join(root, 'src/providers', id, 'pricing.json');
+  const overridesFile = join(root, 'src/providers', id, 'pricing-overrides.json');
+  // pricing-overrides.json holds rates read from model pages, such as tiers by resolution, and wins over synced rates.
+  const pricing = { ...(existsSync(pricingFile) ? JSON.parse(await readFile(pricingFile, 'utf8')) : {}), ...(existsSync(overridesFile) ? JSON.parse(await readFile(overridesFile, 'utf8')) : {}) };
+  const unknown = Object.keys(pricing).filter(model => !manifest.models.some(item => item.id === model));
+  if (unknown.length) throw Error(id + '/pricing.json names unknown models: ' + unknown.join(', '));
+  const models = manifest.models.map(model => pricing[model.id] ? { ...model, pricing: pricing[model.id] } : model);
   await mkdir(directory, { recursive: true });
   await build({ entryPoints: [source], outfile: join(directory, 'provider.mjs'), platform: 'node', format: 'esm', bundle: true, target: 'node24', legalComments: 'none' });
-  const json = { schemaVersion: 1, kind: 'viral-hit-provider', id, label: manifest.label, description: manifest.description, scope: 'general', author: 'Viral Hit contributors', license: 'Apache-2.0', referenceDelivery: 'project-media', configurationDelivery: 'request', connectionTest: true, ...(manifest.balanceCheck ? { balanceCheck: true } : {}), ...(manifest.setupUrl ? { setupUrl: manifest.setupUrl } : {}), ...(manifest.keyFormat ? { keyFormat: manifest.keyFormat } : {}), entry: 'provider.mjs', mediaHosts: [], environment: manifest.environment, models: manifest.models };
+  const json = { schemaVersion: 1, kind: 'viral-hit-provider', id, label: manifest.label, description: manifest.description, scope: 'general', author: 'Viral Hit contributors', license: 'Apache-2.0', referenceDelivery: 'project-media', configurationDelivery: 'request', connectionTest: true, ...(manifest.balanceCheck ? { balanceCheck: true } : {}), ...(manifest.setupUrl ? { setupUrl: manifest.setupUrl } : {}), ...(manifest.keyFormat ? { keyFormat: manifest.keyFormat } : {}), entry: 'provider.mjs', mediaHosts: [], environment: manifest.environment, models };
   await writeFile(join(directory, 'provider.json'), JSON.stringify(json) + '\n');
   entries.push({ kind: 'provider', manifest: json, source: await readFile(join(directory, 'provider.mjs'), 'utf8') });
   console.log(id.padEnd(11) + manifest.models.length + ' models');

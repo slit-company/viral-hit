@@ -1,0 +1,378 @@
+{
+ "fal-google-nano-banana-2.1": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.08146,
+  "basis": "average",
+  "source": "https://fal.ai/models/google/nano-banana-2.1",
+  "checked": "2026-11-03"
+ },
+ "fal-google-nano-banana-2.1-edit": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.09317,
+  "basis": "average",
+  "source": "https://fal.ai/models/google/nano-banana-2.1/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-nano-banana-pro": {
+  "currency": "USD",
+  "per": "output",
+  "amount": 0.15,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/nano-banana-pro",
+  "checked": "2026-11-03"
+ },
+ "fal-nano-banana-pro-edit": {
+  "currency": "USD",
+  "per": "output",
+  "amount": 0.15,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/nano-banana-pro/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-openai-gpt-image-2.5-sunburst-text-to-image": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.0572,
+  "basis": "average",
+  "source": "https://fal.ai/models/openai/gpt-image-2.5/sunburst/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-openai-gpt-image-2.5-sunburst-edit": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.1332,
+  "basis": "average",
+  "source": "https://fal.ai/models/openai/gpt-image-2.5/sunburst/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-openai-gpt-image-2.5-flare-text-to-image": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.0428,
+  "basis": "average",
+  "source": "https://fal.ai/models/openai/gpt-image-2.5/flare/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-blackforestlabs-flux-3-text-to-image": {
+  "currency": "USD",
+  "per": "megapixel",
+  "amount": 0.048,
+  "basis": "list",
+  "source": "https://fal.ai/models/blackforestlabs/flux-3/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-blackforestlabs-flux-3-edit-image": {
+  "currency": "USD",
+  "per": "megapixel",
+  "amount": 0.048,
+  "basis": "list",
+  "source": "https://fal.ai/models/blackforestlabs/flux-3/edit-image",
+  "checked": "2026-11-03"
+ },
+ "fal-flux-pro-kontext-max": {
+  "currency": "USD",
+  "per": "output",
+  "amount": 0.08,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/flux-pro/kontext/max",
+  "checked": "2026-11-03"
+ },
+ "fal-bytedance-seedream-v5-pro-text-to-image": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.135,
+  "basis": "average",
+  "source": "https://fal.ai/models/bytedance/seedream/v5/pro/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-bytedance-seedream-v5-pro-edit": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.135,
+  "basis": "average",
+  "source": "https://fal.ai/models/bytedance/seedream/v5/pro/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-xai-grok-imagine-image-v2.0-text-to-image": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.06,
+  "basis": "average",
+  "source": "https://fal.ai/models/xai/grok-imagine-image/v2.0/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-xai-grok-imagine-image-v2.0-edit": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.11,
+  "basis": "average",
+  "source": "https://fal.ai/models/xai/grok-imagine-image/v2.0/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-ideogram-v4.5": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.1,
+  "basis": "average",
+  "source": "https://fal.ai/models/ideogram/v4.5",
+  "checked": "2026-11-03"
+ },
+ "fal-alibaba-qwen-image-3-text-to-image": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.04,
+  "basis": "average",
+  "source": "https://fal.ai/models/alibaba/qwen-image-3/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-krea-v3-text-to-image": {
+  "currency": "USD",
+  "per": "megapixel",
+  "amount": 0.025,
+  "basis": "list",
+  "source": "https://fal.ai/models/krea/v3/text-to-image",
+  "checked": "2026-11-03"
+ },
+ "fal-z-image-turbo": {
+  "currency": "USD",
+  "per": "megapixel",
+  "amount": 0.005,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/z-image/turbo",
+  "checked": "2026-11-03"
+ },
+ "fal-bria-background-remove": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.018,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/bria/background/remove",
+  "checked": "2026-11-03"
+ },
+ "fal-topaz-upscale-image-precision": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.16,
+  "basis": "average",
+  "source": "https://fal.ai/models/topaz/upscale/image/precision",
+  "checked": "2026-11-03"
+ },
+ "fal-bytedance-seedance-2.5-us-text-to-video": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.831,
+  "basis": "average",
+  "source": "https://fal.ai/models/bytedance/seedance-2.5/us/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-bytedance-seedance-2.5-us-image-to-video": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 11.42,
+  "basis": "average",
+  "source": "https://fal.ai/models/bytedance/seedance-2.5/us/image-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-bytedance-seedance-2.5-us-reference-to-video": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 41.28,
+  "basis": "average",
+  "source": "https://fal.ai/models/bytedance/seedance-2.5/us/reference-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-kling-v4-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.157,
+  "basis": "list",
+  "source": "https://fal.ai/models/kling/v4/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-kling-v4-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.157,
+  "basis": "list",
+  "source": "https://fal.ai/models/kling/v4/image-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-kling-v4-video-to-video-edit": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.157,
+  "basis": "list",
+  "source": "https://fal.ai/models/kling/v4/video-to-video/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-kling-video-v3-pro-motion-control": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.168,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/kling-video/v3/pro/motion-control",
+  "checked": "2026-11-03"
+ },
+ "fal-google-gemini-omni-flash-v1.1-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.03,
+  "basis": "list",
+  "source": "https://fal.ai/models/google/gemini-omni-flash/v1.1/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-google-gemini-omni-flash-v1.1-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.03,
+  "basis": "list",
+  "source": "https://fal.ai/models/google/gemini-omni-flash/v1.1/image-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-google-gemini-omni-flash-v1.1-edit": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.03,
+  "basis": "list",
+  "source": "https://fal.ai/models/google/gemini-omni-flash/v1.1/edit",
+  "checked": "2026-11-03"
+ },
+ "fal-minimax-h3-max-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.035,
+  "basis": "list",
+  "source": "https://fal.ai/models/minimax/h3-max/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-minimax-h3-max-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.035,
+  "basis": "list",
+  "source": "https://fal.ai/models/minimax/h3-max/image-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-alibaba-wan-3.0-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.05,
+  "basis": "list",
+  "source": "https://fal.ai/models/alibaba/wan-3.0/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-alibaba-wan-3.0-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.05,
+  "basis": "list",
+  "source": "https://fal.ai/models/alibaba/wan-3.0/image-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-xai-grok-imagine-video-v1.5-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.01,
+  "basis": "list",
+  "source": "https://fal.ai/models/xai/grok-imagine-video/v1.5/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-xai-grok-imagine-video-v1.5-image-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.01,
+  "basis": "list",
+  "source": "https://fal.ai/models/xai/grok-imagine-video/v1.5/image-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-blackforestlabs-flux-3-max-text-to-video": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.02125,
+  "basis": "list",
+  "source": "https://fal.ai/models/blackforestlabs/flux-3-max/text-to-video",
+  "checked": "2026-11-03"
+ },
+ "fal-wan-v2.2-14b-animate-replace": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.08,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/wan/v2.2-14b/animate/replace",
+  "checked": "2026-11-03"
+ },
+ "fal-sync-lipsync-v3": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.133333,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/sync-lipsync/v3",
+  "checked": "2026-11-03"
+ },
+ "fal-bytedance-omnihuman-v1.5": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.16,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/bytedance/omnihuman/v1.5",
+  "checked": "2026-11-03"
+ },
+ "fal-topaz-upscale-video-precision": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 1.6,
+  "basis": "average",
+  "source": "https://fal.ai/models/topaz/upscale/video/precision",
+  "checked": "2026-11-03"
+ },
+ "fal-elevenlabs-tts-eleven-v4": {
+  "currency": "USD",
+  "per": "character",
+  "amount": 0.00008,
+  "basis": "list",
+  "source": "https://fal.ai/models/elevenlabs/tts/eleven-v4",
+  "checked": "2026-11-03"
+ },
+ "fal-minimax-speech-2.8-hd": {
+  "currency": "USD",
+  "per": "character",
+  "amount": 0.0001,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/minimax/speech-2.8-hd",
+  "checked": "2026-11-03"
+ },
+ "fal-elevenlabs-music-v2.5": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.01,
+  "basis": "list",
+  "source": "https://fal.ai/models/elevenlabs/music/v2.5",
+  "checked": "2026-11-03"
+ },
+ "fal-google-lyria-3.5": {
+  "currency": "USD",
+  "per": "request",
+  "amount": 0.1,
+  "basis": "list",
+  "source": "https://fal.ai/models/google/lyria-3.5",
+  "checked": "2026-11-03"
+ },
+ "fal-elevenlabs-sound-effects-v2": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.002,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/elevenlabs/sound-effects/v2",
+  "checked": "2026-11-03"
+ },
+ "fal-mmaudio-v2": {
+  "currency": "USD",
+  "per": "second",
+  "amount": 0.001,
+  "basis": "list",
+  "source": "https://fal.ai/models/fal-ai/mmaudio-v2",
+  "checked": "2026-11-03"
+ }
+}
