@@ -1005,7 +1005,7 @@
   "ui.app.managed_by_viral_hit_comfyui_url_on_the_server_and_worker": "서버와 작업 프로세스의 VIRAL_HIT_COMFYUI_URL 설정을 사용해요.",
   "ui.app.no_native_server_connected": "연결된 ComfyUI 서버가 없어요.",
   "ui.app.comfyui_server_url": "ComfyUI 서버 주소",
-  "ui.app.use_an_http_s_address_without_credentials_query_or_fragment_authentication_": "인증 정보, 쿼리, 프래그먼트가 없는 HTTP(S) 주소를 입력하세요. 인증과 노드·모델 자동 설치는 아직 지원하지 않아요. 연결 확인은 서버 상태만 읽으며, 모델을 시험하거나 작업을 시작하지 않아요.",
+  "ui.app.use_an_http_s_address_without_credentials_query_or_fragment_authentication_": "인증 정보, 쿼리, 프래그먼트가 없는 HTTP(S) 주소를 입력하세요. 연결 확인은 서버 상태만 읽고 작업은 시작하지 않아요.",
   "ui.app.check_connection": "연결 확인",
   "ui.app.reload_settings": "설정 다시 불러오기",
   "ui.app.connection_feedback": "연결 확인 결과",

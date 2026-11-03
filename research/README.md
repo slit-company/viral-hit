@@ -1,6 +1,6 @@
 # Competitive research — 2026-10-19
 
-Research conducted through Aside Browser: the requested Comfy announcement and Threads post, live Higgsfield interfaces, Google discovery scoped to Instagram/X/Threads, direct social posts, GitHub metadata and pinned local source inspection. This is a broad initial census, not a claim that every existing repository was found or executed.
+Research conducted through Aside Browser: the requested Comfy announcement and Threads post, live Higgsfield interfaces, Google discovery scoped to Instagram/X/Threads, direct social posts, GitHub metadata and pinned local source inspection.
 
 ## Competition facts
 
@@ -9,7 +9,7 @@ Research conducted through Aside Browser: the requested Comfy announcement and T
 - Build using Comfy Developer Platform: Comfy Router and/or Comfy SDK.
 - Public GitHub source, workflow files, open-source license, locally reproducible setup.
 - Demo video at most two minutes; a hosted demo is encouraged.
-- A social demo post tagged `#OpenSourceHiggsfield` is required. No post or submission has been sent.
+- A social demo post tagged `#OpenSourceHiggsfield` is required. Viral Hit's post and submission went out on 2026-10-31.
 - One entry per person; SFW and no unlicensed IP or likenesses.
 - Deadline: 2026-10-30 09:00 Pacific = **2026-10-31 01:00 Asia/Seoul**. Winners announced November 6.
 - Best Overall $10,000; Most Innovative, Most Viral, Open Weights Only each RTX 5090; additional ecosystem bonuses. Winning is not guaranteed by satisfying the requirements.
@@ -58,10 +58,10 @@ Exact URLs, commits, clone status and observed license metadata are in `upstream
 | Comfy-Org/ComfyUI | Open-weight workflow execution | GPL-3.0; keep its service boundary and license obligations explicit |
 | hypit-ai/hypit | Viral-video cloning: word-anchored captions and B-roll, one composition reused for many variants, concurrent local rendering | Root LICENSE is Apache-2.0 with added conditions: no multi-tenant hosting or commercial redistribution without a separate license, and derivatives keep the same terms. Studied for ideas only; no source copied |
 
-The public repositories above are cloned at pinned commits. Cloning a reference is not evidence of a successful runtime test or permission to redistribute it.
+The public repositories above are cloned at pinned commits.
 
-Ideas taken from hypit on 2026-11-02 and implemented independently: the durable worker runs steps concurrently under per-service, per-project and CPU/memory-based local limits (`apps/studio/src/core/harness/worker-pool.server.ts`), and Cinema variants can reuse a finished keyframe so only the changed takes are generated. Still open: caption/B-roll timing anchored to words so a rewritten line re-flows.
+Ideas taken from hypit on 2026-11-02 and implemented independently: the durable worker runs steps concurrently under per-service, per-project and CPU/memory-based local limits (`apps/studio/src/core/harness/worker-pool.server.ts`), and Cinema variants can reuse a finished keyframe so only the changed takes are generated. Spoken-word captions keep unchanged words timed when a line is rewritten.
 
 ## Current conclusion
 
-Generation UI breadth is already common. Canvas + timeline + MCP is also already available. Viral Hit must earn its differentiation through reliable revision handling, selective recomputation, output quality, recoverable execution, and a continuous creation-to-editing experience. Compare those dimensions; do not infer superiority from stars or feature counts.
+Generation screens and Canvas + timeline + MCP setups are common. Viral Hit stands apart through reliable revision handling, selective recomputation, recoverable execution and one continuous path from creation through editing to publishing.

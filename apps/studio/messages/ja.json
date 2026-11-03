@@ -1041,7 +1041,7 @@
   "ui.app.managed_by_viral_hit_comfyui_url_on_the_server_and_worker": "Managed by VIRAL_HIT_COMFYUI_URL on the server and worker.",
   "ui.app.no_native_server_connected": "No native server connected.",
   "ui.app.comfyui_server_url": "ComfyUI server URL",
-  "ui.app.use_an_http_s_address_without_credentials_query_or_fragment_authentication_": "Use an HTTP(S) address without credentials, query or fragment. Authentication and automatic node/model installation are not supported yet. A connection check reads server status; it does not test a model or start a job.",
+  "ui.app.use_an_http_s_address_without_credentials_query_or_fragment_authentication_": "認証情報、クエリ、フラグメントを含まない HTTP(S) アドレスを入力してください。接続確認はサーバーの状態を読むだけで、ジョブは開始しません。",
   "ui.app.check_connection": "Check connection",
   "ui.app.reload_settings": "Reload settings",
   "ui.app.connection_feedback": "Connection feedback",
