@@ -20,9 +20,10 @@ export const profiles = [
   // MiniMax H3 takes reference images, videos and audio together; adaptive keeps the reference video's shape.
   video('minimax-h3', 'MiniMax H3 · references · Sume', [5, 6, 8, 10, 12, 15], { aspectRatios: ['auto', ...ratios], aspectMap: { auto: 'adaptive' }, referenceInputs: refs([0, 9], [0, 3], [0, 3]), controls: [resolutions(['768p', '2K'], '768p')] }),
   video('minimax-h3-max', 'MiniMax H3 Max · references · Sume', [5, 6, 8, 10, 12, 15], { aspectRatios: ['auto', ...ratios], aspectMap: { auto: 'adaptive' }, referenceInputs: refs([0, 9], [0, 3], [0, 3]), controls: [resolutions(['480p', '768p', '1080p'], '768p')] }),
-  // Genjutsu keeps a source clip's motion and scene and takes the subject from the images.
-  ...[['higgsfield-genjutsu', 'Genjutsu motion transfer · Sume', 'motion-transfer'], ['higgsfield-genjutsu-object-swap', 'Genjutsu object swap · Sume', 'object-swap'], ['higgsfield-genjutsu-light', 'Genjutsu Light motion transfer · Sume', 'motion-transfer'], ['higgsfield-genjutsu-light-object-swap', 'Genjutsu Light object swap · Sume', 'object-swap']]
-    .map(([id, name, task]) => video(id, name, [4, 5, 6, 8, 10, 12, 15, 20, 30], { aspectRatios: ['auto'], sourceVideo: true, task, referenceInputs: refs([1, 8], [1, 1]), controls: [resolutions(['480p', '720p', '1080p'], '480p')] })),
+  // Genjutsu keeps a source clip's motion, length and framing and takes the subject from the images. Its length is read
+  // from the clip, so there is no length or shape to choose; Light uses at most the first 15 seconds.
+  ...[['higgsfield-genjutsu', 'Genjutsu motion transfer · Sume', 'motion-transfer', 30], ['higgsfield-genjutsu-object-swap', 'Genjutsu object swap · Sume', 'object-swap', 30], ['higgsfield-genjutsu-light', 'Genjutsu Light motion transfer · Sume', 'motion-transfer', 15], ['higgsfield-genjutsu-light-object-swap', 'Genjutsu Light object swap · Sume', 'object-swap', 15]]
+    .map(([id, name, task, longest]) => ({ ...video(id, name, [4], { aspectRatios: ['auto'], sourceVideo: { shortest: 4, longest }, task, referenceInputs: refs([1, 8], [1, 1]), controls: [resolutions(['480p', '720p', '1080p'], '480p')] }), durations: undefined, defaultDuration: undefined })),
   video('kling-3', 'Kling 3 · Sume', [5, 10], { frameMode: true, referenceInputs: refs([0, 1]), controls: [resolutions(['1080p'])] }),
   video('veo-3.1', 'Veo 3.1 · Sume', [4, 6, 8], { frameMode: true, referenceInputs: refs([0, 1]), controls: [resolutions(['720p', '1080p'])] }),
   video('grok-imagine-video-1.5', 'Grok Imagine Video 1.5 · Sume', [5, 10], { frameMode: true, referenceInputs: refs([1, 1]), controls: [resolutions(['480p', '720p'], '720p')] }),

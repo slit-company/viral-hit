@@ -12,7 +12,8 @@ export function buildPayload(profile, input) {
   for (const [kind, urls] of Object.entries({ image: images, video: videos, audio })) { const { min, max } = profile.referenceInputs[kind]; if (!Array.isArray(urls) || urls.length < min || urls.length > max || urls.some(url => typeof url !== 'string' || !url)) throw Error('Check the ' + kind + ' references for ' + profile.name); }
   if (input.maskUrl && (!profile.maskInput || !images.length)) throw Error('This model needs a reference image for its mask');
   if (input.aspectRatio && !profile.aspectRatios.includes(input.aspectRatio)) throw Error('Unsupported aspect ratio');
-  if (input.duration && !profile.durations?.includes(input.duration)) throw Error('Unsupported video length');
+  // A source-following model takes its length from the clip; see sourceLength in provider.mjs.
+  if (input.duration && !profile.sourceVideo && !profile.durations?.includes(input.duration)) throw Error('Unsupported video length');
   const prompt = input.prompt?.trim() ?? '', body = { mode: 'async' };
   if (['image', 'video', 'music', 'speech'].includes(profile.route) && !prompt) throw Error('Enter a prompt or script');
   const duration = parseInt(input.duration ?? profile.defaultDuration, 10);
@@ -26,7 +27,7 @@ export function buildPayload(profile, input) {
   switch (profile.route) {
     case 'image': Object.assign(body, { model: profile.upstreamModelId, prompt, aspect_ratio: aspect, ...options }, images.length ? { image_urls: images } : {}, input.maskUrl ? { mask_image_url: input.maskUrl } : {}); break;
     case 'video':
-      Object.assign(body, { model: profile.upstreamModelId, prompt, aspect_ratio: profile.aspectMap?.[aspect] ?? aspect, duration, ...options });
+      Object.assign(body, { model: profile.upstreamModelId, prompt, ...(profile.sourceVideo ? {} : { aspect_ratio: profile.aspectMap?.[aspect] ?? aspect, duration }), ...options });
       if (profile.frameMode) { if (images[0]) body.image_url = images[0]; if (images[1]) body.end_image_url = images[1]; }
       else if (profile.sourceVideo) { body.video_url = videos[0]; if (images.length) body.reference_image_urls = images; }
       else { if (images.length) body.reference_image_urls = images; if (videos.length) body.reference_video_urls = videos; if (audio.length) body.reference_audio_urls = audio; }

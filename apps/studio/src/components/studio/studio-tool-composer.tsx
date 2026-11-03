@@ -1,4 +1,5 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
+import { useEffect } from 'react';
 import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { Textarea } from '@/components/ui/textarea';
@@ -22,6 +23,8 @@ import type { StudioVisualSourcesController } from './use-studio-visual-sources'
 import { toolCopy } from './tool-catalog';
 import { ModelCostEstimate } from '@/components/generation-providers/cost-estimate';
 import { ImageEditRecipe } from './image-edit-recipe';
+import { useVideoLength } from './use-video-length';
+import { fitToSourceVideo } from '@/core/studio/source-length';
 import { runsAsRecipe, type StudioToolId } from '@/core/studio/tools';
 
 export function StudioToolComposer({
@@ -56,6 +59,13 @@ export function StudioToolComposer({
     sources.sources.length > 0 ||
     sources.unreadable;
   const disabled = busy || model.available === false;
+  // A model that works on a required clip follows its length; Studio reads it so nobody has to type it.
+  const sourceVideo = visualReferenceInputs(model).video.min > 0 ? sources.sources.find(item => item.type === 'video')?.publicUrl ?? null : null;
+  const sourceSeconds = useVideoLength(sourceVideo);
+  useEffect(() => {
+    const patch = sourceSeconds && !busy ? fitToSourceVideo(sourceSeconds, model, draft) : null;
+    if (patch) onChange({ ...draft, ...patch });
+  }, [sourceSeconds, model.id]);
   const images = sources.sources
     .filter((item) => item.type === 'image')
     .map((item) => item.publicUrl);
@@ -188,7 +198,7 @@ export function StudioToolComposer({
         )}
       </Action>
       <p className="text-[11px] leading-5 text-[var(--vh-text-3)]">
-        <ModelCostEstimate modelId={model.id} duration={model.supportedDurations?.length ? draft.duration : null} prompt={draft.prompt} options={draft.modelOptions} className="mr-1.5 text-[11px]" />
+        <ModelCostEstimate modelId={model.id} duration={model.supportedDurations?.length ? draft.duration : null} sourceSeconds={sourceSeconds} prompt={draft.prompt} options={draft.modelOptions} className="mr-1.5 text-[11px]" />
         {uiMessages["studio.tools.your_selected_provider_charges_for_generation_results_are_saved_in_this_project"]()}</p>
     </div>
   );

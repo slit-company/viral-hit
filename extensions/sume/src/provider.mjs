@@ -3,6 +3,7 @@ import { reportedCost } from './cost.mjs';
 import { checkModel } from './preflight.mjs';
 import { client, mediaUrl, SumeError } from './client.mjs';
 import { profileFor, buildPayload, uploadPayload } from './payload.mjs';
+import { mp4Seconds } from './mp4.mjs';
 const nextPoll = new Map();
 const jobId = value => { if (typeof value !== 'string' || !/^job_[A-Za-z0-9_-]{1,150}$/.test(value)) throw Error('Sume did not return a valid job ID'); return value; };
 function defer(id, seconds = 2) {
@@ -13,12 +14,29 @@ export async function testConnection({ configuration, signal }) {
   await client(configuration, signal).request('/v1/open/balance');
   return { ok: true };
 }
+/** Reads each reference once, even when both the source length and the upload need it. */
+function once(readMedia) {
+  if (typeof readMedia !== 'function') return readMedia;
+  const reads = new Map();
+  return reference => { if (!reads.has(reference)) reads.set(reference, readMedia(reference)); return reads.get(reference); };
+}
+/** Genjutsu must be told the source clip's own length, rounded up; it is read from the file, never chosen. */
+export async function sourceLength(profile, videoUrl, read) {
+  if (typeof read !== 'function') throw Error('Use an imported project video as the source');
+  const seconds = mp4Seconds((await read(videoUrl)).bytes);
+  if (!seconds) throw Error('The source video length could not be read. Use an MP4 or MOV file.');
+  const { shortest, longest } = profile.sourceVideo;
+  if (seconds < shortest - 0.001 || seconds > longest + 0.001) throw Error(profile.name + ' needs a source clip of ' + shortest + '–' + longest + ' seconds; this one is ' + seconds.toFixed(1) + ' s. Trim it first.');
+  return Math.max(shortest, Math.ceil(seconds - 0.001));
+}
 export async function createGeneration({ model, input, configuration, signal, readMedia, requestKey }) {
   const profile = profileFor(model.id), payload = buildPayload(profile, input);
   if (typeof requestKey !== 'string' || !requestKey || requestKey.length > 200) throw Error('Sume requires a durable Viral Hit generation ID');
+  const read = once(readMedia);
+  if (profile.sourceVideo) payload.body.duration = await sourceLength(profile, payload.body.video_url, read);
   const api = client(configuration, signal);
   await checkModel(api, profile, payload.body);
-  const body = await uploadPayload(payload.body, reference => api.upload(reference, readMedia));
+  const body = await uploadPayload(payload.body, reference => api.upload(reference, read));
   const idempotencyKey = 'vh-' + createHash('sha256').update(requestKey + '\0' + model.id).digest('hex');
   // POST is deliberately single-attempt. A transport failure never triggers another paid submission.
   const data = await api.request(payload.path, body, idempotencyKey);

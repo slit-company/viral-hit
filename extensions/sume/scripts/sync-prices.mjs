@@ -11,7 +11,9 @@ export function sumePricing(model, profile, checked) {
   const per = pricing.basis === 'per_image' ? 'output' : String(pricing.basis ?? '').startsWith('per_second') ? 'second' : null;
   if (!per) return null;
   const base = { currency: 'USD', per, basis: 'list', source: 'https://www.sume.com/docs/models', checked };
-  const options = (pricing.usd_options ?? []).filter(item => Number(item.usd) > 0);
+  // Some models bill the source seconds as well as the output seconds; their output matches the source, so each second costs twice.
+  const both = per === 'second' && (model.constraints ?? []).some(text => /billed per total second, source plus output/i.test(text)) ? 2 : 1;
+  const options = (pricing.usd_options ?? []).filter(item => Number(item.usd) > 0).map(item => ({ ...item, usd: Number(item.usd) * both }));
   const controls = new Set((profile.controls ?? []).map(control => control.key));
   const keys = ['resolution', 'quality'].filter(name => controls.has(name) && options.some(item => item[name] !== undefined));
   if (keys.length) {
@@ -21,7 +23,7 @@ export function sumePricing(model, profile, checked) {
     const values = Object.values(amounts);
     if (values.length) return { ...base, by: { option: keys.length === 1 ? keys[0] : keys, amounts }, amount: Math.max(...values) };
   }
-  const flat = Number(pricing.usd_per_image ?? pricing.usd_per_second ?? options[0]?.usd);
+  const flat = Number(pricing.usd_per_image ?? pricing.usd_per_second ?? options[0]?.usd) * both;
   return Number.isFinite(flat) && flat > 0 ? { ...base, amount: flat } : null;
 }
 

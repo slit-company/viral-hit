@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createGeneration, checkStatus, testConnection } from '../src/provider.mjs';
+import { createGeneration, checkStatus, testConnection, sourceLength } from '../src/provider.mjs';
+import { mp4Seconds } from '../src/mp4.mjs';
 import { profiles, providerManifest } from '../src/profiles.mjs';
 import { buildPayload } from '../src/payload.mjs';
 import { client, limitedJson } from '../src/client.mjs';
@@ -30,8 +31,37 @@ test('all 36 profiles build bounded explicit request bodies; video transforms om
   const h3 = buildPayload(profiles.find(p => p.id === 'sume-minimax-h3'), { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], audioUrls: ['a0'], aspectRatio: 'auto', duration: '8s' });
   assert.deepEqual([h3.path, h3.body.model, h3.body.aspect_ratio, h3.body.duration, h3.body.resolution, h3.body.reference_image_urls, h3.body.reference_video_urls, h3.body.reference_audio_urls], ['/v1/video-router/generate', 'minimax-h3', 'adaptive', 8, '768p', ['i0'], ['v0'], ['a0']]);
   // Genjutsu edits the source clip itself and takes the subject from the images.
-  const swap = buildPayload(profiles.find(p => p.id === 'sume-higgsfield-genjutsu-light-object-swap'), { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], duration: '6s' });
-  assert.deepEqual([swap.body.model, swap.body.video_url, swap.body.reference_image_urls, swap.body.reference_video_urls, swap.body.resolution], ['higgsfield-genjutsu-light-object-swap', 'v0', ['i0'], undefined, '480p']);
+  const swap = buildPayload(profiles.find(p => p.id === 'sume-higgsfield-genjutsu-light-object-swap'), { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], aspectRatio: 'auto' });
+  assert.deepEqual([swap.body.model, swap.body.video_url, swap.body.reference_image_urls, swap.body.reference_video_urls, swap.body.resolution, swap.body.aspect_ratio], ['higgsfield-genjutsu-light-object-swap', 'v0', ['i0'], undefined, '480p', undefined]);
+  assert.equal(providerManifest().models.find(m => m.id === 'sume-higgsfield-genjutsu').durations, undefined);
+});
+
+/** A minimal MP4: ftyp, then moov with an mvhd of the given version, timescale and length. */
+function mp4(version, scale, length) {
+  const body = new Uint8Array(version ? 108 : 96), view = new DataView(body.buffer);
+  body[0] = version; view.setUint32(version ? 20 : 12, scale);
+  if (version) view.setBigUint64(24, BigInt(length)); else view.setUint32(16, length);
+  const box = (type, content) => { const out = new Uint8Array(8 + content.length); new DataView(out.buffer).setUint32(0, out.length); out.set(Buffer.from(type), 4); out.set(content, 8); return out; };
+  return Buffer.concat([box('ftyp', Buffer.from('isom\0\0\0\0')), box('moov', box('mvhd', body))]);
+}
+
+test('Genjutsu reads the source length from the clip and sends it rounded up, without an aspect ratio', async () => {
+  assert.equal(mp4Seconds(mp4(0, 1000, 6042)), 6.042); assert.equal(mp4Seconds(mp4(1, 90000, 900000)), 10); assert.equal(mp4Seconds(Buffer.from('not a video')), null);
+  const light = profiles.find(p => p.id === 'sume-higgsfield-genjutsu-light-object-swap');
+  const clip = length => async () => ({ bytes: mp4(0, 1000, length), kind: 'video', mimeType: 'video/mp4' });
+  assert.equal(await sourceLength(light, 'v0', clip(6042)), 7); assert.equal(await sourceLength(light, 'v0', clip(15000)), 15);
+  await assert.rejects(sourceLength(light, 'v0', clip(15400)), /4–15 seconds; this one is 15\.4 s/);
+  await assert.rejects(sourceLength(light, 'v0', clip(3000)), /Trim it first/);
+  let reads = 0, sent;
+  await mock(async (url, init) => {
+    url = String(url);
+    if (url.endsWith('/models/higgsfield-genjutsu-light-object-swap')) return json({ model: { id: 'higgsfield-genjutsu-light-object-swap', capabilities: { aspect_ratios: [], resolutions: ['480p'], duration_seconds: { min: 4, max: 30 }, reference_images: true } } });
+    if (url.endsWith('/generate-upload-url')) return json({ public_url: 'https://media.sume.com/assets/' + JSON.parse(init.body).filename, upload_url: 'https://fixture.r2.cloudflarestorage.com/object', upload_method: 'PUT', upload_headers: { 'content-type': JSON.parse(init.body).content_type } });
+    if (url.includes('r2.cloudflarestorage.com')) return new Response(null, { status: 200 });
+    sent = JSON.parse(init.body); return json({ job: { id: 'job_swap' } }, 202);
+  }, () => createGeneration({ model: { id: light.id, kind: 'video' }, input: { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], aspectRatio: 'auto', duration: '6s' }, configuration, signal: signal(), requestKey: 'swap-1',
+    readMedia: async url => { reads++; return url === 'v0' ? { bytes: mp4(0, 1000, 6042), kind: 'video', mimeType: 'video/mp4' } : { bytes: new Uint8Array([1]), kind: 'image', mimeType: 'image/png' }; } }));
+  assert.deepEqual([sent.duration, sent.aspect_ratio, sent.video_url, reads], [7, undefined, 'https://media.sume.com/assets/reference.mp4', 2]);
 });
 
 test('local upload is deduplicated, credential never forwarded, generation gets durable idempotency key', async () => {

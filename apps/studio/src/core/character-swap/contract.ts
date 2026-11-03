@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { FACE_MATCH_THRESHOLD } from '../characters/face-match';
 import type { CostTotal } from '../costs/pricing';
+import { coveringDuration } from '../studio/source-length';
 
 /**
  * Character swap: the person in a timeline clip becomes a character, keeping the clip's movement,
@@ -45,11 +46,7 @@ export function swapSegments(start: number, duration: number, maxSeconds = MAX_S
 }
 
 /** The output length to ask for: the shortest supported length that covers the piece. */
-export function swapDuration(seconds: number, durations?: readonly string[] | null) {
-  const supported = (durations ?? []).map(value => Number.parseInt(value, 10)).filter(Number.isFinite).sort((left, right) => left - right);
-  if (!supported.length) return null;
-  return (supported.find(value => value >= seconds - 0.05) ?? supported[supported.length - 1]) + 's';
-}
+export const swapDuration = coveringDuration;
 
 /** Says which input supplies what; reference-to-video models follow these assignments closely. */
 export function characterSwapPrompt(notes: string, images: number) {

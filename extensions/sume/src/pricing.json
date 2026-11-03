@@ -178,12 +178,12 @@
   "by": {
    "option": "resolution",
    "amounts": {
-    "480p": 0.05,
-    "720p": 0.1,
-    "1080p": 0.2
+    "480p": 0.1,
+    "720p": 0.2,
+    "1080p": 0.4
    }
   },
-  "amount": 0.2
+  "amount": 0.4
  },
  "sume-higgsfield-genjutsu-light-object-swap": {
   "currency": "USD",
@@ -194,12 +194,12 @@
   "by": {
    "option": "resolution",
    "amounts": {
-    "480p": 0.05,
-    "720p": 0.1,
-    "1080p": 0.2
+    "480p": 0.1,
+    "720p": 0.2,
+    "1080p": 0.4
    }
   },
-  "amount": 0.2
+  "amount": 0.4
  },
  "sume-kling-3": {
   "currency": "USD",
