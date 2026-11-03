@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
 import { prepareWhisperFixture } from './e2e-whisper-fixture.mjs';
 import { prepareCinemaFixture } from './e2e-cinema-fixture.mjs';
+import { prepareShapeshiftFixture } from './e2e-shapeshift-fixture.mjs';
 import { prepareVoiceFixture } from './e2e-voice-fixture.mjs';
 
 const directory = await mkdtemp(join(tmpdir(), 'viral-hit-e2e-'));
@@ -22,6 +23,7 @@ await cp('../../examples/adapter-recipes/procedural-tone.json', join(recipes, 'p
 const providers = join(directory, 'providers');
 await cp('../../examples/providers', providers, { recursive: true });
 await prepareCinemaFixture(directory, providers);
+await prepareShapeshiftFixture(providers);
 await prepareVoiceFixture(providers);
 // A second, independent provider exercises task-first provider selection without Sume or paid APIs.
 await cp('../../examples/providers/procedural-images', join(providers, 'studio-secondary'), { recursive: true });
