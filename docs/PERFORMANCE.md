@@ -291,3 +291,7 @@ Summed script gzip: **808,337 bytes**, **10,865 bytes** more than Relight and Ed
 ## Soul ID — 2026-11-03
 
 Summed script gzip: **811,819 bytes**, **3,482 bytes** more than Image layers (808,337). The script budget changed from 809,000 to **813,000** in this reviewed decision. The character page gains the trained-identities panel, Studio's model settings offer each character's Soul ID, and 12 messages in four languages join the message chunk. Training and status checks run on the server, and no dependency was added.
+
+## Shapeshift — 2026-11-03
+
+Summed script gzip: **827,699 bytes**, **15,880 bytes** more than Soul ID (811,819); public files **9,508,446 bytes**. The script budget changed from 813,000 to **828,000** in this reviewed decision. The Shapeshift page is its own route chunk of 7,499 bytes, loaded only when the page opens, and it imports only the shared choices from the contract, so request schemas and prompts stay on the server. Its 80 messages in four languages join the shared message chunk, and the sidebar gains one entry. Routing, cutting pieces, joining, motion scoring and face matching run on the server, and no dependency was added.
