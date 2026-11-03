@@ -19,7 +19,7 @@ Open it from **Shapeshift** in the project sidebar. Agents use the `viral_hit_sh
 4. **Model.** **Auto** chooses for you, or pick any model that can do the job. **Variations** (1–3) run different model families side by side with Auto.
 5. **Plan.** Before anything is spent, the panel shows the models, how many generations the run needs and the estimated price.
 6. **Generate** cuts the source into pieces when it is longer than a model makes in one go (even pieces of up to 15 seconds), then queues every generation as one durable run that survives restarts.
-7. **Results** appear as each variation finishes. Shapeshift joins its pieces, fits them to the source frame at the chosen quality (480p, 720p or 1080p), cuts or holds each piece to its exact length and puts the source's sound back. **Add to timeline** places the result in the editor.
+7. **Results** appear as each variation finishes. Shapeshift joins its pieces, fits them to the source frame at the chosen quality (480p, 720p or 1080p), starts each piece where its reference clip's first frame appeared so the picture stays in sync with the sound, cuts or holds each piece to its exact length and puts the source's sound back. **Add to timeline** places the result in the editor.
 
 ## How Auto chooses
 

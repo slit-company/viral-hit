@@ -30,31 +30,42 @@ export async function probeSource(projectId: string, assetId: string, signal: Ab
   const info = await probeMedia(path, 'video', signal);
   return { duration: (info.durationMs ?? 0) / 1000, width: info.width ?? 1280, height: info.height ?? 720, hasAudio: info.hasAudio };
 }
-async function frameRate(path: string, signal: AbortSignal) {
-  const { stdout } = await execute(process.env.VIRAL_HIT_FFPROBE || 'ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=avg_frame_rate', '-of', 'csv=p=0', path], { signal, timeout: 15_000 });
-  const [numerator, denominator] = stdout.trim().split('/').map(Number), rate = denominator ? numerator / denominator : numerator;
-  return Number.isFinite(rate) && rate >= 12 && rate <= 60 ? Math.round(rate * 1000) / 1000 : 30;
+/**
+ * A video's frame rate and how long after the file's start its first frame appears. Encoders often start the
+ * picture a frame or two after the sound, and a cut between frames starts it later still.
+ */
+async function videoTiming(path: string, signal: AbortSignal) {
+  const { stdout } = await execute(process.env.VIRAL_HIT_FFPROBE || 'ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=avg_frame_rate,start_time:format=start_time', '-of', 'json', path], { signal, timeout: 15_000 });
+  const data = JSON.parse(stdout) as { streams?: { avg_frame_rate?: string; start_time?: string }[]; format?: { start_time?: string } };
+  const [numerator, denominator] = String(data.streams?.[0]?.avg_frame_rate ?? '').split('/').map(Number), rate = denominator ? numerator / denominator : numerator;
+  const lead = Number(data.streams?.[0]?.start_time) - Number(data.format?.start_time ?? 0);
+  return { fps: Number.isFinite(rate) && rate >= 12 && rate <= 60 ? Math.round(rate * 1000) / 1000 : 30, lead: Number.isFinite(lead) ? Math.min(1, Math.max(0, lead)) : 0 };
 }
 
 export type ComposeInput = {
   projectId: string; requestId: string; variation: number; quality: ShapeshiftQuality; keepSound: boolean;
-  source: { assetId: string; start: number; duration: number }; pieces: { assetId: string; duration: number }[];
+  source: { assetId: string; start: number; duration: number };
+  /** Each generated piece with the reference clip it was made from. */
+  pieces: { assetId: string; referenceAssetId: string; duration: number }[];
 };
 /**
  * Joins the generated pieces into one video with the source's length, shape and sound: each piece is fitted
- * to the source frame, cut or held to its own length, and the source's audio for that range goes back on.
- * The same inputs always give the same project video.
+ * to the source frame, starts where its reference clip's first frame appeared (models begin at that frame),
+ * is cut or held to its own length, and the source's audio for that range goes back on. The same inputs
+ * always give the same project video.
  */
 export async function composeShapeshift(input: ComposeInput, signal: AbortSignal) {
   const assetId = 'shapeshift-' + createHash('sha256').update(JSON.stringify(input)).digest('hex').slice(0, 32);
   if (await getProjectAssetById({ projectId: input.projectId, assetId })) return assetId;
   const source = await localVideo(input.projectId, input.source.assetId), pieces = await Promise.all(input.pieces.map(piece => localVideo(input.projectId, piece.assetId)));
-  const info = await probeMedia(source.path, 'video', signal), fps = await frameRate(source.path, signal);
+  const info = await probeMedia(source.path, 'video', signal), { fps } = await videoTiming(source.path, signal);
+  const leads = await Promise.all(input.pieces.map(async piece => (await videoTiming((await localVideo(input.projectId, piece.referenceAssetId)).path, signal)).lead));
   const aspect = (info.width ?? 16) / (info.height ?? 9), short = SHORT_SIDE[input.quality];
   const width = aspect >= 1 ? even(short * aspect) : even(short), height = aspect >= 1 ? even(short) : even(short / aspect);
   const sound = input.keepSound && info.hasAudio, total = input.pieces.reduce((sum, piece) => sum + piece.duration, 0);
   const filters = input.pieces.map((piece, index) => '[' + index + ':v]scale=' + width + ':' + height + ':force_original_aspect_ratio=increase,crop=' + width + ':' + height + ',setsar=1,fps=' + fps
-    + ',tpad=stop_mode=clone:stop_duration=' + piece.duration.toFixed(3) + ',trim=duration=' + piece.duration.toFixed(3) + ',setpts=PTS-STARTPTS[v' + index + ']');
+    + ',setpts=PTS-STARTPTS,tpad=start_mode=clone:start_duration=' + leads[index].toFixed(3) + ':stop_mode=clone:stop_duration=' + piece.duration.toFixed(3)
+    + ',trim=duration=' + piece.duration.toFixed(3) + ',setpts=PTS-STARTPTS[v' + index + ']');
   filters.push(input.pieces.map((_, index) => '[v' + index + ']').join('') + 'concat=n=' + input.pieces.length + ':v=1:a=0[v]');
   const directory = await mkdtemp(join(tmpdir(), 'vh-shapeshift-'));
   try {
@@ -87,8 +98,9 @@ export async function composeShapeshift(input: ComposeInput, signal: AbortSignal
 const FRAME = { width: 48, height: 27, fps: 6 };
 /** Small grayscale frames of a span, sampled at a fixed rate, for comparing motion. */
 export async function grayFrames(path: string, start: number, duration: number, signal: AbortSignal) {
-  const { stdout } = await execute(ffmpeg(), ['-nostdin', '-v', 'error', '-ss', start.toFixed(3), '-t', duration.toFixed(3), '-i', path,
-    '-vf', 'fps=' + FRAME.fps + ',scale=' + FRAME.width + ':' + FRAME.height + ':force_original_aspect_ratio=increase,crop=' + FRAME.width + ':' + FRAME.height + ',format=gray',
+  // Sampling starts at the window's start even when the first frame comes a little later, so every video shares one time grid.
+  const { stdout } = await execute(ffmpeg(), ['-nostdin', '-v', 'error', '-ss', start.toFixed(3), '-t', duration.toFixed(3), '-i', path, '-an',
+    '-vf', 'fps=' + FRAME.fps + ':start_time=0,scale=' + FRAME.width + ':' + FRAME.height + ':force_original_aspect_ratio=increase,crop=' + FRAME.width + ':' + FRAME.height + ',format=gray',
     '-f', 'rawvideo', '-'], { signal, timeout: 120_000, maxBuffer: 16 * 1024 * 1024, encoding: 'buffer' });
   const size = FRAME.width * FRAME.height, frames: Uint8Array[] = [];
   for (let offset = 0; offset + size <= stdout.length; offset += size) frames.push(new Uint8Array(stdout.subarray(offset, offset + size)));

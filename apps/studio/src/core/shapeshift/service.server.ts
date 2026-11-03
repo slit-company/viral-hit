@@ -152,9 +152,11 @@ async function finish(projectId: string, requestId: string) {
   const subject = current.imageAssetIds.length ? { referenceAssetIds: current.imageAssetIds } : { characterId: current.characterId! };
   for (const variation of current.variations) {
     if (results[variation.index] || variation.pieces.some(piece => !piece.outputAssetId)) continue;
-    const signal = AbortSignal.timeout(10 * 60_000);
-    const resultAssetId = await composeShapeshift({ projectId, requestId, variation: variation.index + 1, quality: current.quality, keepSound: current.keepSound, source,
-      pieces: variation.pieces.map(piece => ({ assetId: piece.outputAssetId!, duration: piece.duration })) }, signal);
+    const signal = AbortSignal.timeout(10 * 60_000), pieces = [];
+    // The reference clips already exist from produce; cutting the same range again returns them as they are.
+    for (const piece of variation.pieces) pieces.push({ assetId: piece.outputAssetId!, duration: piece.duration,
+      referenceAssetId: (await extractProjectVideoSegment({ projectId, assetId: current.sourceAssetId, start: piece.start, duration: piece.duration, signal })).id });
+    const resultAssetId = await composeShapeshift({ projectId, requestId, variation: variation.index + 1, quality: current.quality, keepSound: current.keepSound, source, pieces }, signal);
     results[variation.index] = { resultAssetId, scores: await scoreShapeshift({ projectId, mode: current.mode, resultAssetId, source, subject }, signal) };
     const h = openShapeshiftRecords();
     try { h.db.prepare('UPDATE vh_shapeshifts SET results_json=? WHERE request_id=? AND project_id=?').run(JSON.stringify(results), requestId, projectId); }
