@@ -14,6 +14,7 @@ import { LayerExportAction } from './layer-export-action';
 import { AudioDuckingControl } from './audio-ducking-control';
 import { ClipSpeedControl } from './clip-speed-control';
 import { DialogueDialog } from './dialogue-dialog';
+import { CharacterSwapDialog } from './character-swap-dialog';
 import { duckingGain, voiceIntervals } from '@/core/editor/audio-ducking';
 import { EditorComments } from '@/components/collaboration/editor-comments';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
@@ -2676,6 +2677,7 @@ export function VideoEditorWorkspace({
                       <Sparkles className="size-3.5" />
                       {t('actions.redo')}
                     </Action>
+                    <CharacterSwapDialog projectId={projectId} clipId={selectedClip.id} disabled={selectedClip.sourceType !== 'video'} />
                     <Action
                       type="button"
                       onClick={() => deleteSelectedClip(false)}

@@ -292,3 +292,7 @@ Summed script gzip: **785,111 bytes**, **2,687 bytes** more than Clip speed (782
 ## Costs — 2026-11-03
 
 Summed script gzip: **790,196 bytes**, **5,085 bytes** more than Dialogue (785,111); public files **9,389,836 bytes**. The script budget changed from 786,000 to **791,000** in this reviewed decision. The cost estimate line appears in Studio, Cinema, Canvas, the dialogue dialog and approvals, the Connections page gains the spending section, and 20 messages in four languages join the message chunk. Prices travel with the model list that is already loaded; spending reads the generation history on the server. No dependency was added.
+
+## Character swap — 2026-11-03
+
+Summed script gzip: **793,320 bytes**, **3,124 bytes** more than Costs (790,196); public files **9,402,089 bytes**. The script budget changed from 791,000 to **794,000** in this reviewed decision. The editor gains the swap dialog (character and model pickers, plan, per-piece progress and face verdicts) and 21 messages in four languages. Cutting pieces, generation, face matching and placement run on the server, and no dependency was added.

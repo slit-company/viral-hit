@@ -12,6 +12,9 @@ export async function prepareCinemaFixture(directory, providers) {
     { ...common, id: 'cinema-keyframe-fixture', name: 'Local keyframe fixture', kind: 'image', studioTasks: ['image-generate', 'image-edit'], referenceInputs },
     { ...common, id: 'cinema-video-fixture', name: 'Local video fixture', kind: 'video', studioTasks: ['video-generate'], durations: ['3s', '5s', '8s'], defaultDuration: '3s',
       referenceInputs, videoImageInputs: { frames: 2, references: 4 }, controls: [{ key: 'reference_mode', label: 'Image use', type: 'select', default: 'frames', choices: [{ value: 'frames', label: 'Frames' }, { value: 'references', label: 'References' }] }] },
+    // Reference-to-video shape (a reference video plus character images) for the character swap flow.
+    { ...common, id: 'cinema-swap-fixture', name: 'Local swap fixture', kind: 'video', studioTasks: ['video-generate'], durations: ['3s', '5s'], defaultDuration: '3s',
+      referenceInputs: { image: { min: 1, max: 4 }, video: { min: 1, max: 1 }, audio: { min: 0, max: 0 } }, videoImageInputs: { references: 4 } },
   ] };
   await writeFile(join(folder, 'provider.json'), JSON.stringify(manifest));
   await writeFile(join(folder, 'provider.mjs'), `import { readFile } from 'node:fs/promises'; import { join } from 'node:path';
