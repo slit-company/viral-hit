@@ -1,3 +1,5 @@
+import { estimateGenerationStep } from '@/core/costs/generation-cost.server';
+import { currentAgent } from '@/core/agent/request-origin.server';
 import { finalizeIntentUploads, linkInputAssets } from './generation-input-assets';
 import { bindGenerationIntentReceipt } from './generation-intent-receipt';
 import { createAdapter } from '@/core/adapters/adapter-factory';
@@ -151,9 +153,14 @@ export async function submitEffectGeneration({
       body: { error: 'A generation intent is required.' },
     };
   }
+  // The estimate and the requesting agent are kept with the record for the spending ledger.
+  const cost = binding.kind === 'analysis' ? null : estimateGenerationStep({ modelId: binding.modelId, prompt: prompt.trimmedPrompt, parameters: safeInput });
+  const agent = currentAgent();
   const recordedInput = {
     ...adapterInput,
     ...(metadata ? { _source: metadata } : {}),
+    ...(cost ? { _cost: cost } : {}),
+    ...(agent ? { _agent: { channel: agent.channel, tool: agent.tool } } : {}),
     _provider: {
       id: effect.provider,
       modelId: binding?.modelId ?? effect.model,

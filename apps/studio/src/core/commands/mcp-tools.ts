@@ -62,6 +62,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_instagram_inbox',
   'viral_hit_comments',
   'viral_hit_dialogue',
+  'viral_hit_spending',
 ] as const;
 
 export type ViralHitMcpToolName = (typeof VIRAL_HIT_MCP_TOOL_NAMES)[number];

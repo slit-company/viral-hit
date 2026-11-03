@@ -1,12 +1,16 @@
 # Costs
 
-Viral Hit shows what a generation should cost before it runs.
+Viral Hit shows what a generation should cost before it runs and keeps a record of what was spent.
 
 ## Estimates before a run
 
 The estimate uses the price each service publishes for the model, the length, resolution and other settings you chose, and the script length for speech. It appears next to **Generate** in Studio, in the Cinema plan, in the Canvas run plan, in the dialogue dialog and on each approval an agent waits for. Agents get the same numbers: approvals list a cost per step, Cinema `preview` and Canvas `plan` return a `cost` total, `viral_hit_dialogue produce` returns one, and `viral_hit_generation_model_get` includes the model's `pricing`.
 
 Estimates are approximate. They leave out reference and input extras (for example a charge per reference image or per second of input video) and taxes, and they never block a run. When a service picks the resolution itself, the estimate uses the model's highest listed rate. A model without a published price shows **Price not listed** instead of a guess, and a per-second tool whose source length is unknown shows its rate per second.
+
+## Spending
+
+**Connections → Spending** totals the last 7, 30 or 90 days per service and lists recent generations with their status and estimate; a robot mark shows the ones an agent asked for. Every Studio, Canvas, Cinema, dialogue and agent request writes the same generation history, and each record keeps the estimate made when it was sent. Older records are estimated from today's prices. Failed generations are listed but not counted; running ones count, since most services charge on submission. Agents read the same view with `viral_hit_spending` and HTTP clients with `GET /api/app/spending?days=30`.
 
 ## Where the prices come from
 

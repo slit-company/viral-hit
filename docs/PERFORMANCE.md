@@ -288,3 +288,7 @@ Summed script gzip: **782,424 bytes**, **1,066 bytes** more than Ducking (781,35
 ## Dialogue — 2026-11-03
 
 Summed script gzip: **785,111 bytes**, **2,687 bytes** more than Clip speed (782,424); public files **9,375,433 bytes**. The script budget changed from 783,000 to **786,000** in this reviewed decision. The editor gains the dialogue dialog and the script parser it shares with the server, and 13 messages in four languages join the message chunk. Lines are generated and placed on the server, no dependency was added, and the architecture check still finds no server module reachable from the browser.
+
+## Costs — 2026-11-03
+
+Summed script gzip: **790,196 bytes**, **5,085 bytes** more than Dialogue (785,111); public files **9,389,836 bytes**. The script budget changed from 786,000 to **791,000** in this reviewed decision. The cost estimate line appears in Studio, Cinema, Canvas, the dialogue dialog and approvals, the Connections page gains the spending section, and 20 messages in four languages join the message chunk. Prices travel with the model list that is already loaded; spending reads the generation history on the server. No dependency was added.

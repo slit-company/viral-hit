@@ -18,6 +18,7 @@ import { registerCanvasRunTools } from './canvas-run-tools';
 import { registerInboxTools } from './inbox-tools';
 import { registerCollaborationTools } from './collaboration-tools';
 import { registerDialogueTools } from './dialogue-tools';
+import { registerSpendingTools } from './spending-tools';
 /** Registration seam for project transfer, recipe pack, character and delivery tools. */
 export function registerWorkspaceTools(server: McpServer, project: (projectId?: string) => Promise<{ id: string }>) {
   registerAssetGenerationTools(server);
@@ -39,4 +40,5 @@ export function registerWorkspaceTools(server: McpServer, project: (projectId?: 
   registerInboxTools(server);
   registerCollaborationTools(server, project);
   registerDialogueTools(server, project);
+  registerSpendingTools(server);
 }

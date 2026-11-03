@@ -6,6 +6,7 @@ import { ProductPageShell } from '@/components/app/product-page-shell';
 import { Button } from '@/components/ui/button';
 import { accountErrorMessage, usePublishingAccounts } from './use-publishing-accounts';
 import { ProviderConnections } from '@/components/extensions/provider-connections';
+import { SpendingSummary } from '@/components/extensions/spending-summary';
 import { getLocale } from '@/paraglide/runtime.js';
 
 export function PublishingAccountsPage({ callbackIssue, instagramIssue, instagramState, onInstagramSelectionDone }: { callbackIssue?: string; instagramIssue?: string; instagramState?: string; onInstagramSelectionDone: () => void }) {
@@ -22,6 +23,7 @@ export function PublishingAccountsPage({ callbackIssue, instagramIssue, instagra
         </div>
         {callbackIssue && callbackIssue !== 'connected' && <p role="status" className="rounded-xl border border-[var(--vh-border)] bg-[var(--vh-control)] p-4 text-sm">{accountErrorMessage(callbackIssue)}</p>}
         <ProviderConnections locale={getLocale()} />
+        <SpendingSummary />
         <h2 className="flex items-center gap-2 pt-4 text-xl font-semibold"><Link2 size={20} aria-hidden="true" />{uiMessages["ui.publishing.publishing"]()}</h2>
         {error && <p role="alert" className="rounded-xl border border-destructive/30 p-4 text-sm">{error}</p>}
         <section aria-label={uiMessages["ui.publishing.youtube_connection"]()} className="overflow-hidden rounded-2xl border border-[var(--vh-border)] bg-[var(--vh-surface)]">
