@@ -332,6 +332,8 @@
               "enum": [
                 "image-generate",
                 "image-edit",
+                "relight",
+                "text-edit",
                 "remove-background",
                 "image-upscale",
                 "video-generate",

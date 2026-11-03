@@ -21,7 +21,8 @@ import type { CanvasGenerationCard } from '@/core/creative-canvas/canvas-types';
 import type { StudioVisualSourcesController } from './use-studio-visual-sources';
 import { toolCopy } from './tool-catalog';
 import { ModelCostEstimate } from '@/components/generation-providers/cost-estimate';
-import type { StudioToolId } from '@/core/studio/tools';
+import { ImageEditRecipe } from './image-edit-recipe';
+import { runsAsRecipe, type StudioToolId } from '@/core/studio/tools';
 
 export function StudioToolComposer({
   projectId,
@@ -111,6 +112,8 @@ export function StudioToolComposer({
             {uiMessages["studio.tools.choose_project_media_or_upload_a_file_selected_references_will_be_used_for_this_task"]()}</p>
         </div>
       )}
+      {(tool === 'relight' || tool === 'text-edit') && runsAsRecipe(model, tool) && <ImageEditRecipe tool={tool} projectId={projectId} imageUrl={images[0] ?? null} disabled={disabled}
+        onPrompt={(text) => onChange({ ...draft, prompt: truncatePromptToMaxChars(text, limit) })} />}
       {prompt.accepted ? <label className="block space-y-2">
         <span className="text-xs font-semibold">{uiMessages["studio.tools.scene_description"]()}{!required && <StudioPromptOptional />}</span>
         <Textarea

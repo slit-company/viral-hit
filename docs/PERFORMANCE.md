@@ -296,3 +296,7 @@ Summed script gzip: **790,196 bytes**, **5,085 bytes** more than Dialogue (785,1
 ## Character swap — 2026-11-03
 
 Summed script gzip: **793,320 bytes**, **3,124 bytes** more than Costs (790,196); public files **9,402,089 bytes**. The script budget changed from 791,000 to **794,000** in this reviewed decision. The editor gains the swap dialog (character and model pickers, plan, per-piece progress and face verdicts) and 21 messages in four languages. Cutting pieces, generation, face matching and placement run on the server, and no dependency was added.
+
+## Relight and Edit text — 2026-11-03
+
+Summed script gzip: **797,472 bytes**, **4,152 bytes** more than Character swap (793,320). The script budget changed from 794,000 to **798,000** in this reviewed decision. Studio gains the Relight and Edit text forms, the source-length fitting for models that follow a clip, and 28 messages in four languages. Text detection runs on the server with Tesseract, and no dependency was added.

@@ -32,7 +32,7 @@ export function optionsFor(profile, input) {
 export function checkInput(profile, input) {
   const prompt = input.prompt?.trim() ?? '';
   const maxPrompt = profile.upstreamModelId.startsWith('kling/') ? 2500 : profile.upstreamModelId.startsWith('xai/') ? 4096 : 10000;
-  if (!prompt || prompt.length > maxPrompt) throw Error('Enter a prompt of 1–' + maxPrompt + ' characters');
+  if (profile.promptInput !== 'none' && (!prompt || prompt.length > maxPrompt)) throw Error('Enter a prompt of 1–' + maxPrompt + ' characters');
   const images = input.imageUrls ?? [];
   const range = profile.referenceInputs?.image ?? { min: 0, max: 0 };
   if (!Array.isArray(images) || images.length < range.min || images.length > range.max) throw Error('Check the image reference count for ' + profile.name);

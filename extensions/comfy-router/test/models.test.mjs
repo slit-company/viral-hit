@@ -84,6 +84,9 @@ test('image generation and editing use the native fields without falsely declari
   const relight = body('bria-relight', { imageUrls: ['a'], options: { light_direction: 'side' } }, [image]);
   assert.equal(relight.light_direction, 'side'); assert.equal(relight.image, image.base64);
   assert.throws(() => body('bria-remove-background'), /reference count/);
+  // Bria reads only the picture and its options, so Studio lists it under its own tool and asks for no prompt.
+  assert.deepEqual(['bria-relight', 'bria-remove-background'].map(id => [profileFor('comfy-' + id).studioTasks, profileFor('comfy-' + id).promptInput]), [[['relight'], 'none'], [['remove-background'], 'none']]);
+  assert.equal(body('bria-remove-background', { prompt: '', imageUrls: ['a'] }, [image]).image, image.base64);
   assert.throws(() => body('gpt-image-2.5-sunburst', { maskUrl: 'mask' }), /does not accept/);
 });
 

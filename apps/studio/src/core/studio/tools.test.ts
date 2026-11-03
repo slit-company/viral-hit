@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { toolModels, chooseToolModel, modelStudioTools } from './tools';
+import { toolModels, chooseToolModel, modelStudioTools, modelRunsTool, runsAsRecipe } from './tools';
 import { providerModelSchema } from '@/core/generation-providers/installed/manifest';
 
 test('operations group unrelated providers by declared capability, without matching names', () => {
@@ -41,6 +41,18 @@ test('operations group unrelated providers by declared capability, without match
   assert.equal(toolModels(models, 'image-edit').length, 0);
   assert.deepEqual(modelStudioTools(models[2]), ['video-generate']);
   assert.equal(chooseToolModel([]), null);
+});
+test('relighting and text editing run on any image-edit model; a dedicated model keeps its own controls', () => {
+  const models = [
+    { id: 'edit', workspaceType: 'ai-image', studioTasks: ['image-generate', 'image-edit'] as const },
+    { id: 'create', workspaceType: 'ai-image', studioTasks: ['image-generate'] as const },
+    { id: 'relighter', workspaceType: 'ai-image', studioTasks: ['relight'] as const },
+  ];
+  assert.deepEqual(toolModels(models, 'relight').map((m) => m.id), ['edit', 'relighter']);
+  assert.deepEqual(toolModels(models, 'text-edit').map((m) => m.id), ['edit']);
+  assert.deepEqual(toolModels(models, 'image-edit').map((m) => m.id), ['edit']);
+  assert.equal(modelRunsTool(models[1], 'text-edit'), false);
+  assert.deepEqual([runsAsRecipe(models[0], 'relight'), runsAsRecipe(models[2], 'relight'), runsAsRecipe(models[0], 'image-edit')], [true, false, false]);
 });
 test('manifest rejects false media declarations and duplicate tasks before model registration', () => {
   const model = {

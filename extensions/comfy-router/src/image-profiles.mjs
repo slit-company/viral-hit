@@ -6,9 +6,10 @@ const image = (id, name, upstreamModelId, aspectRatios, max, controls) => ({
   studioTasks: max ? ['image-generate', 'image-edit'] : ['image-generate'],
   aspectRatios, defaultAspectRatio: '1:1', referenceInputs: refs(0, max), controls,
 });
-const edit = (id, name, upstream, controls) => ({
+/** One-image tools; the task says which Studio tool lists them, since these ignore a written prompt. */
+const edit = (id, name, upstream, controls, task) => ({
   ...image(id, name, upstream, ['auto'], 1, controls), defaultAspectRatio: 'auto',
-  studioTasks: ['image-edit'], referenceInputs: refs(1, 1),
+  studioTasks: [task], promptInput: 'none', referenceInputs: refs(1, 1),
 });
 export const imageProfiles = [
   image('nano-banana-pro', 'Nano Banana Pro', 'vertexai/gemini-3-pro-image', ratios, 14, [select('resolution', 'Resolution', ['1K', '2K', '4K'])]),
@@ -25,6 +26,6 @@ export const imageProfiles = [
     select('light_type', 'Lighting', ['midday', 'blue hour light', 'low-angle sunlight', 'sunrise light', 'spotlight on subject, keep background settings',
       'overcast light', 'soft overcast daylight lighting', 'cloud-filtered lighting', 'fog-diffused lighting', 'moonlight lighting',
       'starlight lighting nighttime', 'soft bokeh lighting', 'harsh studio lighting keep background setting']),
-  ]),
-  edit('bria-remove-background', 'Bria Remove Background', 'bria/image-edit-remove-background', []),
+  ], 'relight'),
+  edit('bria-remove-background', 'Bria Remove Background', 'bria/image-edit-remove-background', [], 'remove-background'),
 ];

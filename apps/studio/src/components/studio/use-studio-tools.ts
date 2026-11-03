@@ -3,6 +3,7 @@ import { useWorkspaceModels } from '@/core/workspace-hooks/use-workspace-metadat
 import {
   chooseToolModel,
   defaultStudioTool,
+  modelRunsTool,
   modelStudioTools,
   toolModels,
   type StudioToolId,
@@ -36,7 +37,7 @@ export function useStudioTools(
       models.find((item) => item.id === saved?.modelId) ??
       models.find((item) => item.id === initialModelId);
     const nextTool = initial
-      ? saved?.tool && modelStudioTools(initial).includes(saved.tool)
+      ? saved?.tool && modelRunsTool(initial, saved.tool)
         ? saved.tool
         : modelStudioTools(initial)[0]
       : tool;
@@ -84,7 +85,7 @@ export function useStudioTools(
   function selectModel(id: string) {
     const next = models.find((item) => item.id === id);
     if (!next) return;
-    if (!modelStudioTools(next).includes(tool))
+    if (!modelRunsTool(next, tool))
       setTool(modelStudioTools(next)[0]);
     setModelId(id);
   }

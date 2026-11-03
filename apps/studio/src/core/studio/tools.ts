@@ -2,6 +2,9 @@
 export const STUDIO_TOOL_KINDS = {
   'image-generate': 'image',
   'image-edit': 'image',
+  /** Instruction recipes any image-edit model can run; see image-recipes.ts. */
+  relight: 'image',
+  'text-edit': 'image',
   'remove-background': 'image',
   'image-upscale': 'image',
   'video-generate': 'video',
@@ -46,6 +49,17 @@ export function modelStudioTools(model: {
   if (kind === 'image' && ((model.referenceInputs?.image?.min ?? 0) > 0 || model.maskInput?.required)) return ['image-edit'] as const;
   return [defaultStudioTool(kind)];
 }
+/** Tools that run as a written instruction on any model of another tool. */
+const RECIPE_TOOLS: Partial<Record<StudioToolId, StudioToolId>> = { relight: 'image-edit', 'text-edit': 'image-edit' };
+/** Whether a model runs the tool directly, or runs the tool a recipe is written for. */
+export function modelRunsTool(model: Parameters<typeof modelStudioTools>[0], tool: StudioToolId) {
+  const tasks: readonly StudioToolId[] = modelStudioTools(model), via = RECIPE_TOOLS[tool];
+  return tasks.includes(tool) || (via !== undefined && tasks.includes(via));
+}
+/** True when the tool is only a written instruction for this model, so Studio helps write it. */
+export function runsAsRecipe(model: Parameters<typeof modelStudioTools>[0], tool: StudioToolId) {
+  return RECIPE_TOOLS[tool] !== undefined && !modelStudioTools(model).includes(tool) && modelRunsTool(model, tool);
+}
 export function toolModels<
   T extends {
     studioTasks?: readonly StudioToolId[];
@@ -54,9 +68,7 @@ export function toolModels<
   },
 >(models: readonly T[], tool: StudioToolId, provider = '') {
   return models.filter(
-    (model) =>
-      modelStudioTools(model).includes(tool) &&
-      (!provider || model.providerId === provider),
+    (model) => modelRunsTool(model, tool) && (!provider || model.providerId === provider),
   );
 }
 export function chooseToolModel<

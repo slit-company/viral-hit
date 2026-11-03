@@ -25,6 +25,16 @@ export const toolCopy: Record<
     get description() { return uiMessages["studio.tools.keep_what_works_and_change_what_you_need"](); },
     get hint() { return uiMessages["studio.tools.describe_what_to_change_and_what_to_keep"](); },
   },
+  relight: {
+    get title() { return uiMessages['ui.recipe.relight_title'](); },
+    get description() { return uiMessages['ui.recipe.relight_description'](); },
+    get hint() { return uiMessages['ui.recipe.relight_hint'](); },
+  },
+  'text-edit': {
+    get title() { return uiMessages['ui.recipe.text_title'](); },
+    get description() { return uiMessages['ui.recipe.text_description'](); },
+    get hint() { return uiMessages['ui.recipe.text_hint'](); },
+  },
   'remove-background': {
     get title() { return uiMessages["studio.tools.remove_background"](); },
     get description() { return uiMessages["studio.tools.keep_the_subject_and_place_it_in_a_new_scene"](); },
@@ -121,7 +131,7 @@ export const toolGroups = [
     id: 'image',
     get label() { return uiMessages["studio.tools.image"](); },
     icon: Image,
-    tools: ['image-generate', 'image-edit', 'remove-background'],
+    tools: ['image-generate', 'image-edit', 'relight', 'text-edit', 'remove-background'],
   },
   {
     id: 'video',
