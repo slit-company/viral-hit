@@ -12,7 +12,8 @@ import type { CharacterSwapPlan, CharacterSwapView, SwapVerdict } from '@/core/c
 import { CostTotalText } from '@/components/generation-providers/cost-estimate';
 
 /** MiniMax H3 references first: it regenerates whole frames and follows role assignments closely. */
-const RECOMMENDED = [/minimax-h3.*reference/, /animate-replace/, /seedance-2\.5.*reference/, /video-reference/, /remix-object-swap/, /reference-to-video/];
+// Genjutsu kept a live clip's motion frame for frame; reference-to-video models such as MiniMax H3 regenerate it.
+const RECOMMENDED = [/genjutsu.*object-swap/, /minimax-h3/, /animate-replace/, /seedance-2\.5.*reference/, /video-reference/, /reference-to-video/];
 const rank = (id: string) => { const index = RECOMMENDED.findIndex(pattern => pattern.test(id)); return index < 0 ? RECOMMENDED.length : index; };
 const url = (projectId: string) => '/api/app/projects/' + encodeURIComponent(projectId) + '/character-swaps';
 const VERDICT: Record<SwapVerdict, () => string> = { swapped: () => m['ui.swap.verdict_swapped'](), blended: () => m['ui.swap.verdict_blended'](), kept: () => m['ui.swap.verdict_kept'](), unclear: () => m['ui.swap.verdict_unclear']() };
