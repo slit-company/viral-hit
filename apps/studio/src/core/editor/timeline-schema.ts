@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { overlayMotionSchema, overlayTransformSchema } from './overlay-motion';
 import { timelineTransitionSchema } from './transition-contract';
 import { captionHighlightSchema, captionWordsSchema } from './caption-words';
+import { audioDuckingSchema } from './audio-ducking';
 
 export const TIMELINE_SCHEMA_VERSION = 6 as const;
 
@@ -24,6 +25,7 @@ const timelineClipSchema = z.object({
   fadeOut: z.number().finite().min(0).max(86_400).default(0),
   text: z.string().max(4_000).default(''),
   audioRole: z.enum(['music', 'voice', 'sfx', 'source']).optional(),
+  ducking: audioDuckingSchema.optional(),
   overlay: overlayTransformSchema.nullable().default(null),
   motion: overlayMotionSchema.optional(),
   transition: timelineTransitionSchema.optional(),

@@ -2,6 +2,7 @@ import { modelOptionsDraftSchema } from '@/core/generation-providers/model-contr
 import { addOverlaySchema, setOverlayMotionSchema, updateOverlaySchema } from './overlay-schema';
 import { setTransitionSchema, setTransitionsAtCutsSchema } from './transition-schema';
 import { captionsFromWordsSchema, setCaptionHighlightSchema, setCaptionWordsSchema } from './caption-word-schema';
+import { audioDuckingSchema } from '@/core/editor/audio-ducking';
 import { z } from 'zod';
 
 import type { CanvasCard } from '@/core/creative-canvas/canvas-types';
@@ -322,6 +323,7 @@ export const editorOperationSchema = z.discriminatedUnion('type', [
           muted: z.boolean().optional(),
           fadeIn: finiteTimeSchema.optional(),
           fadeOut: finiteTimeSchema.optional(),
+          ducking: audioDuckingSchema.partial().required({ level: true }).nullable().optional(),
         })
         .strict()
         .refine((value) => Object.keys(value).length > 0, {

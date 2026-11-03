@@ -11,6 +11,8 @@ import { CaptionPreviewText } from './caption-preview-text';
 import { CaptionHighlightPicker } from './caption-highlight-picker';
 import { VoiceCaptionsAction } from './voice-captions-action';
 import { LayerExportAction } from './layer-export-action';
+import { AudioDuckingControl } from './audio-ducking-control';
+import { duckingGain, voiceIntervals } from '@/core/editor/audio-ducking';
 import { EditorComments } from '@/components/collaboration/editor-comments';
 import { canEditOverlayPose, overlayTransformAt } from '@/core/editor/overlay-motion';
 import { TimelineDraftRecovery } from './timeline-draft-recovery';
@@ -232,6 +234,7 @@ export function VideoEditorWorkspace({
 
   const [selectedClipId, setSelectedClipId] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
+  const voices = useMemo(() => voiceIntervals(document), [document]);
   const [timelineCursorTime, setTimelineCursorTime] = useState(0);
   const [timelineDragPreview, setTimelineDragPreview] =
     useState<TimelineClipInteractionPreview | null>(null);
@@ -720,9 +723,10 @@ export function VideoEditorWorkspace({
         clip.fadeOut > 0
           ? Math.min(1, (clip.duration - offset) / clip.fadeOut)
           : 1;
+      const duck = clip.ducking ? duckingGain(voices, clip.ducking, timelineTime) : 1;
       audio.volume = Math.max(
         0,
-        Math.min(1, clip.volume * Math.min(fadeInGain, fadeOutGain))
+        Math.min(1, clip.volume * Math.min(fadeInGain, fadeOutGain) * duck)
       );
       if (shouldPlay && audio.paused) void audio.play().catch(() => undefined);
     }
@@ -2540,6 +2544,7 @@ export function VideoEditorWorkspace({
                           />
                         </label>
                       ))}
+                      <AudioDuckingControl clip={selectedClip} onChange={(ducking) => commitDocument((current) => applyEditorOperations(current, [{ type: 'update_audio', clipId: selectedClip.id, patch: { ducking } }]).document)} />
                       <Action
                         type="button"
                         onClick={() =>

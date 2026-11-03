@@ -19,7 +19,7 @@
     "src/core/commands/schema.ts": 468,
     "src/core/creative-canvas/composer.ts": 424,
     "src/core/creative-canvas/generation-controller.ts": 749,
-    "src/core/editor/timeline-document.ts": 842,
+    "src/core/editor/timeline-document.ts": 834,
     "src/core/effects/generation-upload-intent.ts": 524,
     "src/mcp/server.ts": 1353
   },

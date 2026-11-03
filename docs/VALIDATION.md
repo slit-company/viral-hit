@@ -1185,3 +1185,9 @@ An integration test builds a recipe from `subject-on-style` with `image-1` as su
 - **Browser (collaboration test):** a new project gets viewer and editor links. The review page shows the empty-cut state and sends a comment. A viewer command gets 403, and an editor's caption edit reaches the saved timeline. In the editor, **Comments, 1 open** shows the reviewer's note and **Mark as done** settles it as the owner. In **Share project**, active links go from 2 to 1 after **Revoke**, and the revoked link's page says it is not active.
 - **Visual check:** the review page in English and Korean at 1440 and 390 px (no horizontal overflow), the comments dialog with its time chip, and the Korean share dialog.
 - **MCP:** `viral_hit_comments` joins the catalog (61 tools), with list, comment and resolve. Agents cannot make links.
+
+## Ducking — 2026-11-03
+
+- **FFmpeg:** a 440 Hz tone under a voice span from 2 to 4 s measured −12 dB (within 0.5 dB) between 2.5 and 3.5 s, and came back within 1% after the release.
+- **Unit tests:** voice spans merge when gaps are shorter than attack plus release and skip muted clips and tracks. The gain ramps down, holds and recovers as specified. The FFmpeg expression, evaluated at ten points, matches the preview curve within 0.001, including negative clip-time offsets. The full suite passed with 1,028 tests after music started ducking by default.
+- **Browser:** the inspector shows **Lower under voice** for a music clip in English and Korean, and the editor playback, layer export, transitions, voice caption and caption word tests pass.

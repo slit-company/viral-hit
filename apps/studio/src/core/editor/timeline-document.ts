@@ -13,6 +13,7 @@ import { migrateLegacyTimeline } from './timeline-migration';
 import type { TimelineTransition } from './transition-contract';
 import { validateCaptionWords, type CaptionWord } from './caption-words';
 import { overlayMotionSchema, overlayTransformAt, patchOverlayClip, type OverlayMotion, type OverlayPatch } from './overlay-motion';
+import { DEFAULT_DUCKING, normalizeDucking, type AudioDucking } from './audio-ducking';
 
 export { TIMELINE_SCHEMA_VERSION };
 
@@ -79,6 +80,8 @@ export type TimelineClip = {
   fadeOut: number;
   text?: string;
   audioRole?: TimelineAudioRole;
+  /** Lowers this music or sound clip while a voice clip plays; see audio-ducking.ts. */
+  ducking?: AudioDucking;
   overlay: TimelineOverlayTransform | null;
   motion?: OverlayMotion;
   /** How this base-track visual enters; see transition-contract.ts. */
@@ -273,6 +276,8 @@ export function addSourceClip(
     fadeOut: 0,
     text: '',
     audioRole: source.audioRole,
+    // Music added to a timeline steps aside for voices unless the editor turns it off.
+    ...(source.sourceType === 'audio' && source.audioRole === 'music' ? { ducking: DEFAULT_DUCKING } : {}),
     overlay: null,
     caption: null,
     takes: [],
@@ -368,6 +373,7 @@ export function normalizeTimelineDocument(
       if (clip.words && (track.kind !== 'caption' || !validateCaptionWords(clip.words, clip.sourceDuration))) throw new TimelineDocumentValidationError('Caption word timings must be ordered and fit their caption.');
       if (clip.transition && (track.kind !== 'video' || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Transitions belong to visual clips on a base track.');
       if (clip.motion && (track.kind !== 'overlay' || !clip.overlay || !['image', 'video'].includes(clip.sourceType))) throw new TimelineDocumentValidationError('Motion needs a visual overlay.');
+      if (clip.ducking && (clip.sourceType !== 'audio' || clip.audioRole === 'voice')) throw new TimelineDocumentValidationError('Ducking belongs to music and sound clips, not voices.');
       if (clip.trackId !== track.id) {
         throw new TimelineDocumentValidationError(
           'Timeline clip points to a different track.'
@@ -858,34 +864,20 @@ export function rippleDeleteTimelineClip(
 export function updateTimelineAudioClip(
   document: TimelineDocument,
   clipId: string,
-  patch: Partial<Pick<TimelineClip, 'volume' | 'muted' | 'fadeIn' | 'fadeOut'>>
+  patch: Partial<Pick<TimelineClip, 'volume' | 'muted' | 'fadeIn' | 'fadeOut'>> & { ducking?: (Partial<AudioDucking> & { level: number }) | null }
 ) {
   const clip = findTimelineClip(document, clipId);
   if (!clip || !['audio', 'video'].includes(clip.sourceType)) return document;
-  return withUpdatedTracks(
-    document,
-    document.tracks.map((track) => ({
-      ...track,
-      clips: track.clips.map((candidate) =>
-        candidate.id === clipId
-          ? {
-              ...candidate,
-              volume:
-                typeof patch.volume === 'number'
-                  ? Math.max(0, Math.min(4, patch.volume))
-                  : candidate.volume,
-              muted: patch.muted ?? candidate.muted,
-              fadeIn:
-                typeof patch.fadeIn === 'number'
-                  ? Math.max(0, Math.min(candidate.duration, patch.fadeIn))
-                  : candidate.fadeIn,
-              fadeOut:
-                typeof patch.fadeOut === 'number'
-                  ? Math.max(0, Math.min(candidate.duration, patch.fadeOut))
-                  : candidate.fadeOut,
-            }
-          : candidate
-      ),
-    }))
-  );
+  const span = (value: number | undefined, fallback: number) => typeof value === 'number' ? Math.max(0, Math.min(clip.duration, value)) : fallback;
+  const next: TimelineClip = {
+    ...clip,
+    volume: typeof patch.volume === 'number' ? Math.max(0, Math.min(4, patch.volume)) : clip.volume,
+    muted: patch.muted ?? clip.muted,
+    fadeIn: span(patch.fadeIn, clip.fadeIn),
+    fadeOut: span(patch.fadeOut, clip.fadeOut),
+  };
+  // null turns ducking off; a level turns it on with the default ramps unless they are given.
+  if (patch.ducking === null) delete next.ducking;
+  else if (patch.ducking) next.ducking = normalizeDucking(patch.ducking);
+  return withUpdatedTracks(document, document.tracks.map((track) => ({ ...track, clips: track.clips.map((candidate) => candidate.id === clipId ? next : candidate) })));
 }

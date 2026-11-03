@@ -10,6 +10,7 @@ import {
   type TimelineTrackKind,
 } from './timeline-document';
 import { diagnoseTimeline } from './timeline-diagnostics';
+import { duckingGain, voiceIntervals } from './audio-ducking';
 import { createBaseVisualPainter } from './timeline-frame-export';
 
 export type LocalMediaMetadata = {
@@ -196,21 +197,23 @@ function disposeTimelineMediaRecords(records: TimelineMediaRecord[]) {
   }
 }
 
-function gainAt(clip: TimelineClip, clipOffset: number) {
+function gainAt(clip: TimelineClip, clipOffset: number, voices: readonly (readonly [number, number])[]) {
   if (clip.muted) return 0;
   const fadeIn = clip.fadeIn > 0 ? Math.min(1, clipOffset / clip.fadeIn) : 1;
   const fadeOut =
     clip.fadeOut > 0
       ? Math.min(1, (clip.duration - clipOffset) / clip.fadeOut)
       : 1;
-  return Math.max(0, Math.min(1, clip.volume * Math.min(fadeIn, fadeOut)));
+  const duck = clip.ducking ? duckingGain(voices, clip.ducking, clip.startTime + clipOffset) : 1;
+  return Math.max(0, Math.min(1, clip.volume * Math.min(fadeIn, fadeOut) * duck));
 }
 
 async function mixTimelineAudio(
   records: TimelineMediaRecord[],
   duration: number,
   sampleRate: number,
-  signal?: AbortSignal
+  signal: AbortSignal | undefined,
+  voices: readonly (readonly [number, number])[]
 ) {
   const { AudioBufferSink } = await import('mediabunny');
   const context = new OfflineAudioContext({
@@ -248,9 +251,9 @@ async function mixTimelineAudio(
       gain.connect(context.destination);
       const startOffset = timelineStart - record.clip.startTime;
       const endOffset = timelineEnd - record.clip.startTime;
-      gain.gain.setValueAtTime(gainAt(record.clip, startOffset), timelineStart);
+      gain.gain.setValueAtTime(gainAt(record.clip, startOffset, voices), timelineStart);
       gain.gain.linearRampToValueAtTime(
-        gainAt(record.clip, endOffset),
+        gainAt(record.clip, endOffset, voices),
         timelineEnd
       );
       source.start(
@@ -331,12 +334,7 @@ export async function exportTimelineMp4({
   });
   let mixedAudio: AudioBuffer | null;
   try {
-    mixedAudio = await mixTimelineAudio(
-      records,
-      document.duration,
-      sampleRate,
-      signal
-    );
+    mixedAudio = await mixTimelineAudio(records, document.duration, sampleRate, signal, voiceIntervals(document));
   } catch (error) {
     disposeTimelineMediaRecords(records);
     throw error;

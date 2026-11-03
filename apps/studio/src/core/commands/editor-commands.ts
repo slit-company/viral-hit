@@ -71,6 +71,8 @@ export type EditorOperation =
         muted?: boolean;
         fadeIn?: number;
         fadeOut?: number;
+        /** Lower this clip while voices play; null turns it off. */
+        ducking?: { level: number; attack?: number; release?: number } | null;
       };
     }
   | {
@@ -235,6 +237,7 @@ export function applyEditorOperations(
       if (!clip || !['audio', 'video'].includes(clip.sourceType)) {
         throw new ViralHitCommandError('NOT_FOUND', `Audio clip ${operation.clipId} was not found.`);
       }
+      if (operation.patch.ducking && (clip.sourceType !== 'audio' || clip.audioRole === 'voice')) throw new ViralHitCommandError('INVALID_COMMAND', 'Only music and sound clips can be lowered under voices.');
       next = updateTimelineAudioClip(document, operation.clipId, operation.patch);
     } else if (operation.type === 'set_overlay_motion') {
       next = setTimelineOverlayMotion(document, operation.clipId, operation.motion);

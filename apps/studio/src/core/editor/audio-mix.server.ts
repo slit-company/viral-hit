@@ -1,5 +1,6 @@
 import { time, type RenderInput } from './timeline-render-inputs.server';
 import type { TimelineDocument } from './timeline-document';
+import { duckingExpression, voiceIntervals } from './audio-ducking';
 
 /**
  * One mixed audio stream padded to the timeline length, or null when no selected clip is audible.
@@ -13,6 +14,7 @@ export function buildAudioMix({ inputs, document, include = () => true, label = 
   if (!audible.some(include)) return null;
   const filters: string[] = [];
   const labels: string[] = [];
+  const voices = voiceIntervals(document);
   for (const input of audible) {
     const name = `${label}in${labels.length + 1}`;
     const steps = [
@@ -20,6 +22,8 @@ export function buildAudioMix({ inputs, document, include = () => true, label = 
       'asetpts=PTS-STARTPTS',
       `volume=${(include(input) ? Math.max(0, input.clip.volume) : 0).toFixed(3)}`,
     ];
+    const duck = input.clip.ducking && duckingExpression(voices, input.clip.ducking, input.clip.startTime, input.clip.duration);
+    if (duck) steps.push(`volume='${duck}':eval=frame`);
     if (input.clip.fadeIn > 0) steps.push(`afade=t=in:st=0:d=${time(input.clip.fadeIn)}`);
     if (input.clip.fadeOut > 0) steps.push(`afade=t=out:st=${time(input.clip.duration - input.clip.fadeOut)}:d=${time(input.clip.fadeOut)}`);
     steps.push(`adelay=${Math.round(input.clip.startTime * 1000)}:all=1`);
