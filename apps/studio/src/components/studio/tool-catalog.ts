@@ -35,6 +35,11 @@ export const toolCopy: Record<
     get description() { return uiMessages['ui.recipe.text_description'](); },
     get hint() { return uiMessages['ui.recipe.text_hint'](); },
   },
+  'image-layers': {
+    get title() { return uiMessages['ui.layers.split_title'](); },
+    get description() { return uiMessages['ui.layers.split_description'](); },
+    get hint() { return uiMessages['ui.layers.split_description'](); },
+  },
   'remove-background': {
     get title() { return uiMessages["studio.tools.remove_background"](); },
     get description() { return uiMessages["studio.tools.keep_the_subject_and_place_it_in_a_new_scene"](); },
@@ -131,7 +136,7 @@ export const toolGroups = [
     id: 'image',
     get label() { return uiMessages["studio.tools.image"](); },
     icon: Image,
-    tools: ['image-generate', 'image-edit', 'relight', 'text-edit', 'remove-background'],
+    tools: ['image-generate', 'image-edit', 'relight', 'text-edit', 'image-layers', 'remove-background'],
   },
   {
     id: 'video',

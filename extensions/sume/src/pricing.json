@@ -260,5 +260,25 @@
   "source": "https://www.sume.com/docs/models",
   "checked": "2026-11-03",
   "amount": 0.133333
+ },
+ "sume-qwen-image-layered": {
+  "currency": "USD",
+  "per": "request",
+  "basis": "list",
+  "source": "https://www.sume.com/docs/models",
+  "checked": "2026-11-03",
+  "by": {
+   "option": "layers",
+   "amounts": {
+    "2": 0.1,
+    "3": 0.15,
+    "4": 0.2,
+    "5": 0.25,
+    "6": 0.3,
+    "7": 0.35,
+    "8": 0.4
+   }
+  },
+  "amount": 0.4
  }
 }

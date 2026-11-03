@@ -1,6 +1,6 @@
 /** Read-only catalog check before any upload or paid submit. The server remains authoritative. */
 export async function checkModel(api, profile, body) {
-  const family = { image: 'image', video: 'video', lipsync: 'video', dubbing: 'video', music: 'music', speech: 'tts' }[profile.route];
+  const family = { image: 'image', layers: 'image', video: 'video', lipsync: 'video', dubbing: 'video', music: 'music', speech: 'tts' }[profile.route];
   if (!family) return;
   const { model } = await api.request('/v1/' + family + '-router/models/' + encodeURIComponent(body.model));
   if (!model || model.id !== body.model || !model.capabilities) throw Error('Sume model catalog did not confirm this model');

@@ -12,8 +12,8 @@ const input = { prompt: 'A blue circle', aspectRatio: '1:1', imageUrls: ['owned:
 async function mock(handler, run) { const original = globalThis.fetch; globalThis.fetch = handler; try { return await run(); } finally { globalThis.fetch = original; } }
 function catalog(id = 'gpt-image-2') { return { model: { id, capabilities: { image_edit: true, aspect_ratios: ['1:1'], qualities: ['medium'] } } }; }
 
-test('all 36 profiles build bounded explicit request bodies; video transforms omit unsupported prompt/aspect', () => {
-  assert.equal(providerManifest().models.length, 36);
+test('all 37 profiles build bounded explicit request bodies; video transforms omit unsupported prompt/aspect', () => {
+  assert.equal(providerManifest().models.length, 37);
   for (const profile of profiles) {
     const refs = Object.fromEntries(Object.entries(profile.referenceInputs).map(([kind, value]) => [kind + 'Urls', Array.from({ length: value.min }, (_, i) => kind + i)]));
     const { body, path } = buildPayload(profile, { prompt: 'Test script', ...refs, ...(profile.route === 'speech' ? { options: { voice_id: 'voi_' + 'a'.repeat(32) } } : {}) });
@@ -34,6 +34,11 @@ test('all 36 profiles build bounded explicit request bodies; video transforms om
   const swap = buildPayload(profiles.find(p => p.id === 'sume-higgsfield-genjutsu-light-object-swap'), { prompt: 'Swap', imageUrls: ['i0'], videoUrls: ['v0'], aspectRatio: 'auto' });
   assert.deepEqual([swap.body.model, swap.body.video_url, swap.body.reference_image_urls, swap.body.reference_video_urls, swap.body.resolution, swap.body.aspect_ratio], ['higgsfield-genjutsu-light-object-swap', 'v0', ['i0'], undefined, '480p', undefined]);
   assert.equal(providerManifest().models.find(m => m.id === 'sume-higgsfield-genjutsu').durations, undefined);
+  // A layer split sends one picture and the number of layers; the person writes no prompt.
+  const split = buildPayload(profiles.find(p => p.id === 'sume-qwen-image-layered'), { imageUrls: ['i0'], options: { layers: 5 } });
+  assert.deepEqual([split.path, split.body], ['/v1/image-router/generate', { mode: 'async', model: 'qwen-image-layered', prompt: 'Separate this image into layers', image_urls: ['i0'], num_images: 5 }]);
+  assert.deepEqual([promptInputs['sume-qwen-image-layered'], providerManifest().models.find(m => m.id === 'sume-qwen-image-layered').studioTasks], ['none', ['image-layers']]);
+  assert.throws(() => buildPayload(profiles.find(p => p.id === 'sume-qwen-image-layered'), { imageUrls: ['i0'], options: { layers: 9 } }), /Invalid Sume option/);
 });
 
 /** A minimal MP4: ftyp, then moov with an mvhd of the given version, timescale and length. */

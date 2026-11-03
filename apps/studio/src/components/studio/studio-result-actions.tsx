@@ -1,7 +1,9 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { useState } from 'react';
 import { Action } from '@/components/base/action';
-import { Link } from '@/core/i18n/navigation';
+import { Link, useRouter } from '@/core/i18n/navigation';
+import { apiJsonPost } from '@/lib/api-client';
+import { parseLocalProjectAssetUrl } from '@/core/projects/local-project-asset-url';
 import type { ProjectGenerationItem } from '@/core/effects/project-generations';
 import { fetchRecentAssets } from '@/core/workspace-lib/app/workspace-client-api';
 import { addProjectAssetToTimeline } from '@/core/editor/timeline-client';
@@ -27,6 +29,20 @@ export function StudioResultActions({
   const [busy, setBusy] = useState(false),
     [added, setAdded] = useState(false),
     [error, setError] = useState('');
+  const router = useRouter();
+  // A split returns its layers bottom first; they open as a layer stack.
+  const layers = item.status === 'succeeded' && item.mediaType === 'image' ? (item.resultUrls ?? []).flatMap(url => parseLocalProjectAssetUrl(url)?.assetId ?? []) : [];
+  async function openLayers() {
+    setBusy(true);
+    setError('');
+    try {
+      const { stack } = await apiJsonPost<{ stack: { id: string } }>('/api/app/projects/' + encodeURIComponent(projectId) + '/image-layers', { action: 'create', assetIds: layers, name: uiMessages['ui.layers.split_title']() });
+      router.push('/layers/' + projectId + '?stack=' + stack.id);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : uiMessages['ui.layers.open_failed']());
+      setBusy(false);
+    }
+  }
   async function edit() {
     if (busy || added || item.mediaType === 'analysis') return;
     setBusy(true);
@@ -64,6 +80,7 @@ export function StudioResultActions({
         </div>
       )}
       <div className="flex flex-wrap gap-2">
+        {layers.length > 1 && <Action className="vh-primary" disabled={busy} onClick={() => void openLayers()}>{uiMessages['ui.layers.edit_layers']({ count: layers.length })}</Action>}
         <Action className="vh-secondary" onClick={onReuse}>
           {uiMessages["studio.tools.use_these_settings_again"]()}</Action>
         {item.status === 'succeeded' &&

@@ -1,6 +1,7 @@
 import { modelOptionValuesSchema, type ModelOptionsDraft } from '../generation-providers/model-controls';
 import type { VideoAnalysisDepth } from './video-analysis';
 import { localReferencePlaybackUrl } from '../generation-providers/local-reference';
+import { parseLocalProjectAssetUrl } from '../projects/local-project-asset-url';
 import { desc, eq } from 'drizzle-orm';
 
 import { generationHistory } from '@/config/db/schema';
@@ -36,6 +37,8 @@ export type ProjectGenerationItem = {
   referenceAudios: string[];
   /** Painted mask sent separately from references, when the model edited a marked area. */
   referenceMask?: string;
+  /** Every project file a result has, when there is more than one, such as the layers of a split. */
+  resultUrls?: string[];
   /** Roles sent with references, keyed by the same playback URLs as the reference lists. */
   referenceRoles?: Array<{ url: string; role: string }>;
   analysisDepth?: VideoAnalysisDepth;
@@ -44,6 +47,7 @@ export type ProjectGenerationItem = {
   createdAt: string;
 };
 
+const localResults = (urls: readonly string[]) => urls.filter(url => parseLocalProjectAssetUrl(url));
 const asRecord = (value: unknown): Record<string, unknown> | null =>
   value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
 
@@ -144,6 +148,7 @@ export const toProjectGenerationItem = (
         ? 'image'
         : 'video',
     resultUrl: media.resultUrl,
+    ...(localResults(media.resultUrls).length > 1 ? { resultUrls: localResults(media.resultUrls) } : {}),
     resultText: resolveVideoAnalysisText(row.output),
     paramsLabel: formatParamsLabel(input),
     aspectRatio: readString(input?.aspect_ratio),

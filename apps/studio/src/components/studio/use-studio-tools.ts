@@ -8,6 +8,7 @@ import {
   toolModels,
   type StudioToolId,
 } from '@/core/studio/tools';
+import { isStudioTool, studioToolsKey } from '@/core/studio/studio-handoff';
 
 export function useStudioTools(
   projectId: string,
@@ -16,7 +17,7 @@ export function useStudioTools(
 ) {
   const catalog = useWorkspaceModels();
   const choices = useRef(new Map<StudioToolId, string>());
-  const storageKey = `viral-hit:studio-tools:${projectId}:${initialTarget ?? ''}:${initialModelId ?? ''}`;
+  const storageKey = studioToolsKey(projectId, initialTarget, initialModelId);
   const [tool, setTool] = useState<StudioToolId>(
     defaultStudioTool(initialTarget ?? 'image'),
   );
@@ -40,7 +41,7 @@ export function useStudioTools(
       ? saved?.tool && modelRunsTool(initial, saved.tool)
         ? saved.tool
         : modelStudioTools(initial)[0]
-      : tool;
+      : isStudioTool(saved?.tool) ? saved.tool : tool;
     setTool(nextTool);
     const desiredId = saved?.modelId || initialModelId;
     setModelId(

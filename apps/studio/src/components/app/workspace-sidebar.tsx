@@ -1,7 +1,7 @@
 import { m as uiMessages } from '@/paraglide/messages.js';
 import { useEffect, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Blocks, BookOpenText, Bot, Camera, Clapperboard, Repeat2, Images, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Workflow } from 'lucide-react';
+import { Blocks, BookOpenText, Bot, Camera, Clapperboard, Repeat2, Images, Layers, LayoutPanelTop, Link2, PanelLeftClose, PanelLeftOpen, Plus, Puzzle, Scissors, Send, Sparkles, UserRound, Workflow } from 'lucide-react';
 import { Action } from '@/components/base/action';
 import { Link } from '@/core/i18n/navigation';
 import { useTranslations } from '@/core/workspace-lib/shims/next-intl';
@@ -10,7 +10,7 @@ import { appConfig } from '@/config';
 import { buildProjectDetailPath } from '@/core/projects/project-entry';
 import { cn } from '@/lib/utils';
 
-type Page = 'studio' | 'cinema' | 'remix' | 'canvas' | 'editor' | 'assets' | 'storyboards' | 'publish';
+type Page = 'studio' | 'cinema' | 'remix' | 'canvas' | 'editor' | 'layers' | 'assets' | 'storyboards' | 'publish';
 type RecentProject = { id: string; name: string; lastWorkspaceMode?: string | null };
 const COLLAPSED_KEY = 'viral-hit:sidebar-collapsed';
 // Canvas and Edit need the full working area, so they start collapsed and remember their own choice.
@@ -47,6 +47,7 @@ export function WorkspaceSidebar({ projectId, current }: { projectId: string; cu
     ['remix', '/remix/' + projectId, uiMessages['ui.remix.nav'](), <Repeat2 key="rx" className="size-4" />],
     ['canvas', '/canvas/' + projectId, t('header.canvas'), <Workflow key="c" className="size-4" />],
     ['editor', '/editor/' + projectId, t('header.editor'), <Scissors key="e" className="size-4" />],
+    ['layers', '/layers/' + projectId, uiMessages['ui.layers.nav'](), <Layers key="l" className="size-4" />],
     ['storyboards', '/storyboards/' + projectId, t('sidebar.storyboards'), <Clapperboard key="b" className="size-4" />],
     ['assets', '/assets/' + projectId, t('header.assets'), <Images key="a" className="size-4" />],
     ['publish', '/publish/' + projectId, t('sidebar.publish'), <Send key="p" className="size-4" />],

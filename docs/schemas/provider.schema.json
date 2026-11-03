@@ -334,6 +334,7 @@
                 "image-edit",
                 "relight",
                 "text-edit",
+                "image-layers",
                 "remove-background",
                 "image-upscale",
                 "video-generate",

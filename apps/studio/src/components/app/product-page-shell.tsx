@@ -34,7 +34,7 @@ export function ProductPageShell({
   workspaceMode?: WorkspaceMode;
   publishing?: boolean;
   /** Project page outside the workspace modes, highlighted in the sidebar. */
-  section?: 'storyboards' | 'cinema' | 'remix';
+  section?: 'storyboards' | 'cinema' | 'remix' | 'layers';
 }) {
   const t = useTranslations('AppShell');
   const router = useRouter();

@@ -22,7 +22,7 @@ export function buildPayload(profile, input) {
     image: '/v1/image-router/generate', video: '/v1/video-router/generate', music: '/v1/music-router/generate', speech: '/v1/tts-router/generate',
     remix: '/v1/sume/remix/' + profile.remixMode + '/v1.0', restyle: '/v1/sume/remix/restyle/v1.0', motion: '/v1/kling/3.0/motion-control',
     lipsync: '/v1/video-router/generate', dubbing: '/v1/video-router/generate', captions: '/v1/video-captions', upscale: '/v1/video-upscale-1.0/upscale',
-    background: '/v1/rmbg-1.0/remove', trim: '/v1/video-trim', detach: '/v1/audio-detach',
+    background: '/v1/rmbg-1.0/remove', layers: '/v1/image-router/generate', trim: '/v1/video-trim', detach: '/v1/audio-detach',
   }[profile.route];
   switch (profile.route) {
     case 'image': Object.assign(body, { model: profile.upstreamModelId, prompt, aspect_ratio: aspect, ...options }, images.length ? { image_urls: images } : {}, input.maskUrl ? { mask_image_url: input.maskUrl } : {}); break;
@@ -40,6 +40,8 @@ export function buildPayload(profile, input) {
     case 'captions': Object.assign(body, { video_url: videos[0], style: options.style, language: options.language }); if (options.language === 'ko' && ['slam', 'punch', 'tiktok-green'].includes(options.style)) throw Error('Choose a Hangul caption style for Korean speech'); break;
     case 'upscale': Object.assign(body, { video_url: videos[0], resolution: options.resolution, enhancement_tier: options.tier }); break;
     case 'background': body.image_url = images[0]; break;
+    // The image router needs a prompt; a split takes its layers from the picture, so a plain instruction is enough.
+    case 'layers': Object.assign(body, { model: profile.upstreamModelId, prompt: prompt || 'Separate this image into layers', image_urls: images, num_images: options.layers }); break;
     case 'trim': Object.assign(body, { video_url: videos[0], start: options.start, duration: options.length, precision: 'exact', audio: 'keep' }); break;
     case 'detach': Object.assign(body, { video_url: videos[0], format: 'wav' }); break;
     case 'music': Object.assign(body, { model: profile.upstreamModelId, prompt }); break;

@@ -26,7 +26,7 @@ Create or open a project, choose a Sume model in Studio, enter a prompt, and sel
 | Genjutsu | Motion transfer and object swap from a source clip and subject images, full (4–30 s clips) and Light (4–15 s clips) |
 | Remix | Motion transfer, object swap, 20 restyle presets; Kling motion control |
 | Speech/video | Portrait and video lip sync, translation with lip sync, animated captions |
-| Editing | Video upscale, image background removal, video trim, audio extraction |
+| Editing | Video upscale, image background removal, split into layers (2–8 transparent layers), video trim, audio extraction |
 | Audio | Seven music models; speech with four engine choices and an existing Sume voice ID |
 
 For first/last-frame generation, the first selected image is the start frame and the second is the end frame. Remix accepts one 4–15 second clip and 1–8 images; restyle takes one clip and a preset. Genjutsu reads the clip's length from the MP4 itself and sends it rounded up, as Sume requires; it has no length or shape to choose. Light bills the source seconds as well as the output seconds, so its listed price per second is doubled. Other source-length options must match the selected clip or audio, rounded up. Studio fills them in from the attached clip. Speech requires a Sume voice UUID or `voi_` library ID belonging to the selected engine's family. Music duration/lyrics can be requested in the prompt; a universal duration parameter is deliberately not sent because support varies by model. Korean captions should use a Hangul style such as `korean-ad` or `black-outline`.

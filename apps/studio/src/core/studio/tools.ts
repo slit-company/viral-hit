@@ -5,6 +5,8 @@ export const STUDIO_TOOL_KINDS = {
   /** Instruction recipes any image-edit model can run; see image-recipes.ts. */
   relight: 'image',
   'text-edit': 'image',
+  /** Splits one picture into transparent layers for the layer editor. */
+  'image-layers': 'image',
   'remove-background': 'image',
   'image-upscale': 'image',
   'video-generate': 'video',

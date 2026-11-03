@@ -64,6 +64,7 @@ export const VIRAL_HIT_MCP_TOOL_NAMES = [
   'viral_hit_dialogue',
   'viral_hit_spending',
   'viral_hit_character_swap',
+  'viral_hit_image_layers',
 ] as const;
 
 export type ViralHitMcpToolName = (typeof VIRAL_HIT_MCP_TOOL_NAMES)[number];

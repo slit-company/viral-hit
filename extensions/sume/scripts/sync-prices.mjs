@@ -10,6 +10,12 @@ export function sumePricing(model, profile, checked) {
   const pricing = model?.pricing ?? {};
   const per = pricing.basis === 'per_image' ? 'output' : String(pricing.basis ?? '').startsWith('per_second') ? 'second' : null;
   if (!per) return null;
+  // A layer split bills each layer as one image, so the price follows the number of layers asked for.
+  const layers = profile.controls?.find(control => control.key === 'layers');
+  if (profile.route === 'layers' && layers && Number(pricing.usd_per_image) > 0) {
+    const counts = Array.from({ length: layers.max - layers.min + 1 }, (_, index) => layers.min + index);
+    return { currency: 'USD', per: 'request', basis: 'list', source: 'https://www.sume.com/docs/models', checked, by: { option: 'layers', amounts: Object.fromEntries(counts.map(count => [String(count), Math.round(count * Number(pricing.usd_per_image) * 10000) / 10000])) }, amount: Math.round(layers.max * Number(pricing.usd_per_image) * 10000) / 10000 };
+  }
   const base = { currency: 'USD', per, basis: 'list', source: 'https://www.sume.com/docs/models', checked };
   // Some models bill the source seconds as well as the output seconds; their output matches the source, so each second costs twice.
   const both = per === 'second' && (model.constraints ?? []).some(text => /billed per total second, source plus output/i.test(text)) ? 2 : 1;
